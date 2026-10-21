@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>玄武 · xAI 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__mark mono">X·AI</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__sub mono">CLUSTER · MTN-04 · 24K H100 · 液冷</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="训练日志已 tail（10k 行/秒）" aria-label="日志">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5h14M5 10h9M5 15h11M5 20h7"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：训练运行（签名：等宽巨字 loss）-->
+            <section class="hero" aria-label="当前训练">
+              <p class="hero__eyebrow mono">RUN 0847 · STEP 412K/1M · PRETRAIN</p>
+              <h1 class="hero__loss">0.8421</h1>
+              <p class="hero__curve mono">loss ▁▂▂▃▃▄▄▅▅▆▆ — 2H WINDOW · LR 1.8E-4</p>
+              <div class="hero__bars" aria-hidden="true">
+                <i style="--h: 86%"></i><i style="--h: 78%"></i><i style="--h: 80%"></i><i style="--h: 71%"></i><i style="--h: 68%"></i><i style="--h: 62%"></i><i style="--h: 64%"></i><i style="--h: 56%"></i><i style="--h: 49%"></i><i style="--h: 51%"></i><i style="--h: 44%"></i><i style="--h: 38%"></i>
+              </div>
+              <div class="hero__stats">
+                <div><b>412K</b><span class="mono">STEPS</span></div>
+                <div><b>96%</b><span class="mono">MFU</span></div>
+                <div><b>18.2</b><span class="mono">DAYS ETA</span></div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-white" type="button" id="ckptBtn">CHECKPOINT</button>
+                <button class="btn-ghost" type="button" data-toast="已 open17 为只读分支">FORK RUN</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="集群">
+              <div class="duo__card">
+                <h2 class="duo__title mono">GPU UTIL</h2>
+                <p class="duo__num">97.4<span>%</span></p>
+                <p class="duo__meta mono">24,576/24,576 · NCCL 0 重传</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">TOK/S</h2>
+                <p class="duo__num">4.1<span>M</span></p>
+                <p class="duo__meta mono">SEQ 32K · 数据管道健康</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：评估 -->
+            <section class="feed" aria-label="评估">
+              <div class="feed__head">
+                <h2 class="feed__title mono">EVALS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">ALL</button>
+                  <button class="chip" type="button" data-filter="bench">BENCH</button>
+                  <button class="chip" type="button" data-filter="vlm">VLM</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="eval" data-kind="bench">
+                  <span class="eval__name mono">GPQA-DIAMOND</span>
+                  <div class="eval__track"><i style="--w: 78%"></i></div>
+                  <b class="mono">78.2</b>
+                </li>
+                <li class="eval" data-kind="bench">
+                  <span class="eval__name mono">MATH-500</span>
+                  <div class="eval__track"><i style="--w: 91%"></i></div>
+                  <b class="mono">91.4</b>
+                </li>
+                <li class="eval" data-kind="vlm">
+                  <span class="eval__name mono">DOC-VQA</span>
+                  <div class="eval__track"><i style="--w: 84%"></i></div>
+                  <b class="mono">84.0</b>
+                </li>
+                <li class="eval" data-kind="bench">
+                  <span class="eval__name mono">SWE-BENCH</span>
+                  <div class="eval__track"><i style="--w: 62%"></i></div>
+                  <b class="mono">62.5</b>
+                </li>
+                <li class="eval" data-kind="vlm">
+                  <span class="eval__name mono">VIDEO-MME</span>
+                  <div class="eval__track"><i style="--w: 71%"></i></div>
+                  <b class="mono">71.8</b>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="终端">
+              <input class="action__input mono" id="cmdInput" type="text" placeholder="$ xctl run pause --ckpt" />
+              <div class="action__row">
+                <button class="btn-white" type="button" id="cmdBtn">EXECUTE</button>
+                <button class="btn-ghost" type="button" data-toast="评估矩阵已导出 JSON">EXPORT</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="RUNS">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h4l3-8 4 16 3-8h2"/></svg>
+              <span class="mono">RUNS</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="DATA">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/><path d="M4.5 11.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>
+              <span class="mono">DATA</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="NEW" aria-label="NEW">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span class="mono">NEW</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="EVALS">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-7M21 19H3"/></svg>
+              <span class="mono">EVALS</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="CTRL">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg>
+              <span class="mono">CTRL</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

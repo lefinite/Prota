@@ -1,0 +1,467 @@
+/* =========================================================================
+ * mobile-previews/meta — Meta Store
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/meta 的 :root token
+ * 页面：Page content（Meta Store · Quest & Ray-Ban Meta 电商 App）
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/meta）—— */
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --surface-warm: #f2f0e6;
+  --fg: #1c2b33;
+  --fg-2: #5d6c7b;
+  --muted: #65676b;
+  --meta: #8595a4;
+  --border: #ced0d4;
+  --border-soft: #dee3e9;
+  --accent: #0064e0;
+  --accent-on: #ffffff;
+  --accent-hover: #0143b5;
+  --accent-active: #004bb9;
+  --success: #31a24c;
+  --warn: #f7b928;
+  --danger: #e41e3f;
+  --font-display: "Optimistic VF", "Optimistic", Inter, Montserrat, Helvetica, Arial, "Noto Sans", sans-serif;
+  --font-body: "Optimistic VF", "Optimistic", Inter, Montserrat, Helvetica, Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 28px;
+  --text-2xl: 36px;
+  --text-3xl: 48px;
+  --text-4xl: 64px;
+  --radius-sm: 8px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --radius-pill: 100px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised:
+    0 12px 28px 0 rgba(0, 0, 0, 0.2),
+    0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* 产品专用色 */
+  --rayban-red: #D6311F;
+  --quest-purple: #A121CE;
+  --quest-dark: #181A1B;
+
+  /* —— 手机外壳（与设计系统协调）—— */
+  --page-backdrop-top: #f1f4f7;
+  --page-backdrop-bottom: #e5e9f0;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e9ecf2;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.12);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; cursor: pointer; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; font-family: var(--font-display); }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 96px; }
+
+/* ===== Page content · Meta Store ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+  width: 32px; height: 32px;
+  color: var(--accent);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-base); font-weight: 500; font-family: var(--font-display); }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.iconbtn {
+  position: relative; width: 44px; height: 44px; border-radius: var(--radius-pill);
+  display: grid; place-items: center; color: var(--fg);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: color-mix(in oklab, var(--fg), transparent 92%); }
+.iconbtn__badge {
+  position: absolute; top: 8px; right: 8px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 999px; background: var(--accent); color: var(--accent-on);
+  font-size: 10px; font-weight: 700;
+  display: grid; place-items: center;
+}
+
+/* Hero 产品展示：signature —— 沉浸式产品摄影风格 */
+.hero-card {
+  position: relative;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.hero-card__image {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--quest-dark) 0%, #0a0c0e 100%);
+}
+.hero-card__image::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, var(--quest-purple) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, var(--accent) 0%, transparent 40%);
+  opacity: 0.6;
+}
+.hero-card__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 100%);
+}
+.hero-card__content {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  color: var(--accent-on);
+}
+.hero-card__tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  font-size: var(--text-xs); font-weight: 700;
+  margin-bottom: 8px;
+  align-self: flex-start;
+}
+.hero-card__title {
+  margin: 0 0 4px;
+  font-size: var(--text-3xl);
+  font-weight: 500;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.hero-card__desc {
+  margin: 0 0 12px;
+  font-size: var(--text-sm);
+  opacity: 0.9;
+}
+.hero-card__price {
+  font-size: var(--text-xl);
+  font-weight: 300;
+  font-family: var(--font-display);
+  margin-bottom: 16px;
+}
+
+/* 产品快捷入口 */
+.quick-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.quick-link {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 12px 4px;
+  border-radius: var(--radius-md);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.quick-link:active { background: var(--surface); }
+.quick-link__icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  display: grid; place-items: center;
+  font-size: 18px; font-weight: 700;
+  color: var(--accent-on);
+  font-family: var(--font-display);
+}
+.quick-link__icon--quest { background: var(--quest-purple); }
+.quick-link__icon--rayban { background: var(--rayban-red); }
+.quick-link__icon--acc { background: var(--accent); }
+.quick-link__icon--deal { background: var(--warn); }
+.quick-link span:last-child {
+  font-size: var(--text-xs);
+  color: var(--fg-2);
+}
+
+/* 推荐产品双卡 */
+.product-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.product-card {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+.product-card:active { transform: translateY(-2px); }
+.product-card__image {
+  height: 100px;
+  position: relative;
+}
+.product-card__image--quest {
+  background: linear-gradient(135deg, var(--quest-dark), #0a0c0e);
+}
+.product-card__image--quest::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 40%, var(--quest-purple) 0%, transparent 60%);
+  opacity: 0.5;
+}
+.product-card__image--glasses {
+  background: linear-gradient(135deg, #1a0a0a, #2d1515);
+}
+.product-card__image--glasses::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 60% 50%, var(--rayban-red) 0%, transparent 50%);
+  opacity: 0.4;
+}
+.product-card--dark .product-card__image { background: var(--quest-dark); }
+.product-card__info {
+  padding: 12px;
+}
+.product-card__tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--success);
+  color: var(--accent-on);
+  font-size: 10px; font-weight: 700;
+  margin-bottom: 6px;
+}
+.product-card__tag--red { background: var(--rayban-red); }
+.product-card__name {
+  margin: 0 0 4px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: var(--font-display);
+  color: var(--fg);
+}
+.product-card__spec {
+  margin: 0 0 8px;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.product-card__price {
+  font-size: var(--text-base);
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--fg);
+}
+
+/* 订单列表 */
+.order-section { margin-bottom: 20px; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-header h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 500;
+  font-family: var(--font-display);
+}
+.textbtn {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  color: var(--accent);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.textbtn:active { background: color-mix(in oklab, var(--accent), transparent 90%); }
+
+.order-list { list-style: none; margin: 0; padding: 0; }
+.order-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.order-item:last-child { border-bottom: 0; }
+.order-item__icon {
+  flex: none; width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  color: var(--accent-on);
+}
+.order-item__icon--shipped { background: var(--accent); }
+.order-item__icon--processing { background: var(--warn); }
+.order-item__icon--done { background: var(--success); }
+.order-item__icon svg { width: 18px; height: 18px; }
+.order-item__main { flex: 1; min-width: 0; }
+.order-item__title {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.order-item__sub {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.order-item__status {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
+.order-item__status--success { background: color-mix(in oklab, var(--accent), transparent 90%); color: var(--accent); }
+.order-item__status--pending { background: color-mix(in oklab, var(--warn), transparent 90%); color: var(--warn); }
+.order-item__status--done { background: color-mix(in oklab, var(--success), transparent 90%); color: var(--success); }
+
+/* 服务卡片 */
+.service-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px;
+  background: var(--surface-warm);
+  border-radius: var(--radius-md);
+}
+.service-card__icon {
+  flex: none; width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  color: var(--accent);
+  background: var(--accent-on);
+}
+.service-card__icon svg { width: 20px; height: 20px; }
+.service-card__content { flex: 1; }
+.service-card__content h3 {
+  margin: 0 0 2px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.service-card__content p {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* 按钮 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  font-family: var(--font-display);
+  transition: background var(--motion-base) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+.btn--primary {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--primary:active { background: var(--accent-active); transform: scale(0.98); }
+.btn--outline {
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+}
+.btn--outline:active { background: var(--surface); transform: scale(0.98); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 8px 10px 18px;
+  background: color-mix(in oklab, var(--surface), transparent 2%);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -1px 0 var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 22px; height: 22px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg);
+  color: var(--surface);
+  font-size: var(--text-xs);
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+  font-family: var(--font-display);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-card, .quick-links, .product-row, .order-section, .service-card {
+  animation: rise 520ms var(--ease-standard) both;
+}
+.quick-links { animation-delay: 70ms; }
+.product-row { animation-delay: 140ms; }
+.order-section { animation-delay: 200ms; }
+.service-card { animation-delay: 260ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

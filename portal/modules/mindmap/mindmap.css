@@ -1,0 +1,616 @@
+/* =========================================================================
+   Readify MindMap module — outer panel, editor layout, and preview cards.
+   Self-contained: owns the drawer chrome for `is-mindmap-mode`, the editor
+   (Markdown textarea + live SVG), and the `.prd-mindmap-card` preview blocks
+   rendered inside PRD documents. Does not depend on prd.css.
+   ========================================================================= */
+
+/* ---------- Drawer panel ---------- */
+
+.annotation-drawer.is-visible.is-mindmap-mode {
+    width: min(860px, 66vw);
+    min-width: 600px;
+}
+
+.annotation-drawer.is-visible.is-mindmap-mode.is-user-sized {
+    width: var(--prd-drawer-width);
+    min-width: var(--prd-drawer-width);
+}
+
+.annotation-drawer.is-visible.is-mindmap-mode.is-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 12000 !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    height: 100vh !important;
+    max-height: none !important;
+    border: 0 !important;
+}
+
+.annotation-drawer.is-visible.is-mindmap-mode .prd-drawer-resize-handle {
+    display: block;
+}
+
+.annotation-drawer.is-visible.is-mindmap-mode.is-fullscreen .prd-drawer-resize-handle {
+    display: none !important;
+}
+
+.annotation-drawer.is-mindmap-mode {
+    background: #f7f8fa;
+}
+
+.annotation-drawer.is-mindmap-mode .annotation-drawer__header,
+.annotation-drawer.is-mindmap-mode .annotation-drawer__meta-row,
+.annotation-drawer.is-mindmap-mode .annotation-drawer__meta,
+.annotation-drawer.is-mindmap-mode .doc-drawer-actions {
+    display: none;
+}
+
+.annotation-drawer.is-mindmap-mode .doc-tabs {
+    gap: 4px;
+    padding: 3px;
+    border: 0;
+    border-radius: 9px;
+    background: rgba(15, 23, 42, 0.045);
+}
+
+.annotation-drawer.is-mindmap-mode .doc-tab {
+    height: 30px;
+    border-radius: 7px;
+    font-size: 0.76rem;
+}
+
+.annotation-drawer.is-mindmap-mode .doc-tab.is-active {
+    color: var(--accent);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.annotation-drawer.is-mindmap-mode .doc-tab:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.34);
+    outline-offset: 1px;
+}
+
+.annotation-drawer.is-mindmap-mode .annotation-drawer__body {
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+    background: #f1f2f5;
+}
+
+/* ---------- Editor shell ---------- */
+
+.mindmap-shell {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    background: #f1f2f5;
+}
+
+.mindmap-shell__bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 48px;
+    box-sizing: border-box;
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.985);
+    border-bottom: 1px solid rgba(31, 35, 48, 0.075);
+}
+
+.mindmap-shell__left {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+}
+
+.mindmap-shell__icon {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #e9f7ef;
+    color: #0f9f6e;
+}
+
+.mindmap-shell__icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.mindmap-shell__name {
+    overflow: hidden;
+    color: #20232b;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mindmap-shell__switcher {
+    min-width: 0;
+}
+
+.mindmap-shell__select {
+    width: min(190px, 20vw);
+    min-width: 116px;
+    height: 30px;
+    padding: 0 24px 0 10px !important;
+    border: 1px solid transparent !important;
+    border-radius: 7px !important;
+    background: rgba(31, 35, 48, 0.045) !important;
+    color: #20232a !important;
+    font: 600 12px Inter, sans-serif !important;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23697180' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.mindmap-shell__select:hover {
+    border-color: rgba(31, 35, 48, 0.11) !important;
+    background-color: rgba(31, 35, 48, 0.07) !important;
+}
+
+.mindmap-shell__select:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.34);
+    outline-offset: 1px;
+}
+
+.mindmap-shell__right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mindmap-shell__divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(15, 23, 42, 0.12);
+    flex: 0 0 auto;
+}
+
+.mindmap-shell__seg-group {
+    display: inline-flex;
+    height: 28px;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    background: rgba(31, 35, 48, 0.055);
+    border: 0 !important;
+}
+
+.mindmap-shell__seg {
+    height: 24px;
+    min-width: 42px;
+    padding: 0 9px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: #697180 !important;
+    font: 600 11px Inter, sans-serif !important;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.mindmap-shell__seg:hover {
+    color: #20232a !important;
+}
+
+.mindmap-shell__seg.is-active {
+    background: #fff !important;
+    color: #20232a !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+.mindmap-shell__seg:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.34);
+    outline-offset: 1px;
+}
+
+.mindmap-shell__exit {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(86, 85, 231, 0.1) !important;
+    color: #5655e7 !important;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mindmap-shell__exit:hover {
+    background: rgba(86, 85, 231, 0.16) !important;
+    color: #403fd0 !important;
+}
+
+.mindmap-shell__exit:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.34);
+    outline-offset: 1px;
+}
+
+.mindmap-shell__exit svg {
+    width: 16px;
+    height: 16px;
+}
+
+.mindmap-shell__win {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: #697180 !important;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mindmap-shell__win:hover {
+    background: rgba(31, 35, 48, 0.045) !important;
+    color: #20232a !important;
+}
+
+.mindmap-shell__win:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.34);
+    outline-offset: 1px;
+}
+
+.mindmap-shell__win svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ---------- Editor frame (interactive MindMap in an iframe) ---------- */
+
+.mindmap-frame-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, 0.065);
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
+    display: flex;
+    flex-direction: column;
+}
+
+.mindmap-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    flex: 1 1 auto;
+    min-height: 500px;
+    border: 0;
+    background: #fff;
+}
+
+.mindmap-readonly-shield {
+    position: absolute;
+    inset: 48px 0 0;
+    z-index: 2;
+    background: transparent;
+    cursor: default;
+}
+
+/* ---------- Empty / loading state ---------- */
+
+.mindmap-empty {
+    height: 100%;
+    min-height: 300px;
+    padding: 32px;
+    display: grid;
+    place-items: center;
+    color: var(--text-secondary, #64748b);
+    text-align: center;
+}
+
+.mindmap-empty__content {
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mindmap-empty__icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--accent, #6366f1);
+}
+
+.mindmap-empty__icon svg {
+    width: 21px;
+    height: 21px;
+}
+
+.mindmap-empty strong {
+    margin-bottom: 6px;
+    color: var(--text-primary, #1f2937);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.96rem;
+    font-weight: 600;
+}
+
+.mindmap-empty p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.mindmap-empty.is-loading .mindmap-empty__icon svg {
+    animation: mindmap-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mindmap-pulse {
+    0%, 100% { opacity: 0.35; transform: scale(0.92); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Embedded preview card (inside PRD documents) ---------- */
+
+.prd-mindmap-card {
+    position: relative;
+    width: 100%;
+    margin: 24px 0;
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 14px;
+    background: #f5f6f8;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.prd-mindmap-card__open {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    display: block;
+    width: auto;
+    height: 66px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.prd-mindmap-card__preview {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: clamp(240px, 43vh, 520px);
+    overflow: hidden;
+    background: #fbfbfc;
+}
+
+.prd-mindmap-card__render {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    pointer-events: none;
+    background: #fbfbfc;
+    object-fit: contain;
+    object-position: center;
+    transform: translate3d(var(--preview-pan-x, 0px), var(--preview-pan-y, 0px), 0);
+    transform-origin: center center;
+    transition: transform 0.18s ease;
+}
+
+.prd-mindmap-card__preview.is-dragging .prd-mindmap-card__render {
+    transition: none;
+}
+
+.prd-mindmap-card__pan-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    cursor: grab;
+    touch-action: none;
+}
+
+.prd-mindmap-card__pan-layer:active,
+.prd-mindmap-card__preview.is-dragging .prd-mindmap-card__pan-layer {
+    cursor: grabbing;
+}
+
+.prd-mindmap-card__pan-layer:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.3);
+    outline-offset: -3px;
+}
+
+.prd-mindmap-card__pan-hint {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 4;
+    display: inline-flex;
+    height: 28px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #656b78;
+    font-size: 0.68rem;
+    font-weight: 650;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    transition: opacity 0.16s ease;
+}
+
+.prd-mindmap-card__pan-hint svg {
+    width: 14px;
+    height: 14px;
+}
+
+.prd-mindmap-card__preview.is-dragging .prd-mindmap-card__pan-hint {
+    opacity: 0;
+}
+
+.prd-mindmap-card__loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #7b8190;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.prd-mindmap-card__loading-mark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(99, 102, 241, 0.16);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: mindmap-spin 0.8s linear infinite;
+}
+
+@keyframes mindmap-spin {
+    to { transform: rotate(360deg); }
+}
+
+.prd-mindmap-card__caption {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 14px 12px;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.96);
+}
+
+.prd-mindmap-card__identity {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+}
+
+.prd-mindmap-card__identity strong,
+.prd-mindmap-card__identity small {
+    display: block;
+}
+
+.prd-mindmap-card__identity strong {
+    overflow: hidden;
+    color: #20232b;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.prd-mindmap-card__identity small {
+    margin-top: 2px;
+    color: #858b99;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.prd-mindmap-card__icon,
+.prd-mindmap-card__enter {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.prd-mindmap-card__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #e9f7ef;
+    color: #0f9f6e;
+}
+
+.prd-mindmap-card__icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.prd-mindmap-card__enter {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    color: #777d8c;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.prd-mindmap-card__enter svg {
+    width: 17px;
+    height: 17px;
+}
+
+.prd-mindmap-card__open:disabled {
+    cursor: default;
+}
+
+.prd-mindmap-card:has(.prd-mindmap-card__open:hover) .prd-mindmap-card__enter {
+    background: #e9f7ef;
+    color: #0f9f6e;
+    transform: translate(1px, -1px);
+}
+
+.prd-mindmap-card__open:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.3);
+    outline-offset: -3px;
+}
+
+.prd-mindmap-card.is-error .prd-mindmap-card__loading {
+    color: #c0413b;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 860px) {
+    .annotation-drawer.is-visible.is-mindmap-mode,
+    .annotation-drawer.is-visible.is-mindmap-mode.is-user-sized {
+        width: 100%;
+        min-width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mindmap-empty.is-loading .mindmap-empty__icon svg {
+        transition: none;
+        animation: none;
+    }
+}

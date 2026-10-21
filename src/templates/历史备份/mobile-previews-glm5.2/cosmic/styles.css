@@ -1,0 +1,460 @@
+/* =========================================================================
+ * mobile-previews/cosmic — NFT Collectibles Gallery
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/cosmic 的 :root token
+ * 页面：Page content（NFT 收藏画廊 App）
+ * Signature: 全息发光卡片 + violet luminous 边框 + 深空背景 + 空间感布局
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/cosmic）—— */
+  --bg: #070711;
+  --surface: #111126;
+  --surface-warm: #1e1540;
+  --fg: #f8f7ff;
+  --fg-2: #d6ccff;
+  --muted: #9d8ad4;
+  --meta: #c084fc;
+  --border: #34265e;
+  --border-soft: #241c42;
+  --accent: #c084fc;
+  --accent-on: #13051f;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #39ff88;
+  --warn: #fff34d;
+  --danger: #ff4d8d;
+  --font-display: Inter, system-ui, -apple-system, sans-serif;
+  --font-body: Inter, system-ui, -apple-system, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 36px;
+  --text-3xl: 54px;
+  --text-4xl: 76px;
+  --leading-body: 1.52;
+  --leading-tight: 1.06;
+  --tracking-display: -0.025em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 24px 80px rgba(192, 132, 252, 0.22);
+  --focus-ring: 0 0 0 4px rgba(192, 132, 252, 0.32);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* —— 手机外壳（与 Cosmic 协调）—— */
+  --page-backdrop-top: #0d0d1a;
+  --page-backdrop-bottom: #05050a;
+  --phone-shell: #121226;
+  --phone-shell-edge: #0a0a15;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 80px rgba(0, 0, 0, 0.6), 0 0 80px rgba(192, 132, 252, 0.08);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+
+  /* —— Cosmic 扩展色彩（发光效果）—— */
+  --glow-violet: rgba(192, 132, 252, 0.5);
+  --glow-cyan: rgba(57, 255, 136, 0.4);
+  --glow-pink: rgba(255, 77, 141, 0.4);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background: var(--page-backdrop-top);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 600; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #121226; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · NFT Gallery ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-size: 20px;
+  color: var(--accent-on); background: var(--accent);
+  box-shadow: 0 0 20px var(--glow-violet);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-base); font-weight: 700; color: var(--fg); letter-spacing: 0.02em; }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.topbar__actions { display: flex; gap: 10px; }
+.iconbtn {
+  position: relative; width: 38px; height: 38px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--muted);
+  box-shadow: var(--elev-ring); transition: all var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 18px; height: 18px; }
+.iconbtn:active { background: var(--surface-warm); }
+.iconbtn--glow {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 20px var(--glow-violet);
+}
+.iconbtn--glow:hover {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 30px var(--glow-violet);
+  color: var(--accent);
+}
+
+/* 全息收藏卡：signature —— 发光边框 + 深空效果 */
+.hero-card { margin-bottom: 20px; }
+.hero-card__inner {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--elev-raised), 0 0 40px var(--glow-violet);
+  overflow: hidden;
+}
+.hero-card__inner::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent), transparent 50%, var(--accent));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+}
+
+.hero-card__badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: var(--radius-pill);
+  background: var(--accent); color: var(--accent-on);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  box-shadow: 0 0 15px var(--glow-violet);
+}
+
+.hero-card__art {
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 160px;
+}
+
+.nft-preview {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #1a1033 0%, #0d0d1a 100%);
+  display: grid; place-items: center;
+  position: relative;
+}
+
+.nft-preview__orb {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent), #6b21a8);
+  box-shadow: 0 0 60px var(--glow-violet);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.nft-preview__ring {
+  position: absolute;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0.4;
+  animation: spin 8s linear infinite;
+}
+
+.nft-preview__ring::after {
+  content: "";
+  position: absolute; inset: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0.3;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hero-card__info { display: flex; flex-direction: column; gap: 6px; }
+.hero-card__name { font-size: var(--text-lg); font-weight: 700; color: var(--fg); }
+.hero-card__creator { font-size: var(--text-xs); color: var(--muted); }
+.hero-card__price { margin-top: 8px; }
+.hero-card__label { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.hero-card__amount {
+  font-size: var(--text-xl); font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-display);
+}
+.hero-card__usd { font-size: var(--text-sm); color: var(--muted); margin-left: 8px; }
+
+/* 统计胶囊行 */
+.stats-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 20px;
+}
+.stat-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 10px;
+  text-align: center;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.stat-pill:hover { transform: translateY(-2px); }
+.stat-pill--violet { border-color: var(--accent); box-shadow: 0 0 20px var(--glow-violet); }
+.stat-pill--cyan { border-color: var(--success); box-shadow: 0 0 20px var(--glow-cyan); }
+.stat-pill--pink { border-color: var(--danger); box-shadow: 0 0 20px var(--glow-pink); }
+.stat-pill__value {
+  display: block;
+  font-size: var(--text-lg); font-weight: 700;
+  color: var(--fg);
+  font-family: var(--font-display);
+}
+.stat-pill__label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* NFT 列表 */
+.nft-section { margin-bottom: 18px; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-header h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--fg);
+}
+.chips {
+  display: inline-flex;
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  box-shadow: var(--elev-ring);
+}
+.chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--muted);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); }
+
+.nft-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.nft-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.nft-item:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--glow-violet); }
+.nft-item.is-hidden { display: none; }
+
+.nft-item__art {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-sm);
+  flex: none;
+}
+.nft-item__art--gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.nft-item__art--gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.nft-item__art--gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.nft-item__art--gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+.nft-item__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nft-item__name { font-size: var(--text-sm); font-weight: 600; color: var(--fg); }
+.nft-item__meta { font-size: var(--text-xs); color: var(--muted); }
+.nft-item__right { display: flex; align-items: center; }
+
+.like-btn {
+  width: 38px; height: 38px;
+  border-radius: var(--radius-pill);
+  display: grid; place-items: center;
+  color: var(--muted);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.like-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+.like-btn.is-active { color: var(--danger); }
+.like-btn.is-active svg { fill: currentColor; }
+.like-btn:active { transform: scale(0.9); }
+
+/* 出价操作区 */
+.bid-section { margin-bottom: 18px; }
+.bid-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+.bid-card__head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.bid-card__title { font-size: var(--text-base); font-weight: 600; color: var(--fg); }
+.bid-card__timer { font-size: var(--text-sm); font-weight: 700; color: var(--warn); font-family: var(--font-mono); }
+
+.bid-card__input {
+  display: flex; align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.bid-card__symbol {
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--muted); margin-right: 8px;
+}
+.bid-card__value {
+  flex: 1;
+  font-size: var(--text-lg); font-weight: 700;
+  color: var(--fg); font-family: var(--font-display);
+  background: transparent; border: 0;
+}
+
+.bid-card__actions { display: flex; gap: 10px; }
+.bid-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm); font-weight: 600;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.bid-btn--outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.bid-btn--outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.bid-btn--primary {
+  background: var(--accent);
+  color: var(--accent-on);
+  box-shadow: 0 0 20px var(--glow-violet);
+}
+.bid-btn--primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 30px var(--glow-violet);
+}
+.bid-btn:active { transform: scale(0.97); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+  padding: 10px 12px 16px; background: var(--surface);
+  box-shadow: 0 -1px 0 var(--border);
+  border-radius: 0 0 var(--screen-radius) var(--screen-radius);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+.tab--fab {
+  justify-self: center; position: relative;
+  width: 48px; height: 48px; border-radius: var(--radius-pill);
+  background: var(--accent); color: var(--accent-on);
+  display: grid; place-items: center;
+  box-shadow: 0 0 25px var(--glow-violet);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.tab--fab svg { width: 20px; height: 20px; }
+.tab--fab:active { transform: scale(0.92); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--bg);
+  font-size: var(--text-xs); padding: 10px 18px; border-radius: var(--radius-sm);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20; font-weight: 600;
+  box-shadow: 0 0 20px var(--glow-violet);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-card, .stats-row, .nft-section, .bid-section { animation: rise 520ms var(--ease-standard) both; }
+.stats-row { animation-delay: 70ms; }
+.nft-section { animation-delay: 140ms; }
+.bid-section { animation-delay: 200ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

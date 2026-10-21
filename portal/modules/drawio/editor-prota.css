@@ -1,0 +1,2297 @@
+/*
+ * Prota theme for draw.io v30.2.5
+ *
+ * Direction: airy, quiet and precise.
+ * This file intentionally styles application chrome only. It does not touch
+ * the graph canvas, cell renderer, shape styles or document colours.
+ */
+
+:root {
+    --ge-panel-color: #ffffff;
+    --toolbar-color: #ffffff;
+    --workspace-color: #f2f3f6;
+    --inactive-color: #f6f7f9;
+    --active-color: #eeefff;
+    --primary-color: #6366f1;
+    --primary-hover-color: #5558e8;
+    --accent-color: rgba(99, 102, 241, 0.075);
+    --accent-hover-color: rgba(99, 102, 241, 0.12);
+    --accent-text-color: #5558e8;
+    --border-color: #e8e9ee;
+    --highlight-color: #f5f6f8;
+    --scrollbar-hover-color: #a7aebb;
+    --text-color: #20232a;
+
+    --prota-ink: #20232a;
+    --prota-muted: #697180;
+    --prota-faint: #9aa1ad;
+    --prota-line: rgba(31, 35, 48, 0.075);
+    --prota-line-strong: rgba(31, 35, 48, 0.11);
+    --prota-hover: rgba(31, 35, 48, 0.045);
+    --prota-selected: rgba(99, 102, 241, 0.085);
+    --prota-selected-strong: rgba(99, 102, 241, 0.13);
+    --prota-focus: rgba(99, 102, 241, 0.16);
+    --prota-panel: rgba(255, 255, 255, 0.98);
+    --prota-panel-soft: #fafafd;
+    --prota-shadow-float:
+        0 16px 42px rgba(20, 24, 38, 0.105),
+        0 2px 8px rgba(20, 24, 38, 0.045);
+    --prota-shadow-menu:
+        0 12px 32px rgba(20, 24, 38, 0.11),
+        0 1px 4px rgba(20, 24, 38, 0.04);
+    --prota-shadow-dialog:
+        0 26px 72px rgba(20, 24, 38, 0.16),
+        0 3px 12px rgba(20, 24, 38, 0.05);
+    --prota-radius-sm: 6px;
+    --prota-radius-md: 9px;
+    --prota-radius-lg: 14px;
+    --prota-panel-heading-height: 28px;
+    color-scheme: light;
+}
+
+html,
+body.geEditor {
+    background: var(--workspace-color);
+}
+
+body.geEditor,
+.geEditor button,
+.geEditor input,
+.geEditor select,
+.geEditor textarea,
+.mxPopupMenu,
+.mxWindow,
+.geDialog {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+.geEditor {
+    color: var(--prota-ink);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.geEditor input[type="checkbox"],
+.geEditor input[type="radio"] {
+    accent-color: var(--primary-color);
+}
+
+.geEditor button,
+.geEditor input,
+.geEditor select,
+.geEditor textarea {
+    letter-spacing: 0;
+}
+
+.geBlock {
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Loading */
+
+.prota-editor-loader {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background:
+        radial-gradient(circle at 50% 40%, rgba(99, 102, 241, 0.055), transparent 30%),
+        #fafafd;
+    color: var(--prota-ink);
+}
+
+.prota-editor-loader__mark {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.09);
+    animation: prota-loader-pulse 1.4s ease-in-out infinite;
+}
+
+.prota-editor-loader strong {
+    font-family: Outfit, Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.prota-editor-loader small {
+    color: var(--prota-faint);
+    font-size: 11px;
+}
+
+@keyframes prota-loader-pulse {
+    0%, 100% { opacity: 0.45; transform: scale(0.94); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+/* Top application bar */
+
+.geEditor > .geMenubarContainer,
+.geEditor > .geToolbarContainer:not(.geVerticalToolbar) {
+    border-color: var(--prota-line) !important;
+    background: rgba(255, 255, 255, 0.985) !important;
+}
+
+.geEditor > .geMenubarContainer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px;
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(31, 35, 48, 0.075) !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+.geEditor > .geMenubarContainer > .geMenubar {
+    position: relative !important;
+    inset: auto !important;
+    min-width: 0;
+    flex: 1 1 auto;
+    order: 0;
+}
+
+.geMinimal .geMenubarContainer {
+    height: 48px;
+    margin: 0;
+    padding: 8px 18px;
+    gap: 12px;
+}
+
+.geMenubar {
+    gap: 5px;
+}
+
+.geMinimal .geMenubarContainer .geMenubar {
+    min-width: 0;
+}
+
+.geMinimal .geMenubarContainer .geButton,
+.geToolbar .geButton,
+.geToolbarButton,
+.geFooterToolbar .geButton {
+    border: 0 !important;
+    border-radius: var(--prota-radius-sm) !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    opacity: 0.72;
+    transition:
+        opacity 120ms ease,
+        background-color 120ms ease,
+        color 120ms ease,
+        transform 120ms ease !important;
+}
+
+.geMinimal .geMenubarContainer .geButton {
+    height: 32px;
+    margin: 0;
+    padding: 2px 7px;
+}
+
+.geMinimal .geMenubarContainer .geButton:empty {
+    width: 34px;
+}
+
+.geMinimal .geMenubarContainer .geButton:hover,
+.geToolbar .geButton:hover,
+.geToolbarButton:hover,
+.geFooterToolbar .geButton:hover {
+    background-color: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+    opacity: 1;
+}
+
+.geMinimal .geMenubarContainer .geButton:active,
+.geToolbar .geButton:active,
+.geFooterToolbar .geButton:active {
+    transform: scale(0.95);
+}
+
+.geMinimal .geMenubarContainer .geButtonGroup {
+    min-height: 32px;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.geMinimal .geMenubarContainer .geButtonGroup + .geButtonGroup,
+.geMinimal .geMenubarContainer .geButtonGroup + .geButton {
+    margin-left: 5px;
+}
+
+.geMinimal .geMenubarContainer .geButtonGroup + .geButtonGroup::before {
+    content: "";
+    align-self: center;
+    width: 1px;
+    height: 18px;
+    margin-right: 7px;
+    background: var(--prota-line);
+}
+
+.geButtonContainer {
+    display: flex !important;
+    align-items: center;
+    padding-right: 0;
+}
+
+.geButtonContainer .gePrimaryBtn:not(.geEmbedBtn) {
+    min-width: 64px;
+    height: 32px;
+    margin: 0 0 0 8px;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    transition: background-color 120ms ease, transform 120ms ease !important;
+}
+
+.geButtonContainer .gePrimaryBtn:not(.geEmbedBtn):hover {
+    background: var(--primary-hover-color) !important;
+}
+
+.geButtonContainer .gePrimaryBtn:not(.geEmbedBtn):active {
+    transform: translateY(1px);
+}
+
+.geButtonContainer .gePrimaryBtn .geButton {
+    color: #fff !important;
+    opacity: 1 !important;
+}
+
+.geButtonContainer .prota-drawio-save-button {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    margin-left: 5px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: var(--prota-muted) !important;
+}
+
+.geButtonContainer .prota-drawio-save-button:hover {
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+}
+
+.prota-drawio-save-button svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.prota-drawio-integrated-controls {
+    height: 32px;
+    margin: 0 8px 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    order: 90;
+}
+
+.prota-drawio-file-switcher {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.prota-drawio-file-trigger {
+    width: min(190px, 20vw);
+    min-width: 116px;
+    height: 30px;
+    padding: 0 8px 0 10px !important;
+    border: 1px solid transparent !important;
+    border-radius: 7px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+    font: 600 12px Inter, sans-serif !important;
+    cursor: pointer;
+}
+
+.prota-drawio-file-name-label {
+    display: inline-flex;
+    align-items: center;
+    max-width: min(190px, 20vw);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--prota-ink) !important;
+    font: 600 12px Inter, sans-serif !important;
+    padding: 0 10px;
+}
+
+.prota-drawio-file-trigger span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.prota-drawio-file-trigger svg {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: var(--prota-muted);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.prota-drawio-file-trigger:hover,
+.prota-drawio-file-trigger[aria-expanded="true"] {
+    border-color: var(--prota-line-strong) !important;
+    background-color: rgba(31, 35, 48, 0.07) !important;
+}
+
+.prota-drawio-file-menu {
+    position: fixed;
+    z-index: 10020;
+    box-sizing: border-box;
+    padding: 5px;
+    border: 1px solid var(--prota-line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.99);
+    box-shadow: var(--prota-shadow-menu);
+    backdrop-filter: blur(16px);
+}
+
+.prota-drawio-file-option {
+    width: 100%;
+    height: 32px;
+    padding: 0 9px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: transparent !important;
+    color: var(--prota-ink) !important;
+    font: 500 12px Inter, sans-serif !important;
+    text-align: left;
+    cursor: pointer;
+}
+
+.prota-drawio-file-option:hover,
+.prota-drawio-file-option.is-selected {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.prota-drawio-file-option svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.prota-drawio-window-actions {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.prota-drawio-window-button {
+    width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    color: var(--prota-muted) !important;
+    cursor: pointer;
+}
+
+.prota-drawio-window-button:hover {
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+}
+
+.prota-drawio-window-button svg {
+    width: 15px;
+    height: 15px;
+    pointer-events: none;
+}
+
+.prota-drawio-left-controls {
+    display: inline-flex;
+    height: 32px;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+    padding-right: 10px;
+    border-right: 1px solid var(--prota-line);
+    order: -10;
+}
+
+.prota-drawio-exit-button {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(86, 85, 231, 0.1) !important;
+    color: #5655e7 !important;
+    cursor: pointer;
+}
+
+.prota-drawio-exit-button:hover {
+    background: rgba(86, 85, 231, 0.16) !important;
+    color: #403fd0 !important;
+}
+
+.prota-drawio-exit-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.prota-drawio-mode-switch {
+    display: inline-flex;
+    height: 28px;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    background: rgba(31, 35, 48, 0.055);
+}
+
+.prota-drawio-mode-button {
+    height: 24px;
+    min-width: 42px;
+    padding: 0 9px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: var(--prota-muted) !important;
+    font: 600 11px Inter, sans-serif !important;
+    cursor: pointer;
+}
+
+.prota-drawio-mode-button:hover {
+    color: var(--prota-ink) !important;
+}
+
+.prota-drawio-mode-button.is-active {
+    background: #fff !important;
+    color: var(--prota-ink) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+/* Prevent restored draw.io window state from flashing before compact startup closes it. */
+.prota-compact-initializing .mxWindow:has(.geSidebarContainer:not(.geFormatContainer)),
+.prota-compact-initializing .mxWindow:has(.geFormatContainer) {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Read-only document previews keep only the fitted canvas visible. */
+.prota-drawio-preview {
+    overflow: hidden !important;
+    background: #fbfbfc !important;
+}
+
+.prota-drawio-preview .geMenubarContainer,
+.prota-drawio-preview .geToolbarContainer,
+.prota-drawio-preview .geSidebarContainer,
+.prota-drawio-preview .geFormatContainer,
+.prota-drawio-preview .geTabContainer,
+.prota-drawio-preview .geFooterContainer,
+.prota-drawio-preview .mxWindow,
+.prota-drawio-preview .geOutlineContainer {
+    display: none !important;
+}
+
+.prota-drawio-preview .geDiagramContainer {
+    inset: 0 !important;
+    overflow: hidden !important;
+    background: #fbfbfc !important;
+}
+
+.prota-drawio-preview .geDiagramContainer > svg,
+.prota-drawio-preview .geDiagramContainer > div {
+    transform-origin: 0 0;
+}
+
+.prota-drawio-preview .geBackground {
+    background: #fbfbfc !important;
+}
+
+.geMenubarContainer .geStatusDiv,
+.geMenubarContainer .geFilename,
+.geMenubarContainer [class*="Filename"] {
+    display: none !important;
+}
+
+.geMenubarContainer:has(.prota-drawio-integrated-controls) > .geButtonContainer {
+    display: none !important;
+}
+
+.geToolbarContainer .geEmbedBtn,
+.geMenubarContainer .geEmbedBtn {
+    display: none !important;
+}
+
+.prota-drawio-full .geMenubarContainer {
+    display: flex !important;
+    min-height: 44px !important;
+    padding-inline: 8px !important;
+    overflow: hidden;
+}
+
+.prota-drawio-full .geMenubarContainer > .geMenubar {
+    position: relative !important;
+    inset: auto !important;
+    min-width: 160px;
+    margin: 0 !important;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.prota-drawio-full .geMenubarContainer > .geMenubar > * {
+    float: none !important;
+}
+
+.prota-drawio-full .prota-drawio-file-trigger {
+    width: min(180px, 18vw);
+}
+
+.prota-drawio-full .prota-drawio-left-controls,
+.prota-drawio-full .prota-drawio-integrated-controls {
+    position: relative;
+    z-index: 20;
+}
+
+.prota-drawio-full .prota-drawio-left-controls {
+    margin-left: 0;
+}
+
+.prota-drawio-full .prota-drawio-integrated-controls {
+    margin-right: 0;
+}
+
+.prota-drawio-readonly .geMenubarContainer .geButton,
+.prota-drawio-readonly .geMenubarContainer .geStatusDiv {
+    display: none !important;
+}
+
+.prota-drawio-readonly .prota-drawio-integrated-controls {
+    margin-left: auto;
+}
+
+.geButton.geZoomInput {
+    height: 30px !important;
+    padding-inline: 8px !important;
+    border: 0 !important;
+    border-radius: var(--prota-radius-sm) !important;
+    background: transparent !important;
+    color: var(--prota-muted) !important;
+}
+
+.geButton.geZoomInput:hover,
+.geButton.geZoomInput:focus {
+    background: var(--prota-hover) !important;
+}
+
+.geToolbarContainer .geSeparator {
+    height: 18px !important;
+    margin-inline: 7px !important;
+    border-color: var(--prota-line) !important;
+}
+
+.geToolbarEnd {
+    margin-left: 12px;
+}
+
+/* Full/classic and alternative top bars */
+
+.geSimpleMainMenu,
+.geSketchMainMenu,
+.geEditor > .geToolbarContainer:not(.geVerticalToolbar) {
+    border-color: var(--prota-line) !important;
+    background: rgba(255, 255, 255, 0.985) !important;
+    box-shadow: 0 1px 0 rgba(31, 35, 48, 0.035);
+}
+
+.geSimpleMainMenu {
+    padding-inline: 18px;
+    gap: 10px;
+}
+
+.geEditor > .geToolbarContainer:not(.geVerticalToolbar) {
+    padding-inline: 18px;
+}
+
+.geAppIcon,
+.geSmallAppIcon {
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+.geFilenameContainer {
+    color: var(--prota-muted);
+}
+
+.geFilename {
+    padding: 4px 7px;
+    border-radius: 7px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 120ms ease;
+}
+
+.geFilename:hover {
+    background: var(--prota-hover);
+}
+
+/* Generic controls and states */
+
+.geEditor .geButton,
+.geEditor .geTitle,
+.geEditor .geItem {
+    border-radius: var(--prota-radius-sm) !important;
+}
+
+.geEditor .geButton:focus-visible,
+.geEditor button:focus-visible,
+.geEditor input:focus-visible,
+.geEditor select:focus-visible,
+.geEditor textarea:focus-visible,
+.geFormatTitle:focus-visible,
+.geTab:focus-visible {
+    outline: 0 !important;
+    box-shadow: 0 0 0 3px var(--prota-focus) !important;
+}
+
+.geEditor .mxDisabled,
+.geEditor [disabled] {
+    opacity: 0.34 !important;
+}
+
+.geCheckedBtn,
+.geActiveItem:not(.geButton *),
+.geButtonGroup .geButton.geCheckedBtn {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.geHelpIcon,
+.geHint,
+.geShortcutKey {
+    color: var(--prota-faint) !important;
+    opacity: 0.72;
+}
+
+.geHelpIcon:hover,
+.geHint:hover {
+    color: var(--prota-muted) !important;
+    opacity: 1;
+}
+
+.geShortcutKey {
+    font-size: 8px;
+}
+
+.geAdaptiveAsset,
+.geInverseAdaptiveAsset,
+.geArrow {
+    opacity: 0.74;
+    transition: opacity 110ms ease;
+}
+
+.geButton:hover .geAdaptiveAsset,
+.geButton:hover .geInverseAdaptiveAsset,
+.geButton:hover .geArrow,
+.geItem:hover .geAdaptiveAsset {
+    opacity: 1;
+}
+
+.geMenuItem {
+    min-height: 30px;
+    padding-inline: 9px !important;
+    border-radius: 7px !important;
+    color: var(--prota-muted) !important;
+}
+
+.geMenuItem:hover {
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+}
+
+.geRoundButton {
+    box-shadow: none !important;
+}
+
+.geShareBtn,
+.geBigButton,
+.geBigStandardButton,
+.geGenerateDiagramButton {
+    border: 0 !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+}
+
+.geBtn,
+.geBaseButton {
+    border: 1px solid var(--prota-line-strong) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    color: var(--prota-ink) !important;
+    box-shadow: none !important;
+}
+
+.geBtn:hover,
+.geBaseButton:hover {
+    border-color: rgba(99, 102, 241, 0.18) !important;
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.geShareBtn,
+.geGenerateDiagramButton {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.geShareBtn:hover,
+.geGenerateDiagramButton:hover {
+    background: var(--primary-hover-color) !important;
+}
+
+/* Popup menus, context menus and dropdowns */
+
+html body.geEditor div.mxPopupMenu,
+.geMenubarMenu,
+.geToolbarMenu {
+    overflow: hidden;
+    min-width: 184px;
+    padding: 7px !important;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.985) !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+    backdrop-filter: blur(18px);
+}
+
+html body.geEditor div.mxPopupMenu.geToolbarMenu {
+    padding: 10px 12px 12px !important;
+}
+
+html table.mxPopupMenu {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 1px !important;
+}
+
+html td.mxPopupMenuItem {
+    height: 32px;
+    padding: 0 !important;
+    color: var(--prota-ink) !important;
+    font-size: 13px !important;
+    line-height: 32px !important;
+    vertical-align: middle !important;
+}
+
+html td.mxPopupMenuIcon {
+    width: 8px;
+    min-width: 8px;
+    padding: 0 !important;
+}
+
+html td.mxPopupMenuIcon + td.mxPopupMenuItem {
+    position: relative;
+    padding: 0 13px 0 30px !important;
+    white-space: nowrap;
+    line-height: 32px !important;
+}
+
+html td.mxPopupMenuItem:last-child:not(:nth-child(2)) {
+    position: relative;
+    width: 1%;
+    padding: 0 10px 0 16px !important;
+    color: var(--prota-faint) !important;
+    font-size: 11px !important;
+    line-height: 32px !important;
+    text-align: right;
+    white-space: nowrap;
+    vertical-align: middle !important;
+}
+
+.prota-menu-shortcut {
+    position: relative;
+    min-width: 42px;
+    height: 32px;
+    color: var(--prota-faint) !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    vertical-align: middle !important;
+}
+
+.prota-menu-shortcut::before {
+    content: attr(data-prota-shortcut);
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    line-height: 1;
+}
+
+html tr.prota-menu-row--submenu > td.mxPopupMenuItem:last-child {
+    position: relative;
+    min-width: 42px;
+    padding: 0 28px 0 12px !important;
+}
+
+.prota-menu-check {
+    top: 50% !important;
+    left: 5px !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin-top: 0 !important;
+    background-position: center !important;
+    background-size: 16px !important;
+    transform: translateY(-50%) !important;
+    opacity: 0.78;
+}
+
+.prota-menu-chevron {
+    top: 50% !important;
+    left: auto !important;
+    right: 8px !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    background-position: center !important;
+    background-size: 14px !important;
+    transform: translateY(-50%) !important;
+    opacity: 0.52;
+}
+
+html tr.mxPopupMenuItem {
+    border-radius: 7px;
+    color: var(--prota-ink) !important;
+}
+
+html tr.mxPopupMenuItemHover {
+    background: transparent !important;
+    color: var(--accent-text-color) !important;
+}
+
+html tr.mxPopupMenuItemHover > td {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+html tr.mxPopupMenuItem > td:first-child {
+    border-radius: 7px 0 0 7px;
+}
+
+html tr.mxPopupMenuItem > td:last-child {
+    border-radius: 0 7px 7px 0;
+}
+
+html tr.mxPopupMenuItemHover > td:first-child {
+    border-radius: 7px 0 0 7px !important;
+}
+
+html tr.mxPopupMenuItemHover > td:last-child {
+    border-radius: 0 7px 7px 0 !important;
+}
+
+table.mxPopupMenu hr {
+    height: 1px !important;
+    margin: 5px 7px !important;
+    border: 0 !important;
+    background: var(--prota-line) !important;
+}
+
+.geToolbarMenu label {
+    color: var(--prota-muted);
+    line-height: 1.4;
+}
+
+.geToolbarMenu input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Shape library */
+
+.geEditor > .geSidebarContainer,
+.geEditor > .geSidebarContainer.geFormatContainer {
+    border-color: var(--prota-line) !important;
+    background: var(--prota-panel) !important;
+}
+
+.geSidebar {
+    padding: 7px 8px 12px 12px;
+    background: transparent !important;
+}
+
+.geSidebar .geTitle,
+.geSidebarTitle,
+.geFormatContainer .geTitle {
+    min-height: var(--prota-panel-heading-height);
+    height: var(--prota-panel-heading-height);
+    margin: 2px 0;
+    padding: 0 8px;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: var(--prota-ink) !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+}
+
+.geSidebar .geTitle:hover,
+.geSidebarTitle:hover,
+.geFormatContainer .geTitle:hover {
+    background: var(--prota-hover) !important;
+}
+
+.geSidebar .geItem,
+.geShapePicker .geItem {
+    border-radius: 7px !important;
+    transition: background-color 110ms ease, transform 110ms ease;
+}
+
+.geSidebar .geItem:hover,
+.geShapePicker .geItem:hover {
+    background: var(--prota-hover) !important;
+}
+
+.geSidebar .geItem:active,
+.geShapePicker .geItem:active {
+    transform: scale(0.96);
+}
+
+.geSearchSidebar input,
+.geSidebarContainer input[type="text"],
+.geSidebarContainer input[type="search"] {
+    min-height: 32px;
+    padding-inline: 11px !important;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 9px !important;
+    background: #f8f9fb !important;
+    color: var(--prota-ink) !important;
+    box-shadow: none !important;
+}
+
+.geSearchSidebar input::placeholder,
+.geSidebarContainer input::placeholder {
+    color: var(--prota-faint);
+}
+
+.geSearchSidebar input:focus,
+.geSidebarContainer input:focus {
+    border-color: rgba(99, 102, 241, 0.25) !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 3px var(--prota-focus) !important;
+}
+
+.geSidebarFooter {
+    position: relative !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 38px;
+    padding: 5px 9px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-align: center !important;
+    border-color: var(--prota-line) !important;
+    background: #fff !important;
+}
+
+.geSidebarFooter .gePrimaryBtn {
+    position: static !important;
+    inset: auto !important;
+    float: none !important;
+    width: auto !important;
+    min-width: 92px !important;
+    max-width: calc(100% - 18px) !important;
+    min-height: 30px;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center !important;
+    gap: 5px;
+    transform: none !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: var(--accent-text-color) !important;
+    font-weight: 600;
+}
+
+.geSidebarFooter .gePrimaryBtn:hover {
+    background: var(--prota-selected) !important;
+}
+
+.geDropTarget {
+    border: 1px dashed rgba(99, 102, 241, 0.28) !important;
+    border-radius: 9px !important;
+    background: rgba(99, 102, 241, 0.035) !important;
+}
+
+.geLibraryButton {
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: var(--prota-muted) !important;
+}
+
+.geLibraryButton:hover {
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+}
+
+/* Format inspector */
+
+.geFormatTitleContainer {
+    height: 36px;
+    margin: 0;
+    padding: 4px 10px;
+    gap: 4px;
+    border-bottom: 1px solid var(--prota-line);
+    background: #fff;
+}
+
+.geFormatTitle {
+    height: 28px;
+    border: 0 !important;
+    border-radius: 7px;
+    background: transparent !important;
+    color: var(--prota-muted);
+    font-weight: 500;
+}
+
+.geFormatTitle:hover {
+    background: var(--prota-hover) !important;
+}
+
+.geFormatTitle.geActiveFormatTitle {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+    box-shadow: none !important;
+}
+
+.geFormatContent {
+    margin: 0;
+    padding: 4px 9px 16px;
+    overflow-x: hidden !important;
+    scrollbar-width: thin;
+}
+
+.geFormatSection {
+    padding: 10px 0;
+    border-color: var(--prota-line) !important;
+    background: transparent !important;
+}
+
+.geFormatSectionTitle,
+.geCollapsibleTitle {
+    color: var(--prota-ink);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.geCollapsibleTitle {
+    min-height: var(--prota-panel-heading-height);
+    padding: 4px 0;
+}
+
+.geCollapsibleTitle::before {
+    border-left-color: var(--prota-faint) !important;
+}
+
+.geFormatEntry {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 30px;
+    color: var(--prota-muted);
+}
+
+.geFormatSection input:not([type="checkbox"], [type="radio"]),
+.geFormatSection select,
+.geFormatSection button,
+.geFormatEntry .geColorBtn,
+.geBtnStepper {
+    box-sizing: border-box !important;
+    height: 26px;
+    min-height: 26px;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 7px !important;
+    background: #fff !important;
+    color: var(--prota-ink) !important;
+    box-shadow: none !important;
+}
+
+.geFormatSection input:not([type="checkbox"], [type="radio"]),
+.geFormatSection select {
+    padding: 0 8px !important;
+    line-height: 24px !important;
+}
+
+.geFormatSection input[type="number"] {
+    text-align: right;
+}
+
+.geBtnStepper {
+    display: inline-flex !important;
+    align-items: stretch !important;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+.geBtnStepper > input,
+.geBtnStepper > div,
+.geBtnStepper > button {
+    height: 24px !important;
+    min-height: 24px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.geFormatSection [title="网格大小"] {
+    position: absolute !important;
+    right: 36px !important;
+    left: auto !important;
+    width: 72px !important;
+    height: 28px !important;
+    padding: 0 9px !important;
+    border: 1px solid var(--prota-line-strong) !important;
+    border-radius: 7px !important;
+    text-align: left !important;
+    font-size: 12px !important;
+    line-height: 26px !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: #fff !important;
+    background-image: none !important;
+    box-shadow: inset 0 0 0 1px rgba(31, 35, 48, 0.015) !important;
+}
+
+.geFormatEntry:has([title="网格大小"]) > .geColorBtn {
+    position: absolute !important;
+    right: 1px !important;
+    left: auto !important;
+}
+
+.geFormatEntry > button[style*="left: 102px"],
+.geFormatEntry > button[style*="left: 100px"] {
+    right: 3px !important;
+    left: auto !important;
+    width: 92px !important;
+    max-width: calc(100% - 92px) !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 0 !important;
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+}
+
+.geFormatEntry:has(> button[style*="left: 102px"]),
+.geFormatEntry:has(> button[style*="left: 100px"]) {
+    min-height: 34px !important;
+    overflow: visible !important;
+}
+
+.geFormatEntry > button[style*="left: 102px"]:hover,
+.geFormatEntry > button[style*="left: 100px"]:hover {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.geFormatSection [title="网格大小"]::-webkit-inner-spin-button,
+.geFormatSection [title="网格大小"]::-webkit-outer-spin-button {
+    margin: 0;
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.geFormatSection input::-webkit-inner-spin-button,
+.geFormatSection input::-webkit-outer-spin-button {
+    margin: 0;
+    display: none;
+    -webkit-appearance: none;
+}
+
+.geFormatSection .geColorBtn,
+.geFormatEntry .geColorBtn {
+    width: 29px !important;
+    min-width: 29px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 2px !important;
+    overflow: hidden !important;
+    border: 1px solid var(--prota-line-strong) !important;
+    background: #fff !important;
+}
+
+.geFormatSection .geColorBtn > div,
+.geFormatEntry .geColorBtn > div {
+    box-sizing: border-box !important;
+}
+
+.geFormatSection .geColorBtn > div:first-child,
+.geFormatEntry .geColorBtn > div:first-child {
+    position: absolute !important;
+    inset: 2px !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-radius: 5px !important;
+}
+
+.geFormatSection .geColorBtn > .geColorDropper,
+.geFormatEntry .geColorBtn > .geColorDropper {
+    display: none !important;
+}
+
+.geFormatSection button:hover,
+.geFormatEntry .geColorBtn:hover,
+.geBtnStepper > div:hover {
+    border-color: rgba(99, 102, 241, 0.18) !important;
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.geColorBtn,
+.geColorDropper,
+.geStyleBtn {
+    border-radius: 7px !important;
+}
+
+.geStyleMenuItem {
+    overflow: hidden;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+.geStyleMenuItem:hover {
+    border-color: rgba(99, 102, 241, 0.2) !important;
+    background: var(--prota-selected) !important;
+}
+
+.geStyleLabel {
+    color: var(--prota-muted) !important;
+    font-size: 11px;
+}
+
+.geGraphStylePreview {
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+}
+
+.geGraphStylePreview:hover {
+    border-color: rgba(99, 102, 241, 0.2) !important;
+    background: var(--prota-panel-soft) !important;
+}
+
+.geFormatContent:nth-of-type(3) .geFormatSection > div:nth-child(2) {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    margin: 0 auto !important;
+    padding: 0 4px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-items: center;
+    gap: 8px 6px;
+    white-space: normal !important;
+}
+
+.geFormatContent:nth-of-type(3) .geGraphStylePreview {
+    width: 100% !important;
+    max-width: 82px;
+    margin: 0 !important;
+}
+
+.geFormatContainer .geFormatContent {
+    scrollbar-width: none;
+}
+
+.geFormatContainer .geFormatContent::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+/* Floating windows */
+
+.mxWindow,
+.geShapePicker,
+.geSidebarTooltip {
+    overflow: hidden;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: var(--prota-radius-lg) !important;
+    background: var(--prota-panel) !important;
+    box-shadow: var(--prota-shadow-float) !important;
+}
+
+.mxWindowPane {
+    background: #fff !important;
+}
+
+.mxWindowPane .geSidebar,
+.mxWindowPane .geFormatContent {
+    background: #fff !important;
+}
+
+html body td.mxWindowTitle {
+    position: relative;
+    box-sizing: border-box !important;
+    height: 36px !important;
+    padding: 0 11px !important;
+    border-color: var(--prota-line) !important;
+    background: rgba(255, 255, 255, 0.99) !important;
+    color: var(--prota-ink) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 35px !important;
+    vertical-align: middle !important;
+}
+
+.mxWindowTitle > div {
+    top: 0 !important;
+    right: 7px !important;
+    height: 35px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.mxWindowTitle > div > img {
+    width: auto !important;
+    height: auto !important;
+    box-sizing: content-box !important;
+    margin: 0 2px !important;
+    padding: 0;
+    border-radius: 6px;
+    opacity: 0.46;
+    transition: opacity 110ms ease, background-color 110ms ease;
+}
+
+.mxWindowTitle > div > img:hover {
+    background: transparent;
+    opacity: 0.9;
+}
+
+.geShapePicker {
+    padding: 6px !important;
+}
+
+.geShapePicker > * {
+    margin: 1px;
+    border-radius: 7px;
+}
+
+.geShapePicker > *:hover {
+    background: var(--prota-selected);
+}
+
+.geDockPreview {
+    border: 1px solid rgba(99, 102, 241, 0.42) !important;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.075) !important;
+}
+
+.mxWindowDocked {
+    right: 0 !important;
+    left: auto !important;
+    border-right: 0 !important;
+    border-radius: 12px 0 0 12px !important;
+    box-shadow: none !important;
+}
+
+.mxWindowDocked .mxWindowTitle,
+.mxWindowDocked .mxWindowPane {
+    border-right: 0 !important;
+}
+
+.geHsplit {
+    background:
+        linear-gradient(transparent, transparent) no-repeat center / 1px 100% !important;
+}
+
+.geHsplit:hover {
+    background:
+        linear-gradient(rgba(99, 102, 241, 0.32), rgba(99, 102, 241, 0.32))
+        no-repeat center / 1px 100% !important;
+}
+
+/* Modal dialogs */
+
+.geBackground,
+.geEditor .picker-dialog-bg {
+    background: rgba(25, 29, 40, 0.24) !important;
+    opacity: 1 !important;
+    backdrop-filter: blur(4px);
+}
+
+.geDialog,
+.geEditor .picker-dialog {
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    max-height: calc(100vh - 48px) !important;
+    padding: 24px !important;
+    border: 1px solid rgba(31, 35, 48, 0.065) !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow: var(--prota-shadow-dialog) !important;
+}
+
+.geDialog.prota-dialog-scrollable,
+.geEditor .picker-dialog.prota-dialog-scrollable {
+    overflow-y: auto !important;
+}
+
+.geDialog > div:first-child,
+.geDialog > form:first-child,
+.geEditor .picker-dialog > div:first-child {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    max-height: none !important;
+}
+
+.geDialog > div:first-child > div,
+.geEditor .picker-dialog > div:first-child > div {
+    overflow: visible !important;
+    max-height: none !important;
+}
+
+.geDialogTitle {
+    min-height: 36px;
+    padding-bottom: 12px !important;
+    border-color: var(--prota-line) !important;
+    background: #fff !important;
+    color: var(--prota-ink) !important;
+    font-family: Outfit, Inter, sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+}
+
+.geDialogFooter {
+    min-height: 48px;
+    padding-top: 14px !important;
+    border-color: var(--prota-line) !important;
+    background: #fff !important;
+}
+
+.geDialogSection {
+    margin-bottom: 9px;
+    padding: 11px 13px;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: #f7f8fa !important;
+}
+
+.geDialogFormRow {
+    min-height: 30px;
+}
+
+.geDialogFormLabel,
+.geDialogCheckRow label,
+.geDialogInlineField label {
+    color: var(--prota-ink) !important;
+}
+
+.geDialog input[type="text"],
+.geDialog input[type="number"],
+.geDialog input[type="search"],
+.geDialog select,
+.geDialog textarea,
+.geDialog .geFullWidthElement {
+    min-height: 32px;
+    padding: 5px 9px !important;
+    border: 1px solid var(--prota-line-strong) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    color: var(--prota-ink) !important;
+    box-shadow: none !important;
+}
+
+.geDialog input:focus,
+.geDialog select:focus,
+.geDialog textarea:focus {
+    border-color: rgba(99, 102, 241, 0.28) !important;
+    box-shadow: 0 0 0 3px var(--prota-focus) !important;
+}
+
+.geDialog button,
+.mxWindow button,
+.geDialog input[type="button"] {
+    min-height: 32px;
+    padding: 0 13px !important;
+    border: 1px solid var(--prota-line-strong) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    color: var(--prota-ink) !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.geDialog button:hover,
+.mxWindow button:hover,
+.geDialog input[type="button"]:hover {
+    border-color: rgba(99, 102, 241, 0.18) !important;
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.geDialog button:active,
+.mxWindow button:active,
+.geDialog input[type="button"]:active {
+    transform: translateY(1px);
+}
+
+.geDialog button.gePrimaryBtn,
+.geDialog button.mxPrimaryBtn,
+.geDialog button.default,
+.geDialog input[type="button"].gePrimaryBtn,
+.geDialog .gePrimaryBtn {
+    border-color: var(--primary-color) !important;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.geDialog button.gePrimaryBtn:hover,
+.geDialog button.mxPrimaryBtn:hover,
+.geDialog button.default:hover,
+.geDialog input[type="button"].gePrimaryBtn:hover,
+.geDialog .gePrimaryBtn:hover {
+    border-color: var(--primary-hover-color) !important;
+    background: var(--primary-hover-color) !important;
+    color: #fff !important;
+}
+
+.geDialog > .geButton {
+    top: 9px !important;
+    right: 9px !important;
+    width: 26px;
+    height: 26px;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    opacity: 0.42;
+}
+
+.geDialog > .geButton:hover {
+    background-color: var(--prota-hover) !important;
+    opacity: 0.9;
+}
+
+.geInlineDialog,
+.geTransDialog {
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.985) !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+}
+
+.geDialogToolbar {
+    min-height: 40px;
+    padding-inline: 8px !important;
+    border-color: var(--prota-line) !important;
+    background: #fafafd !important;
+}
+
+/* Templates, libraries and advanced pickers */
+
+.geTemplate {
+    margin: 7px !important;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    transition: border-color 130ms ease, box-shadow 130ms ease, transform 130ms ease;
+}
+
+.geGenerateDiagramForm {
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 12px !important;
+    background: #fafafd !important;
+}
+
+.geGenerateDiagramDescription {
+    color: var(--prota-muted) !important;
+    line-height: 1.55;
+}
+
+.geTemplate:hover,
+.geTemplateSelected {
+    border-color: rgba(99, 102, 241, 0.25) !important;
+    box-shadow: 0 8px 20px rgba(20, 24, 38, 0.07) !important;
+    transform: translateY(-1px);
+}
+
+.geTemplateSelected {
+    background: var(--prota-selected) !important;
+}
+
+.geMoreShapesSectionHeader {
+    padding-block: 10px;
+    color: var(--prota-muted);
+    font-weight: 650;
+    letter-spacing: 0.02em;
+}
+
+.geMoreShapesItem,
+.geAspectDlgListItem {
+    border-radius: 8px !important;
+    transition: background-color 110ms ease;
+}
+
+.geMoreShapesItem:hover,
+.geAspectDlgListItem:hover {
+    background: var(--prota-hover) !important;
+}
+
+.geMoreShapesItemSelected,
+.geAspectDlgListItemSelected {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.geMoreShapesFooterChecks {
+    padding: 10px 4px 2px;
+    border-top: 1px solid var(--prota-line);
+    color: var(--prota-muted);
+}
+
+.geMoreShapesFooterCheck {
+    min-height: 28px;
+}
+
+.geMoreShapesPreview,
+.geTemplatePreview,
+.gePatternPreview {
+    overflow: hidden;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+}
+
+.geInsertTablePicker {
+    padding: 8px !important;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+}
+
+.geInsertTablePicker td {
+    border-color: var(--prota-line) !important;
+    background: #fff !important;
+}
+
+.geInsertTablePicker td:hover,
+.geInsertTablePicker td.geActiveItem {
+    border-color: rgba(99, 102, 241, 0.24) !important;
+    background: var(--prota-selected) !important;
+}
+
+.geTempTree,
+.geAspectDlgList {
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.geTempTreeCaret,
+.geTempTreeActive {
+    border-radius: 6px;
+}
+
+.geTempTreeCaret:hover {
+    background: var(--prota-hover);
+}
+
+.geTempTreeActive {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+}
+
+.gePropEditor,
+.geProperties,
+.geStripedTable {
+    overflow: hidden;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.gePropHeader,
+.geProperties th {
+    background: #f7f8fa !important;
+    color: var(--prota-muted) !important;
+    font-weight: 600;
+}
+
+.gePropRow,
+.gePropRowAlt,
+.geProperties tr {
+    border-color: var(--prota-line) !important;
+    background: #fff !important;
+}
+
+.gePropRowAlt,
+.geProperties tr:nth-child(even) {
+    background: #fbfbfc !important;
+}
+
+.gePropRowDark,
+.gePropRowDarkAlt {
+    background: #f7f8fa !important;
+    color: var(--prota-ink) !important;
+}
+
+.gePropHeaderCell,
+.gePropRowCell {
+    border-color: var(--prota-line) !important;
+}
+
+.gePropValue {
+    color: var(--prota-muted);
+}
+
+/* Comments, notifications and alerts */
+
+.geCommentContainer,
+.geNotifPanel,
+.geNotification-box,
+.geStatusBox,
+.geAlert {
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.geCommentContainer {
+    margin: 8px;
+    padding: 11px;
+}
+
+.geCommentUsername,
+.geCommentHeaderTxt {
+    color: var(--prota-ink) !important;
+    font-weight: 600;
+}
+
+.geCommentDate,
+.geCommentActionLnk,
+.geStatus,
+.geSidebarText {
+    color: var(--prota-muted) !important;
+}
+
+.geCommentEditTxtArea {
+    border: 1px solid var(--prota-line-strong) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+}
+
+.geAlert {
+    padding: 10px 12px;
+    color: var(--prota-ink);
+}
+
+.geAlertLink {
+    color: var(--accent-text-color) !important;
+}
+
+.geBanner,
+.geSmallBanner {
+    border-color: var(--prota-line) !important;
+    background: #fafafd !important;
+    color: var(--prota-muted) !important;
+}
+
+.geCommentsToolbar,
+.geFooterToolbar,
+.geFooterContainer {
+    border-color: var(--prota-line) !important;
+    background: #fff !important;
+}
+
+.geCommentsList {
+    background: #fafafd !important;
+}
+
+.geCommentAction,
+.geCommentEditBtn,
+.geCommentEditBtns .geButton {
+    border-radius: 6px !important;
+    color: var(--prota-muted) !important;
+}
+
+.geCommentAction:hover,
+.geCommentEditBtn:hover,
+.geCommentEditBtns .geButton:hover {
+    background: var(--prota-hover) !important;
+    color: var(--prota-ink) !important;
+}
+
+.geCommentUserImg,
+.geUserAvatar,
+.geUserPhoto {
+    overflow: hidden;
+    border-radius: 50% !important;
+}
+
+.geNotification-bell {
+    border-radius: 7px;
+}
+
+.geNotification-bell:hover {
+    background: var(--prota-hover);
+}
+
+.geNotification-count {
+    border: 2px solid #fff !important;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.geStatusDiv {
+    min-width: 0;
+    padding-inline: 6px;
+    color: var(--prota-muted) !important;
+    font-size: 11px;
+}
+
+.geSpinnerStatus,
+.geStatusDiv,
+.geStatusAlert {
+    border-radius: 7px !important;
+}
+
+.geSpinnerStatus {
+    padding: 7px 11px !important;
+    border: 1px solid var(--prota-line) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    color: var(--prota-ink) !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+    backdrop-filter: blur(14px);
+}
+
+.geStatusAlert {
+    background: #fff7ed !important;
+    color: #9a4b0b !important;
+}
+
+.geBtn.geBanner,
+.geBtn.geSmallBanner {
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 11px !important;
+    background: rgba(255, 255, 255, 0.97) !important;
+    color: var(--prota-ink) !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+    backdrop-filter: blur(14px);
+}
+
+.geBtn.geBanner {
+    padding: 13px 38px 13px 16px !important;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.geBtn.geSmallBanner {
+    padding: 7px 10px 7px 13px !important;
+}
+
+.geAlert {
+    border-color: rgba(220, 38, 38, 0.12) !important;
+    background: #fff7f7 !important;
+    color: #b42318 !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+}
+
+.gePropEditor input:invalid,
+.geDialog input:invalid,
+.geDialog textarea:invalid {
+    border-color: rgba(220, 38, 38, 0.34) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08) !important;
+}
+
+/* Tooltips */
+
+div.mxTooltip {
+    padding: 6px 9px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: rgba(32, 35, 42, 0.94) !important;
+    color: #fff !important;
+    box-shadow: 0 7px 18px rgba(20, 24, 38, 0.16) !important;
+    font-size: 11px !important;
+    line-height: 1.35;
+}
+
+.geSidebarTooltip {
+    padding: 5px;
+}
+
+/* Bottom page navigation */
+
+.geTabContainer {
+    height: 38px;
+    padding: 4px 12px 0;
+    gap: 4px;
+    border-color: var(--prota-line) !important;
+    background: rgba(255, 255, 255, 0.985) !important;
+    box-shadow: 0 -1px 0 rgba(31, 35, 48, 0.025);
+}
+
+.geTabScroller {
+    margin-inline: 6px;
+}
+
+.geTab,
+.geTabItem {
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.gePageTab {
+    height: 31px;
+    margin-top: 2px;
+    padding: 0 8px 0 11px;
+    border: 0 !important;
+    color: var(--prota-muted);
+}
+
+.gePageTab:hover {
+    background-color: transparent !important;
+    color: var(--prota-muted) !important;
+}
+
+.gePageTab.geActivePage,
+.geTabItem.geActivePage,
+.geTab.geActivePage {
+    background: var(--prota-selected) !important;
+    color: var(--accent-text-color) !important;
+    font-weight: 600 !important;
+}
+
+.geControlTab {
+    width: 30px;
+    height: 30px;
+    margin: 1px 2px;
+    border-radius: 7px !important;
+    color: var(--prota-muted) !important;
+}
+
+.geTabContainer .geButton,
+.geTabContainer .geControlTab,
+.geTabContainer .gePageMenu {
+    background-color: transparent !important;
+    opacity: 0.78 !important;
+    filter: none !important;
+}
+
+.geTabContainer .geButton:hover,
+.geTabContainer .geButton:focus,
+.geTabContainer .geButton:active,
+.geTabContainer .geControlTab:hover,
+.geTabContainer .geControlTab:focus,
+.geTabContainer .geControlTab:active,
+.geTabContainer .gePageMenu:hover,
+.geTabContainer .gePageMenu:focus,
+.geTabContainer .gePageMenu:active {
+    background-color: transparent !important;
+    opacity: 0.78 !important;
+    filter: none !important;
+}
+
+.gePageMenu {
+    width: 22px;
+    height: 22px;
+    margin-left: -5px;
+    margin-right: 3px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    color: var(--prota-muted) !important;
+    opacity: 0.72 !important;
+}
+
+.gePageMenu:hover {
+    background-color: transparent !important;
+    color: var(--prota-muted) !important;
+    opacity: 0.72 !important;
+}
+
+.gePageTab:hover + .gePageMenu,
+.gePageTab.geActivePage + .gePageMenu {
+    opacity: 0.72 !important;
+}
+
+.geTabScroller .gePageTab + .geButton {
+    position: relative;
+    z-index: 2;
+    width: 18px !important;
+    height: 22px !important;
+    margin: 6px 4px 0 -9px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    opacity: 0.66 !important;
+}
+
+.geTabScroller .gePageTab + .geButton:hover,
+.geTabScroller .gePageTab:hover + .geButton,
+.geTabScroller .gePageTab.geActivePage + .geButton {
+    border: 0 !important;
+    background-color: transparent !important;
+    color: inherit !important;
+    opacity: 0.66 !important;
+}
+
+.geTabContainer > a {
+    display: none !important;
+}
+
+.geControlTab:hover,
+.geTabContainer .geButton:hover {
+    background-color: transparent !important;
+    color: var(--prota-muted) !important;
+}
+
+.geTabContainer .geZoomInput {
+    margin-right: -8px;
+    color: var(--prota-muted) !important;
+}
+
+/* Vertical toolbar and ruler */
+
+.geToolbarContainer.geVerticalToolbar {
+    gap: 3px;
+    padding: 5px !important;
+    border: 1px solid var(--prota-line) !important;
+    border-radius: 11px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: var(--prota-shadow-menu) !important;
+    backdrop-filter: blur(14px);
+}
+
+.geVerticalToolbar > .geButton {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+}
+
+.geRuler {
+    border-color: var(--prota-line) !important;
+    background-color: #fafafd !important;
+    color: var(--prota-faint) !important;
+}
+
+/* Selection and drag chrome */
+
+.geDragPreview,
+.gePaletteDragPlaceholder,
+.gePageTabDragPlaceholder {
+    border-color: rgba(99, 102, 241, 0.32) !important;
+    border-radius: 8px !important;
+    background: rgba(99, 102, 241, 0.055) !important;
+}
+
+html div.mxRubberband {
+    border: 1px solid rgba(99, 102, 241, 0.58) !important;
+    background: rgba(99, 102, 241, 0.08) !important;
+}
+
+.mxCellEditor {
+    padding: 3px 5px !important;
+    border: 1px solid rgba(99, 102, 241, 0.28) !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    color: var(--prota-ink) !important;
+    box-shadow: 0 0 0 3px var(--prota-focus) !important;
+}
+
+.geSwitcher {
+    gap: 6px;
+}
+
+.geSwitcherDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(105, 113, 128, 0.26) !important;
+}
+
+.geSwitcherDot.geActiveItem,
+.geSwitcherDot:hover {
+    background: var(--primary-color) !important;
+}
+
+/* Scrollbars */
+
+.geEditor * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(105, 113, 128, 0.28) transparent;
+}
+
+.geEditor *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.geEditor *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: rgba(105, 113, 128, 0.28);
+    background-clip: padding-box;
+}
+
+.geEditor *::-webkit-scrollbar-thumb:hover {
+    background: rgba(105, 113, 128, 0.42);
+    background-clip: padding-box;
+}
+
+.geEditor *::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Compact editor widths */
+
+@media (max-width: 720px) {
+    .geMinimal .geMenubarContainer {
+        padding-inline: 12px;
+        gap: 7px;
+    }
+
+    .geMinimal .geMenubarContainer .geButton {
+        padding-inline: 5px;
+    }
+
+    .geTabContainer {
+        padding-inline: 10px;
+    }
+
+    .prota-drawio-integrated-controls {
+        margin-right: 4px;
+        gap: 4px;
+    }
+
+    .prota-drawio-file-trigger {
+        width: 118px;
+        min-width: 96px;
+    }
+
+    .prota-drawio-window-actions::before {
+        margin-right: 3px;
+    }
+
+    .prota-drawio-window-button {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Forced-colour accessibility */
+
+@media (forced-colors: active) {
+    .geEditor *,
+    .mxWindow,
+    .geDialog,
+    .mxPopupMenu {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .geEditor button,
+    .geEditor input,
+    .geEditor select,
+    .geEditor textarea,
+    .geBtn,
+    .geBaseButton,
+    .geButton,
+    .geTitle,
+    .geFormatTitle,
+    .gePageTab {
+        border-color: ButtonBorder !important;
+        background: ButtonFace !important;
+        color: ButtonText !important;
+        forced-color-adjust: auto;
+    }
+
+    .geCheckedBtn,
+    .geActiveItem,
+    .geActivePage,
+    .geFormatTitle.geActiveFormatTitle,
+    tr.mxPopupMenuItemHover {
+        border-color: Highlight !important;
+        background: Highlight !important;
+        color: HighlightText !important;
+    }
+
+    .geBackground {
+        background: Canvas !important;
+        opacity: 0.72 !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .geEditor *,
+    .prota-editor-loader__mark {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+    }
+}

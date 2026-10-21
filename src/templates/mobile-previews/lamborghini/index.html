@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>REVUELTO · Lamborghini</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                  <path d="M12 2l8.5 5v10L12 22l-8.5-5V7L12 2z" />
+                  <path d="M9 9l6 3-6 3V9z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">REVUELTO</span>
+                <span class="brand-bar__sub">V12 HYBRID · 车主车况</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="车辆位置已发送到手机地图" aria-label="寻车定位">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：遥测仪表 -->
+            <section class="telemetry" aria-label="实时遥测">
+              <div class="telemetry__head">
+                <span class="telemetry__eyebrow">TELEMETRY · LIVE FEED</span>
+                <span class="telemetry__live"><i aria-hidden="true"></i>实时</span>
+              </div>
+              <div class="telemetry__speed">
+                <p class="telemetry__number" id="speedNum">128</p>
+                <span class="telemetry__unit">KM/H</span>
+              </div>
+              <div class="tach" id="tach" role="img" aria-label="转速表，当前 6,850 转，接近红线区">
+                <i class="tach__seg is-lit"></i><i class="tach__seg is-lit"></i><i class="tach__seg is-lit"></i>
+                <i class="tach__seg is-lit"></i><i class="tach__seg is-lit"></i><i class="tach__seg is-lit"></i>
+                <i class="tach__seg is-lit"></i><i class="tach__seg is-lit"></i><i class="tach__seg is-lit"></i>
+                <i class="tach__seg is-red"></i><i class="tach__seg is-red"></i><i class="tach__seg is-red"></i>
+              </div>
+              <ul class="telemetry__stats">
+                <li><b>6,850</b><span>RPM</span></li>
+                <li><b>92°C</b><span>OIL TEMP</span></li>
+                <li><b>78%</b><span>BATTERY</span></li>
+              </ul>
+              <div class="modes" role="group" aria-label="驾驶模式">
+                <button class="mode" type="button" data-mode="strada" data-speed="62">STRADA</button>
+                <button class="mode" type="button" data-mode="sport" data-speed="96">SPORT</button>
+                <button class="mode is-active" type="button" data-mode="corsa" data-speed="128">CORSA</button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="本次行程与车辆状态">
+              <div class="duo-card">
+                <h2 class="duo-card__title">THIS DRIVE · 本次行程</h2>
+                <div class="drive-row"><b>42.8</b><span>KM 距离</span></div>
+                <div class="drive-row"><b>0:34</b><span>时长</span></div>
+                <div class="drive-row"><b>96</b><span>KM/H 均速</span></div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">STATUS · 车辆状态</h2>
+                <div class="stat-row">
+                  <div class="stat-row__head"><span>混动电池</span><b>78%</b></div>
+                  <div class="stat-row__track"><span class="stat-row__fill stat-row__fill--gold" style="--w: 78%"></span></div>
+                </div>
+                <div class="stat-row">
+                  <div class="stat-row__head"><span>燃油余量</span><b>64%</b></div>
+                  <div class="stat-row__track"><span class="stat-row__fill" style="--w: 64%"></span></div>
+                </div>
+                <div class="stat-row">
+                  <div class="stat-row__head"><span>机油温度</span><b>92°C</b></div>
+                  <div class="stat-row__track"><span class="stat-row__fill" style="--w: 46%"></span></div>
+                </div>
+                <em class="duo-card__badge">ALL SYSTEMS NORMAL</em>
+              </div>
+            </section>
+
+            <!-- 4. 行程 Feed -->
+            <section class="feed" aria-label="行程记录">
+              <div class="feed__head">
+                <h2 class="feed__title">行程记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选行程">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="corsa">CORSA</button>
+                  <button class="chip" type="button" data-filter="sport">SPORT</button>
+                  <button class="chip" type="button" data-filter="strada">STRADA</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="corsa">
+                  <span class="feed-item__date" aria-hidden="true">14<b>AUG</b></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">SUZHOU → SHANGHAI</span>
+                    <span class="feed-item__meta">98.4 KM · 1:05</span>
+                  </div>
+                  <em class="feed-item__chip feed-item__chip--gold">212 顶速</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏该路线" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sport">
+                  <span class="feed-item__date" aria-hidden="true">12<b>AUG</b></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">SHANGHAI → HANGZHOU</span>
+                    <span class="feed-item__meta">176.0 KM · 2:12</span>
+                  </div>
+                  <em class="feed-item__chip">189 顶速</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏该路线" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="corsa">
+                  <span class="feed-item__date" aria-hidden="true">09<b>AUG</b></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">夜跑 · 世纪环线</span>
+                    <span class="feed-item__meta">62.3 KM · 0:41</span>
+                  </div>
+                  <em class="feed-item__chip feed-item__chip--gold">231 顶速</em>
+                  <button class="feed-item__star is-on" type="button" aria-label="收藏该路线" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="strada">
+                  <span class="feed-item__date" aria-hidden="true">05<b>AUG</b></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">AIRPORT LOOP</span>
+                    <span class="feed-item__meta">38.1 KM · 0:36</span>
+                  </div>
+                  <em class="feed-item__chip">156 顶速</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏该路线" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sport">
+                  <span class="feed-item__date" aria-hidden="true">02<b>AUG</b></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">SHANGHAI → SUZHOU</span>
+                    <span class="feed-item__meta">97.6 KM · 1:02</span>
+                  </div>
+                  <em class="feed-item__chip">178 顶速</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏该路线" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="车辆操作">
+              <button class="btn-gold" type="button" id="engineBtn">
+                <span class="btn-gold__label">ENGINE START</span>
+                <span class="btn-gold__sub">启动引擎 · V12 点火</span>
+              </button>
+              <button class="btn-ghost" type="button" data-toast="已预约 8 月 28 日 · 上海服务中心 · 全车检查">预约保养 · SERVICE</button>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="车况">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l1.6-4.2A2 2 0 0 1 7.5 7.5h9a2 2 0 0 1 1.9 1.3L20 13" />
+                <path d="M3 13h18v5H3z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17" cy="18" r="1.6" />
+              </svg>
+              <span>车况</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z" />
+                <circle cx="12" cy="10" r="2.5" />
+              </svg>
+              <span>行程</span>
+            </button>
+            <button class="tabbar__item" type="button" id="lockFab" data-tab="锁车" aria-label="锁车" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="10" width="12" height="9" /><path d="M9 10V7a3 3 0 0 1 6 0v3" />
+              </svg>
+              <span>锁车</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="车库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 20V9l9-5 9 5v11" /><path d="M7 20v-7h10v7" />
+              </svg>
+              <span>车库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

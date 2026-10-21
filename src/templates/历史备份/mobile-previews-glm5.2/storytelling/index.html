@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>故事集 · Storytelling</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="masthead">
+              <div class="masthead__brand">
+                <span class="brand-mark">故事</span>
+                <div class="brand-text">
+                  <span class="brand-name">故事集</span>
+                  <span class="brand-tagline">记录生活中的美好瞬间</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索故事">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- 今日故事（signature：温暖纸张质感的编辑卡片） -->
+            <section class="daily-story" aria-label="今日故事">
+              <div class="story-card">
+                <div class="story-card__image"></div>
+                <div class="story-card__content">
+                  <span class="story-card__category">生活随笔</span>
+                  <h2 class="story-card__title">那个傍晚，我在老街遇见了时光</h2>
+                  <p class="story-card__excerpt">夕阳斜斜地照在青石板路上，老街的轮廓被染成了一片暖黄。我放慢脚步，听见了时光流逝的声音...</p>
+                  <div class="story-card__meta">
+                    <span class="author">林小满</span>
+                    <span class="date">8月14日</span>
+                    <span class="read-time">8分钟</span>
+                  </div>
+                  <button class="story-card__cta" data-toast="开始阅读">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    开始阅读
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 故事收藏双卡 -->
+            <section class="collection-row" aria-label="精选合集">
+              <div class="collection-card" data-toast="打开旅行故事">
+                <div class="collection-card__cover collection-card__cover--travel">
+                  <svg class="collection-card__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                </div>
+                <div class="collection-card__info">
+                  <span class="collection-card__title">旅行笔记</span>
+                  <span class="collection-card__count">42 篇故事</span>
+                </div>
+              </div>
+              <div class="collection-card" data-toast="打开美食故事">
+                <div class="collection-card__cover collection-card__cover--food">
+                  <svg class="collection-card__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+                </div>
+                <div class="collection-card__info">
+                  <span class="collection-card__title">美食记忆</span>
+                  <span class="collection-card__count">28 篇故事</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 故事列表 -->
+            <section class="story-feed" aria-label="故事列表">
+              <div class="feed-header">
+                <h3>最新故事</h3>
+                <div class="chips" id="storyChips" role="tablist" aria-label="筛选故事">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="life" role="tab" aria-selected="false">生活</button>
+                  <button class="chip" data-filter="travel" role="tab" aria-selected="false">旅行</button>
+                </div>
+              </div>
+
+              <ul class="feed-list" id="feedList">
+                <li class="feed-item" data-category="life">
+                  <div class="feed-item__thumb feed-item__thumb--warm"></div>
+                  <div class="feed-item__content">
+                    <span class="feed-item__category">生活随笔</span>
+                    <h4 class="feed-item__title">周末的小确幸</h4>
+                    <p class="feed-item__excerpt">一杯咖啡，一本好书，这就是我理想中的周末。</p>
+                    <div class="feed-item__meta">
+                      <span class="author">陈小明</span>
+                      <span class="date">2小时前</span>
+                    </div>
+                  </div>
+                  <button class="bookmark-btn" data-toast="已收藏" aria-label="收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-category="travel">
+                  <div class="feed-item__thumb feed-item__thumb--cool"></div>
+                  <div class="feed-item__content">
+                    <span class="feed-item__category">旅行笔记</span>
+                    <h4 class="feed-item__title">京都的清晨</h4>
+                    <p class="feed-item__excerpt">穿过古老的街道，遇见最美的时光。</p>
+                    <div class="feed-item__meta">
+                      <span class="author">旅行者</span>
+                      <span class="date">5小时前</span>
+                    </div>
+                  </div>
+                  <button class="bookmark-btn bookmark-btn--active" data-toast="已取消收藏" aria-label="取消收藏">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-category="life">
+                  <div class="feed-item__thumb feed-item__thumb--soft"></div>
+                  <div class="feed-item__content">
+                    <span class="feed-item__category">生活随笔</span>
+                    <h4 class="feed-item__title">外婆的手作</h4>
+                    <p class="feed-item__excerpt">那些温暖的记忆，永远藏在手作的细节里。</p>
+                    <div class="feed-item__meta">
+                      <span class="author">温念</span>
+                      <span class="date">昨天</span>
+                    </div>
+                  </div>
+                  <button class="bookmark-btn" data-toast="已收藏" aria-label="收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-category="travel">
+                  <div class="feed-item__thumb feed-item__thumb--nature"></div>
+                  <div class="feed-item__content">
+                    <span class="feed-item__category">旅行笔记</span>
+                    <h4 class="feed-item__title">高原的星空</h4>
+                    <p class="feed-item__excerpt">在这片土地上，星空离我们那么近。</p>
+                    <div class="feed-item__meta">
+                      <span class="author">追光者</span>
+                      <span class="date">2天前</span>
+                    </div>
+                  </div>
+                  <button class="bookmark-btn" data-toast="已收藏" aria-label="收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 阅读进度 -->
+            <section class="reading-stats" aria-label="阅读统计">
+              <div class="stats-card">
+                <span class="stats-card__icon">📖</span>
+                <div class="stats-card__info">
+                  <span class="stats-card__label">本周阅读</span>
+                  <span class="stats-card__value">12 篇故事</span>
+                </div>
+                <div class="stats-card__trend stats-card__trend--up">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                  +3 篇
+                </div>
+              </div>
+              <div class="stats-card">
+                <span class="stats-card__icon">✨</span>
+                <div class="stats-card__info">
+                  <span class="stats-card__label">收藏故事</span>
+                  <span class="stats-card__value">86 篇</span>
+                </div>
+                <div class="stats-card__trend stats-card__trend--neutral">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" /></svg>
+                  持平
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="discover">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab tab--create" data-tab="create" aria-label="创作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>书架</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

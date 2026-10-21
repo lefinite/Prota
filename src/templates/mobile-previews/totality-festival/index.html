@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>全蚀 · Totality Festival</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__mark">TOTALITY</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__sub mono">2026 · 敦煌 · 3 天 · 4 舞台 · 42 组艺人</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="电子票已添加到钱包（含营地地图）" aria-label="票券">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 0 2v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-2V8z"/><path d="M12 6v12" stroke-dasharray="2 3"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：日全食倒计时（签名：黑月+日冕）-->
+            <section class="hero" aria-label="开幕倒计时">
+              <div class="hero__sky" role="img" aria-label="日全食：黑月与金色日冕">
+                <div class="eclipse">
+                  <i class="corona"></i>
+                  <i class="moon"></i>
+                  <span class="diamond"></span>
+                </div>
+              </div>
+              <h1 class="hero__title">当日全食<br />遇见低音鼓</h1>
+              <p class="hero__cd-label mono">食甚 17:08 · 距离开场</p>
+              <div class="count" id="countdown" aria-label="倒计时">
+                <div class="unit"><b id="cdD">88</b><span>DAYS</span></div>
+                <div class="unit"><b id="cdH">06</b><span>HRS</span></div>
+                <div class="unit"><b id="cdM">42</b><span>MIN</span></div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-gold" type="button" data-toast="阵容表已保存到「我的日程」">收藏阵容</button>
+                <button class="btn-ghost" type="button" data-toast="营地/接驳/物品清单已打开">行前指南</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡：舞台 -->
+            <section class="duo" aria-label="舞台">
+              <div class="duo__card">
+                <h2 class="duo__title mono">MAIN · 日冕台</h2>
+                <p class="duo__num">18<span> 组</span></p>
+                <p class="duo__meta">日落后连续 6 小时 · 头牌 21:30</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">GLOW · 萤火台</h2>
+                <p class="duo__num">14<span> 组</span></p>
+                <p class="duo__meta"> ambient 到日出 · 沙丘帐内</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：时间表 -->
+            <section class="feed" aria-label="演出时刻">
+              <div class="feed__head">
+                <h2 class="feed__title">食甚时刻表 · DAY 1</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="main">日冕台</button>
+                  <button class="chip" type="button" data-filter="glow">萤火台</button>
+                  <button class="chip" type="button" data-filter="ritual">仪式</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="slot slot--ritual" data-kind="ritual">
+                  <span class="slot__time mono">17:08</span>
+                  <div class="slot__body">
+                    <span class="slot__name">食甚 · 全场静默一分钟</span>
+                    <span class="slot__meta">金环之下 · 所有舞台同步熄声</span>
+                  </div>
+                  <em class="slot__tag tag-gold">ECLIPSE</em>
+                </li>
+                <li class="slot" data-kind="main">
+                  <span class="slot__time mono">18:30</span>
+                  <div class="slot__body">
+                    <span class="slot__name">沙暴电台</span>
+                    <span class="slot__meta">日冕台 · 沙漠摇滚 · 60 min</span>
+                  </div>
+                  <em class="slot__tag">LIVE</em>
+                </li>
+                <li class="slot" data-kind="glow">
+                  <span class="slot__time mono">20:00</span>
+                  <div class="slot__body">
+                    <span class="slot__name">月尘合唱团</span>
+                    <span class="slot__meta">萤火台 · ambient 合唱 · 90 min</span>
+                  </div>
+                  <em class="slot__tag">LIVE</em>
+                </li>
+                <li class="slot slot--hl" data-kind="main">
+                  <span class="slot__time mono">21:30</span>
+                  <div class="slot__body">
+                    <span class="slot__name">LOW ORBIT（头牌）</span>
+                    <span class="slot__meta">日冕台 · 日冕主题专场 · 120 min</span>
+                  </div>
+                  <em class="slot__tag tag-hl">HEAD</em>
+                </li>
+                <li class="slot" data-kind="glow">
+                  <span class="slot__time mono">23:40</span>
+                  <div class="slot__body">
+                    <span class="slot__name">晨昏线</span>
+                    <span class="slot__meta">萤火台 · 直到日出 06:12</span>
+                  </div>
+                  <em class="slot__tag">LIVE</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="提醒">
+              <input class="action__input" id="remindInput" type="text" placeholder="想看的艺人，如：LOW ORBIT…" />
+              <div class="chips chips--ahead">
+                <button class="chip is-active" type="button">开演前 15 分钟</button>
+                <button class="chip" type="button">前 30 分钟</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-gold" type="button" id="remindBtn">设提醒</button>
+                <button class="btn-ghost" type="button" data-toast="营地接驳车时刻表已打开">接驳车</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="现场">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+              <span>现场</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="阵容">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M15.5 14.6c2 .3 3.6 1.7 4.3 4"/></svg>
+              <span>阵容</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日全食" aria-label="日全食">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 2a10 10 0 0 1 10 10M22 12A10 10 0 0 1 12 22" stroke-linecap="round"/></svg>
+              <span>日全食</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="地图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <span>地图</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

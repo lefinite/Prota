@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>绿盒 · Supabase 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__bolt" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">绿盒 · shop-prod</span>
+                <span class="brand-bar__sub mono-label">PROJECT · AP-SH-1 · PG 16</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="连接池 42/100 · pgbouncer 正常" aria-label="连接">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：SQL 编辑器（签名：行号 + emerald 关键字）-->
+            <section class="hero" aria-label="SQL 编辑器">
+              <div class="hero__tabbar">
+                <span class="hero__tab is-active">SQL 编辑器</span>
+                <span class="hero__tab">表编辑器</span>
+                <span class="mono-label" id="runTime">RUN 38MS</span>
+              </div>
+              <pre class="hero__code" aria-label="SQL 查询语句"><span class="ln">1</span><span class="kw">select</span> <span class="fn">count</span>(*)
+<span class="ln">2</span><span class="kw">from</span> orders
+<span class="ln">3</span><span class="kw">where</span> status = <span class="str">'paid'</span>
+<span class="ln">4</span>  <span class="kw">and</span> created_at &gt; <span class="kw">now</span>() - <span class="kw">interval</span> <span class="str">'7 days'</span>;</pre>
+              <div class="hero__result">
+                <div class="hero__count"><b id="rowNum">12,804</b><span class="mono-label">ROWS</span></div>
+                <div class="hero__bars" aria-hidden="true">
+                  <i style="--h: 46%"></i><i style="--h: 72%"></i><i style="--h: 58%"></i><i style="--h: 88%"></i><i style="--h: 64%"></i><i style="--h: 78%"></i><i style="--h: 52%"></i>
+                </div>
+                <p class="hero__hint">近 7 日支付订单 · 周环比 <b class="up">+12.4%</b></p>
+              </div>
+              <div class="hero__run">
+                <button class="btn-primary" type="button" id="runBtn">▶ 运行</button>
+                <button class="btn-ghost" type="button" data-toast="已保存为片段「周支付订单」">存为片段</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="服务">
+              <div class="duo__card">
+                <h2 class="duo__title mono-label">AUTH · USERS</h2>
+                <p class="duo__num">8,912</p>
+                <p class="duo__meta">今日新增 <b>+64</b> · 周活 3,204</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono-label">STORAGE</h2>
+                <p class="duo__num">18.4<span> GB</span></p>
+                <div class="gauge"><span style="--w: 37%"></span></div>
+                <p class="duo__meta">对象 42,318 · 传输 2.1 GB/月</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：日志 -->
+            <section class="feed" aria-label="日志">
+              <div class="feed__head">
+                <h2 class="feed__title">Log drift</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="api">API</button>
+                  <button class="chip" type="button" data-filter="auth">Auth</button>
+                  <button class="chip" type="button" data-filter="db">DB</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="api">
+                  <span class="feed-item__method">POST</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">/rest/v1/orders</span>
+                    <span class="feed-item__meta">201 · 42ms · api-key ***</span>
+                  </div>
+                  <em class="feed-item__code ok">2xx</em>
+                </li>
+                <li class="feed-item" data-kind="auth">
+                  <span class="feed-item__method method--auth">AUTH</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">sms 登录 · +86···4821</span>
+                    <span class="feed-item__meta">verify 成功 · 312ms</span>
+                  </div>
+                  <em class="feed-item__code ok">2xx</em>
+                </li>
+                <li class="feed-item" data-kind="api">
+                  <span class="feed-item__method">GET</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">/rest/v1/products?limit=50</span>
+                    <span class="feed-item__meta">400 · 参数 limit 超限</span>
+                  </div>
+                  <em class="feed-item__code err">4xx</em>
+                </li>
+                <li class="feed-item" data-kind="db">
+                  <span class="feed-item__method method--db">DB</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">autovacuum · public.orders</span>
+                    <span class="feed-item__meta">完成 · 回收死元组 12,044</span>
+                  </div>
+                  <em class="feed-item__code ok">OK</em>
+                </li>
+                <li class="feed-item" data-kind="db">
+                  <span class="feed-item__method method--db">DB</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">索引命中告警 · carts.user_id</span>
+                    <span class="feed-item__meta">COLLSCAN × 38 · 建议建索引</span>
+                  </div>
+                  <em class="feed-item__code warn">SLOW</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="命令">
+              <div class="chips chips--tpl">
+                <button class="chip" type="button">RLS 策略</button>
+                <button class="chip" type="button">周活跃</button>
+                <button class="chip is-active" type="button">周支付</button>
+                <button class="chip" type="button">漏斗</button>
+              </div>
+              <input class="action__input mono" id="sqlInput" type="text" placeholder="select * from …" />
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="run2Btn">▶ 运行查询</button>
+                <button class="btn-ghost" type="button" data-toast="分支部署成功 · preview-env-42 已就绪">部署分支</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="SQL">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/></svg>
+              <span>SQL</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="表">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>
+              <span>表</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="运行" aria-label="运行">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 4l13 8-13 8V4z"/></svg>
+              <span>运行</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5h14M5 10h9M5 15h11M5 20h7"/></svg>
+              <span>日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.06-.4.1-.8.1-1.2z"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

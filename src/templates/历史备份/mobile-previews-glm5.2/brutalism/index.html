@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>BRUTAL TRACK · Brutalism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">BRUTAL</span>
+                <div class="brand-text">
+                  <span class="brand-name">TRACK</span>
+                  <span class="brand-sub">DAY 42</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="菜单" data-toast="菜单已展开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
+            </header>
+
+            <!-- 今日训练概览（signature：大面积黄色高亮 + 生硬黑色边框） -->
+            <section class="today-card" aria-label="今日训练">
+              <p class="today-card__label">TODAY'S SESSION</p>
+              <p class="today-card__title">上肢力量<br>推力主导</p>
+              <div class="today-card__stats">
+                <div class="stat-box">
+                  <span class="stat-box__val">6</span>
+                  <span class="stat-box__label">动作</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box__val">24</span>
+                  <span class="stat-box__label">组数</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box__val">52</span>
+                  <span class="stat-box__label">分钟</span>
+                </div>
+              </div>
+              <div class="today-card__progress" aria-hidden="true">
+                <span class="today-card__bar" style="--p: 68%"></span>
+              </div>
+              <p class="today-card__meta">已完成 68% · 剩余 2 个动作</p>
+            </section>
+
+            <!-- 训练动作卡片 -->
+            <section class="exercise-list" aria-label="训练动作">
+              <div class="exercise-list__head">
+                <h2>EXERCISES</h2>
+                <button class="filter-btn" aria-label="筛选">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/></svg>
+                </button>
+              </div>
+
+              <ul class="exercise-list__items" id="exerciseList">
+                <li class="exercise-item" data-type="done">
+                  <button class="exercise-item__check exercise-item__check--checked" aria-label="标记未完成" data-toast="动作状态已切换">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="exercise-item__main">
+                    <span class="exercise-item__title">BENCH PRESS</span>
+                    <span class="exercise-item__sub">4 SETS · 8-10 REPS · 80KG</span>
+                  </div>
+                  <span class="exercise-item__badge">DONE</span>
+                </li>
+                <li class="exercise-item" data-type="done">
+                  <button class="exercise-item__check exercise-item__check--checked" aria-label="标记未完成" data-toast="动作状态已切换">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="exercise-item__main">
+                    <span class="exercise-item__title">INCLINE DUMBBELL</span>
+                    <span class="exercise-item__sub">3 SETS · 10-12 REPS · 32KG</span>
+                  </div>
+                  <span class="exercise-item__badge">DONE</span>
+                </li>
+                <li class="exercise-item" data-type="current">
+                  <button class="exercise-item__check exercise-item__check--current" aria-label="标记完成" data-toast="组数已记录">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="exercise-item__main">
+                    <span class="exercise-item__title">CABLE FLY</span>
+                    <span class="exercise-item__sub">3 SETS · 12-15 REPS · 45KG</span>
+                  </div>
+                  <span class="exercise-item__badge exercise-item__badge--active">2/3</span>
+                </li>
+                <li class="exercise-item" data-type="todo">
+                  <button class="exercise-item__check" aria-label="标记完成" data-toast="动作状态已切换">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="exercise-item__main">
+                    <span class="exercise-item__title">TRICEP DIPS</span>
+                    <span class="exercise-item__sub">3 SETS · FAILURE · BW+20KG</span>
+                  </div>
+                  <span class="exercise-item__badge">0/3</span>
+                </li>
+                <li class="exercise-item" data-type="todo">
+                  <button class="exercise-item__check" aria-label="标记完成" data-toast="动作状态已切换">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="exercise-item__main">
+                    <span class="exercise-item__title">OVERHEAD PRESS</span>
+                    <span class="exercise-item__sub">4 SETS · 6-8 REPS · 60KG</span>
+                  </div>
+                  <span class="exercise-item__badge">0/4</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 组数记录卡片 -->
+            <section class="set-log-card" aria-label="组数记录">
+              <div class="set-log-card__head">
+                <span class="set-log-card__title">CABLE FLY · SET 3</span>
+                <button class="close-btn" aria-label="关闭" data-toast="记录已保存">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="set-log-card__input">
+                <label for="repsInput">REPS</label>
+                <input type="number" id="repsInput" value="12" min="1" max="99">
+              </div>
+              <div class="set-log-card__input">
+                <label for="weightInput">WEIGHT (KG)</label>
+                <input type="number" id="weightInput" value="45" min="0" max="200">
+              </div>
+              <div class="set-log-card__actions">
+                <button class="brutal-btn brutal-btn--primary" data-toast="组数已记录">LOG SET</button>
+                <button class="brutal-btn brutal-btn--secondary" data-toast="跳过此组">SKIP</button>
+              </div>
+            </section>
+
+            <!-- 历史统计 -->
+            <section class="stats-card" aria-label="历史统计">
+              <div class="stats-card__head">
+                <span class="stats-card__title">WEEKLY TOTAL</span>
+                <span class="stats-card__val">4,820 KG</span>
+              </div>
+              <div class="stats-card__bars">
+                <div class="day-col"><span class="day-col__bar" style="--h: 60%"></span><span class="day-col__label">M</span></div>
+                <div class="day-col"><span class="day-col__bar" style="--h: 85%"></span><span class="day-col__label">T</span></div>
+                <div class="day-col"><span class="day-col__bar" style="--h: 45%"></span><span class="day-col__label">W</span></div>
+                <div class="day-col"><span class="day-col__bar" style="--h: 95%"></span><span class="day-col__label">T</span></div>
+                <div class="day-col"><span class="day-col__bar" style="--h: 70%"></span><span class="day-col__label">F</span></div>
+                <div class="day-col"><span class="day-col__bar day-col__bar--active" style="--h: 40%"></span><span class="day-col__label">S</span></div>
+                <div class="day-col"><span class="day-col__bar" style="--h: 0%"></span><span class="day-col__label">S</span></div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="today">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>TODAY</span>
+            </button>
+            <button class="tab" data-tab="history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
+              <span>HISTORY</span>
+            </button>
+            <button class="tab tab--fab" data-tab="log" aria-label="记录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tab" data-tab="plans">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 2,7 12,12 22,7 12,2"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>
+              <span>PLANS</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>PROFILE</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

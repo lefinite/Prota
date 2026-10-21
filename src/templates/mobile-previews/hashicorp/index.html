@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Pilot · HashiCorp</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 3v18M4 7.5l8 4.5 8-4.5" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__eyebrow">工作区 · PROD-ASIA-1</span>
+                <span class="brand-bar__name">Pilot 运维台</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="终端已连接 · nomad-01" aria-label="打开终端">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 5h16v14H4z" /><path d="M7.5 9.5l2.5 2.5-2.5 2.5M12.5 15h4" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：集群健康 -->
+            <section class="hero-card" aria-label="集群健康">
+              <span class="eyebrow">集群健康 · CLUSTER HEALTH</span>
+              <div class="hero-card__main">
+                <div class="hero-card__figure">
+                  <span class="hero-card__num">142<span class="hero-card__num-sub">/146</span></span>
+                  <span class="hero-card__cap">节点在线</span>
+                </div>
+                <div class="hero-card__status">
+                  <span class="hero-card__dot" aria-hidden="true"></span>
+                  <span>全部核心服务正常<br />可用率 30 天 99.982%</span>
+                </div>
+              </div>
+              <dl class="hero-card__stats">
+                <div>
+                  <dt>P95 延迟</dt>
+                  <dd>38ms</dd>
+                </div>
+                <div>
+                  <dt>活跃任务</dt>
+                  <dd>214</dd>
+                </div>
+                <div>
+                  <dt>覆盖区域</dt>
+                  <dd>3</dd>
+                </div>
+              </dl>
+            </section>
+
+            <!-- 3. 两张内容卡：Terraform 计划 + Vault 密钥 -->
+            <section class="duo-stack" aria-label="变更计划与密钥">
+              <div class="product-card product-card--tf">
+                <div class="product-card__head">
+                  <span class="eyebrow eyebrow--tf">TERRAFORM · 变更计划</span>
+                  <span class="product-card__time">14:02 生成</span>
+                </div>
+                <pre class="diff"><code><span class="diff__add">+ aws_ecs_service.api ×3</span>
+<span class="diff__add">+ aws_iam_role.deploy</span>
+<span class="diff__del">- aws_launch_template.legacy</span>
+<span class="diff__ctx">  plan 完成 · 3 增 1 删</span></code></pre>
+                <div class="product-card__foot">
+                  <span>需要 2 项审批 · 剩 1 项</span>
+                  <button class="btn-product btn-product--tf" type="button" id="approveBtn">批准计划</button>
+                </div>
+              </div>
+
+              <div class="product-card product-card--vault">
+                <div class="product-card__head">
+                  <span class="eyebrow eyebrow--vault">VAULT · 密钥引擎</span>
+                  <span class="product-card__time">实时</span>
+                </div>
+                <div class="vault-rows">
+                  <div class="vault-row">
+                    <span class="vault-row__label">解封状态</span>
+                    <span class="vault-row__value"><i class="vault-row__led" aria-hidden="true"></i>正常 · 5 片中的 3 片</span>
+                  </div>
+                  <div class="vault-row">
+                    <span class="vault-row__label">动态密钥</span>
+                    <span class="vault-row__value">32 个 · 今日 23:00 轮换</span>
+                  </div>
+                </div>
+                <div class="product-card__foot">
+                  <span>数据库 / 云 API 均已接入</span>
+                  <button class="btn-product btn-product--vault" type="button" id="rotateBtn">立即轮换</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 工作负载 Feed -->
+            <section class="feed" aria-label="工作负载">
+              <div class="feed__head">
+                <h2 class="feed__title">工作负载</h2>
+                <div class="chips" role="tablist" aria-label="筛选负载">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="deploy">部署中</button>
+                  <button class="chip" type="button" data-filter="degraded">已降级</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="deploy">
+                  <span class="feed-item__led feed-item__led--nomad" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">api-gateway.prod</span>
+                    <span class="feed-item__meta">nomad · 新加坡 A 区 · 12 分钟前发布 v2.4.1</span>
+                  </div>
+                  <span class="state state--deploy">部署中</span>
+                  <b class="feed-item__replicas">×12</b>
+                  <button class="feed-item__power" type="button" aria-label="暂停 api-gateway.prod" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                      <path d="M12 3v9" /><path d="M6.2 6.6a8 8 0 1 0 11.6 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="ok">
+                  <span class="feed-item__led feed-item__led--vault" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">vault-agent.edge</span>
+                    <span class="feed-item__meta">vault · 东京 B 区 · 心跳 30 秒前</span>
+                  </div>
+                  <span class="state state--ok">运行中</span>
+                  <b class="feed-item__replicas">×6</b>
+                  <button class="feed-item__power" type="button" aria-label="暂停 vault-agent.edge" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                      <path d="M12 3v9" /><path d="M6.2 6.6a8 8 0 1 0 11.6 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="degraded">
+                  <span class="feed-item__led feed-item__led--neutral" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">metrics-rollup</span>
+                    <span class="feed-item__meta">consul · 新加坡 A 区 · 副本不足</span>
+                  </div>
+                  <span class="state state--bad">已降级</span>
+                  <b class="feed-item__replicas">×2</b>
+                  <button class="feed-item__power" type="button" aria-label="暂停 metrics-rollup" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                      <path d="M12 3v9" /><path d="M6.2 6.6a8 8 0 1 0 11.6 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="deploy">
+                  <span class="feed-item__led feed-item__led--tf" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">tf-runner</span>
+                    <span class="feed-item__meta">terraform · 新加坡 A 区 · 滚动更新 2/4</span>
+                  </div>
+                  <span class="state state--deploy">部署中</span>
+                  <b class="feed-item__replicas">×4</b>
+                  <button class="feed-item__power" type="button" aria-label="暂停 tf-runner" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                      <path d="M12 3v9" /><path d="M6.2 6.6a8 8 0 1 0 11.6 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="ok">
+                  <span class="feed-item__led feed-item__led--nomad" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">web-frontend.prod</span>
+                    <span class="feed-item__meta">nomad · 东京 B 区 · 已稳定运行 46 天</span>
+                  </div>
+                  <span class="state state--ok">运行中</span>
+                  <b class="feed-item__replicas">×9</b>
+                  <button class="feed-item__power" type="button" aria-label="暂停 web-frontend.prod" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                      <path d="M12 3v9" /><path d="M6.2 6.6a8 8 0 1 0 11.6 0" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="运维指令">
+              <input class="quick-input quick-input--mono" id="quickInput" type="text" placeholder="$ nomad job status api-gateway" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="applyBtn">执行计划</button>
+                <button class="btn-ghost" type="button" data-toast="已打开日志流 · tail -f 200 行">查看日志</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="集群">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="7" height="7" rx="1" /><rect x="13.5" y="3.5" width="7" height="7" rx="1" />
+                <rect x="3.5" y="13.5" width="7" height="7" rx="1" /><rect x="13.5" y="13.5" width="7" height="7" rx="1" />
+              </svg>
+              <span>集群</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h13l3 3-3 3H4z" /><path d="M7 13v7M4 20h6" />
+              </svg>
+              <span>任务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="命令" aria-label="执行命令">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+              <span>命令</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="密钥">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8.5" cy="12" r="4" /><path d="M12.5 12h8M17.5 12v3.5M20.5 12v2.5" />
+              </svg>
+              <span>密钥</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

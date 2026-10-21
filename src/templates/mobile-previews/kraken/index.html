@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>KRAKEN Pro · 行情终端</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 15c3 0 4-8 7-8s3 6 5.5 6 2-4 5.5-4" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">KRAKEN</span>
+                <span class="brand-bar__sub">Pro · BTC/USDT 现货</span>
+              </div>
+              <button class="brand-bar__icon" type="button" id="refreshBtn" aria-label="刷新行情">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                  <path d="M20 5v6h-6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：BTC 实时报价 -->
+            <section class="ticker" aria-label="比特币行情">
+              <div class="ticker__head">
+                <div class="ticker__pair">
+                  <span class="ticker__coin" aria-hidden="true">₿</span>
+                  <div class="ticker__pair-text">
+                    <span class="ticker__symbol">BTC / USDT</span>
+                    <span class="ticker__full">Bitcoin · 1m 实时</span>
+                  </div>
+                </div>
+                <span class="ticker__delta" id="deltaChip" data-trend="up">+4.28%</span>
+              </div>
+              <p class="ticker__price" id="btcPrice">$67,412.50</p>
+              <div class="ticker__chart" aria-hidden="true">
+                <svg viewBox="0 0 300 84" preserveAspectRatio="none">
+                  <polyline class="ticker__area" points="0,64 15,58 30,64 45,52 60,55 75,46 90,49 105,38 120,43 135,33 150,37 165,28 180,32 195,24 210,28 225,18 240,23 255,14 270,18 285,10 300,7 300,84 0,84" />
+                  <polyline class="ticker__line" id="sparkLine" points="0,64 15,58 30,64 45,52 60,55 75,46 90,49 105,38 120,43 135,33 150,37 165,28 180,32 195,24 210,28 225,18 240,23 255,14 270,18 285,10 300,7" />
+                </svg>
+              </div>
+              <div class="ticker__range">
+                <div class="ticker__range-track">
+                  <span class="ticker__range-zone" aria-hidden="true"></span>
+                  <i class="ticker__range-marker" id="rangeMarker" style="--x: 70%"></i>
+                </div>
+                <div class="ticker__range-nums">
+                  <span>24H 低 <b>63,911</b></span>
+                  <span>24H 高 <b>68,940</b></span>
+                </div>
+              </div>
+              <div class="ticker__foot">
+                <span>24H 量 <b>$28.4B</b></span>
+                <span>市值 <b>$1.33T</b></span>
+                <span>资金费率 <b>0.010%</b></span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="订单簿与账户">
+              <div class="duo-card">
+                <h2 class="duo-card__title">订单簿</h2>
+                <div class="book-row" data-side="ask"><span class="book-row__price">68,120.0</span><span class="book-row__amt">0.42</span><i class="book-row__depth" style="--w: 34%"></i></div>
+                <div class="book-row" data-side="ask"><span class="book-row__price">67,985.5</span><span class="book-row__amt">1.18</span><i class="book-row__depth" style="--w: 62%"></i></div>
+                <div class="book-row book-row--spread"><span class="book-row__price">67,412.5</span><span class="book-row__amt">价差 0.02%</span></div>
+                <div class="book-row" data-side="bid"><span class="book-row__price">67,395.0</span><span class="book-row__amt">0.85</span><i class="book-row__depth" style="--w: 48%"></i></div>
+                <div class="book-row" data-side="bid"><span class="book-row__price">67,280.5</span><span class="book-row__amt">2.04</span><i class="book-row__depth" style="--w: 78%"></i></div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日账户</h2>
+                <p class="duo-card__value">$52,340.20</p>
+                <span class="duo-card__pnl" data-trend="up">+$1,426 · +2.8%</span>
+                <div class="alloc">
+                  <i class="alloc__seg alloc__seg--btc" style="--w: 67%"></i>
+                  <i class="alloc__seg alloc__seg--eth" style="--w: 20%"></i>
+                  <i class="alloc__seg alloc__seg--sol" style="--w: 13%"></i>
+                </div>
+                <p class="duo-card__note">BTC 67% · ETH 20% · SOL 13%</p>
+              </div>
+            </section>
+
+            <!-- 4. 自选 Feed -->
+            <section class="feed" aria-label="自选行情">
+              <div class="feed__head">
+                <h2 class="feed__title">自选</h2>
+                <div class="chips" role="tablist" aria-label="筛选自选">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="up">上涨</button>
+                  <button class="chip" type="button" data-filter="down">下跌</button>
+                  <button class="chip" type="button" data-filter="star">自选星标</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="up">
+                  <span class="feed-item__glyph" aria-hidden="true">₿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">BTC</span>
+                    <span class="feed-item__meta">Bitcoin</span>
+                  </div>
+                  <b class="feed-item__price" data-btc-price>67,412.50</b>
+                  <em class="feed-item__chip" data-trend="up">+4.28%</em>
+                  <button class="feed-item__star is-on" type="button" aria-label="星标自选" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up">
+                  <span class="feed-item__glyph feed-item__glyph--eth" aria-hidden="true">Ξ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">ETH</span>
+                    <span class="feed-item__meta">Ethereum</span>
+                  </div>
+                  <b class="feed-item__price">3,253.80</b>
+                  <em class="feed-item__chip" data-trend="up">+2.11%</em>
+                  <button class="feed-item__star is-on" type="button" aria-label="星标自选" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up">
+                  <span class="feed-item__glyph feed-item__glyph--sol" aria-hidden="true">◎</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">SOL</span>
+                    <span class="feed-item__meta">Solana</span>
+                  </div>
+                  <b class="feed-item__price">157.62</b>
+                  <em class="feed-item__chip" data-trend="up">+6.90%</em>
+                  <button class="feed-item__star" type="button" aria-label="星标自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="down">
+                  <span class="feed-item__glyph feed-item__glyph--xrp" aria-hidden="true">Ⓢ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">XRP</span>
+                    <span class="feed-item__meta">Ripple</span>
+                  </div>
+                  <b class="feed-item__price">0.6241</b>
+                  <em class="feed-item__chip" data-trend="down">−1.42%</em>
+                  <button class="feed-item__star" type="button" aria-label="星标自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="down">
+                  <span class="feed-item__glyph feed-item__glyph--doge" aria-hidden="true">Ð</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">DOGE</span>
+                    <span class="feed-item__meta">Dogecoin</span>
+                  </div>
+                  <b class="feed-item__price">0.1583</b>
+                  <em class="feed-item__chip" data-trend="down">−3.10%</em>
+                  <button class="feed-item__star" type="button" aria-label="星标自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up">
+                  <span class="feed-item__glyph feed-item__glyph--ton" aria-hidden="true">◈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">TON</span>
+                    <span class="feed-item__meta">Toncoin</span>
+                  </div>
+                  <b class="feed-item__price">6.88</b>
+                  <em class="feed-item__chip" data-trend="up">+0.87%</em>
+                  <button class="feed-item__star" type="button" aria-label="星标自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快捷交易">
+              <div class="action-label">
+                <span>限价买入 · BTC</span>
+                <span class="action-preview" id="btcPreview">≈ 0.000000 BTC</span>
+              </div>
+              <input class="quick-input" id="amountInput" type="text" inputmode="decimal" placeholder="输入 USDT 金额，如 500" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="buyBtn">买入 BTC</button>
+                <button class="btn-ghost" type="button" id="sellBtn">卖出</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="行情">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 17l5-6 4 3 6-8" /><path d="M14 6h4v4" />
+              </svg>
+              <span>行情</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="交易">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3L4 7l4 4" /><path d="M4 7h13a3 3 0 0 1 3 3" />
+                <path d="M16 21l4-4-4-4" /><path d="M20 17H7a3 3 0 0 1-3-3" />
+              </svg>
+              <span>交易</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="闪电下单" aria-label="闪电下单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
+              </svg>
+              <span>闪电下单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="资产">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="7" width="18" height="13" rx="3" /><path d="M8 7V5a4 4 0 0 1 8 0v2M12 12v4" />
+              </svg>
+              <span>资产</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

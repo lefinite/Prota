@@ -1,0 +1,317 @@
+/* =========================================================================
+ * mobile-previews/ferrari — Ferrari
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/ferrari tokens.css
+ * 页面：Cavallino Control · 超跑车控
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/ferrari/tokens.css）—— */
+  --bg: #0b0b0b;
+  --surface: #171717;
+  --surface-warm: #23130f;
+  --fg: #fffaf0;
+  --fg-2: #e8dcc8;
+  --muted: #a89f91;
+  --meta: #ffd200;
+  --border: #342a24;
+  --border-soft: #241f1b;
+  --accent: #dc0000;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #0f9d58;
+  --warn: #ffd200;
+  --danger: #ff3b30;
+  --font-display: "Ferrari Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Ferrari Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 19px;
+  --text-xl: 26px;
+  --text-2xl: 40px;
+  --text-3xl: 62px;
+  --text-4xl: 88px;
+  --leading-body: 1.5;
+  --leading-tight: 0.98;
+  --tracking-display: -0.03em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 112px;
+  --section-y-tablet: 80px;
+  --section-y-phone: 56px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 26px 80px rgba(0, 0, 0, 0.48);
+  --focus-ring: 0 0 0 4px rgba(220, 0, 0, 0.30);
+  --motion-fast: 130ms;
+  --motion-base: 220ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* —— 手机外壳（暗色系协调）—— */
+  --page-backdrop-top: #0a0a0a;
+  --page-backdrop-bottom: #050505;
+  --phone-shell: #121212;
+  --phone-shell-edge: #1a1a1a;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(220, 0, 0, 0.15);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(220, 0, 0, 0.08), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; cursor: pointer; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; font-family: var(--font-display); }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · Cavallino Control ===== */
+
+/* 顶部品牌栏：跃马标 + 精密工程感 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); }
+.topbar__brand { display: flex; align-items: center; gap: var(--space-3); }
+.brand-logo {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  color: var(--accent);
+}
+.brand-logo svg { width: 24px; height: 24px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name {
+  font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.15em;
+  color: var(--fg); font-family: var(--font-display);
+}
+.brand-sub {
+  font-size: var(--text-xs); color: var(--muted); margin-top: 2px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.iconbtn {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--fg);
+  border: 1px solid var(--border);
+  transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+}
+.iconbtn--accent { border-color: var(--accent); color: var(--accent); }
+.iconbtn svg { width: 18px; height: 18px; }
+.iconbtn:active { background: var(--surface); }
+
+/* Hero/速度表盘卡（signature：暗色背景 + Ferrari Red 速度表） */
+.speedo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  text-align: center;
+}
+.speedo-dial { width: 100%; max-width: 200px; margin: 0 auto var(--space-4); }
+.speedo-svg { width: 100%; height: auto; }
+.speedo-arc { stroke: var(--border-soft); }
+.speedo-arc-active { animation: speed-fill 1.2s var(--ease-standard) both; }
+.speedo-value {
+  font-family: var(--font-display);
+  font-size: 42px; font-weight: 700;
+  fill: var(--fg);
+}
+.speedo-unit {
+  font-family: var(--font-display);
+  font-size: var(--text-sm); font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  fill: var(--muted);
+}
+.speedo-meta { display: flex; justify-content: space-around; }
+.speed-stat { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+.speed-stat__label { font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.08em; }
+.speed-stat__value { font-size: var(--text-sm); font-weight: 700; color: var(--fg); font-family: var(--font-display); }
+
+/* 车辆状态卡片 */
+.vehicle-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  text-align: center;
+}
+.stat-card__icon { font-size: 20px; }
+.stat-card__label { font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.05em; }
+.stat-card__value { font-size: var(--text-sm); font-weight: 700; color: var(--fg); font-family: var(--font-display); }
+.stat-card__bar { height: 3px; border-radius: var(--radius-pill); background: var(--border-soft); overflow: hidden; margin-top: auto; }
+.stat-card__bar-fill { height: 100%; width: var(--p); background: var(--success); border-radius: var(--radius-pill); transform-origin: left; animation: grow 900ms var(--ease-standard) both; }
+
+/* 快捷控制（Ferrari Red 点缀） */
+.quick-controls {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.control-btn {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+}
+.control-btn svg { width: 20px; height: 20px; }
+.control-btn span { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; }
+.control-btn:active { background: var(--surface-warm); }
+.control-btn--primary { border-color: var(--accent); }
+.control-btn--primary svg { color: var(--accent); }
+.control-btn--primary:active { background: color-mix(in oklab, var(--accent), transparent 90%); }
+
+/* 驾驶模式选择 */
+.drive-modes { margin-bottom: var(--space-5); }
+.section-label {
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.15em;
+  color: var(--muted); text-transform: uppercase;
+  margin: 0 0 var(--space-3);
+}
+.mode-chips { display: flex; gap: var(--space-2); }
+.mode-chip {
+  flex: 1; padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: var(--text-xs); font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+}
+.mode-chip.is-active {
+  color: var(--accent-on); background: var(--accent); border-color: var(--accent);
+}
+
+/* 车辆信息列表 */
+.vehicle-list { margin-bottom: var(--space-4); }
+.list-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.list-item:last-child { border-bottom: 0; }
+.list-item__icon { font-size: 18px; }
+.list-item__content { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.list-item__title { font-size: var(--text-sm); font-weight: 600; color: var(--fg); }
+.list-item__sub { font-size: var(--text-xs); color: var(--muted); }
+.list-item__value {
+  font-size: var(--text-sm); font-weight: 700;
+  font-family: var(--font-display); color: var(--accent);
+}
+
+.bottom-spacer { height: var(--space-4); }
+
+/* 底部 Tab（精密工程风格） */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  font-size: var(--text-xs); color: var(--muted);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--bg);
+  font-family: var(--font-display);
+  font-size: var(--text-sm); padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+  letter-spacing: 0.05em;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.speedo-card, .vehicle-stats, .quick-controls, .drive-modes, .vehicle-list { animation: fade-up 520ms var(--ease-standard) both; }
+.vehicle-stats { animation-delay: 70ms; }
+.quick-controls { animation-delay: 140ms; }
+.drive-modes { animation-delay: 200ms; }
+.vehicle-list { animation-delay: 270ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes speed-fill { from { stroke-dashoffset: 251; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

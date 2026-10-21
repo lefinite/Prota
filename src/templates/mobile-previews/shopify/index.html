@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>夜市集 · Shopify 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__bag" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l1 12H4L5 8z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">夜市集 · 独立站</span>
+                <span class="brand-bar__sub mono">SHOPNAME.MY · 双十一备战 D-19</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="3 条新买家消息，1 条待回复" aria-label="消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 3V5z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：今日 GMV（签名：超细大字 + 霓虹点缀）-->
+            <section class="hero" aria-label="今日经营">
+              <p class="hero__eyebrow mono">TODAY · GMV</p>
+              <h1 class="hero__num">¥86,420</h1>
+              <p class="hero__delta"><b>↑ 18.4%</b> vs 昨日同时段 · 订单 1,204 单</p>
+              <div class="hero__spark" role="img" aria-label="今日分时销售曲线">
+                <svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M0,44 30,40 60,42 90,34 120,36 150,26 180,30 210,18 240,22 270,12 300,8" fill="none" stroke="var(--accent)" stroke-width="2"/>
+                  <path d="M0,44 30,40 60,42 90,34 120,36 150,26 180,30 210,18 240,22 270,12 300,8 L300,56 L0,56 Z" fill="var(--accent)" fill-opacity="0.12" stroke="none"/>
+                </svg>
+              </div>
+              <div class="hero__actions">
+                <button class="pill-neon" type="button" data-toast="已开启双 11 预热页装修器">装修大促页</button>
+                <button class="pill-ghost" type="button" data-toast="优惠券「满 300 减 40」已上线">发券</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="转化">
+              <div class="duo__card">
+                <h2 class="duo__title mono">CONVERSION</h2>
+                <p class="duo__num">3.2<span>%</span></p>
+                <p class="duo__meta">加购率 +0.4pp · 结算流失 12%</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">TOP SKU</h2>
+                <p class="duo__num">142</p>
+                <p class="duo__meta">「山茶洗发露 500ml」· 库存剩 38</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：订单流 -->
+            <section class="feed" aria-label="实时订单">
+              <div class="feed__head">
+                <h2 class="feed__title mono">LIVE ORDERS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="paid">已支付</button>
+                  <button class="chip" type="button" data-filter="ship">待发货</button>
+                  <button class="chip" type="button" data-filter="risk">风控</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="paid">
+                  <span class="feed-item__glyph">#80412</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">山茶洗发露 ×2 + 赠品</span>
+                    <span class="feed-item__meta mono">1 分钟前 · 微信支付 · ¥238</span>
+                  </div>
+                  <em class="state st-ok">PAID</em>
+                </li>
+                <li class="feed-item" data-kind="ship">
+                  <span class="feed-item__glyph">#80411</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">手工皂礼盒（刻字）</span>
+                    <span class="feed-item__meta mono">12 分钟前 · 待打单 · ¥168</span>
+                  </div>
+                  <em class="state st-ship">PACK</em>
+                </li>
+                <li class="feed-item" data-kind="risk">
+                  <span class="feed-item__glyph">#80409</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">香薰机 ×5（同地址拆单）</span>
+                    <span class="feed-item__meta mono">1 小时前 · 命中风控规则 R3</span>
+                  </div>
+                  <em class="state st-risk">HOLD</em>
+                </li>
+                <li class="feed-item" data-kind="paid">
+                  <span class="feed-item__glyph">#80408</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">护发精油旅行装 ×3</span>
+                    <span class="feed-item__meta mono">1 小时前 · 支付宝 · ¥126</span>
+                  </div>
+                  <em class="state st-ok">PAID</em>
+                </li>
+                <li class="feed-item" data-kind="ship">
+                  <span class="feed-item__glyph">#80405</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">会员年卡 ×1</span>
+                    <span class="feed-item__meta mono">2 小时前 · 自动续费开通 · ¥99</span>
+                  </div>
+                  <em class="state st-ship">DONE</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="快捷运营">
+              <div class="chips chips--promo">
+                <button class="chip is-active" type="button">满减</button>
+                <button class="chip" type="button">秒杀</button>
+                <button class="chip" type="button">直播</button>
+                <button class="chip" type="button">积分</button>
+              </div>
+              <input class="action__input" id="productInput" type="text" placeholder="搜商品 / 订单 / 买家…" />
+              <div class="action__row">
+                <button class="pill-neon pill-neon--wide" type="button" data-toast="批量打单 128 单已发送到菜鸟">一键发货</button>
+                <button class="pill-ghost pill-ghost--wide" type="button" data-toast="经营日报已推送到群">日报</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4v-9z"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="订单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+              <span>订单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="上新" aria-label="上新">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>上新</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="商品">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="13" width="7" height="7"/><rect x="14" y="13" width="7" height="7"/></svg>
+              <span>商品</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="数据">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-7M21 19H3"/></svg>
+              <span>数据</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

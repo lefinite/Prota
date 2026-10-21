@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>M LAP · 圈速 · BMW M-Inspired</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <i class="brand-bar__stripe"></i>
+                <span class="brand-bar__m">M</span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">M LAP</span>
+                <span class="brand-bar__sub">M3 CS · 浙江国际赛车场 ZIC</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="遥测录制已同步至云端车库" aria-label="设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09c.3.61.92 1 1.6 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.88Z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 签名元素：M 三色带（4px，只作品牌标识）-->
+            <div class="m-stripe" aria-hidden="true"></div>
+
+            <!-- 2. Hero / 签名卡：最快圈速 + 数据格 -->
+            <section class="hero-cockpit" aria-label="本场最快圈速">
+              <p class="hero-cockpit__label">BEST LAP · 本场最快</p>
+              <p class="hero-cockpit__lap" id="bestLap">1:42.318</p>
+              <p class="hero-cockpit__sub" id="lapSub">第 12 圈刷新个人纪录 · 赛道纪录 +1.204</p>
+
+              <div class="spec-grid" role="list" aria-label="本圈遥测数据">
+                <div class="spec-cell" role="listitem">
+                  <b class="spec-cell__value" data-count="268">0</b>
+                  <span class="spec-cell__label">TOP SPEED · KM/H</span>
+                </div>
+                <div class="spec-cell" role="listitem">
+                  <b class="spec-cell__value" data-count="121" data-decimal="2">0.00</b>
+                  <span class="spec-cell__label">AVG LAT · G</span>
+                </div>
+                <div class="spec-cell" role="listitem">
+                  <b class="spec-cell__value spec-cell__value--warn" data-count="102">0</b>
+                  <span class="spec-cell__label">OIL TEMP · °C</span>
+                </div>
+                <div class="spec-cell" role="listitem">
+                  <b class="spec-cell__value" data-count="12">0</b>
+                  <span class="spec-cell__label">LAPS · TOTAL</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="赛道与驾驶模式">
+              <div class="duo-card">
+                <h2 class="duo-card__title">ZIC · 全赛道</h2>
+                <ul class="spec-list">
+                  <li><i>全长</i><b>3.20 KM</b></li>
+                  <li><i>弯数</i><b>14</b></li>
+                  <li><i>大直道</i><b>620 M</b></li>
+                  <li><i>你来过</i><b>12 圈 · 今日</b></li>
+                </ul>
+                <button class="duo-card__link" type="button" data-toast="已加载 ZIC 赛道图与弯心笔记">赛道图</button>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">M SETUP</h2>
+                <div class="setup-row">
+                  <span class="setup-row__label">M MODE</span>
+                  <div class="seg" data-seg-cycle="ROAD|SPORT|TRACK">
+                    <button class="seg__btn" type="button">ROAD</button>
+                    <button class="seg__btn" type="button">SPORT</button>
+                    <button class="seg__btn is-on" type="button">TRACK</button>
+                  </div>
+                </div>
+                <div class="setup-row">
+                  <span class="setup-row__label">DSC</span>
+                  <div class="seg" data-seg-cycle="ON|M DYN|OFF">
+                    <button class="seg__btn" type="button">ON</button>
+                    <button class="seg__btn" type="button">M DYN</button>
+                    <button class="seg__btn is-on" type="button">OFF</button>
+                  </div>
+                </div>
+                <div class="setup-row">
+                  <span class="setup-row__label">SHIFT</span>
+                  <div class="seg" data-seg-cycle="D|S|M1|M2|M3">
+                    <button class="seg__btn" type="button">D</button>
+                    <button class="seg__btn" type="button">S</button>
+                    <button class="seg__btn is-on" type="button">M2</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 圈速 Feed -->
+            <section class="feed" aria-label="圈速列表">
+              <div class="feed__head">
+                <h2 class="feed__title">LAPS</h2>
+                <div class="chips" role="tablist" aria-label="筛选圈速">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="fastest">最快</button>
+                  <button class="chip" type="button" data-filter="progress">进步</button>
+                  <button class="chip" type="button" data-filter="warn">警示</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="fastest">
+                  <span class="feed-item__glyph" aria-hidden="true">L12</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">1:42.318</span>
+                    <span class="feed-item__meta">14:36 · 268 KM/H · <em class="feed-item__chip is-best">BEST</em></span>
+                  </div>
+                  <b class="feed-item__delta is-down">-0.842</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为标杆圈" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="progress">
+                  <span class="feed-item__glyph" aria-hidden="true">L11</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">1:43.160</span>
+                    <span class="feed-item__meta">14:29 · 265 KM/H</span>
+                  </div>
+                  <b class="feed-item__delta is-up">+0.452</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为标杆圈" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="warn">
+                  <span class="feed-item__glyph" aria-hidden="true">L10</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">1:44.008</span>
+                    <span class="feed-item__meta">14:21 · 259 KM/H · <em class="feed-item__chip is-warn">油温 108°C</em></span>
+                  </div>
+                  <b class="feed-item__delta is-up">+1.590</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为标杆圈" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="progress">
+                  <span class="feed-item__glyph" aria-hidden="true">L09</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">1:43.402</span>
+                    <span class="feed-item__meta">14:12 · 263 KM/H</span>
+                  </div>
+                  <b class="feed-item__delta is-down">-0.318</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为标杆圈" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="progress">
+                  <span class="feed-item__glyph" aria-hidden="true">L08</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">1:43.755</span>
+                    <span class="feed-item__meta">14:03 · 261 KM/H</span>
+                  </div>
+                  <b class="feed-item__delta is-up">+0.244</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为标杆圈" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="warn">
+                  <span class="feed-item__glyph" aria-hidden="true">L07</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">1:45.310</span>
+                    <span class="feed-item__meta">13:55 · 252 KM/H · <em class="feed-item__chip is-warn">出弯甩尾</em></span>
+                  </div>
+                  <b class="feed-item__delta is-up">+2.970</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为标杆圈" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="圈速操作">
+              <input class="quick-input" id="noteInput" type="text" placeholder="本圈备注，如：T9 晚刹 0.3s" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="recBtn">START RECORDING</button>
+                <button class="btn-ghost" type="button" data-toast="已连接车载遥测 · 20 Hz 采样">M TELEMETRY</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="圈速">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8" /><path d="M12 13V8" /><path d="M9 2h6" />
+              </svg>
+              <span>圈速</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="遥测">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12h4l2-6 4 12 2-6h6" />
+              </svg>
+              <span>遥测</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="录制" aria-label="开始或结束录制圈速">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />
+              </svg>
+              <span>录制</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="赛道">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 18c6-10 10 6 16-6" /><path d="M3 21h18" />
+              </svg>
+              <span>赛道</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="车库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 17V9l9-5 9 5v8" /><path d="M7 17v-5h10v5" />
+              </svg>
+              <span>车库</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

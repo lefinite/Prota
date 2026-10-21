@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>TeamSync · Webex</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="Device status bar">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- Top Bar -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark" style="background: var(--accent);">W</span>
+                <div class="brand-text">
+                  <span class="brand-name">TeamSync</span>
+                  <span class="brand-sub">3 spaces active</span>
+                </div>
+              </div>
+              <div class="topbar__actions">
+                <button class="iconbtn" aria-label="Search" data-toast="Search conversations">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" /></svg>
+                </button>
+                <button class="iconbtn iconbtn--badge" aria-label="Notifications" data-toast="3 new notifications">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                  <span class="iconbtn__badge">3</span>
+                </button>
+              </div>
+            </header>
+
+            <!-- Hero Meeting Card (Signature: Multi-user collaboration) -->
+            <section class="meeting-hero" aria-label="Featured meeting">
+              <div class="meeting-hero__badge">NOW · 5 participants</div>
+              <h2 class="meeting-hero__title">Product Design Review</h2>
+              <p class="meeting-hero__time">Started 15 min ago · Design Team</p>
+
+              <div class="meeting-hero__participants">
+                <div class="avatar avatar--cobalt" title="Alex Chen">AC</div>
+                <div class="avatar avatar--cyan" title="Sarah Kim">SK</div>
+                <div class="avatar avatar--mint" title="Mike Johnson">MJ</div>
+                <div class="avatar avatar--purple" title="Emma Wilson">EW</div>
+                <div class="avatar avatar--orange" title="+1">+1</div>
+              </div>
+
+              <div class="meeting-hero__status">
+                <span class="status-dot status-dot--active"></span>
+                <span>Live now</span>
+              </div>
+
+              <button class="meeting-hero__cta" data-toast="Joining meeting...">Join Meeting</button>
+            </section>
+
+            <!-- Quick Stats -->
+            <section class="quick-stats" aria-label="Quick stats">
+              <div class="stat-pill">
+                <span class="stat-pill__icon">📅</span>
+                <div class="stat-pill__content">
+                  <span class="stat-pill__label">Today</span>
+                  <span class="stat-pill__value">4 meetings</span>
+                </div>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-pill__icon">💬</span>
+                <div class="stat-pill__content">
+                  <span class="stat-pill__label">Unread</span>
+                  <span class="stat-pill__value">12 messages</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Spaces List -->
+            <section class="spaces-list" aria-label="Team spaces">
+              <div class="section-header">
+                <span class="section-label">YOUR SPACES</span>
+              </div>
+
+              <div class="space-tabs" role="tablist" aria-label="Filter spaces">
+                <button class="space-tab is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+                <button class="space-tab" data-filter="unread" role="tab" aria-selected="false">Unread</button>
+                <button class="space-tab" data-filter="favorites" role="tab" aria-selected="false">⭐</button>
+              </div>
+
+              <ul class="space-items" id="spaceList">
+                <li class="space-item" data-unread="true">
+                  <div class="space-item__avatar space-item__avatar--lime">DT</div>
+                  <div class="space-item__main">
+                    <span class="space-item__name">Design Team</span>
+                    <span class="space-item__preview">Sarah: Updated the mockups for...</span>
+                  </div>
+                  <div class="space-item__meta">
+                    <span class="space-item__time">2m</span>
+                    <span class="space-item__badge">5</span>
+                  </div>
+                </li>
+                <li class="space-item" data-unread="false">
+                  <div class="space-item__avatar space-item__avatar--pink">ENG</div>
+                  <div class="space-item__main">
+                    <span class="space-item__name">Engineering</span>
+                    <span class="space-item__preview">Mike: Deployed to staging</span>
+                  </div>
+                  <div class="space-item__meta">
+                    <span class="space-item__time">15m</span>
+                  </div>
+                </li>
+                <li class="space-item" data-unread="true">
+                  <div class="space-item__avatar space-item__avatar--gold">PM</div>
+                  <div class="space-item__main">
+                    <span class="space-item__name">Product Sync</span>
+                    <span class="space-item__preview">Alex: Sprint planning tomorrow</span>
+                  </div>
+                  <div class="space-item__meta">
+                    <span class="space-item__time">1h</span>
+                    <span class="space-item__badge">2</span>
+                  </div>
+                </li>
+                <li class="space-item" data-unread="false">
+                  <div class="space-item__avatar space-item__avatar--cobalt">CS</div>
+                  <div class="space-item__main">
+                    <span class="space-item__name">Customer Success</span>
+                    <span class="space-item__preview">Weekly recap ready</span>
+                  </div>
+                  <div class="space-item__meta">
+                    <span class="space-item__time">3h</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+              <button class="action-card" data-toast="Starting new meeting...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                <span>New Meeting</span>
+              </button>
+              <button class="action-card" data-toast="Opening schedule...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                <span>Schedule</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer"></div>
+          </main>
+
+          <!-- Bottom Tab -->
+          <nav class="tabbar" aria-label="Main navigation">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>Home</span>
+            </button>
+            <button class="tab" data-tab="messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>Messages</span>
+            </button>
+            <button class="tab tab--meet" data-tab="meet" aria-label="Start meeting">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+            </button>
+            <button class="tab" data-tab="schedule">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              <span>Schedule</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>Profile</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

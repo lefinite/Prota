@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>PulseFit · Energetic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">⚡</span>
+                <div class="brand-text">
+                  <span class="brand-name">PulseFit</span>
+                  <span class="brand-sub">今日训练</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 今日目标（signature：大胆的数字展示 + 高对比橙色） -->
+            <section class="today-card" aria-label="今日目标">
+              <div class="today-card__bg">
+                <div class="today-card__pattern"></div>
+              </div>
+              <div class="today-card__content">
+                <span class="today-card__label">TODAY'S GOAL</span>
+                <p class="today-card__value">8,420 <span class="unit">步</span></p>
+                <div class="today-card__progress">
+                  <div class="today-card__bar">
+                    <span class="today-card__fill" style="--progress: 84%"></span>
+                  </div>
+                  <span class="today-card__percent">84%</span>
+                </div>
+                <p class="today-card__hint">再走 1,580 步完成目标！💪</p>
+              </div>
+              <div class="today-card__stats">
+                <div class="mini-stat mini-stat--cal">
+                  <span class="mini-stat__val">386</span>
+                  <span class="mini-stat__label">卡路里</span>
+                </div>
+                <div class="mini-stat mini-stat--dist">
+                  <span class="mini-stat__val">5.2</span>
+                  <span class="mini-stat__label">公里</span>
+                </div>
+                <div class="mini-stat mini-stat--time">
+                  <span class="mini-stat__val">42</span>
+                  <span class="mini-stat__label">分钟</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 活动卡片双栏 -->
+            <section class="activity-row" aria-label="活动统计">
+              <div class="activity-card activity-card--run">
+                <div class="activity-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                </div>
+                <span class="activity-card__val">3.2</span>
+                <span class="activity-card__label">公里</span>
+                <span class="activity-card__sub">今日跑步</span>
+              </div>
+              <div class="activity-card activity-card--burn">
+                <div class="activity-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M7 7l10 10M17 7L7 17" /></svg>
+                </div>
+                <span class="activity-card__val">524</span>
+                <span class="activity-card__label">卡路里</span>
+                <span class="activity-card__sub">今日消耗</span>
+              </div>
+            </section>
+
+            <!-- 本周训练列表 -->
+            <section class="workout-section" aria-label="本周训练">
+              <div class="section-header">
+                <h2>本周训练</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选训练">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="cardio" role="tab" aria-selected="false">有氧</button>
+                  <button class="chip" data-filter="strength" role="tab" aria-selected="false">力量</button>
+                </div>
+              </div>
+
+              <div class="workout-list" id="workoutList">
+                <div class="workout-item" data-type="cardio">
+                  <div class="workout-item__icon workout-item__icon--cardio">🏃</div>
+                  <div class="workout-item__main">
+                    <span class="workout-item__title">晨间跑步 5K</span>
+                    <span class="workout-item__sub">今天 07:30 · 有氧运动</span>
+                  </div>
+                  <div class="workout-item__right">
+                    <span class="workout-item__stat">32 分钟</span>
+                    <span class="badge badge--success">已完成</span>
+                  </div>
+                </div>
+                <div class="workout-item" data-type="strength">
+                  <div class="workout-item__icon workout-item__icon--strength">💪</div>
+                  <div class="workout-item__main">
+                    <span class="workout-item__title">上肢力量训练</span>
+                    <span class="workout-item__sub">昨天 18:45 · 力量训练</span>
+                  </div>
+                  <div class="workout-item__right">
+                    <span class="workout-item__stat">45 分钟</span>
+                    <span class="badge badge--success">已完成</span>
+                  </div>
+                </div>
+                <div class="workout-item" data-type="cardio">
+                  <div class="workout-item__icon workout-item__icon--cardio">🚴</div>
+                  <div class="workout-item__main">
+                    <span class="workout-item__title">室内单车 HIIT</span>
+                    <span class="workout-item__sub">前天 19:00 · 有氧运动</span>
+                  </div>
+                  <div class="workout-item__right">
+                    <span class="workout-item__stat">28 分钟</span>
+                    <span class="badge badge--success">已完成</span>
+                  </div>
+                </div>
+                <div class="workout-item" data-type="strength">
+                  <div class="workout-item__icon workout-item__icon--strength">🧘</div>
+                  <div class="workout-item__main">
+                    <span class="workout-item__title">核心拉伸恢复</span>
+                    <span class="workout-item__sub">3天前 20:30 · 恢复训练</span>
+                  </div>
+                  <div class="workout-item__right">
+                    <span class="workout-item__stat">20 分钟</span>
+                    <span class="badge badge--muted">已跳过</span>
+                  </div>
+                </div>
+                <div class="workout-item" data-type="cardio">
+                  <div class="workout-item__icon workout-item__icon--cardio">⚡</div>
+                  <div class="workout-item__main">
+                    <span class="workout-item__title">燃脂跳绳挑战</span>
+                    <span class="workout-item__sub">4天前 07:00 · 有氧运动</span>
+                  </div>
+                  <div class="workout-item__right">
+                    <span class="workout-item__stat">15 分钟</span>
+                    <span class="badge badge--success">已完成</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 每周挑战 -->
+            <section class="challenge-card" aria-label="每周挑战">
+              <div class="challenge-card__header">
+                <div class="challenge-card__icon">🏆</div>
+                <div class="challenge-card__text">
+                  <span class="challenge-card__title">每周挑战</span>
+                  <span class="challenge-card__desc">累计运动 5 次，赢取徽章！</span>
+                </div>
+              </div>
+              <div class="challenge-card__progress">
+                <div class="challenge-dots">
+                  <span class="challenge-dot is-done"></span>
+                  <span class="challenge-dot is-done"></span>
+                  <span class="challenge-dot is-done"></span>
+                  <span class="challenge-dot is-current"></span>
+                  <span class="challenge-dot"></span>
+                </div>
+                <span class="challenge-card__count">3 / 5 次</span>
+              </div>
+              <button class="challenge-card__btn" data-toast="继续加油！">开始训练</button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="workout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M7 7l10 10M17 7L7 17" /></svg>
+              <span>训练</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="开始训练">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6" /></svg>
+              <span>统计</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

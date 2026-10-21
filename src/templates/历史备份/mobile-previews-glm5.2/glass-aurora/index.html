@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>极光助手 · Glass Aurora</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 背景光斑 -->
+            <div class="aurora-bg" aria-hidden="true">
+              <div class="aurora-spot aurora-spot--purple"></div>
+              <div class="aurora-spot aurora-spot--cyan"></div>
+              <div class="aurora-spot aurora-spot--pink"></div>
+            </div>
+
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-glass">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" /></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">极光助手</span>
+                  <span class="brand-sub">Aurora AI</span>
+                </div>
+              </div>
+              <button class="iconbtn glass-btn" aria-label="设置" data-toast="设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 卡片：AI 能力总览（signature：渐变标题 + 玻璃质感） -->
+            <section class="hero-card glass-card" aria-label="AI 概览">
+              <h1 class="hero-title">
+                <span class="hero-title__text">智能对话</span>
+                <span class="hero-title__accent">无限可能</span>
+              </h1>
+              <p class="hero-desc">您的全能 AI 助手，随时待命</p>
+              <div class="hero-stats">
+                <div class="hero-stat">
+                  <span class="hero-stat__num">2.4K</span>
+                  <span class="hero-stat__label">今日对话</span>
+                </div>
+                <div class="hero-stat">
+                  <span class="hero-stat__num">98%</span>
+                  <span class="hero-stat__label">满意度</span>
+                </div>
+                <div class="hero-stat">
+                  <span class="hero-stat__num">0.3s</span>
+                  <span class="hero-stat__label">响应速度</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快捷功能卡 -->
+            <section class="features-grid">
+              <div class="feature-card glass-card" data-feature="chat" data-toast="开始对话">
+                <div class="feature-icon feature-icon--purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                </div>
+                <span class="feature-name">对话</span>
+              </div>
+              <div class="feature-card glass-card" data-feature="write" data-toast="写作助手">
+                <div class="feature-icon feature-icon--cyan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                </div>
+                <span class="feature-name">创作</span>
+              </div>
+              <div class="feature-card glass-card" data-feature="code" data-toast="代码助手">
+                <div class="feature-icon feature-icon--pink">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+                </div>
+                <span class="feature-name">编程</span>
+              </div>
+              <div class="feature-card glass-card" data-feature="image" data-toast="图像生成">
+                <div class="feature-icon feature-icon--purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21" /></svg>
+                </div>
+                <span class="feature-name">绘图</span>
+              </div>
+            </section>
+
+            <!-- 对话历史列表 -->
+            <section class="history-section">
+              <div class="section-header">
+                <h2>最近对话</h2>
+                <div class="chips" role="tablist" aria-label="筛选对话">
+                  <button class="chip glass-chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip glass-chip" data-filter="today" role="tab" aria-selected="false">今天</button>
+                  <button class="chip glass-chip" data-filter="week" role="tab" aria-selected="false">本周</button>
+                </div>
+              </div>
+              <ul class="chat-list" id="chatList">
+                <li class="chat-item" data-time="today">
+                  <div class="chat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                  </div>
+                  <div class="chat-main">
+                    <span class="chat-title">如何提高工作效率？</span>
+                    <span class="chat-sub">10:23 · 时间管理技巧</span>
+                  </div>
+                  <div class="chat-right">
+                    <span class="chat-length">2.3K</span>
+                    <svg class="chat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                  </div>
+                </li>
+                <li class="chat-item" data-time="today">
+                  <div class="chat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  </div>
+                  <div class="chat-main">
+                    <span class="chat-title">React 组件优化方案</span>
+                    <span class="chat-sub">09:15 · 代码审查</span>
+                  </div>
+                  <div class="chat-right">
+                    <span class="chat-length">5.1K</span>
+                    <svg class="chat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                  </div>
+                </li>
+                <li class="chat-item" data-time="week">
+                  <div class="chat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21" /></svg>
+                  </div>
+                  <div class="chat-main">
+                    <span class="chat-title">生成产品宣传图</span>
+                    <span class="chat-sub">昨天 · 图像生成</span>
+                  </div>
+                  <div class="chat-right">
+                    <span class="chat-length">图片</span>
+                    <svg class="chat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                  </div>
+                </li>
+                <li class="chat-item" data-time="week">
+                  <div class="chat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                  </div>
+                  <div class="chat-main">
+                    <span class="chat-title">英文邮件润色</span>
+                    <span class="chat-sub">前天 · 写作助手</span>
+                  </div>
+                  <div class="chat-right">
+                    <span class="chat-length">856</span>
+                    <svg class="chat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="cta-btn glass-btn glass-btn--primary" data-toast="开始新对话">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                开始新对话
+              </button>
+              <div class="action-row">
+                <button class="action-btn glass-btn" data-toast="语音输入">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>
+                  语音
+                </button>
+                <button class="action-btn glass-btn" data-toast="上传文件">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  上传
+                </button>
+                <button class="action-btn glass-btn" data-toast="更多工具">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
+                  更多
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar glass-tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
+              <span>探索</span>
+            </button>
+            <button class="tab" data-tab="create">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+              <span>创建</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

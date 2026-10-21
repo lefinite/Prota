@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>咖啡馆 · Warm & Cozy</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 21V8h5v13H2zm15 0V8h5v13h-5zM9 8h6v13H9V8z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">晨间咖啡馆</span>
+                  <span class="brand-sub">早安，又是一个美好的一天</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="收藏" data-toast="已添加到收藏">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature: Today's Special -->
+            <section class="hero-special" aria-label="今日特选">
+              <div class="special-badge">TODAY'S SPECIAL</div>
+              <div class="special-content">
+                <div class="special-emoji">☕</div>
+                <h2 class="special-title">焦糖玛奇朵</h2>
+                <p class="special-desc">香草糖浆 + 浓缩咖啡 + 丝滑奶泡</p>
+                <div class="special-price">¥ 28</div>
+              </div>
+              <div class="special-tag">
+                <span>限时优惠</span>
+                <span>-15%</span>
+              </div>
+            </section>
+
+            <!-- 快速分类卡 -->
+            <section class="categories-section" aria-label="分类浏览">
+              <div class="cat-card cat-card--hot">
+                <span class="cat-emoji">🔥</span>
+                <span class="cat-name">热饮</span>
+              </div>
+              <div class="cat-card cat-card--cold">
+                <span class="cat-emoji">❄️</span>
+                <span class="cat-name">冷萃</span>
+              </div>
+              <div class="cat-card cat-card--food">
+                <span class="cat-emoji">🥐</span>
+                <span class="cat-name">烘焙</span>
+              </div>
+              <div class="cat-card cat-card--more">
+                <span class="cat-emoji">⋯</span>
+                <span class="cat-name">更多</span>
+              </div>
+            </section>
+
+            <!-- 人气单品列表 -->
+            <section class="menu-section" aria-label="人气单品">
+              <div class="section-head">
+                <h2 class="section-title">人气单品</h2>
+                <div class="chips" id="menuChips" role="tablist" aria-label="筛选菜单">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="coffee" role="tab" aria-selected="false">咖啡</button>
+                  <button class="chip" data-filter="tea" role="tab" aria-selected="false">茶饮</button>
+                </div>
+              </div>
+
+              <ul class="menu-list" id="menuList">
+                <li class="menu-item" data-type="coffee">
+                  <div class="menu-thumb">
+                    <span class="thumb-emoji">☕</span>
+                  </div>
+                  <div class="menu-main">
+                    <span class="menu-title">经典美式</span>
+                    <span class="menu-desc">浓郁醇厚 · 回甘悠长</span>
+                    <div class="menu-meta">
+                      <span class="menu-sales">月售 856</span>
+                      <span class="menu-rating">★★★★★ 4.9</span>
+                    </div>
+                  </div>
+                  <div class="menu-right">
+                    <span class="menu-price">¥ 18</span>
+                    <button class="add-btn" data-toast="已加入购物车：经典美式">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="menu-item" data-type="tea">
+                  <div class="menu-thumb">
+                    <span class="thumb-emoji">🍵</span>
+                  </div>
+                  <div class="menu-main">
+                    <span class="menu-title">抹茶拿铁</span>
+                    <span class="menu-desc">宇治抹茶 · 鲜牛乳</span>
+                    <div class="menu-meta">
+                      <span class="menu-sales">月售 623</span>
+                      <span class="menu-rating">★★★★★ 4.8</span>
+                    </div>
+                  </div>
+                  <div class="menu-right">
+                    <span class="menu-price">¥ 24</span>
+                    <button class="add-btn" data-toast="已加入购物车：抹茶拿铁">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="menu-item" data-type="coffee">
+                  <div class="menu-thumb">
+                    <span class="thumb-emoji">🥤</span>
+                  </div>
+                  <div class="menu-main">
+                    <span class="menu-title">生椰乳茶</span>
+                    <span class="menu-desc">椰香浓郁 · 清爽丝滑</span>
+                    <div class="menu-meta">
+                      <span class="menu-sales">月售 1024</span>
+                      <span class="menu-rating">★★★★★ 4.7</span>
+                    </div>
+                  </div>
+                  <div class="menu-right">
+                    <span class="menu-price">¥ 22</span>
+                    <button class="add-btn" data-toast="已加入购物车：生椰乳茶">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="menu-item" data-type="coffee">
+                  <div class="menu-thumb">
+                    <span class="thumb-emoji">🧁</span>
+                  </div>
+                  <div class="menu-main">
+                    <span class="menu-title">流心蛋挞</span>
+                    <span class="menu-desc">现烤酥脆 · 蛋奶香浓</span>
+                    <div class="menu-meta">
+                      <span class="menu-sales">月售 445</span>
+                      <span class="menu-rating">★★★★☆ 4.6</span>
+                    </div>
+                  </div>
+                  <div class="menu-right">
+                    <span class="menu-price">¥ 12</span>
+                    <button class="add-btn" data-toast="已加入购物车：流心蛋挞">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 会员卡 -->
+            <section class="member-card" aria-label="会员中心">
+              <div class="member-content">
+                <span class="member-title">咖啡会员卡</span>
+                <span class="member-level">● GOLD</span>
+              </div>
+              <div class="member-balance">
+                <span class="balance-label">当前积分</span>
+                <span class="balance-value">2,840</span>
+              </div>
+              <div class="member-progress">
+                <span class="progress-fill" style="--p: 68%"></span>
+              </div>
+              <span class="member-hint">再消费 ¥116 升铂金</span>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="btn-primary" data-toast="正在跳转到点单页面...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+                开始点单
+              </button>
+              <div class="btn-row">
+                <button class="btn-secondary" data-toast="订单记录">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6"/></svg>
+                  订单
+                </button>
+                <button class="btn-ghost" data-toast="扫描会员码">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  会员码
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="menu">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>菜单</span>
+            </button>
+            <button class="tab tab--center" data-tab="cart" aria-label="购物车">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </button>
+            <button class="tab" data-tab="orders">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 0 0 2.284-1.81 3.42 3.42 0 0 1 5.762 0 3.42 3.42 0 0 0 2.284 1.81 3.42 3.42 0 0 1 1.56 5.135 3.42 3.42 0 0 0-2.284 1.81 3.42 3.42 0 0 1-5.762 0 3.42 3.42 0 0 0-2.284-1.81 3.42 3.42 0 0 1-1.56-5.135z" /></svg>
+              <span>订单</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

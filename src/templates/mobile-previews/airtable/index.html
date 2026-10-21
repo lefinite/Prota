@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>蜂格 · Airtable 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">蜂格 · 内容日历</span>
+                <span class="brand-bar__sub">Base「品牌部 · 10 月」· 86 条记录</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="视图：网格 / 看板 / 日历" aria-label="切换视图">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：迷你表格视图（签名）-->
+            <section class="hero" aria-label="表格视图">
+              <div class="hero__toolbar">
+                <span class="hero__view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>网格视图</span>
+                <span class="hero__count">已选 3 / 86</span>
+              </div>
+              <div class="hero__table" role="table" aria-label="内容排期表">
+                <div class="hero__row hero__row--head" role="row">
+                  <span class="c1">选题</span><span class="c2">状态</span><span class="c3">负责人</span><span class="c4">日期</span>
+                </div>
+                <div class="hero__row is-sel" role="row">
+                  <span class="c1">双 11 预热海报</span>
+                  <span class="c2"><em class="tag tag--doing">进行中</em></span>
+                  <span class="c3">小鹿</span><span class="c4">10/16</span>
+                </div>
+                <div class="hero__row" role="row">
+                  <span class="c1">会员体系复盘长文</span>
+                  <span class="c2"><em class="tag tag--ok">已发布</em></span>
+                  <span class="c3">阿岩</span><span class="c4">10/12</span>
+                </div>
+                <div class="hero__row" role="row">
+                  <span class="c1">播客 EP.42 剪辑</span>
+                  <span class="c2"><em class="tag tag--wait">待排期</em></span>
+                  <span class="c3">阿岩</span><span class="c4">10/19</span>
+                </div>
+                <div class="hero__row is-sel" role="row">
+                  <span class="c1">品牌片分镜 v2</span>
+                  <span class="c2"><em class="tag tag--doing">进行中</em></span>
+                  <span class="c3">小满</span><span class="c4">10/17</span>
+                </div>
+                <div class="hero__row is-sel" role="row">
+                  <span class="c1">用户访谈纪要 #7</span>
+                  <span class="c2"><em class="tag tag--ok">已发布</em></span>
+                  <span class="c3">小鹿</span><span class="c4">10/09</span>
+                </div>
+              </div>
+              <div class="hero__progress">
+                <div class="hero__track"><span style="--w: 58%"></span></div>
+                <p>本周 12 条选题 · 7 条已发布 · 发布率 58%</p>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="统计">
+              <div class="duo__card">
+                <h2 class="duo__title">本月新增</h2>
+                <p class="duo__num">86<span> 条</span></p>
+                <p class="duo__meta">较上月 <b>+18%</b></p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">自动化</h2>
+                <p class="duo__num">3<span> 个</span></p>
+                <p class="duo__meta">今日触发 24 次 · 全部成功</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：记录动态 -->
+            <section class="feed" aria-label="记录动态">
+              <div class="feed__head">
+                <h2 class="feed__title">最近更新</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="field">字段</button>
+                  <button class="chip" type="button" data-filter="add">新增</button>
+                  <button class="chip" type="button" data-filter="auto">自动化</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="field">
+                  <span class="feed-item__avatar" style="--c: #e8a33d">鹿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">小鹿 把「双 11 预热海报」状态改为 <em class="tag tag--doing">进行中</em></span>
+                    <span class="feed-item__meta">10 分钟前 · 网格视图</span>
+                  </div>
+                </li>
+                <li class="feed-item" data-kind="add">
+                  <span class="feed-item__avatar" style="--c: #2d7ff9">岩</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阿岩 新增了记录「播客 EP.42 剪辑」</span>
+                    <span class="feed-item__meta">1 小时前 · 表单提交</span>
+                  </div>
+                </li>
+                <li class="feed-item" data-kind="auto">
+                  <span class="feed-item__avatar" style="--c: #18b187">⚡</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">自动化「发布即归档」移动了 2 条记录</span>
+                    <span class="feed-item__meta">今天 08:00 · 触发条件：状态=已发布</span>
+                  </div>
+                </li>
+                <li class="feed-item" data-kind="field">
+                  <span class="feed-item__avatar" style="--c: #d4488f">满</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">小满 更新了「品牌片分镜 v2」的附件字段</span>
+                    <span class="feed-item__meta">昨天 17:42 · 上传 3 个文件</span>
+                  </div>
+                </li>
+                <li class="feed-item" data-kind="add">
+                  <span class="feed-item__avatar" style="--c: #7c5cff">访</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">访客通过共享表单提交「用户访谈 #7」</span>
+                    <span class="feed-item__meta">昨天 14:05 · 表单「访谈收集」</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新增记录">
+              <div class="chips">
+                <button class="chip is-active" type="button" data-pick="选题">选题</button>
+                <button class="chip" type="button" data-pick="任务">任务</button>
+                <button class="chip" type="button" data-pick="素材">素材</button>
+              </div>
+              <input class="action__input" id="recordInput" type="text" placeholder="输入标题，回车快速新增…" />
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="addBtn">新增记录</button>
+                <button class="btn-ghost" type="button" data-toast="已复制 3 条选中记录的链接">复制链接</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="数据">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>
+              <span>数据</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="表单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6V3z"/><path d="M9 12h7M9 16h5"/></svg>
+              <span>表单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新增" aria-label="新增记录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新增</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="自动化">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>
+              <span>自动化</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

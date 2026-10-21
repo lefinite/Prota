@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>CodeFlow · Mono</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 - monospace signature -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">&lt;/&gt;</span>
+                <div class="brand-text">
+                  <span class="brand-name">CodeFlow</span>
+                  <span class="brand-sub">v2.4.1-stable</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="终端" data-toast="终端已打开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6M12 19h8" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero signature：代码矩阵效果 -->
+            <section class="code-matrix" aria-label="项目概览">
+              <div class="code-matrix__header">
+                <span class="code-matrix__label">> project_status</span>
+                <span class="code-matrix__status code-matrix__status--online">● ONLINE</span>
+              </div>
+              <div class="code-matrix__display">
+                <div class="code-line"><span class="code-keyword">const</span> <span class="code-var">uptime</span> = <span class="code-num">99.97</span>;</div>
+                <div class="code-line"><span class="code-keyword">const</span> <span class="code-var">requests</span> = <span class="code-num">2,847,391</span>;</div>
+                <div class="code-line"><span class="code-keyword">const</span> <span class="code-var">errors</span> = <span class="code-num">0.02</span>%;</div>
+                <div class="code-line"><span class="code-comment">// 系统运行正常</span></div>
+              </div>
+              <div class="code-matrix__actions">
+                <button class="quickbtn" data-toast="部署中...">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M2 12h20" /></svg>
+                  Deploy
+                </button>
+                <button class="quickbtn" data-toast="构建开始">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8" /></svg>
+                  Build
+                </button>
+                <button class="quickbtn" data-toast="日志已导出">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  Logs
+                </button>
+                <button class="quickbtn" data-toast="测试启动">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  Test
+                </button>
+              </div>
+            </section>
+
+            <!-- 收支双卡 → 代码指标 -->
+            <section class="stat-row" aria-label="性能指标">
+              <div class="stat-card">
+                <span class="stat-card__cap">MEMORY</span>
+                <span class="stat-card__val">128<span class="stat-card__unit">MB</span></span>
+                <span class="stat-card__foot">
+                  <span class="pip pip--success"></span>+ 12% vs 峰值
+                </span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-card__cap">LATENCY</span>
+                <span class="stat-card__val">24<span class="stat-card__unit">ms</span></span>
+                <span class="stat-card__foot">
+                  <span class="pip pip--primary"></span>P99: 42ms
+                </span>
+              </div>
+            </section>
+
+            <!-- 账单列表 → 提交历史 -->
+            <section class="list-block" aria-label="提交历史">
+              <div class="list-block__head">
+                <h2>COMMITS</h2>
+                <div class="chips" id="filterChips" role="tablist">
+                  <button class="chip is-active" data-filter="all" role="tab">ALL</button>
+                  <button class="chip" data-filter="feat" role="tab">FEAT</button>
+                  <button class="chip" data-filter="fix" role="tab">FIX</button>
+                </div>
+              </div>
+
+              <ul class="tx-list" id="txList">
+                <li class="tx" data-type="feat">
+                  <span class="tx__icon tx__icon--feat">+</span>
+                  <div class="tx__main">
+                    <span class="tx__title">feat: add dark mode support</span>
+                    <span class="tx__sub">2min ago · feature/ui</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__hash">a3f2c1</span>
+                    <span class="badge badge--success">OK</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="fix">
+                  <span class="tx__icon tx__icon--fix">#</span>
+                  <div class="tx__main">
+                    <span class="tx__title">fix: resolve memory leak</span>
+                    <span class="tx__sub">15min ago · bug/memory</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__hash">b8e4d2</span>
+                    <span class="badge badge--success">OK</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="feat">
+                  <span class="tx__icon tx__icon--feat">+</span>
+                  <div class="tx__main">
+                    <span class="tx__title">feat: integrate API v2</span>
+                    <span class="tx__sub">1hr ago · backend</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__hash">c9f7a3</span>
+                    <span class="badge badge--warn">CI</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="fix">
+                  <span class="tx__icon tx__icon--fix">#</span>
+                  <div class="tx__main">
+                    <span class="tx__title">fix: timezone handling</span>
+                    <span class="tx__sub">3hr ago · utils/date</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__hash">d1b5e4</span>
+                    <span class="badge badge--success">OK</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 预算条 → CI/CD 管道状态 -->
+            <section class="budget-card" aria-label="CI/CD 状态">
+              <div class="budget-card__head">
+                <span class="budget-card__title">PIPELINE #2847</span>
+                <span class="budget-card__num">7 <span class="muted">/ 9</span></span>
+              </div>
+              <div class="budget-card__bar" aria-hidden="true">
+                <span class="budget-card__bar-fill" style="--p: 78%"></span>
+              </div>
+              <p class="budget-card__note">78% tests passed, 2 pending review.</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>Dash</span>
+            </button>
+            <button class="tab" data-tab="commits">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              <span>Code</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="新建提交">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="monitor">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M7 14l4-4 3 3 5-6" /></svg>
+              <span>Monitor</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              <span>Config</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

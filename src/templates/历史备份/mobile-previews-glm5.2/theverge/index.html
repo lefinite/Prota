@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Verge Feed · The Verge</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 - The Verge 风格 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">V</span>
+                <div class="brand-text">
+                  <span class="brand-name">THE VERGE</span>
+                  <span class="brand-sub">科技前沿</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索 · 即将开放">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 核心卡 - 饱和色块故事卡片 -->
+            <section class="hero-story" aria-label="头条故事">
+              <div class="story-tile story-tile--mint">
+                <span class="story-tile__kicker">BREAKING</span>
+                <h2 class="story-tile__headline">OpenAI 发布 GPT-5：AI 的下一个前沿</h2>
+                <p class="story-tile__deck">多模态推理能力提升 300%，实时响应速度翻倍，安全对齐机制全面升级</p>
+                <div class="story-tile__meta">
+                  <span class="story-tile__time">2H AGO</span>
+                  <span class="story-tile__author">JAMES VINCENT</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快速导航条 -->
+            <section class="category-bar" aria-label="分类导航">
+              <div class="category-scroll" id="categoryScroll">
+                <button class="cat-chip cat-chip--active" data-cat="all">全部</button>
+                <button class="cat-chip" data-cat="tech">科技</button>
+                <button class="cat-chip" data-cat="ai">AI</button>
+                <button class="cat-chip" data-cat="gaming">游戏</button>
+                <button class="cat-chip" data-cat="science">科学</button>
+                <button class="cat-chip" data-cat="policy">政策</button>
+              </div>
+            </section>
+
+            <!-- StoryStream 时间线列表 -->
+            <section class="story-stream" aria-label="故事流">
+              <div class="stream-rail" aria-hidden="true"></div>
+
+              <ul class="stream-list" id="streamList">
+                <li class="stream-item" data-category="ai">
+                  <span class="stream-time">09:42</span>
+                  <div class="stream-card">
+                    <span class="stream-kicker">AI · 专题</span>
+                    <h3 class="stream-title">Anthropic 发布 Claude 4：更安全、更强大的 AI 助手</h3>
+                    <p class="stream-deck">新的宪法 AI 架构让模型更可解释，长文本处理能力扩展到 200 万 token</p>
+                    <div class="stream-meta">
+                      <span class="stream-tag">深度报道</span>
+                      <span class="stream-reading">8 MIN READ</span>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="stream-item stream-item--purple" data-category="tech">
+                  <span class="stream-time">08:30</span>
+                  <div class="stream-card">
+                    <span class="stream-kicker">硬件 · 评测</span>
+                    <h3 class="stream-title">iPhone 16 Pro Max 深度评测：钛金属边框下的完美主义</h3>
+                    <p class="stream-deck">A18 Pro 芯片带来桌面级性能，相机系统重新定义手机摄影边界</p>
+                    <div class="stream-meta">
+                      <span class="stream-tag">评测</span>
+                      <span class="stream-reading">12 MIN READ</span>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="stream-item stream-item--yellow" data-category="gaming">
+                  <span class="stream-time">07:15</span>
+                  <div class="stream-card">
+                    <span class="stream-kicker">游戏 · 独家</span>
+                    <h3 class="stream-title">《GTA VI》延期至 2026 年：R 星的完美主义代价</h3>
+                    <p class="stream-deck"> insiders 透露，游戏世界规模比原计划扩大 3 倍，需要更多时间打磨</p>
+                    <div class="stream-meta">
+                      <span class="stream-tag">独家</span>
+                      <span class="stream-reading">5 MIN READ</span>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="stream-item" data-category="science">
+                  <span class="stream-time">06:00</span>
+                  <div class="stream-card">
+                    <span class="stream-kicker">科学 · 发现</span>
+                    <h3 class="stream-title">韦伯望远镜发现最遥远星系：宇宙大爆炸后 3 亿年</h3>
+                    <p class="stream-deck">这一发现可能改写我们对宇宙早期形成的理解</p>
+                    <div class="stream-meta">
+                      <span class="stream-tag">天文</span>
+                      <span class="stream-reading">6 MIN READ</span>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="stream-item stream-item--orange" data-category="policy">
+                  <span class="stream-time">04:45</span>
+                  <div class="stream-card">
+                    <span class="stream-kicker">政策 · 分析</span>
+                    <h3 class="stream-title">欧盟 AI 法案生效：科技巨头如何应对新规</h3>
+                    <p class="stream-deck">高风险 AI 系统面临严格透明度要求，违规最高罚款达全球营业额 7%</p>
+                    <div class="stream-meta">
+                      <span class="stream-tag">政策</span>
+                      <span class="stream-reading">10 MIN READ</span>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-bar">
+              <button class="btn-primary" data-toast="订阅周刊 · 即将打开">
+                <span>SUBSCRIBE</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </button>
+              <button class="btn-secondary" data-toast="加入讨论">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <span>JOIN</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="feed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>FEED</span>
+            </button>
+            <button class="tab" data-tab="videos">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+              <span>VIDEOS</span>
+            </button>
+            <button class="tab tab--fab" data-tab="search" aria-label="搜索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" /></svg>
+            </button>
+            <button class="tab" data-tab="reviews">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+              <span>REVIEWS</span>
+            </button>
+            <button class="tab" data-tab="more">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1" /></svg>
+              <span>MORE</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

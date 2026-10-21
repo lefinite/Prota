@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Schedule · Minimal & Clean</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-logo">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="26" height="24" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="24" y1="2" x2="24" y2="6"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">Schedule</span>
+                  <span class="brand-sub">今天，8月14日</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="添加日程" data-toast="创建新日程">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature: Today's Schedule Overview -->
+            <section class="hero-overview" aria-label="今日概览">
+              <div class="overview-header">
+                <h2 class="overview-title">今日日程</h2>
+                <span class="overview-count">5 个安排</span>
+              </div>
+              <div class="overview-stats">
+                <div class="stat-item">
+                  <span class="stat-value">3</span>
+                  <span class="stat-label">待办</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-value">2</span>
+                  <span class="stat-label">已完成</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-value">1</span>
+                  <span class="stat-label">会议</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 时间线日程列表 -->
+            <section class="schedule-section" aria-label="日程时间线">
+              <div class="section-head">
+                <h3 class="section-title">时间线</h3>
+                <div class="view-toggle" role="tablist" aria-label="视图切换">
+                  <button class="view-btn is-active" data-view="timeline" role="tab" aria-selected="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+                  </button>
+                  <button class="view-btn" data-view="calendar" role="tab" aria-selected="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="timeline-list" id="timelineList">
+                <div class="timeline-item">
+                  <div class="time-marker">
+                    <span class="time-text">09:00</span>
+                    <span class="time-line"></span>
+                  </div>
+                  <div class="event-card event-card--done">
+                    <div class="event-header">
+                      <span class="event-title">晨会站会</span>
+                      <span class="event-badge done">完成</span>
+                    </div>
+                    <span class="event-desc">团队进度同步 · 15分钟</span>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="time-marker">
+                    <span class="time-text">10:30</span>
+                    <span class="time-line"></span>
+                  </div>
+                  <div class="event-card event-card--meeting">
+                    <div class="event-header">
+                      <span class="event-title">产品评审会</span>
+                      <span class="event-badge meeting">会议</span>
+                    </div>
+                    <span class="event-desc">2号会议室 · 与设计团队</span>
+                    <div class="event-attendees">
+                      <span class="attendee">A</span>
+                      <span class="attendee">B</span>
+                      <span class="attendee">+2</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="time-marker">
+                    <span class="time-text">14:00</span>
+                    <span class="time-line"></span>
+                  </div>
+                  <div class="event-card event-card--task">
+                    <div class="event-header">
+                      <span class="event-title">代码审查</span>
+                      <span class="event-badge task">待办</span>
+                    </div>
+                    <span class="event-desc">PR #342 · 用户认证模块</span>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="time-marker">
+                    <span class="time-text">16:00</span>
+                    <span class="time-line"></span>
+                  </div>
+                  <div class="event-card event-card--task">
+                    <div class="event-header">
+                      <span class="event-title">周报撰写</span>
+                      <span class="event-badge task">待办</span>
+                    </div>
+                    <span class="event-desc">整理本周进度与下周计划</span>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="time-marker">
+                    <span class="time-text">18:30</span>
+                    <span class="time-line"></span>
+                  </div>
+                  <div class="event-card event-card--personal">
+                    <div class="event-header">
+                      <span class="event-title">健身房</span>
+                      <span class="event-badge personal">个人</span>
+                    </div>
+                    <span class="event-desc">有氧运动 45分钟</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快速添加任务 -->
+            <section class="quick-add" aria-label="快速添加">
+              <div class="add-input-wrapper">
+                <svg class="add-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+                <input type="text" placeholder="添加新任务..." class="add-input" aria-label="新任务内容" />
+                <button class="add-submit" data-toast="已添加新任务">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4 8-8"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="btn-primary" data-toast="切换到日视图">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                切换到日视图
+              </button>
+              <div class="btn-row">
+                <button class="btn-secondary" data-toast="查看周视图">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="15" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><rect x="15" y="14" width="6" height="6" rx="1"/></svg>
+                  周视图
+                </button>
+                <button class="btn-ghost" data-toast="打开设置">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="today">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>今天</span>
+            </button>
+            <button class="tab" data-tab="calendar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>日历</span>
+            </button>
+            <button class="tab" data-tab="tasks">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span>任务</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

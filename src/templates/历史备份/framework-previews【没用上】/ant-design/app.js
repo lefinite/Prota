@@ -1,0 +1,36 @@
+const initialWorkflows=[
+ {id:1,name:'客户线索自动分配',status:'运行中',trigger:'新增线索时',runs:'328',rate:'99.1%',recent:'2 分钟前',owner:'林知夏'},
+ {id:2,name:'售后工单智能分类',status:'运行中',trigger:'每 5 分钟',runs:'216',rate:'97.6%',recent:'5 分钟前',owner:'周景明'},
+ {id:3,name:'每日销售简报',status:'运行中',trigger:'每天 09:00',runs:'1',rate:'100%',recent:'今天 09:00',owner:'陈雨桐'},
+ {id:4,name:'高风险订单预警',status:'异常',trigger:'订单创建时',runs:'89',rate:'83.2%',recent:'8 分钟前',owner:'林知夏'},
+ {id:5,name:'内容素材归档',status:'草稿',trigger:'手动触发',runs:'0',rate:'--',recent:'尚未运行',owner:'赵一澄'},
+ {id:6,name:'离职账号权限回收',status:'已停用',trigger:'成员离职时',runs:'0',rate:'100%',recent:'7 天前',owner:'周景明'}
+];
+let workflows=initialWorkflows.map(x=>({...x})),selected=new Set(),activeTab='全部',pendingDelete=null,currentPage=1;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const statusClass=s=>({'运行中':'running','异常':'error','草稿':'draft','已停用':'disabled'}[s]||'draft');
+function filtered(){const q=$('#searchInput').value.trim().toLowerCase(),status=$('#statusFilter').value,owner=$('#ownerFilter').value,time=$('#timeFilter').value;return workflows.filter(w=>(activeTab==='全部'||w.status===activeTab)&&(!status||w.status===status)&&(!owner||w.owner===owner)&&(!q||w.name.toLowerCase().includes(q))&&(!time||time==='week'||(time==='today'&&!w.recent.includes('天前'))||(time==='recent'&&(w.recent.includes('分钟前')))));}
+function render(){const rows=filtered();$('#workflowBody').innerHTML=rows.map(w=>`<tr data-id="${w.id}"><td><input class="row-check" type="checkbox" ${selected.has(w.id)?'checked':''}></td><td><button class="operation workflow-name ${w.id===4?'exception':''}" data-detail="${w.id}">${w.name}</button></td><td><span class="tag ${statusClass(w.status)}">${w.status}</span></td><td>${w.trigger}</td><td class="num">${w.runs}</td><td class="num">${w.rate}</td><td>${w.recent}</td><td>${w.owner}</td><td><button class="operation view" data-detail="${w.id}">查看详情</button><button class="operation more" data-menu="${w.id}">更多⌄</button></td></tr>`).join('');
+ $('#emptyState').classList.toggle('show',!rows.length);$('table').style.display=rows.length?'table':'none';$('#resultCount').textContent=`显示 ${rows.length} 个工作流`;$('#pageSummary').textContent=currentPage===1?`第 ${rows.length?'1':'0'}–${rows.length} 条，共 24 条`:'第 7–12 条，共 24 条';updateBatch();
+}
+function updateBatch(){const n=selected.size;$('#selectedCount').textContent=n;$('#batchBar').classList.toggle('show',n>0);$('#selectAll').checked=filtered().length>0&&filtered().every(w=>selected.has(w.id));}
+function toast(text,type='success'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=text;$('#toastArea').append(el);setTimeout(()=>el.remove(),2300)}
+function openDrawer(id){$('#mask').classList.add('show');$(id).classList.add('open');$(id).setAttribute('aria-hidden','false')}
+function closeDrawers(){$('#mask').classList.remove('show');$$('.drawer').forEach(d=>{d.classList.remove('open');d.setAttribute('aria-hidden','true')})}
+$('#createBtn').onclick=()=>openDrawer('#createDrawer');$('#mask').onclick=closeDrawers;$$('[data-close]').forEach(b=>b.onclick=closeDrawers);
+$('#createForm').onsubmit=e=>{e.preventDefault();let ok=true;['name','trigger','owner'].forEach(n=>{const f=e.target.elements[n],item=f.closest('.form-item');item.classList.toggle('invalid',!f.value.trim());if(!f.value.trim())ok=false});if(!ok)return;toast('工作流创建成功');closeDrawers();e.target.reset()};
+$('#createForm textarea').oninput=e=>e.target.nextElementSibling.textContent=`${e.target.value.length} / 200`;
+$('#workflowBody').onclick=e=>{const detail=e.target.closest('[data-detail]'),menu=e.target.closest('[data-menu]'),check=e.target.closest('.row-check');if(detail){openDrawer('#detailDrawer');return}if(check){const id=+check.closest('tr').dataset.id;check.checked?selected.add(id):selected.delete(id);updateBatch();return}if(menu)showRowMenu(menu,+menu.dataset.menu)};
+function showRowMenu(anchor,id){const w=workflows.find(x=>x.id===id),m=$('#rowMenu');m.innerHTML=`<button data-action="edit">编辑</button><button data-action="copy">复制</button><button data-action="toggle">${w.status==='已停用'?'启用':'停用'}</button><button data-action="delete" class="danger-text">删除</button>`;const r=anchor.getBoundingClientRect();m.style.left=`${Math.min(r.left,innerWidth-155)}px`;m.style.top=`${r.bottom+4}px`;m.classList.add('show');m.dataset.id=id}
+$('#rowMenu').onclick=e=>{const a=e.target.dataset.action,id=+e.currentTarget.dataset.id,w=workflows.find(x=>x.id===id);if(a==='toggle'){w.status=w.status==='已停用'?'运行中':'已停用';toast(`“${w.name}”已${w.status==='已停用'?'停用':'启用'}`);render()}else if(a==='delete'){pendingDelete=id;$('#confirmModal').classList.add('show')}else if(a==='copy')toast(`已复制“${w.name}”`);else if(a==='edit')toast('已打开编辑模式','info');e.currentTarget.classList.remove('show')};
+document.addEventListener('click',e=>{if(!e.target.closest('#rowMenu')&&!e.target.closest('[data-menu]'))$('#rowMenu').classList.remove('show')});
+$$('[data-modal-close]').forEach(b=>b.onclick=()=>$('#confirmModal').classList.remove('show'));$('#confirmDelete').onclick=()=>{const w=workflows.find(x=>x.id===pendingDelete);workflows=workflows.filter(x=>x.id!==pendingDelete);selected.delete(pendingDelete);$('#confirmModal').classList.remove('show');toast(`“${w.name}”已删除`);render()};
+$('#statusTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;activeTab=b.dataset.status;$$('#statusTabs button').forEach(x=>x.classList.toggle('active',x===b));currentPage=1;render()};
+['#searchInput','#statusFilter','#ownerFilter','#timeFilter'].forEach(s=>$(s).addEventListener(s==='#searchInput'?'input':'change',()=>{currentPage=1;render()}));
+$('#selectAll').onchange=e=>{filtered().forEach(w=>e.target.checked?selected.add(w.id):selected.delete(w.id));render()};$('#clearSelection').onclick=()=>{selected.clear();render()};
+$('#batchBar').onclick=e=>{const action=e.target.dataset.batch;if(!action)return;if(action==='delete'){$('#confirmModal').classList.add('show');pendingDelete=[...selected][0]}else{selected.forEach(id=>{const w=workflows.find(x=>x.id===id);if(w)w.status=action==='enable'?'运行中':'已停用'});toast(`已${action==='enable'?'启用':'停用'} ${selected.size} 个工作流`);selected.clear();render()}};
+$('#refreshBtn').onclick=e=>{const b=e.currentTarget;b.classList.add('spin');setTimeout(()=>{b.classList.remove('spin');toast('列表已刷新')},650)};$('#batchEntry').onclick=()=>toast('请勾选工作流后进行批量操作','info');
+$('#rangeSwitch').onclick=e=>{const b=e.target.closest('button');if(!b)return;$$('#rangeSwitch button').forEach(x=>x.classList.toggle('active',x===b));$('.trend-card h2').textContent=`近 ${b.dataset.range} 日运行趋势`;toast(`已切换至近 ${b.dataset.range} 天`,'info')};
+$('#notificationBtn').onclick=()=>toast('你有 3 条未读通知','info');$('#rerunBtn').onclick=e=>{e.currentTarget.textContent='运行中…';e.currentTarget.disabled=true;setTimeout(()=>{e.currentTarget.textContent='重新运行';e.currentTarget.disabled=false;toast('工作流已重新运行');closeDrawers()},900)};$('#editWorkflow').onclick=()=>toast('已进入工作流编辑模式','info');
+$$('.pagination button:not(:disabled)').forEach(b=>b.onclick=()=>{if(b.id==='nextPage'||b.textContent==='2'||b.textContent==='3'||b.textContent==='4'){currentPage=2;toast('已切换至第 2 页','info');$('#pageSummary').textContent='第 7–12 条，共 24 条'}else{currentPage=1;render()}});
+render();

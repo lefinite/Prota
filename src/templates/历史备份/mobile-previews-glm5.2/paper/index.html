@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>墨韵笔记 · Paper</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">墨</span>
+                <div class="brand-text">
+                  <span class="brand-name">墨韵笔记</span>
+                  <span class="brand-sub">Capture thoughts</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索笔记">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero 写作卡片 (signature: 仿纸质纹理 + 墨色标题) -->
+            <section class="hero-card" aria-label="今日写作">
+              <div class="hero-card__texture"></div>
+              <p class="hero-card__label">今日写作</p>
+              <h1 class="hero-card__title">晨间随笔</h1>
+              <p class="hero-card__excerpt">
+                清晨的阳光透过窗棂，在书桌上投下斑驳的光影。沏一杯清茶，摊开信纸...
+              </p>
+              <div class="hero-card__meta">
+                <span class="tag">随笔</span>
+                <span class="dot">·</span>
+                <span>2,348 字</span>
+                <span class="dot">·</span>
+                <span>8 分钟前</span>
+              </div>
+              <div class="hero-card__progress">
+                <span class="hero-card__progress-fill" style="--p: 72%"></span>
+              </div>
+            </section>
+
+            <!-- 笔记分类卡片 -->
+            <section class="category-grid" aria-label="笔记分类">
+              <div class="category-card">
+                <div class="category-card__icon category-card__icon--prose">文</div>
+                <span class="category-card__name">散文</span>
+                <span class="category-card__count">24 篇</span>
+              </div>
+              <div class="category-card">
+                <div class="category-card__icon category-card__icon--poem">诗</div>
+                <span class="category-card__name">诗词</span>
+                <span class="category-card__count">18 首</span>
+              </div>
+              <div class="category-card">
+                <div class="category-card__icon category-card__icon--idea">思</div>
+                <span class="category-card__name">灵感</span>
+                <span class="category-card__count">36 条</span>
+              </div>
+            </section>
+
+            <!-- 最近笔记列表 -->
+            <section class="notes-section" aria-label="最近笔记">
+              <div class="notes-section__head">
+                <h2>最近笔记</h2>
+                <div class="chips" id="filterChips" role="tablist">
+                  <button class="chip is-active" data-filter="all">全部</button>
+                  <button class="chip" data-filter="prose">散文</button>
+                  <button class="chip" data-filter="poem">诗词</button>
+                </div>
+              </div>
+
+              <ul class="note-list" id="noteList">
+                <li class="note-item" data-type="prose">
+                  <span class="note-item__icon">文</span>
+                  <div class="note-item__main">
+                    <span class="note-item__title">春日游园记</span>
+                    <span class="note-item__sub">今天 07:32 · 散文</span>
+                  </div>
+                  <div class="note-item__right">
+                    <button class="bookmark-btn is-active" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="note-item" data-type="poem">
+                  <span class="note-item__icon">诗</span>
+                  <div class="note-item__main">
+                    <span class="note-item__title">江畔独步寻花</span>
+                    <span class="note-item__sub">昨天 21:15 · 诗词</span>
+                  </div>
+                  <div class="note-item__right">
+                    <button class="bookmark-btn" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="note-item" data-type="prose">
+                  <span class="note-item__icon">文</span>
+                  <div class="note-item__main">
+                    <span class="note-item__title">夜读偶得</span>
+                    <span class="note-item__sub">前天 23:48 · 散文</span>
+                  </div>
+                  <div class="note-item__right">
+                    <button class="bookmark-btn" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="note-item" data-type="poem">
+                  <span class="note-item__icon">诗</span>
+                  <div class="note-item__main">
+                    <span class="note-item__title">无题·昨夜星辰</span>
+                    <span class="note-item__sub">3 天前 · 诗词</span>
+                  </div>
+                  <div class="note-item__right">
+                    <button class="bookmark-btn is-active" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 统计卡片 -->
+            <section class="stats-card" aria-label="写作统计">
+              <div class="stats-card__row">
+                <div class="stat-item">
+                  <span class="stat-item__label">本月写作</span>
+                  <span class="stat-item__value">12,847</span>
+                  <span class="stat-item__unit">字</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-item__label">连续天数</span>
+                  <span class="stat-item__value">28</span>
+                  <span class="stat-item__unit">天</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-item__label">总笔记</span>
+                  <span class="stat-item__value">156</span>
+                  <span class="stat-item__unit">篇</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="notes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              <span>笔记</span>
+            </button>
+            <button class="tab tab--fab" data-tab="write" aria-label="写笔记">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </button>
+            <button class="tab" data-tab="archive">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8c0-1.1-.9-2-2-2H5a2 2 0 0 0-2 2v6h18V8z"/><path d="M3 16h18v5H3z"/></svg>
+              <span>归档</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

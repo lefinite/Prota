@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>连线 · WIRED 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 报头 -->
+            <header class="masthead">
+              <h1 class="masthead__word">連線</h1>
+              <p class="masthead__kicker mono">VOL.42 · OCT 15 2026 · 科技 · 商业 · 文化</p>
+            </header>
+
+            <!-- 2. Hero：头版（签名：大衬线 + 黑色 kicker 条）-->
+            <section class="hero" aria-label="头版">
+              <p class="hero__kicker">AI·基础设施</p>
+              <h2 class="hero__title">当电力公司开始<br />经营算力</h2>
+              <div class="hero__img" role="img" aria-label="变电站与数据中心的拼贴图像"></div>
+              <p class="hero__deck">三座旧变电站正在被改造成城市边缘的推理机房。电网的下一门生意，是按小时卖出的智能。</p>
+              <p class="hero__byline mono">By 专栏 · 苏晏 · 18 MIN READ</p>
+            </section>
+
+            <!-- 3. 数据栏 -->
+            <section class="ticker" aria-label="行情与数字">
+              <div class="ticker__row">
+                <span class="mono">NVDA 208.4 ▲2.1%</span>
+                <span class="mono">TSM 412.2 ▲0.8%</span>
+                <span class="mono">PWR-GRID 96.7 ▼0.3%</span>
+              </div>
+            </section>
+
+            <!-- 4. Feed：要目（细线分行、无卡片）-->
+            <section class="feed" aria-label="要目">
+              <div class="feed__head">
+                <h2 class="feed__title">今日要目</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="tech">科技</button>
+                  <button class="chip" type="button" data-filter="biz">商业</button>
+                  <button class="chip" type="button" data-filter="culture">文化</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="story" data-kind="tech">
+                  <p class="story__kicker mono">SECURITY</p>
+                  <h3 class="story__head">量子解密的「倒计时钟」被拨快了两年</h3>
+                  <p class="story__meta mono">09:12 · 6 MIN</p>
+                </li>
+                <li class="story" data-kind="biz">
+                  <p class="story__kicker mono">PLATFORM</p>
+                  <h3 class="story__head">外卖平台的最后一公里，交给机器人</h3>
+                  <p class="story__meta mono">08:40 · 9 MIN</p>
+                </li>
+                <li class="story" data-kind="culture">
+                  <p class="story__kicker mono">CULTURE</p>
+                  <h3 class="story__head">像素画正在重新赢得画廊</h3>
+                  <p class="story__meta mono">昨日 · 12 MIN</p>
+                </li>
+                <li class="story" data-kind="tech">
+                  <p class="story__kicker mono">BIO·TECH</p>
+                  <h3 class="story__head">细胞图谱 2.0：一张会呼吸的地图</h3>
+                  <p class="story__meta mono">昨日 · 15 MIN</p>
+                </li>
+                <li class="story" data-kind="biz">
+                  <p class="story__kicker mono">MONEY</p>
+                  <h3 class="story__head">小城咖啡馆的「会员制实验」</h3>
+                  <p class="story__meta mono">10-13 · 7 MIN</p>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="订阅">
+              <input class="action__input" id="subInput" type="text" placeholder="输入邮箱，订阅每日简报…" />
+              <div class="action__row">
+                <button class="btn-ink" type="button" id="subBtn">订阅</button>
+                <button class="btn-red" type="button" data-toast="已解锁本期长报道付费部分">解锁全文</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="要目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 8h6M9 12h4"/></svg>
+              <span>要目</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="专题">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V6a2 2 0 0 1 2-2h12v15H6a2 2 0 0 0-2 2z"/><path d="M8 8h6"/></svg>
+              <span>专题</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="搜索" aria-label="搜索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <span>搜索</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="播客">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M6 12a6 6 0 0 0 12 0M12 18v3"/></svg>
+              <span>播客</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

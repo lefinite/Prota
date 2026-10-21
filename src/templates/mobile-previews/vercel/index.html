@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>霜台 · Vercel 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__tri" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 4l10 16H2L12 4z" fill="currentColor"/></svg>
+              </span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">acme-store</span>
+                <span class="brand-bar__sub mono">PRO · us-east-1 · framework: Next.js</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="Domain: acme.vercel.app（已验证）" aria-label="域名">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.4 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.4-3.8-8.5S9.4 5.9 12 3.5z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：最新部署（签名：构建日志流）-->
+            <section class="hero" aria-label="最新部署">
+              <div class="hero__head">
+                <span class="hero__state"><i class="dot dot--ok"></i>Ready</span>
+                <span class="mono">d4c8f2e · 9m ago</span>
+              </div>
+              <h1 class="hero__branch">main → Production</h1>
+              <div class="hero__log" aria-label="构建日志">
+                <p class="mono">▲ Cloning github.com/acme/store</p>
+                <p class="mono">▲ Installing deps · pnpm 9.4 · 24s</p>
+                <p class="mono">▲ Building · Next.js 15.3 · 46s</p>
+                <p class="mono">▲ Uploading · 38 files · edge: 2 fn</p>
+                <p class="log-ok">✓ Deployed to acme.vercel.app</p>
+              </div>
+              <div class="hero__stats">
+                <div><b>0.4s</b><span>TTFB P50</span></div>
+                <div><b>99.99%</b><span>Uptime</span></div>
+                <div><b>2.1M</b><span>本月请求</span></div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-blue" type="button" id="deployBtn">Deploy</button>
+                <button class="btn-ghost" type="button" data-toast="Logs 已开启实时滚动">Logs</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="分析">
+              <div class="duo__card">
+                <h2 class="duo__title mono">VISITORS</h2>
+                <p class="duo__num">14,204</p>
+                <p class="duo__meta">较上周 <b>+8.2%</b> · 跳出 32%</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">CWV</h2>
+                <p class="duo__num">98<span>/100</span></p>
+                <div class="meter"><i style="--w: 98%"></i></div>
+                <p class="duo__meta">LCP 0.9s · CLS 0.02</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：部署历史 -->
+            <section class="feed" aria-label="部署历史">
+              <div class="feed__head">
+                <h2 class="feed__title mono">DEPLOYMENTS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">all</button>
+                  <button class="chip" type="button" data-filter="prod">prod</button>
+                  <button class="chip" type="button" data-filter="prev">preview</button>
+                  <button class="chip" type="button" data-filter="err">error</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="dep" data-kind="prod">
+                  <i class="dot dot--ok"></i>
+                  <div class="dep__body">
+                    <b class="mono">d4c8f2e · main</b>
+                    <span class="mono">prod · Ready · 9m ago · 1m12s</span>
+                  </div>
+                  <span class="dep__who">你</span>
+                </li>
+                <li class="dep" data-kind="prev">
+                  <i class="dot dot--prev"></i>
+                  <div class="dep__body">
+                    <b class="mono">a91c03 · feat/cart-v2</b>
+                    <span class="mono">preview · Ready · 1h ago · 58s</span>
+                  </div>
+                  <span class="dep__who">阿茂</span>
+                </li>
+                <li class="dep" data-kind="err">
+                  <i class="dot dot--err"></i>
+                  <div class="dep__body">
+                    <b class="mono">f1e9d2 · fix/hydration</b>
+                    <span class="mono">prod · Error: 类型检查失败</span>
+                  </div>
+                  <span class="dep__who">岩井</span>
+                </li>
+                <li class="dep" data-kind="prod">
+                  <i class="dot dot--ok"></i>
+                  <div class="dep__body">
+                    <b class="mono">c77ba10 · main</b>
+                    <span class="mono">prod · Ready · 4h ago</span>
+                  </div>
+                  <span class="dep__who">你</span>
+                </li>
+                <li class="dep" data-kind="prev">
+                  <i class="dot dot--prev"></i>
+                  <div class="dep__body">
+                    <b class="mono">0b3f8a1 · design/pdp</b>
+                    <span class="mono">preview · Ready · 昨天</span>
+                  </div>
+                  <span class="dep__who">小满</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="项目">
+              <div class="chips chips--env">
+                <button class="chip is-active" type="button">Production</button>
+                <button class="chip" type="button">Preview</button>
+                <button class="chip" type="button">Development</button>
+              </div>
+              <input class="action__input mono" id="cmdInput" type="text" placeholder="vercel deploy --prod" />
+              <div class="action__row">
+                <button class="btn-blue" type="button" id="redeploy">Redeploy</button>
+                <button class="btn-ghost" type="button" data-toast="Rollback → c77ba10 已完成">Rollback</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="部署">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              <span>部署</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="分析">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-7M21 19H3"/></svg>
+              <span>分析</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="Deploy" aria-label="Deploy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>Deploy</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5h14M5 10h9M5 15h11M5 20h7"/></svg>
+              <span>日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="存储">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7h16v10H4z"/><path d="M8 7v10"/></svg>
+              <span>存储</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

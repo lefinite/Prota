@@ -1,0 +1,708 @@
+/* ============================================================
+ * 直兑 · Wise — mobile preview
+ * token 来源：design-systems/wise/tokens.css
+ * 荧光青柠 + 深绿字（THE 签名）+ 药丸按钮 + 超粗 900 标题
+ * ============================================================ */
+
+:root {
+  /* ─── Wise tokens ───────────────────────────────────── */
+  --bg: #ffffff;
+  --surface: #e8ebe6;
+  --surface-warm: var(--surface);
+  --fg: #0e0f0c;
+  --fg-2: var(--fg);
+  --muted: #868685;
+  --border: rgba(14, 15, 12, 0.12);
+  --border-soft: var(--border);
+  --accent: #9fe870;
+  --accent-on: #163300;
+  --accent-hover: #cdffad;
+  --accent-active: color-mix(in oklab, var(--accent), black 12%);
+  --success: #054d28;
+  --warn: #ff9d3b;
+  --danger: #e11a3c;
+  --font-display: "Wise Sans", Inter, "PingFang SC", sans-serif;
+  --font-body: Inter, "PingFang SC", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --radius-card: 24px;
+  --focus-ring: 0 0 0 3px rgba(22, 51, 0, 0.2);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ─── 手机壳 ───────────────────────────────────────── */
+  --page-backdrop-top: #eef1ec;
+  --page-backdrop-bottom: #d3dcd2;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e6eae4;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(14, 15, 12, 0.16);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.9), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ===== Shared mobile frame ===== */
+.demo-stage {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.phone-shell {
+  position: relative;
+  width: 382px;
+  height: 826px;
+  padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--screen-radius);
+  background: var(--phone-screen);
+}
+
+.status-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 0;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.status-bar__time {
+  min-width: 54px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.status-bar__island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  border-radius: 999px;
+  background: #111217;
+  transform: translateX(-50%);
+}
+
+.status-bar__right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 74px;
+}
+
+.status-bar__icon {
+  width: 15px;
+  height: 15px;
+}
+
+.battery {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border: 1.8px solid currentColor;
+  border-radius: 4px;
+}
+
+.battery::before {
+  content: "";
+  position: absolute;
+  inset: 2px 6px 2px 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.battery::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -4px;
+  width: 2px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: auto;
+  padding: 66px 20px 116px;
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage {
+    padding: 0;
+  }
+
+  .phone-shell {
+    width: min(100vw, 382px);
+    height: min(100vh, 826px);
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--phone-screen);
+  }
+
+  .phone-screen {
+    border-radius: 0;
+  }
+}
+
+/* ===== 1. 品牌栏 ===== */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 18px;
+}
+
+.brand-bar__logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-on);
+  display: grid;
+  place-items: center;
+}
+
+.brand-bar__logo svg {
+  width: 19px;
+  height: 19px;
+}
+
+.brand-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-right: auto;
+}
+
+.brand-bar__name {
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+
+.brand-bar__sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.brand-bar__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--fg);
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.brand-bar__icon:hover {
+  transform: scale(1.05);
+}
+
+.brand-bar__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ===== 2. Hero：计算器 ===== */
+.hero__title {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.calc {
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  padding: 8px;
+  margin-bottom: 14px;
+}
+
+.calc__row {
+  border-radius: 18px;
+  background: var(--bg);
+  padding: 14px 16px;
+}
+
+.calc__row--out {
+  margin-top: 6px;
+}
+
+.calc__money {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip-ghost {
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+
+.calc__input {
+  border: 0;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  padding: 0;
+}
+
+.calc__out {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.calc__swap {
+  position: absolute;
+  right: 32px;
+  margin-top: -22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--border), 0 4px 10px rgba(14, 15, 12, 0.1);
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.calc {
+  position: relative;
+}
+
+.calc__swap:hover {
+  transform: rotate(180deg);
+}
+
+.calc__swap svg {
+  width: 17px;
+  height: 17px;
+}
+
+.hero__fees {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0 16px;
+}
+
+.hero__fees li {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  padding: 5px 0;
+}
+
+.hero__fees b {
+  color: var(--fg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero__fees .sum {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: 9px;
+  font-size: var(--text-sm);
+  color: var(--fg);
+}
+
+.hero__fees .sum b {
+  font-weight: 800;
+}
+
+/* 青柠药丸 —— 签名 CTA */
+.btn-lime {
+  width: 100%;
+  padding: 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-on);
+  font-weight: 700;
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+
+.btn-lime:hover {
+  background: var(--accent-hover);
+  transform: scale(1.03);
+}
+
+.btn-lime:active {
+  background: var(--accent-active);
+  transform: scale(0.99);
+}
+
+.btn-lime--wide {
+  width: 100%;
+  padding: 13px;
+  font-size: var(--text-sm);
+}
+
+.btn-ghost {
+  width: 100%;
+  padding: 13px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.btn-ghost:hover {
+  transform: scale(1.03);
+}
+
+.btn-ghost--wide {
+  width: 100%;
+}
+
+/* ===== 3. 内容卡 ===== */
+.duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 18px 0 20px;
+}
+
+.duo__card {
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  padding: 16px;
+}
+
+.duo__title {
+  margin: 0 0 10px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.duo__num {
+  margin: 0 0 4px;
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+
+.duo__num span {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.duo__meta {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* ===== 4. Feed ===== */
+.feed__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.feed__title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 800;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+}
+
+.chip {
+  padding: 5px 13px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px var(--border);
+  background: var(--bg);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip.is-active {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.feed__list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+.tx {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.tx[hidden] {
+  display: none;
+}
+
+.tx__flag {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  flex: none;
+}
+
+.tx__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.tx__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx__meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.tx__amount {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx__amount.is-in {
+  color: var(--success);
+}
+
+/* ===== 5. 操作区 ===== */
+.action {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action__input {
+  width: 100%;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0 20px;
+  color: var(--fg);
+  outline: none;
+}
+
+.action__input::placeholder {
+  color: var(--muted);
+}
+
+.action__input:focus-visible {
+  border-color: var(--accent-on);
+}
+
+.action__row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 10px;
+}
+
+/* ===== 6. 底部 Tab ===== */
+.tabbar {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  height: 78px;
+  padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0));
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1px solid var(--border-soft);
+  backdrop-filter: blur(12px);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tabbar__item svg {
+  width: 21px;
+  height: 21px;
+}
+
+.tabbar__item.is-active {
+  color: var(--fg);
+}
+
+/* ===== toast ===== */
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 30;
+  max-width: 82%;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-on);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== 无障碍与动效降级 ===== */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 隐藏滚动条（真机 App 观感）===== */
+* {
+  scrollbar-width: none !important;
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}

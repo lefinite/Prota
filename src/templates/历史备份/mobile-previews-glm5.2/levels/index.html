@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>养分日记 · Levels</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </span>
+                <div class="brand-text">
+                  <span class="brand-name">养分日记</span>
+                  <span class="brand-sub">今日健康状态</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置页面">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m12.4-2.4-4.2 4.2m0-8.4 4.2 4.2"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero signature：代谢指标卡片 -->
+            <section class="metric-card" aria-label="今日代谢指标">
+              <div class="metric-card__header">
+                <span class="metric-card__label">代谢评分</span>
+                <span class="metric-card__badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                  实时
+                </span>
+              </div>
+              <p class="metric-card__value">86<span class="metric-card__unit">/100</span></p>
+              <p class="metric-card__status">状态良好 · 保持均衡</p>
+
+              <div class="metric-card__chart">
+                <div class="chart-bar" style="--h: 65%">
+                  <span class="chart-bar__label">蛋白质</span>
+                  <span class="chart-bar__val">65%</span>
+                </div>
+                <div class="chart-bar" style="--h: 82%">
+                  <span class="chart-bar__label">碳水</span>
+                  <span class="chart-bar__val">82%</span>
+                </div>
+                <div class="chart-bar" style="--h: 48%">
+                  <span class="chart-bar__label">脂肪</span>
+                  <span class="chart-bar__val">48%</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 营养卡片组 -->
+            <section class="nutrient-row">
+              <div class="nutrient-card nutrient-card--cal">
+                <span class="nutrient-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/></svg>
+                </span>
+                <span class="nutrient-card__val">1,680</span>
+                <span class="nutrient-card__label">千卡摄入</span>
+                <span class="nutrient-card__hint">目标 2,000</span>
+              </div>
+              <div class="nutrient-card nutrient-card--water">
+                <span class="nutrient-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                </span>
+                <span class="nutrient-card__val">1.8L</span>
+                <span class="nutrient-card__label">饮水量</span>
+                <span class="nutrient-card__hint">还需 0.7L</span>
+              </div>
+            </section>
+
+            <!-- 饮食记录列表 -->
+            <section class="list-block" aria-label="今日饮食">
+              <div class="list-block__head">
+                <h2>今日饮食</h2>
+                <button class="iconbtn-sm" data-toast="添加饮食记录">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+
+              <ul class="food-list">
+                <li class="food food--breakfast">
+                  <span class="food__icon">早</span>
+                  <div class="food__main">
+                    <span class="food__title">全麦面包 + 鸡蛋</span>
+                    <span class="food__sub">08:30 · 早餐</span>
+                  </div>
+                  <div class="food__right">
+                    <span class="food__cal">320 kcal</span>
+                    <span class="badge badge--good">优质蛋白</span>
+                  </div>
+                </li>
+                <li class="food food--lunch">
+                  <span class="food__icon">午</span>
+                  <div class="food__main">
+                    <span class="food__title">鸡胸肉沙拉</span>
+                    <span class="food__sub">12:15 · 午餐</span>
+                  </div>
+                  <div class="food__right">
+                    <span class="food__cal">450 kcal</span>
+                    <span class="badge badge--good">低碳</span>
+                  </div>
+                </li>
+                <li class="food food--snack">
+                  <span class="food__icon">加</span>
+                  <div class="food__main">
+                    <span class="food__title">希腊酸奶 + 坚果</span>
+                    <span class="food__sub">15:00 · 下午茶</span>
+                  </div>
+                  <div class="food__right">
+                    <span class="food__cal">180 kcal</span>
+                    <span class="badge badge--warn">注意糖分</span>
+                  </div>
+                </li>
+                <li class="food food--dinner">
+                  <span class="food__icon">晚</span>
+                  <div class="food__main">
+                    <span class="food__title">三文鱼 + 藜麦</span>
+                    <span class="food__sub">19:30 · 晚餐</span>
+                  </div>
+                  <div class="food__right">
+                    <span class="food__cal">520 kcal</span>
+                    <span class="badge badge--good">Omega-3</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 今日建议 -->
+            <section class="tip-card" aria-label="健康建议">
+              <span class="tip-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              </span>
+              <div class="tip-card__content">
+                <span class="tip-card__title">今日建议</span>
+                <p>晚餐蛋白质摄入达标，建议增加一份深色蔬菜补充膳食纤维。</p>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="food">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/></svg>
+              <span>饮食</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="记录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
+              <span>统计</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

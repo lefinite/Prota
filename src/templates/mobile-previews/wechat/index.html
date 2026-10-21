@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>微聊 · WeChat 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部搜索栏 -->
+            <header class="search-bar">
+              <div class="search-bar__field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                <span>搜索</span>
+              </div>
+              <button class="search-bar__add" type="button" data-toast="添加朋友 / 发起群聊 / 扫一扫" aria-label="添加">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：置顶对话（签名：气泡预览 + 绿标）-->
+            <section class="hero" aria-label="置顶对话">
+              <div class="chat-head">
+                <span class="chat-head__title">家人群（4）</span>
+                <span class="pin-tag">置顶</span>
+              </div>
+              <div class="bubbles" aria-label="最新两条消息">
+                <div class="bubble bubble--in">
+                  <span class="bubble__avatar av-1">妈</span>
+                  <p class="bubble__text">周末回来吃饭吗？你爸腌了糖蒜。</p>
+                </div>
+                <div class="bubble bubble--out">
+                  <p class="bubble__text">回！周六下午的高铁，我带桂花糕 🍰</p>
+                  <span class="bubble__avatar av-2">我</span>
+                </div>
+              </div>
+              <div class="hero__quick">
+                <button class="quick" type="button" data-quick="周六见！">周六见！</button>
+                <button class="quick" type="button" data-quick="路上小心">路上小心</button>
+                <button class="quick" type="button" data-quick="好嘞～">好嘞～</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡：服务区块 -->
+            <section class="cells" aria-label="常用服务">
+              <div class="cell" data-toast="收付款码已打开">
+                <i class="cell__icon ci-green">💰</i>
+                <span class="cell__name">收付款</span>
+              </div>
+              <div class="cell" data-toast="红包：本月已收 8 个，共 ¥168">
+                <i class="cell__icon ci-orange">🧧</i>
+                <span class="cell__name">红包</span>
+              </div>
+              <div class="cell" data-toast="朋友圈：3 条新动态">
+                <i class="cell__icon ci-blue">⭕</i>
+                <span class="cell__name">朋友圈</span>
+                <em class="badge">3</em>
+              </div>
+              <div class="cell" data-toast="扫一扫已开启">
+                <i class="cell__icon ci-teal">📷</i>
+                <span class="cell__name">扫一扫</span>
+              </div>
+            </section>
+
+            <!-- 4. Feed：会话列表 -->
+            <section class="feed" aria-label="会话列表">
+              <div class="feed__head">
+                <h2 class="feed__title">最近会话</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="group">群聊</button>
+                  <button class="chip" type="button" data-filter="single">单聊</button>
+                  <button class="chip" type="button" data-filter="unread">未读</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="conv" data-kind="group">
+                  <span class="conv__avatar av-3">群</span>
+                  <div class="conv__body">
+                    <span class="conv__name">产品一组（12）</span>
+                    <span class="conv__last">阿茂：结算页的稿我传网盘了，大家看下</span>
+                  </div>
+                  <div class="conv__side">
+                    <span class="conv__time">09:32</span>
+                    <em class="badge">12</em>
+                  </div>
+                </li>
+                <li class="conv" data-kind="single">
+                  <span class="conv__avatar av-4">岩</span>
+                  <div class="conv__body">
+                    <span class="conv__name">岩井</span>
+                    <span class="conv__last">[语音] 3''</span>
+                  </div>
+                  <div class="conv__side">
+                    <span class="conv__time">09:18</span>
+                  </div>
+                </li>
+                <li class="conv" data-kind="single">
+                  <span class="conv__avatar av-5">快</span>
+                  <div class="conv__body">
+                    <span class="conv__name">快递驿站</span>
+                    <span class="conv__last">你的包裹已到 3 号柜，取件码 8842</span>
+                  </div>
+                  <div class="conv__side">
+                    <span class="conv__time">08:55</span>
+                    <em class="badge">1</em>
+                  </div>
+                </li>
+                <li class="conv" data-kind="group">
+                  <span class="conv__avatar av-6">读</span>
+                  <div class="conv__body">
+                    <span class="conv__name">读书会 · 十月</span>
+                    <span class="conv__last">小满：本周共读《山之四季》第 3 章</span>
+                  </div>
+                  <div class="conv__side">
+                    <span class="conv__time">昨天</span>
+                  </div>
+                </li>
+                <li class="conv" data-kind="single">
+                  <span class="conv__avatar av-7">订</span>
+                  <div class="conv__body">
+                    <span class="conv__name">订阅号助手</span>
+                    <span class="conv__last">「炉边」更新了：修一把伞，等一场雨</span>
+                  </div>
+                  <div class="conv__side">
+                    <span class="conv__time">昨天</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="发消息">
+              <input class="action__input" id="msgInput" type="text" placeholder="给「家人群」发消息…" />
+              <div class="action__row">
+                <button class="btn-green" type="button" id="sendBtn">发送</button>
+                <button class="btn-ghost" type="button" data-toast="语音消息：按住说话（演示）">按住说话</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="微聊">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 3V5z"/><path d="M9 9h6M9 12h3"/></svg>
+              <span>微聊</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="通讯录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M17 11h4M19 9v4"/></svg>
+              <span>通讯录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发现">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

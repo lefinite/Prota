@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowPilot · AI 工作流运营中心（Arco Design）</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-flow" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.5 6h7M7.5 8l3 7M16.5 8l-3 7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-data" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+    <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3.5 20c0-4 2.2-6 5.5-6s5.5 2 5.5 6M14 15c3.8-.6 6 1.2 6.5 4.5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2.2-.7-.7-1.7 1-2-2.2-2.2-2 1-1.7-.7L10.5 2h-3l-.7 2.2-1.7.7-2-1L.9 6.1l1 2-.7 1.7L-1 10.5v3l2.2.7.7 1.7-1 2 2.2 2.2 2-1 1.7.7.7 2.2h3l.7-2.2 1.7-.7 2 1 2.2-2.2-1-2 .7-1.7z" transform="translate(2.5 0) scale(.8)"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2.2-2.5 4M12 17h.01"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M5 17h14l-1.5-2V10a5.5 5.5 0 0 0-11 0v5zM10 20h4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M18.5 10A7 7 0 0 0 6 7.5L4 10M5.5 14A7 7 0 0 0 18 16.5l2-2.5"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19zM12 9v5M12 17h.01"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="1"/><path d="M16 8V4H5v12h3"/></symbol>
+  </svg>
+
+  <div class="app-layout">
+    <aside class="sider">
+      <div class="brand"><span class="brand-mark"><span></span><span></span><span></span></span><strong>FlowPilot</strong></div>
+      <nav class="menu" aria-label="主导航">
+        <button><svg><use href="#i-grid"/></svg>工作台</button>
+        <button class="selected"><svg><use href="#i-flow"/></svg>工作流</button>
+        <button><svg><use href="#i-clock"/></svg>运行记录</button>
+        <button><svg><use href="#i-data"/></svg>数据连接</button>
+        <button><svg><use href="#i-team"/></svg>团队成员</button>
+        <button><svg><use href="#i-settings"/></svg>系统设置</button>
+      </nav>
+      <div class="sider-bottom">
+        <button class="help"><svg><use href="#i-help"/></svg>帮助与文档</button>
+        <div class="user"><span class="avatar">林</span><span><strong>林知夏</strong><small>管理员</small></span><svg class="chevron"><use href="#i-more"/></svg></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb"><span>工作台</span><i>/</i><strong>工作流</strong></div>
+        <div class="header-tools">
+          <label class="search"><svg><use href="#i-search"/></svg><input id="globalSearch" type="search" placeholder="搜索工作流" aria-label="搜索工作流"><kbd>⌘ K</kbd></label>
+          <button id="noticeBtn" class="icon-btn" aria-label="通知"><svg><use href="#i-bell"/></svg><i class="badge-dot"></i></button>
+          <button id="createBtn" class="btn primary"><svg><use href="#i-plus"/></svg>新建工作流</button>
+        </div>
+        <div id="noticePopover" class="popover notice-popover" hidden><div class="popover-title">通知 <span>2 条未读</span></div><div class="notice-item"><i class="status-dot danger"></i><span><strong>高风险订单预警运行异常</strong><small>8 分钟前</small></span></div><div class="notice-item"><i class="status-dot success"></i><span><strong>每日销售简报运行完成</strong><small>今天 09:00</small></span></div></div>
+      </header>
+
+      <div class="content">
+        <section class="page-heading">
+          <div><h1>工作流</h1><p>创建、监控并优化团队的自动化流程</p></div>
+          <div class="sync"><span class="status-dot success"></span>数据已更新 <time id="syncTime">刚刚</time></div>
+        </section>
+
+        <section class="metrics" aria-label="数据概览">
+          <article class="metric"><div class="metric-top"><span>工作流总数</span><span class="metric-icon blue"><svg><use href="#i-flow"/></svg></span></div><div class="metric-value">24</div><div class="metric-foot"><b class="up">↑ 3</b><span>较上周</span></div></article>
+          <article class="metric"><div class="metric-top"><span>今日运行</span><span class="metric-icon cyan"><svg><use href="#i-clock"/></svg></span></div><div class="metric-value">1,286</div><div class="metric-foot"><b class="up">↑ 12.5%</b><span>较昨日</span></div></article>
+          <article class="metric"><div class="metric-top"><span>成功率</span><span class="metric-icon green"><svg><use href="#i-check"/></svg></span></div><div class="metric-value">97.8<span>%</span></div><div class="metric-foot"><b class="up">↑ 0.6%</b><span>较昨日</span></div></article>
+          <article class="metric"><div class="metric-top"><span>节省时间</span><span class="metric-icon purple"><svg><use href="#i-clock"/></svg></span></div><div class="metric-value">146<span>小时</span></div><div class="metric-foot"><b class="neutral">本月累计</b></div></article>
+        </section>
+
+        <section class="trend-card">
+          <div class="section-head"><div><h2>近 7 日运行趋势</h2><div class="legend"><span><i class="legend-line blue"></i>成功运行</span><span><i class="legend-line red"></i>失败运行</span></div></div><div class="segmented" id="rangeSelector"><button class="active" data-range="7">7 天</button><button data-range="30">30 天</button><button data-range="90">90 天</button></div></div>
+          <div class="chart-wrap" id="chartWrap">
+            <div class="chart-y"><span>1,200</span><span>800</span><span>400</span><span>0</span></div>
+            <svg id="trendChart" viewBox="0 0 960 105" preserveAspectRatio="none" role="img" aria-label="运行趋势折线图">
+              <defs><linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#165DFF" stop-opacity=".16"/><stop offset="1" stop-color="#165DFF" stop-opacity="0"/></linearGradient></defs>
+              <g class="grid-lines"><path d="M0 8H960M0 37H960M0 67H960M0 96H960"/></g>
+              <path id="areaPath" class="area" d="M0 77 L160 58 L320 65 L480 37 L640 44 L800 24 L960 34 L960 96 L0 96Z"/>
+              <polyline id="successLine" class="line success-line" points="0,77 160,58 320,65 480,37 640,44 800,24 960,34"/>
+              <polyline id="failLine" class="line fail-line" points="0,89 160,84 320,87 480,80 640,83 800,78 960,81"/>
+              <g id="chartPoints"></g>
+            </svg>
+            <div class="chart-x" id="chartLabels"><span>8月6日</span><span>8月7日</span><span>8月8日</span><span>8月9日</span><span>8月10日</span><span>8月11日</span><span>8月12日</span></div>
+            <div id="chartTooltip" class="chart-tooltip" hidden></div>
+          </div>
+        </section>
+
+        <section class="table-card">
+          <div class="tabs-row"><div id="statusTabs" class="tabs" role="tablist"><button class="active" data-tab="全部">全部 <span>24</span></button><button data-tab="运行中">运行中 <span>18</span></button><button data-tab="草稿">草稿 <span>4</span></button><button data-tab="已停用">已停用 <span>2</span></button></div><button id="batchEntry" class="btn text muted" disabled>批量操作<svg><use href="#i-down"/></svg></button></div>
+          <div id="selectionBar" class="selection-alert" hidden><span><svg><use href="#i-check"/></svg>已选择 <strong id="selectedCount">0</strong> 项</span><div><button class="btn text">批量启用</button><button class="btn text danger-text">批量停用</button><button id="clearSelection" class="btn text">取消选择</button></div></div>
+          <div class="filters">
+            <div class="filter-left">
+              <label class="mini-search"><svg><use href="#i-search"/></svg><input id="tableSearch" placeholder="搜索名称或创建人"></label>
+              <label class="select-wrap"><select id="statusFilter"><option value="">全部状态</option><option>运行中</option><option>异常</option><option>草稿</option><option>已停用</option></select><svg><use href="#i-down"/></svg></label>
+              <label class="select-wrap"><select id="ownerFilter"><option value="">全部创建人</option><option>林知夏</option><option>周景明</option><option>陈雨桐</option><option>赵一澄</option></select><svg><use href="#i-down"/></svg></label>
+              <label class="date-filter"><input id="dateFilter" type="date" aria-label="更新时间筛选"><span>更新时间</span></label>
+            </div>
+            <div class="filter-right"><span id="filterFeedback">共 24 个工作流</span><button id="refreshBtn" class="icon-btn small" title="刷新"><svg><use href="#i-refresh"/></svg></button></div>
+          </div>
+          <div class="table-shell" id="tableShell">
+            <table>
+              <colgroup><col class="c-check"><col class="c-name"><col class="c-status"><col class="c-trigger"><col class="c-today"><col class="c-rate"><col class="c-last"><col class="c-owner"><col class="c-action"></colgroup>
+              <thead><tr><th><input id="selectAll" type="checkbox" aria-label="全选"></th><th>工作流名称</th><th>状态</th><th>触发方式</th><th>今日运行</th><th>成功率</th><th>最近运行</th><th>创建人</th><th>操作</th></tr></thead>
+              <tbody id="workflowRows"></tbody>
+            </table>
+            <div id="emptyState" class="empty-state" hidden><span class="empty-icon"><svg><use href="#i-search"/></svg></span><strong>暂无匹配的工作流</strong><small>请调整搜索关键词或筛选条件</small><button id="resetFilters" class="btn secondary small-btn">重置筛选</button></div>
+            <div id="loadingOverlay" class="loading-overlay" hidden><span class="spinner"></span><span>正在刷新数据...</span></div>
+          </div>
+          <footer class="pagination"><span id="rangeText">第 1–6 条，共 24 条</span><div class="pager"><button class="page-arrow" disabled>‹</button><button class="active" data-page="1">1</button><button data-page="2">2</button><button data-page="3">3</button><button data-page="4">4</button><button class="page-arrow" data-page="2">›</button></div><label class="select-wrap compact"><select id="pageSize"><option>6 条/页</option><option>12 条/页</option><option>24 条/页</option></select><svg><use href="#i-down"/></svg></label></footer>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="modalMask" class="overlay" hidden>
+    <section id="createModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="createTitle">
+      <header><h2 id="createTitle">新建工作流</h2><button class="icon-btn small close-overlay"><svg><use href="#i-close"/></svg></button></header>
+      <form id="createForm" novalidate>
+        <div class="form-grid">
+          <label class="form-item full"><span>工作流名称 <b>*</b></span><input name="name" placeholder="请输入工作流名称"><small class="error">请输入工作流名称</small></label>
+          <label class="form-item"><span>触发方式 <b>*</b></span><select name="trigger"><option value="">请选择触发方式</option><option>新增数据时</option><option>定时触发</option><option>手动触发</option></select><small class="error">请选择触发方式</small></label>
+          <label class="form-item"><span>负责人 <b>*</b></span><select name="owner"><option value="">请选择负责人</option><option>林知夏</option><option>周景明</option><option>陈雨桐</option><option>赵一澄</option></select><small class="error">请选择负责人</small></label>
+          <label class="form-item full"><span>描述</span><textarea name="description" maxlength="200" placeholder="简要说明工作流用途（选填）"></textarea><em>0 / 200</em></label>
+        </div>
+        <div class="info-alert"><span>i</span><p><strong>创建后将进入草稿状态</strong><small>你可以继续配置步骤、测试并发布工作流。</small></p></div>
+        <footer><button type="button" class="btn secondary close-overlay">取消</button><button type="submit" class="btn primary">创建</button></footer>
+      </form>
+    </section>
+  </div>
+
+  <div id="confirmMask" class="overlay" hidden>
+    <section class="modal confirm-modal" role="alertdialog" aria-modal="true"><div class="confirm-content"><span class="warning-icon"><svg><use href="#i-warning"/></svg></span><div><h2>确认删除工作流？</h2><p>删除后无法恢复，相关历史运行记录将保留。确定删除「<strong id="deleteName"></strong>」吗？</p></div></div><footer><button class="btn secondary close-confirm">取消</button><button id="confirmDelete" class="btn danger-btn">确认删除</button></footer></section>
+  </div>
+
+  <div id="drawerMask" class="drawer-mask" hidden></div>
+  <aside id="detailDrawer" class="drawer" aria-hidden="true" aria-labelledby="detailTitle">
+    <header><div><span class="tag danger-tag"><i></i>异常</span><h2 id="detailTitle">高风险订单预警</h2><p>订单创建时 · 负责人 林知夏</p></div><button id="closeDrawer" class="icon-btn small"><svg><use href="#i-close"/></svg></button></header>
+    <div class="drawer-body">
+      <div class="error-alert"><svg><use href="#i-warning"/></svg><div><strong>最近一次运行失败</strong><p>订单风控服务响应超时（错误码：RISK_GATEWAY_TIMEOUT）</p><small>发生于 8 分钟前，已连续失败 3 次</small></div></div>
+      <section><h3>运行统计</h3><div class="detail-stats"><div><span>今日运行</span><strong>89</strong></div><div><span>成功率</span><strong class="danger-text">83.2%</strong></div><div><span>平均耗时</span><strong>4.8s</strong></div></div></section>
+      <section><h3>运行状态</h3><dl class="descriptions"><div><dt>当前状态</dt><dd><span class="tag danger-tag"><i></i>异常</span></dd></div><div><dt>触发方式</dt><dd>订单创建时</dd></div><div><dt>最近运行</dt><dd>8 分钟前</dd></div><div><dt>工作流 ID</dt><dd>WF-2026-0189 <button class="copy-id" title="复制"><svg><use href="#i-copy"/></svg></button></dd></div></dl></section>
+      <section><h3>操作日志</h3><ol class="timeline"><li class="error"><i></i><div><strong>工作流运行失败</strong><p>风控服务响应超时，自动重试 3 次后终止</p><time>今天 16:42</time></div></li><li><i></i><div><strong>自动重试</strong><p>第 2 次重试已发起</p><time>今天 16:41</time></div></li><li class="success"><i></i><div><strong>工作流运行成功</strong><p>处理订单 #FP240812-8831</p><time>今天 16:28</time></div></li></ol></section>
+    </div>
+    <footer><button id="editWorkflow" class="btn secondary">编辑工作流</button><button id="rerunBtn" class="btn primary"><svg><use href="#i-refresh"/></svg>重新运行</button></footer>
+  </aside>
+
+  <div id="actionMenu" class="popover action-menu" hidden></div>
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

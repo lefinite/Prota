@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>栖游 · Airbnb 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 + 搜索 -->
+            <header class="brand-bar">
+              <span class="brand-bar__logo">栖游</span>
+              <button class="brand-bar__search" type="button" data-toast="试试「大理 · 洱海」">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                <span>你要去哪里？</span>
+              </button>
+              <button class="brand-bar__round" type="button" data-toast="已进入个人中心" aria-label="个人中心">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              </button>
+            </header>
+
+            <!-- 三选 Tab -->
+            <div class="tri-tabs" role="tablist" aria-label="产品线">
+              <button class="tri-tabs__item is-active" type="button">🏠 房源</button>
+              <button class="tri-tabs__item" type="button">🎈 体验</button>
+              <button class="tri-tabs__item" type="button">🔔 服务</button>
+            </div>
+
+            <!-- 2. Hero：全宽房源卡 + Guest Favorite 奖章 -->
+            <section class="hero" aria-label="精选房源">
+              <div class="hero__photo" role="img" aria-label="洱海边带院子的白族老宅">
+                <span class="hero__badge">Plus 精选</span>
+                <button class="hero__heart" id="heroHeart" type="button" aria-label="加入心愿单" aria-pressed="false">
+                  <svg viewBox="0 0 32 32"><path d="M16 28C9 22 4 17.6 4 12.4 4 8.9 6.8 6 10.4 6c2.2 0 4.3 1.1 5.6 3 1.3-1.9 3.4-3 5.6-3C25.2 6 28 8.9 28 12.4c0 5.2-5 9.6-12 15.6z"/></svg>
+                </button>
+              </div>
+              <div class="hero__body">
+                <h1 class="hero__title">大理 · 洱海畔的白族老宅</h1>
+                <p class="hero__sub">整栋 · 3 卧 · 可住 6 人 · 距海 80 米</p>
+                <div class="hero__award" aria-label="宾客最爱房源，评分 4.81">
+                  <span class="hero__laurel" aria-hidden="true">🌿</span>
+                  <span class="hero__score">4.81</span>
+                  <span class="hero__laurel" aria-hidden="true">🌿</span>
+                  <span class="hero__award-label">宾客最爱</span>
+                </div>
+                <div class="hero__price-row">
+                  <p class="hero__price"><b>¥1,288</b><span> / 晚</span></p>
+                  <button class="btn-primary" type="button" data-toast="已预留 10 月 2–4 日，快去付款">预订</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="灵感">
+              <div class="duo__card">
+                <div class="duo__photo duo__photo--a" aria-hidden="true"></div>
+                <h2 class="duo__title">热气球日出之旅</h2>
+                <p class="duo__meta">体验 · 4.9 ★ · ¥588/人</p>
+              </div>
+              <div class="duo__card">
+                <div class="duo__photo duo__photo--b" aria-hidden="true"></div>
+                <h2 class="duo__title">白族扎染工坊</h2>
+                <p class="duo__meta">体验 · 4.8 ★ · ¥168/人</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：房源列表 -->
+            <section class="feed" aria-label="房源推荐">
+              <div class="feed__head">
+                <h2 class="feed__title">附近好宿</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="plus">Plus</button>
+                  <button class="chip" type="button" data-filter="luxe">Luxe</button>
+                  <button class="chip" type="button" data-filter="free">可订</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="plus">
+                  <div class="feed-item__photo feed-item__photo--1" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">喜洲 · 稻田边的玻璃屋</span>
+                    <span class="feed-item__meta">4.92 ★ · 整栋 · 2 卧</span>
+                  </div>
+                  <b class="feed-item__price">¥986</b>
+                  <button class="feed-item__heart" type="button" aria-label="加入心愿单" aria-pressed="false"><svg viewBox="0 0 32 32"><path d="M16 28C9 22 4 17.6 4 12.4 4 8.9 6.8 6 10.4 6c2.2 0 4.3 1.1 5.6 3 1.3-1.9 3.4-3 5.6-3C25.2 6 28 8.9 28 12.4c0 5.2-5 9.6-12 15.6z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="free">
+                  <div class="feed-item__photo feed-item__photo--2" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">双廊 · 海景复式 LOFT</span>
+                    <span class="feed-item__meta">4.87 ★ · 整层 · 3 卧</span>
+                  </div>
+                  <b class="feed-item__price">¥1,120</b>
+                  <button class="feed-item__heart" type="button" aria-label="加入心愿单" aria-pressed="false"><svg viewBox="0 0 32 32"><path d="M16 28C9 22 4 17.6 4 12.4 4 8.9 6.8 6 10.4 6c2.2 0 4.3 1.1 5.6 3 1.3-1.9 3.4-3 5.6-3C25.2 6 28 8.9 28 12.4c0 5.2-5 9.6-12 15.6z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="luxe">
+                  <div class="feed-item__photo feed-item__photo--3" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">苍山 · 半山温泉别院</span>
+                    <span class="feed-item__meta">4.95 ★ · 独院 · 5 卧</span>
+                  </div>
+                  <b class="feed-item__price">¥3,680</b>
+                  <button class="feed-item__heart" type="button" aria-label="加入心愿单" aria-pressed="false"><svg viewBox="0 0 32 32"><path d="M16 28C9 22 4 17.6 4 12.4 4 8.9 6.8 6 10.4 6c2.2 0 4.3 1.1 5.6 3 1.3-1.9 3.4-3 5.6-3C25.2 6 28 8.9 28 12.4c0 5.2-5 9.6-12 15.6z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="free">
+                  <div class="feed-item__photo feed-item__photo--4" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">古城 · 院落里的树屋</span>
+                    <span class="feed-item__meta">4.78 ★ · 独间 · 1 卧</span>
+                  </div>
+                  <b class="feed-item__price">¥452</b>
+                  <button class="feed-item__heart" type="button" aria-label="加入心愿单" aria-pressed="false"><svg viewBox="0 0 32 32"><path d="M16 28C9 22 4 17.6 4 12.4 4 8.9 6.8 6 10.4 6c2.2 0 4.3 1.1 5.6 3 1.3-1.9 3.4-3 5.6-3C25.2 6 28 8.9 28 12.4c0 5.2-5 9.6-12 15.6z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="plus">
+                  <div class="feed-item__photo feed-item__photo--5" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">才村 · 码头边的木屋</span>
+                    <span class="feed-item__meta">4.90 ★ · 整栋 · 2 卧</span>
+                  </div>
+                  <b class="feed-item__price">¥768</b>
+                  <button class="feed-item__heart" type="button" aria-label="加入心愿单" aria-pressed="false"><svg viewBox="0 0 32 32"><path d="M16 28C9 22 4 17.6 4 12.4 4 8.9 6.8 6 10.4 6c2.2 0 4.3 1.1 5.6 3 1.3-1.9 3.4-3 5.6-3C25.2 6 28 8.9 28 12.4c0 5.2-5 9.6-12 15.6z"/></svg></button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：日期 / 人数 -->
+            <section class="action" aria-label="筛选行程">
+              <div class="chips">
+                <button class="chip" type="button" data-toast="已选 10 月 2 – 4 日">10月2–4日</button>
+                <button class="chip" type="button" data-toast="已选 2 位房客">2 位房客</button>
+                <button class="chip" type="button" data-toast="价格区间 ¥500–1500">¥500–1500</button>
+                <button class="chip" type="button" data-toast="已开启即时预订">即时预订</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-primary" type="button" data-toast="正在搜索 234 套房源…">搜索房源</button>
+                <button class="btn-ghost" type="button" data-toast="地图模式即将上线">地图找房</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="探索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <span>探索</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="心愿单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>
+              <span>心愿单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="旅程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19h10l1.5-9H5.5L7 19z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+              <span>旅程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="消息">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 1 1-3.1-6.3"/><path d="M21 3v5h-5"/></svg>
+              <span>消息</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

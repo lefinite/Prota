@@ -1,0 +1,389 @@
+/* =========================================================================
+ * mobile-previews/enterprise — Enterprise Design System
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/enterprise 的 :root token
+ * 页面：FleetCommand 车队管理仪表板
+ * Signature: 深海军蓝 KPI 数据卡片 + 专业数据可视化
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/enterprise）—— */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-warm: #eef2f7;
+  --fg: #0f172a;
+  --fg-2: #334155;
+  --muted: #64748b;
+  --meta: #1d4ed8;
+  --border: #d8dee8;
+  --border-soft: #edf1f6;
+  --accent: #1d4ed8;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #15803d;
+  --warn: #b45309;
+  --danger: #b91c1c;
+  --font-display: Inter, system-ui, sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 34px;
+  --text-3xl: 48px;
+  --text-4xl: 64px;
+  --leading-body: 1.52;
+  --leading-tight: 1.08;
+  --tracking-display: -0.018em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 68px;
+  --section-y-phone: 48px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 20px 52px rgba(15, 23, 42, 0.10);
+  --focus-ring: 0 0 0 4px rgba(29, 78, 216, 0.22);
+  --motion-fast: 150ms;
+  --motion-base: 230ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1240px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+
+  /* —— 手机外壳（企业专业风格）—— */
+  --page-backdrop-top: #e8ecf2;
+  --page-backdrop-bottom: #d1d8e3;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #d8dee8;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(15, 23, 42, 0.20);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.94), transparent 28%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 100px; }
+
+/* ===== Page content · FleetCommand ===== */
+
+/* 顶部品牌栏 —— 企业专业风格 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; color: var(--accent);
+  background: var(--surface-warm);
+}
+.brand-mark svg { width: 20px; height: 20px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-base); font-weight: 700; color: var(--fg); letter-spacing: -0.01em; }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.iconbtn {
+  position: relative; width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; color: var(--fg);
+  box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 19px; height: 19px; }
+.iconbtn:active { background: color-mix(in oklab, var(--fg), transparent 92%); }
+
+/* KPI 卡片 —— signature：深海军蓝数据聚焦点 */
+.kpi-card {
+  background: var(--fg);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  color: var(--accent-on);
+  margin-bottom: 14px;
+}
+.kpi-card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.kpi-card__title {
+  margin: 0; font-size: var(--text-base); font-weight: 600;
+  color: var(--surface);
+}
+.status-badge {
+  font-size: var(--text-xs); font-weight: 600; padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+.status-badge--active {
+  background: var(--success);
+  color: var(--accent-on);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.kpi-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.kpi-item--primary {
+  grid-column: span 2;
+  background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent), black 12%));
+  border-color: color-mix(in oklab, var(--accent), white 20%);
+}
+.kpi-item__label { font-size: var(--text-xs); color: rgba(255, 255, 255, 0.70); }
+.kpi-item__value {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1.1;
+  color: var(--accent-on);
+}
+.kpi-item__unit {
+  font-size: 16px; font-weight: 500;
+  color: rgba(255, 255, 255, 0.60);
+}
+.kpi-item__trend {
+  font-size: var(--text-xs); font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.kpi-item__trend--up { color: var(--success); }
+.kpi-item__trend svg { width: 12px; height: 12px; }
+
+.kpi-card__chart { margin-top: 4px; }
+.chart-bars {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  height: 48px; gap: 6px;
+  margin-bottom: 8px;
+}
+.chart-bar {
+  flex: 1; background: var(--surface-warm);
+  border-radius: 2px 2px 0 0;
+  height: var(--h);
+  min-height: 8px;
+  animation: grow 900ms var(--ease-standard) both;
+}
+.chart-bar--active { background: var(--accent); }
+.chart-bar:nth-child(1) { animation-delay: 0ms; }
+.chart-bar:nth-child(2) { animation-delay: 70ms; }
+.chart-bar:nth-child(3) { animation-delay: 140ms; }
+.chart-bar:nth-child(4) { animation-delay: 210ms; }
+.chart-bar:nth-child(5) { animation-delay: 280ms; }
+.chart-bar:nth-child(6) { animation-delay: 350ms; }
+.chart-bar:nth-child(7) { animation-delay: 420ms; }
+
+.kpi-card__chart-label {
+  margin: 0; font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.60);
+}
+
+/* 双数据卡片 */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px; display: flex; flex-direction: column; gap: 6px;
+}
+.stat-card__icon {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--accent);
+  background: var(--surface-warm);
+}
+.stat-card__icon svg { width: 16px; height: 16px; }
+.stat-card--navy { background: var(--fg); border-color: var(--fg); }
+.stat-card--navy .stat-card__icon { background: rgba(29, 78, 216, 0.2); }
+.stat-card--blue { background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent), black 8%)); border-color: var(--accent); }
+.stat-card--blue .stat-card__icon { background: rgba(255, 255, 255, 0.2); color: var(--accent-on); }
+.stat-card__cap { font-size: var(--text-xs); color: rgba(255, 255, 255, 0.70); }
+.stat-card--navy .stat-card__cap { color: rgba(255, 255, 255, 0.70); }
+.stat-card__val {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  letter-spacing: -0.01em; color: var(--fg);
+}
+.stat-card--navy .stat-card__val,
+.stat-card--blue .stat-card__val { color: var(--accent-on); }
+.stat-card__foot { font-size: var(--text-xs); color: var(--muted); }
+.stat-card--navy .stat-card__foot,
+.stat-card--blue .stat-card__foot { color: rgba(255, 255, 255, 0.80); }
+
+/* 车辆状态列表 */
+.list-block { margin-top: 22px; }
+.list-block__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.list-block__head h2 { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--fg); }
+.chips { display: inline-flex; background: var(--surface); border-radius: var(--radius-pill); padding: 3px; box-shadow: var(--elev-ring); }
+.chip {
+  padding: 5px 12px; border-radius: var(--radius-pill); font-size: var(--text-xs);
+  color: var(--muted); transition: all var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); }
+
+.fleet-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.fleet-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 4px; border-bottom: 1px solid var(--border-soft);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.fleet-item:last-child { border-bottom: 0; }
+.fleet-item.is-hidden { display: none; }
+.fleet-item__icon {
+  flex: none; width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: grid; place-items: center;
+}
+.fleet-item__icon--active { background: color-mix(in oklab, var(--success), transparent 84%); color: var(--success); }
+.fleet-item__icon--idle { background: var(--surface-warm); color: var(--muted); }
+.fleet-item__icon svg { width: 16px; height: 16px; }
+.fleet-item__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fleet-item__plate { font-size: var(--text-sm); font-weight: 700; color: var(--fg); font-family: var(--font-mono); }
+.fleet-item__sub { font-size: var(--text-xs); color: var(--muted); }
+.fleet-item__right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.fleet-item__status { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-sm); }
+.fleet-item__status--active { color: var(--success); background: color-mix(in oklab, var(--success), transparent 88%); }
+.fleet-item__status--idle { color: var(--muted); background: var(--surface-warm); }
+.fleet-item__route,
+.fleet-item__location { font-size: var(--text-xs); color: var(--muted); }
+
+/* 告警卡片 */
+.alert-card { margin-top: 18px; }
+.alert-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.alert-card__title { font-size: var(--text-sm); font-weight: 600; color: var(--fg); }
+.alert-count {
+  width: 24px; height: 24px; border-radius: var(--radius-pill);
+  display: grid; place-items: center;
+  font-size: var(--text-xs); font-weight: 700;
+  background: var(--warn); color: var(--accent-on);
+}
+.alert-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 12px;
+}
+.alert-item--warn { border-color: color-mix(in oklab, var(--warn), transparent 60%); background: color-mix(in oklab, var(--warn), transparent 94%); }
+.alert-item__icon {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  font-size: 14px; color: var(--warn);
+  background: color-mix(in oklab, var(--warn), transparent 85%);
+}
+.alert-item__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.alert-item__title { font-size: var(--text-sm); font-weight: 600; color: var(--fg); }
+.alert-item__sub { font-size: var(--text-xs); color: var(--muted); }
+.alert-item__action {
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  font-size: var(--text-xs); font-weight: 600;
+  background: var(--warn); color: var(--accent-on);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.alert-item__action:active { transform: scale(0.96); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab —— 企业风格 */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+  padding: 10px 8px 18px; background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+.tab:active { transform: scale(0.95); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--accent-on);
+  font-size: var(--text-xs); padding: 10px 18px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.kpi-card, .stat-row, .list-block, .alert-card { animation: rise 520ms var(--ease-standard) both; }
+.stat-row { animation-delay: 70ms; }
+.list-block { animation-delay: 140ms; }
+.alert-card { animation-delay: 200ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

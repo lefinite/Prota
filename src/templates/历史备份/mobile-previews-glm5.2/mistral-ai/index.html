@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Mistral Chat · Mistral AI</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-block">
+                  <span class="block-item" style="background: #ffd900"></span>
+                  <span class="block-item" style="background: #ffa110"></span>
+                  <span class="block-item" style="background: #fa520f"></span>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">MISTRAL</span>
+                  <span class="brand-sub">AI ASSISTANT</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置 · 即将打开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m8.5-12.5h-6m-6 0h-6M4.93 4.93l4.24 4.24m5.08 5.08l4.24 4.24M4.93 19.07l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero 卡（signature：温暖渐变块 + 金色阴影） -->
+            <section class="hero-card" aria-label="AI 模型选择">
+              <p class="hero-card__label">当前模型</p>
+              <h1 class="hero-card__title">Mistral Large</h1>
+              <p class="hero-card__desc">最新一代旗舰语言模型，专为复杂推理与多语言任务优化</p>
+              <div class="hero-card__meta">
+                <span class="tag">128K 上下文</span>
+                <span class="tag">多语言</span>
+                <span class="tag">JSON 模式</span>
+              </div>
+              <div class="hero-blocks">
+                <span class="hero-block" style="background: #ffd900"></span>
+                <span class="hero-block" style="background: #ffe295"></span>
+                <span class="hero-block" style="background: #ffa110"></span>
+                <span class="hero-block" style="background: #ff8105"></span>
+                <span class="hero-block" style="background: #fb6424"></span>
+                <span class="hero-block" style="background: #fa520f"></span>
+              </div>
+            </section>
+
+            <!-- 快速操作卡 -->
+            <section class="action-grid">
+              <button class="action-card" data-toast="新建对话">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                <span>新对话</span>
+              </button>
+              <button class="action-card" data-toast="浏览库">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>知识库</span>
+              </button>
+              <button class="action-card" data-toast="API 密钥">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>API 密钥</span>
+              </button>
+              <button class="action-card" data-toast="使用统计">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                <span>统计</span>
+              </button>
+            </section>
+
+            <!-- 对话历史列表 -->
+            <section class="history-block" aria-label="最近对话">
+              <div class="history-block__head">
+                <h2>最近对话</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选对话">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="code" role="tab" aria-selected="false">代码</button>
+                  <button class="chip" data-filter="write" role="tab" aria-selected="false">写作</button>
+                </div>
+              </div>
+
+              <ul class="chat-list" id="chatList">
+                <li class="chat" data-type="code">
+                  <span class="chat__icon chat__icon--code">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  </span>
+                  <div class="chat__main">
+                    <span class="chat__title">Python 数据分析脚本优化</span>
+                    <span class="chat__sub">今天 14:23 · Mistral Large</span>
+                  </div>
+                  <div class="chat__right">
+                    <span class="badge">已完成</span>
+                  </div>
+                </li>
+                <li class="chat" data-type="write">
+                  <span class="chat__icon chat__icon--write">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </span>
+                  <div class="chat__main">
+                    <span class="chat__title">产品发布公告撰写</span>
+                    <span class="chat__sub">今天 11:05 · Mistral Medium</span>
+                  </div>
+                  <div class="chat__right">
+                    <span class="badge">草稿</span>
+                  </div>
+                </li>
+                <li class="chat" data-type="code">
+                  <span class="chat__icon chat__icon--code">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  </span>
+                  <div class="chat__main">
+                    <span class="chat__title">React 组件重构建议</span>
+                    <span class="chat__sub">昨天 16:40 · Mistral Large</span>
+                  </div>
+                  <div class="chat__right">
+                    <span class="badge">已完成</span>
+                  </div>
+                </li>
+                <li class="chat" data-type="write">
+                  <span class="chat__icon chat__icon--write">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </span>
+                  <div class="chat__main">
+                    <span class="chat__title">邮件回复：合作意向</span>
+                    <span class="chat__sub">前天 09:30 · Mistral 8B</span>
+                  </div>
+                  <div class="chat__right">
+                    <span class="badge">已发送</span>
+                  </div>
+                </li>
+                <li class="chat" data-type="code">
+                  <span class="chat__icon chat__icon--code">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  </span>
+                  <div class="chat__main">
+                    <span class="chat__title">SQL 查询优化</span>
+                    <span class="chat__sub">3 天前 · Mistral Large</span>
+                  </div>
+                  <div class="chat__right">
+                    <span class="badge">已完成</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Token 使用条 -->
+            <section class="usage-card" aria-label="本月使用量">
+              <div class="usage-card__head">
+                <span class="usage-card__title">本月 Token 使用</span>
+                <span class="usage-card__num">2.4M <span class="muted">/ 5M</span></span>
+              </div>
+              <div class="usage-card__bar" aria-hidden="true">
+                <span class="usage-card__bar-fill" style="--p: 48%"></span>
+              </div>
+              <p class="usage-card__note">已用 48%，预计可支撑至月底。</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="chat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>对话</span>
+            </button>
+            <button class="tab" data-tab="models">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>模型</span>
+            </button>
+            <button class="tab tab--fab" data-tab="new" aria-label="新对话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>历史</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,309 @@
+/* =========================================================================
+ * mobile-previews/mongodb — Atlas Console
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/mongodb 的 :root token
+ * 页面：Page content（Atlas Console · 数据库控制台）
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/mongodb）—— */
+  --bg: #001e2b;             /* Forest Black —— 深色画布 */
+  --surface: #1c2d38;        /* Deep Teal —— 次级深色表面 */
+  --surface-warm: var(--surface);
+  --fg: #ffffff;             /* Pure White —— 主要文字 */
+  --fg-2: #e8edeb;           /* Light Input —— 次要文字 */
+  --muted: #b8c4c2;          /* Silver Teal —— 说明文字 */
+  --meta: #5c6c75;           /* Cool Gray —— 元数据 */
+  --border: #3d4f58;         /* Teal Gray —— 深色表面边框 */
+  --border-soft: var(--border);
+  --accent: #00ed64;         /* MongoDB Green —— 霓虹绿强调色 */
+  --accent-on: #001e2b;      /* Forest Black —— 霓虹绿上的文字 */
+  --accent-hover: #00684a;   /* Dark Green —— 悬停状态 */
+  --accent-active: color-mix(in oklab, var(--accent-hover), black 12%);
+  --success: #16a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+  --font-display: "MongoDB Value Serif", "Times New Roman", Times, ui-serif, Georgia, serif;
+  --font-body: "Euclid Circular A", "Akzidenz-Grotesk Std", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --text-xs: 11px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 36px;
+  --text-3xl: 64px;
+  --text-4xl: 96px;
+  --leading-body: 1.5;
+  --leading-tight: 1.2;
+  --tracking-display: normal;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 26px 44px rgba(0, 30, 43, 0.12), 0 7px 13px rgba(0, 0, 0, 0.13);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* —— 手机外壳（与设计系统协调——森林暗色调）—— */
+  --page-backdrop-top: #0a2734;
+  --page-backdrop-bottom: #001e2b;
+  --phone-shell: #1c2d38;
+  --phone-shell-edge: #0d1b24;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 30, 43, 0.4);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(0, 30, 43, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · Atlas Console ===== */
+/* 顶部品牌栏：叶子图标 + 深色主题 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: grid; place-items: center;
+  background: rgba(0, 237, 100, 0.15); /* 霓虹绿半透明背景 */
+}
+.brand-mark svg { width: 18px; height: 18px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-base); font-weight: 700; letter-spacing: -0.02em; }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; font-family: var(--font-mono); letter-spacing: 0.05em; }
+
+.iconbtn {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; color: var(--fg);
+  box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 17px; height: 17px; }
+.iconbtn:active { background: color-mix(in oklab, var(--fg), transparent 92%); }
+.iconbtn__dot { position: absolute; top: 10px; right: 10px; width: 7px; height: 7px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
+
+/* Hero 卡：signature —— 深色模式 + 霓虹绿高亮 */
+.hero-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--elev-raised);
+  margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.hero-label {
+  margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--accent);
+  font-family: var(--font-mono);
+}
+.hero-title {
+  margin: 10px 0 6px; font-family: var(--font-display);
+  font-size: var(--text-xl); font-weight: 400;
+  line-height: var(--leading-tight);
+}
+.hero-status {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px; font-size: var(--text-sm); color: var(--fg-2);
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot--active { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.hero-metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-top: 16px;
+}
+.metric { display: flex; flex-direction: column; gap: 4px; }
+.metric__label { font-size: var(--text-xs); color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.05em; }
+.metric__value { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 400; }
+.metric__value.accent { color: var(--accent); }
+.hero-graph {
+  margin-top: 16px; height: 40px; color: var(--accent);
+  opacity: 0.6;
+}
+
+/* 快速操作网格 */
+.quick-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  margin-bottom: 16px;
+}
+.quick-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 12px 6px; border-radius: var(--radius-md); color: var(--fg);
+  font-size: var(--text-xs); background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.quick-card__icon {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--accent);
+  background: rgba(0, 237, 100, 0.1);
+}
+.quick-card__icon svg { width: 16px; height: 16px; }
+.quick-card:active { transform: scale(0.96); background: color-mix(in oklab, var(--surface), white 5%); }
+
+/* 数据库列表 */
+.db-block { margin-top: 8px; }
+.db-block__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.db-block__head h2 { margin: 0; font-size: var(--text-lg); font-weight: 500; }
+.chips { display: inline-flex; background: var(--surface); border-radius: var(--radius-pill); padding: 3px; border: 1px solid var(--border); }
+.chip {
+  padding: 5px 12px; border-radius: var(--radius-pill); font-size: var(--text-xs); color: var(--muted);
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); }
+
+.db-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.db {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 4px; border-bottom: 1px solid var(--border);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.db:last-child { border-bottom: 0; }
+.db.is-hidden { display: none; }
+.db__icon {
+  flex: none; width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border);
+}
+.db__icon svg { width: 18px; height: 18px; }
+.db__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.db__name { font-size: var(--text-sm); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); }
+.db__sub { font-size: var(--text-xs); color: var(--muted); }
+.db__right { display: flex; align-items: center; }
+.badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-sm); font-family: var(--font-mono); letter-spacing: 0.05em; }
+.badge--success { color: var(--accent); background: rgba(0, 237, 100, 0.15); }
+.badge--muted { color: var(--muted); background: var(--surface); }
+.badge--warn { color: var(--warn); background: rgba(234, 179, 8, 0.15); }
+
+/* 资源使用条 */
+.resource-card {
+  margin-top: 18px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 14px 16px;
+}
+.resource-card__head { display: flex; align-items: baseline; justify-content: space-between; }
+.resource-card__title { font-size: var(--text-sm); font-weight: 500; }
+.resource-card__num { font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; }
+.resource-card__num .muted { color: var(--muted); font-weight: 400; font-size: var(--text-xs); }
+.resource-card__bar { margin-top: 10px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.resource-card__bar-fill { display: block; height: 100%; width: var(--p); border-radius: 999px; background: var(--accent); animation: grow 900ms var(--ease-standard) both; }
+.resource-card__note { margin: 8px 0 0; font-size: var(--text-xs); color: var(--muted); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab —— pill 风格 */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+  padding: 8px 10px 18px; background: color-mix(in oklab, var(--surface), transparent 5%);
+  backdrop-filter: blur(8px); border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--muted); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+.tab--fab {
+  justify-self: center; position: relative; top: -14px;
+  width: 50px; height: 50px; border-radius: var(--radius-pill);
+  background: var(--accent); color: var(--accent-on);
+  display: grid; place-items: center; box-shadow: 0 8px 18px rgba(0, 237, 100, 0.4);
+  transition: transform var(--motion-fast) var(--ease-standard);
+  border: 2px solid var(--bg);
+}
+.tab--fab svg { width: 20px; height: 20px; }
+.tab--fab:active { transform: scale(0.92); }
+
+/* Toast —— 深色模式 */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs); padding: 9px 16px; border-radius: var(--radius-sm);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-card, .quick-grid, .db-block, .resource-card { animation: rise 520ms var(--ease-standard) both; }
+.quick-grid { animation-delay: 70ms; }
+.db-block { animation-delay: 140ms; }
+.resource-card { animation-delay: 200ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>NewsFlow · Publication</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="masthead">
+              <div class="masthead__brand">
+                <span class="brand-flag">NEWSFLOW</span>
+                <span class="brand-motto">深度报道 · 独立观点</span>
+              </div>
+              <button class="iconbtn" aria-label="订阅" data-toast="订阅管理">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg>
+              </button>
+            </header>
+
+            <!-- 头条卡片（signature：红色编辑风格的视觉焦点） -->
+            <section class="hero-story" aria-label="头条新闻">
+              <span class="story-tag">独家报道</span>
+              <h1 class="story-headline">人工智能重塑创意产业：设计师的机遇与挑战</h1>
+              <p class="story-deck">当算法开始绘画，人类创作者如何在新时代找到自己的位置？来自一线的深度观察。</p>
+              <div class="story-meta">
+                <span class="story-author">张明远</span>
+                <span class="story-time">2024.08.14</span>
+                <span class="story-read">12分钟阅读</span>
+              </div>
+
+              <div class="story-actions">
+                <button class="action-btn action-btn--primary" data-toast="开始阅读">阅读全文</button>
+                <button class="action-btn" data-toast="已加入稍后阅读">稍后读</button>
+              </div>
+            </section>
+
+            <!-- 编辑推荐双栏 -->
+            <section class="editorial-row" aria-label="编辑推荐">
+              <article class="brief">
+                <span class="brief__section">科技</span>
+                <h3 class="brief__title">量子计算突破：IBM 发布新型处理器</h3>
+                <span class="brief__meta">3小时前</span>
+              </article>
+              <article class="brief">
+                <span class="brief__section">文化</span>
+                <h3 class="brief__title">故宫数字展：当文物遇见元宇宙</h3>
+                <span class="brief__meta">5小时前</span>
+              </article>
+            </section>
+
+            <!-- 新闻列表 -->
+            <section class="news-feed" aria-label="新闻流">
+              <div class="feed-header">
+                <h2>最新资讯</h2>
+                <div class="chips" id="feedChips" role="tablist" aria-label="筛选新闻">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="tech" role="tab" aria-selected="false">科技</button>
+                  <button class="chip" data-filter="finance" role="tab" aria-selected="false">财经</button>
+                </div>
+              </div>
+
+              <ul class="feed-list" id="feedList">
+                <li class="feed-item" data-category="tech">
+                  <span class="feed-item__category">科技</span>
+                  <div class="feed-item__main">
+                    <h4 class="feed-item__title">SpaceX 星舰第四次试飞成功</h4>
+                    <p class="feed-item__summary">马斯克称这次成功为"人类星际移民的重要一步"</p>
+                  </div>
+                  <span class="feed-item__time">15分钟前</span>
+                </li>
+                <li class="feed-item" data-category="finance">
+                  <span class="feed-item__category">财经</span>
+                  <div class="feed-item__main">
+                    <h4 class="feed-item__title">央行发布数字货币新规</h4>
+                    <p class="feed-item__summary">专家解读：对普通用户意味着什么？</p>
+                  </div>
+                  <span class="feed-item__time">1小时前</span>
+                </li>
+                <li class="feed-item" data-category="tech">
+                  <span class="feed-item__category">科技</span>
+                  <div class="feed-item__main">
+                    <h4 class="feed-item__title">苹果秋季发布会前瞻</h4>
+                    <p class="feed-item__summary">iPhone 16 将带来哪些创新？</p>
+                  </div>
+                  <span class="feed-item__time">2小时前</span>
+                </li>
+                <li class="feed-item" data-category="finance">
+                  <span class="feed-item__category">财经</span>
+                  <div class="feed-item__main">
+                    <h4 class="feed-item__title">A股三大指数集体收涨</h4>
+                    <p class="feed-item__summary">北向资金净流入超百亿</p>
+                  </div>
+                  <span class="feed-item__time">3小时前</span>
+                </li>
+                <li class="feed-item" data-category="tech">
+                  <span class="feed-item__category">科技</span>
+                  <div class="feed-item__main">
+                    <h4 class="feed-item__title">特斯拉上海超级工厂扩建</h4>
+                    <p class="feed-item__summary">年产能有望突破百万辆</p>
+                  </div>
+                  <span class="feed-item__time">4小时前</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 订阅状态 -->
+            <section class="subscription-box" aria-label="订阅信息">
+              <div class="subscription-box__header">
+                <span class="subscription-box__title">您的订阅</span>
+                <span class="subscription-box__status">年度会员</span>
+              </div>
+              <div class="subscription-box__progress">
+                <span class="subscription-box__progress-fill" style="--p: 75%"></span>
+              </div>
+              <p class="subscription-box__note">本月已阅读 45 篇深度报道</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="sections">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+              <span>栏目</span>
+            </button>
+            <button class="tab tab--center" data-tab="saved" aria-label="收藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+            </button>
+            <button class="tab" data-tab="trending">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+              <span>热榜</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

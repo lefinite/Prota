@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>创意工坊 · Creative</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">创</span>
+                <div class="brand-text">
+                  <span class="brand-name">创意工坊</span>
+                  <span class="brand-sub">Hi，设计师小王</span>
+                </div>
+              </div>
+              <button class="iconbtn iconbtn--accent" aria-label="新建项目" data-toast="创建新项目">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8" /></svg>
+              </button>
+            </header>
+
+            <!-- 创意仪表盘（signature：橙色焦点 + 渐变卡片） -->
+            <section class="creative-dashboard" aria-label="创意概览">
+              <div class="creative-card">
+                <div class="creative-card__bg"></div>
+                <div class="creative-card__content">
+                  <p class="creative-card__label">本周创意指数</p>
+                  <p class="creative-card__score">87<span class="creative-card__max">/100</span></p>
+                  <p class="creative-card__note">灵感爆发中！已产出 12 个创意 ✨</p>
+                </div>
+                <div class="creative-card__sparkle">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+            </section>
+
+            <!-- 项目卡片三连 -->
+            <section class="project-gallery" aria-label="项目集">
+              <div class="gallery-header">
+                <h2>进行中的项目</h2>
+                <button class="view-all" data-toast="查看全部项目">全部</button>
+              </div>
+
+              <div class="project-grid">
+                <article class="project-card project-card--active">
+                  <span class="project-card__tag">品牌设计</span>
+                  <h3 class="project-card__title">咖啡品牌视觉</h3>
+                  <p class="project-card__desc">温暖、手作的咖啡店视觉系统</p>
+                  <div class="project-card__meta">
+                    <span class="project-card__progress">
+                      <span class="project-card__progress-bar" style="--progress: 75%"></span>
+                    </span>
+                    <span class="project-card__status">75%</span>
+                  </div>
+                </article>
+
+                <article class="project-card">
+                  <span class="project-card__tag project-card__tag--purple">插画</span>
+                  <h3 class="project-card__title">城市地图插画</h3>
+                  <p class="project-card__desc">手绘风格的城市探索指南</p>
+                  <div class="project-card__meta">
+                    <span class="project-card__progress">
+                      <span class="project-card__progress-bar" style="--progress: 40%"></span>
+                    </span>
+                    <span class="project-card__status">40%</span>
+                  </div>
+                </article>
+
+                <article class="project-card">
+                  <span class="project-card__tag project-card__tag--green">包装设计</span>
+                  <h3 class="project-card__title">茶叶包装</h3>
+                  <p class="project-card__desc">现代简约的茶叶礼盒设计</p>
+                  <div class="project-card__meta">
+                    <span class="project-card__progress">
+                      <span class="project-card__progress-bar" style="--progress: 20%"></span>
+                    </span>
+                    <span class="project-card__status">20%</span>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <!-- 灵感收藏列表 -->
+            <section class="inspiration-section" aria-label="灵感收集">
+              <h2 class="inspiration-section__title">灵感收集</h2>
+
+              <div class="filter-chips" id="inspireChips" role="tablist">
+                <button class="chip chip--active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                <button class="chip" data-filter="color" role="tab" aria-selected="false">配色</button>
+                <button class="chip" data-filter="font" role="tab" aria-selected="false">字体</button>
+                <button class="chip" data-filter="layout" role="tab" aria-selected="false">排版</button>
+              </div>
+
+              <ul class="inspire-list" id="inspireList">
+                <li class="inspire-item" data-type="color">
+                  <div class="inspire-item__color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></div>
+                  <div class="inspire-item__main">
+                    <span class="inspire-item__title">渐变紫</span>
+                    <span class="inspire-item__source">Dribbble · 2小时前</span>
+                  </div>
+                  <button class="inspire-item__heart" aria-label="收藏" data-toast="已收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                </li>
+
+                <li class="inspire-item" data-type="font">
+                  <div class="inspire-item__font">Aa</div>
+                  <div class="inspire-item__main">
+                    <span class="inspire-item__title">DM Serif Display</span>
+                    <span class="inspire-item__source">Google Fonts · 昨天</span>
+                  </div>
+                  <button class="inspire-item__heart inspire-item__heart--filled" aria-label="取消收藏" data-toast="已取消收藏">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                </li>
+
+                <li class="inspire-item" data-type="layout">
+                  <div class="inspire-item__layout">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="inspire-item__main">
+                    <span class="inspire-item__title">网格布局</span>
+                    <span class="inspire-item__source">Behance · 3天前</span>
+                  </div>
+                  <button class="inspire-item__heart" aria-label="收藏" data-toast="已收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                </li>
+
+                <li class="inspire-item" data-type="color">
+                  <div class="inspire-item__color" style="background: #ff6b6b"></div>
+                  <div class="inspire-item__main">
+                    <span class="inspire-item__title">珊瑚红</span>
+                    <span class="inspire-item__source">Pinterest · 5天前</span>
+                  </div>
+                  <button class="inspire-item__heart" aria-label="收藏" data-toast="已收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快捷操作区 -->
+            <section class="quick-actions" aria-label="快捷操作">
+              <button class="action-btn action-btn--primary" data-toast="创建新项目">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" /></svg>
+                <span>新建项目</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="打开画布">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" /></svg>
+                <span>画布</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="导出作品">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                <span>导出</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18" /></svg>
+              <span>项目</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="创建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z" /></svg>
+              <span>探索</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

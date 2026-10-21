@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>终极座驾 · Lamborghini</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="demo-stage">
+    <div class="phone-shell">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="status-bar" aria-label="设备状态栏">
+          <span class="status-bar__time" id="statusTime">9:41</span>
+          <div class="status-bar__island" aria-hidden="true"></div>
+          <div class="status-bar__right" aria-hidden="true">
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+            <span class="battery"></span>
+          </div>
+        </div>
+
+        <main class="app-content" id="appContent">
+          <!-- 顶部品牌栏（极简） -->
+          <header class="topbar">
+            <div class="topbar__brand">
+              <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L8 6h3v6H8v4h3v6l4-4h-3V8h3V4h-3L12 2z"/></svg>
+              </span>
+              <div class="brand-text">
+                <span class="brand-name">LAMBORGHINI</span>
+              </div>
+            </div>
+            <button class="iconbtn" aria-label="菜单" data-toast="菜单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
+            </button>
+          </header>
+
+          <!-- Hero Section：车型展示（signature：金色 CTA + 纯黑背景） -->
+          <section class="hero-section" aria-label="车型展示">
+            <div class="hero-section__bg"></div>
+            <div class="hero-section__content">
+              <p class="hero-section__eyebrow">NEW 2024</p>
+              <h1 class="hero-section__title">REVUELTO</h1>
+              <p class="hero-section__subtitle">HPEV HYBRID SUPER CAR</p>
+              <button class="cta-gold" data-toast="开始配置">
+                DISCOVER MORE
+              </button>
+            </div>
+            <div class="hero-section__hex">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2z" /></svg>
+            </div>
+          </section>
+
+          <!-- 车辆状态卡 -->
+          <section class="status-grid" aria-label="车辆状态">
+            <div class="status-card">
+              <p class="status-card__label">VELOCITY</p>
+              <p class="status-card__value">285<span class="unit">KM/H</span></p>
+            </div>
+            <div class="status-card">
+              <p class="status-card__label">RPM</p>
+              <p class="status-card__value">7,200</p>
+            </div>
+            <div class="status-card">
+              <p class="status-card__label">GEAR</p>
+              <p class="status-card__value">5<span class="unit">TH</span></p>
+            </div>
+          </section>
+
+          <!-- 驾驶模式选择 -->
+          <section class="mode-section" aria-label="驾驶模式">
+            <h2 class="section-title">DRIVING MODE</h2>
+            <div class="mode-grid">
+              <button class="mode-btn mode-btn--active" data-mode="strada" data-toast="STRADA 模式">
+                <span class="mode-btn__name">STRADA</span>
+                <span class="mode-btn__label">ROAD</span>
+              </button>
+              <button class="mode-btn" data-mode="sport" data-toast="SPORT 模式">
+                <span class="mode-btn__name">SPORT</span>
+                <span class="mode-btn__label">TRACK</span>
+              </button>
+              <button class="mode-btn" data-mode="corsa" data-toast="CORSA 模式">
+                <span class="mode-btn__name">CORSA</span>
+                <span class="mode-btn__label">RACE</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- 行程记录列表 -->
+          <section class="list-block" aria-label="行程记录">
+            <div class="list-block__head">
+              <h2>RECENT DRIVES</h2>
+            </div>
+
+            <ul class="drive-list" id="driveList">
+              <li class="drive-item" data-type="track">
+                <span class="drive-item__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                </span>
+                <div class="drive-item__main">
+                  <span class="drive-item__title">MISANO CIRCUIT</span>
+                  <span class="drive-item__sub">昨天 · 赛道日</span>
+                </div>
+                <div class="drive-item__right">
+                  <span class="drive-item__stat">2:14.8</span>
+                  <span class="badge badge--gold">BEST</span>
+                </div>
+              </li>
+              <li class="drive-item" data-type="highway">
+                <span class="drive-item__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M5 7l14-4M5 17l14 4" /></svg>
+                </span>
+                <div class="drive-item__main">
+                  <span class="drive-item__title">MILLE MIGLIA</span>
+                  <span class="drive-item__sub">8月10日 · 公路巡航</span>
+                </div>
+                <div class="drive-item__right">
+                  <span class="drive-item__stat">487 KM</span>
+                </div>
+              </li>
+              <li class="drive-item" data-type="city">
+                <span class="drive-item__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4 8 4v14" /></svg>
+                </span>
+                <div class="drive-item__main">
+                  <span class="drive-item__title">BOLOGNA CITY</span>
+                  <span class="drive-item__sub">8月8日 · 城市驾驶</span>
+                </div>
+                <div class="drive-item__right">
+                  <span class="drive-item__stat">42 KM</span>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 车辆提醒 -->
+          <section class="alert-section" aria-label="车辆提醒">
+            <div class="alert-card">
+              <span class="alert-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+              </span>
+              <span class="alert-card__text">SERVICE REQUIRED</span>
+              <span class="badge badge--alert">SOON</span>
+            </div>
+          </section>
+
+          <div class="bottom-spacer" aria-hidden="true"></div>
+        </main>
+
+        <!-- 底部 Tab -->
+        <nav class="tabbar" aria-label="主导航">
+          <button class="tab is-active" data-tab="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+            <span>HOME</span>
+          </button>
+          <button class="tab" data-tab="car">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg>
+            <span>CAR</span>
+          </button>
+          <button class="tab" data-tab="nav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
+            <span>NAV</span>
+          </button>
+          <button class="tab" data-tab="profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+            <span>MY</span>
+          </button>
+        </nav>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

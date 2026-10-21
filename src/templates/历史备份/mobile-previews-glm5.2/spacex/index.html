@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>MISSION CONTROL · SpaceX</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">09:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 全屏背景图 + 渐变遮罩 -->
+            <div class="mission-bg" aria-hidden="true">
+              <div class="mission-bg__overlay"></div>
+            </div>
+
+            <!-- 顶部透明导航 -->
+            <header class="mission-nav">
+              <div class="mission-logo">SPACEX</div>
+              <button class="mission-menu" aria-label="菜单" data-toast="MENU">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero signature：大写标题 + 倒计时（聚焦点） -->
+            <section class="mission-hero">
+              <p class="mission-label">UPCOMING LAUNCH</p>
+              <h1 class="mission-title">STARSHIP<br/>FLIGHT TEST 7</h1>
+              <div class="countdown" id="countdown">
+                <div class="countdown__unit">
+                  <span class="countdown__val" data-val="02">02</span>
+                  <span class="countdown__lbl">DAYS</span>
+                </div>
+                <span class="countdown__sep">:</span>
+                <div class="countdown__unit">
+                  <span class="countdown__val" data-val="14">14</span>
+                  <span class="countdown__lbl">HOURS</span>
+                </div>
+                <span class="countdown__sep">:</span>
+                <div class="countdown__unit">
+                  <span class="countdown__val" data-val="36">36</span>
+                  <span class="countdown__lbl">MIN</span>
+                </div>
+                <span class="countdown__sep">:</span>
+                <div class="countdown__unit">
+                  <span class="countdown__val" data-val="52">52</span>
+                  <span class="countdown__lbl">SEC</span>
+                </div>
+              </div>
+              <button class="ghost-btn" data-toast="WATCH LIVE">WATCH LIVE</button>
+            </section>
+
+            <!-- 任务详情：直接在背景上的文本 -->
+            <section class="mission-details">
+              <div class="mission-detail">
+                <span class="mission-detail__lbl">PAYLOAD</span>
+                <span class="mission-detail__val">STARSHIP V2</span>
+              </div>
+              <div class="mission-detail">
+                <span class="mission-detail__lbl">DESTINATION</span>
+                <span class="mission-detail__val">LOW EARTH ORBIT</span>
+              </div>
+              <div class="mission-detail">
+                <span class="mission-detail__lbl">LAUNCH SITE</span>
+                <span class="mission-detail__val">STARBASE, TX</span>
+              </div>
+            </section>
+
+            <!-- 发射列表：极简行 -->
+            <section class="launch-list" aria-label="发射列表">
+              <h2 class="launch-list__title">ALL LAUNCHES</h2>
+              <div class="launch-filters" id="filterChips" role="tablist" aria-label="筛选发射">
+                <button class="launch-filter is-active" data-filter="all" role="tab" aria-selected="true">ALL</button>
+                <button class="launch-filter" data-filter="upcoming" role="tab" aria-selected="false">UPCOMING</button>
+                <button class="launch-filter" data-filter="past" role="tab" aria-selected="false">PAST</button>
+              </div>
+              <ul class="launch-items" id="launchList">
+                <li class="launch-item" data-type="upcoming">
+                  <span class="launch-item__date">DEC 15</span>
+                  <div class="launch-item__main">
+                    <span class="launch-item__name">STARSHIP Flight Test 7</span>
+                    <span class="launch-item__loc">Starbase, TX</span>
+                  </div>
+                  <span class="launch-item__status launch-item__status--up">UPCOMING</span>
+                </li>
+                <li class="launch-item" data-type="past">
+                  <span class="launch-item__date">NOV 19</span>
+                  <div class="launch-item__main">
+                    <span class="launch-item__name">STARSHIP Flight Test 6</span>
+                    <span class="launch-item__loc">Starbase, TX</span>
+                  </div>
+                  <span class="launch-item__status launch-item__status--success">SUCCESS</span>
+                </li>
+                <li class="launch-item" data-type="past">
+                  <span class="launch-item__date">OCT 13</span>
+                  <div class="launch-item__main">
+                    <span class="launch-item__name">FALCON 9 · Starlink 8-6</span>
+                    <span class="launch-item__loc">CCAFS SLC-40</span>
+                  </div>
+                  <span class="launch-item__status launch-item__status--success">SUCCESS</span>
+                </li>
+                <li class="launch-item" data-type="upcoming">
+                  <span class="launch-item__date">DEC 20</span>
+                  <div class="launch-item__main">
+                    <span class="launch-item__name">FALCON 9 · Starlink 6-68</span>
+                    <span class="launch-item__loc">VAFB SLC-4E</span>
+                  </div>
+                  <span class="launch-item__status launch-item__status--up">UPCOMING</span>
+                </li>
+                <li class="launch-item" data-type="past">
+                  <span class="launch-item__date">SEP 28</span>
+                  <div class="launch-item__main">
+                    <span class="launch-item__name">CREW-9 · DRAGON</span>
+                    <span class="launch-item__loc">LC-39A, Kennedy</span>
+                  </div>
+                  <span class="launch-item__status launch-item__status--success">SUCCESS</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 底部透明导航 -->
+            <nav class="mission-tabbar" aria-label="主导航">
+              <button class="mission-tab is-active" data-tab="missions">
+                <span>MISSIONS</span>
+              </button>
+              <button class="mission-tab" data-tab="rockets">
+                <span>ROCKETS</span>
+              </button>
+              <button class="mission-tab" data-tab="human">
+                <span>HUMAN SPACEFLIGHT</span>
+              </button>
+              <button class="mission-tab" data-tab="starship">
+                <span>STARSHIP</span>
+              </button>
+            </nav>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

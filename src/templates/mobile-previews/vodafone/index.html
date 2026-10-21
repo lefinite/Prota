@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>寰联 · Vodafone 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <svg class="brand-bar__mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4c5 0 9 4 9 9 0 4.6-3.5 8.4-8 8.9v-2.4c3.2-.5 5.6-3.2 5.6-6.5 0-3.6-3-6.6-6.6-6.6S5.4 7.8 5.4 11.4c0 1.5.5 2.9 1.4 4l-1.9 1.5A8.9 8.9 0 0 1 3 11.4c0-5 4-9 9-9z"/><circle cx="12" cy="11.4" r="2.6"/></svg>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">寰联 HUANLIAN</span>
+                <span class="brand-bar__sub">尾号 4821 · 套餐 5G 畅享 129</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="积分 4,820 · 可兑换视频会员" aria-label="积分">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.4 5.4 5.6.7-4.2 3.9 1.1 5.7L12 16l-4.9 2.7 1.1-5.7L4 9.1l5.6-.7L12 3z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：流量（签名：红色章节带 + 巨型数字）-->
+            <section class="hero" aria-label="本月流量">
+              <div class="hero__band">
+                <p class="hero__eyebrow">DATA · 本月剩余</p>
+                <h1 class="hero__num">42.6<span>GB</span></h1>
+                <div class="hero__meter"><i style="--w: 71%"></i></div>
+                <p class="hero__meta">已用 17.4 / 60 GB · 11-01 重置 · 5G SA</p>
+              </div>
+              <div class="hero__grid">
+                <div class="hero__cell">
+                  <b>388</b>
+                  <span>语音分钟</span>
+                </div>
+                <div class="hero__cell">
+                  <b>0</b>
+                  <span>欠费</span>
+                </div>
+                <div class="hero__cell">
+                  <b>4,820</b>
+                  <span>积分</span>
+                </div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-red" type="button" id="topupBtn">充话费</button>
+                <button class="btn-ghost" type="button" data-toast="已订购 10GB 加油包（本月有效）">加流量</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="服务">
+              <div class="duo__card">
+                <h2 class="duo__title">家庭宽带</h2>
+                <p class="duo__num">1000M</p>
+                <p class="duo__meta">千兆 · 光猫正常 · 到期 2027-05</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">亲情号</h2>
+                <p class="duo__num">3<span> 位</span></p>
+                <p class="duo__meta">互打免费 · 剩 2 个名额</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：业务办理 -->
+            <section class="feed" aria-label="推荐业务">
+              <div class="feed__head">
+                <h2 class="feed__title">为你推荐</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="save">省钱</button>
+                  <button class="chip" type="button" data-filter="ent">权益</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="save">
+                  <span class="feed-item__glyph">📶</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">升级 5G 畅享 159 · 送宽带提速</span>
+                    <span class="feed-item__meta">月 +30 元 · 合约 12 个月</span>
+                  </div>
+                  <em class="feed-item__cta">办理</em>
+                </li>
+                <li class="feed-item" data-kind="ent">
+                  <span class="feed-item__glyph">🎬</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">视频会员季卡 · 积分兑换</span>
+                    <span class="feed-item__meta">3,000 积分 · 每限一次</span>
+                  </div>
+                  <em class="feed-item__cta">兑换</em>
+                </li>
+                <li class="feed-item" data-kind="save">
+                  <span class="feed-item__glyph">👨‍👩‍👧</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">全家享融合套餐</span>
+                    <span class="feed-item__meta">2 张副卡 + 千兆宽带 · 月 199</span>
+                  </div>
+                  <em class="feed-item__cta">查看</em>
+                </li>
+                <li class="feed-item" data-kind="ent">
+                  <span class="feed-item__glyph">✈️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">境外流量日租包</span>
+                    <span class="feed-item__meta">日 25 元 · 2GB 封顶</span>
+                  </div>
+                  <em class="feed-item__cta">订购</em>
+                </li>
+                <li class="feed-item" data-kind="ent">
+                  <span class="feed-item__glyph">☁️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">云盘家庭版</span>
+                    <span class="feed-item__meta">2TB · 5 人共享 · 前三月免费</span>
+                  </div>
+                  <em class="feed-item__cta">开通</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="查询">
+              <input class="action__input" id="queryInput" type="text" placeholder="查话费 / 查流量 / 办业务…" />
+              <div class="action__row">
+                <button class="btn-red" type="button" data-toast="电子发票已开具并短信送达">开发票</button>
+                <button class="btn-ghost" type="button" data-toast="营业厅：南京西路 116 号 · 今日 09-21 点">找营业厅</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4v-9z"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="办理">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+              <span>办理</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="客服" aria-label="客服">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16v11H8l-4 3V5z"/></svg>
+              <span>客服</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="积分">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.4 5.4 5.6.7-4.2 3.9 1.1 5.7L12 16l-4.9 2.7 1.1-5.7L4 9.1l5.6-.7L12 3z"/></svg>
+              <span>积分</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

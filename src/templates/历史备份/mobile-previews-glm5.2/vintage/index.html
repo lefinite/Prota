@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Rare Books Archive · 珍本档案馆</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">📜</span>
+                <div class="brand-text">
+                  <span class="brand-name">珍本档案馆</span>
+                  <span class="brand-sub">Rare Books Archive</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="目录" data-toast="打开完整目录">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+              </button>
+            </header>
+
+            <!-- 馆藏概览（signature：Georgia 衬线 + 泛黄纸张质感） -->
+            <section class="archive-hero">
+              <p class="archive-label">馆藏总数</p>
+              <h1 class="archive-count">2,847<span class="archive-suffix">册</span></h1>
+              <p class="archive-desc">自 1847 年至今的珍贵文献收藏</p>
+              <div class="archive-years">
+                <span class="year-tag">明刻本</span>
+                <span class="year-tag">清稿本</span>
+                <span class="year-tag">民国期刊</span>
+              </div>
+            </section>
+
+            <!-- 珍品卡片 -->
+            <section class="rare-section">
+              <h2 class="section-title">本月珍品</h2>
+
+              <div class="rare-card">
+                <div class="rare-card__cover">
+                  <span class="rare-card__symbol">藏</span>
+                </div>
+                <div class="rare-card__content">
+                  <span class="rare-card__era">清·康熙年间</span>
+                  <h3 class="rare-card__title">康熙字典殿本</h3>
+                  <p class="rare-card__detail">内府刻本 · 竹纸 · 36册</p>
+                  <div class="rare-card__footer">
+                    <span class="rare-card__ref">编号: QK-0012</span>
+                    <span class="rare-card__status">保存完好</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 近期借阅 -->
+            <section class="recent-section">
+              <h2 class="section-title">近期查阅</h2>
+
+              <ul class="access-list">
+                <li class="access-item">
+                  <div class="access-item__icon">📖</div>
+                  <div class="access-item__main">
+                    <span class="access-item__title">四库全书珍本</span>
+                    <span class="access-item__meta">今日 14:30 · 阅览室 A</span>
+                  </div>
+                  <span class="access-item__badge">在馆</span>
+                </li>
+                <li class="access-item">
+                  <div class="access-item__icon">📜</div>
+                  <div class="access-item__main">
+                    <span class="access-item__title">明代方志选辑</span>
+                    <span class="access-item__meta">昨日 10:15 · 特藏室</span>
+                  </div>
+                  <span class="access-item__badge access-item__badge--out">外借</span>
+                </li>
+                <li class="access-item">
+                  <div class="access-item__icon">🗞️</div>
+                  <div class="access-item__main">
+                    <span class="access-item__title">申报合订本 1905</span>
+                    <span class="access-item__meta">3天前 · 微缩阅览</span>
+                  </div>
+                  <span class="access-item__badge">在馆</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 分类筛选 -->
+            <section class="category-filter">
+              <span class="filter-label">按类别浏览</span>
+              <div class="category-chips">
+                <button class="category-chip is-active">全部</button>
+                <button class="category-chip">经部</button>
+                <button class="category-chip">史部</button>
+                <button class="category-chip">子部</button>
+                <button class="category-chip">集部</button>
+                <button class="category-chip">丛书</button>
+              </div>
+            </section>
+
+            <!-- 预约卡片 -->
+            <section class="reservation-card">
+              <div class="reservation-header">
+                <span class="reservation-title">当前预约</span>
+                <span class="reservation-count">3 项</span>
+              </div>
+              <p class="reservation-note">下次可预约时间：明日 9:00</p>
+              <div class="reservation-actions">
+                <button class="btn btn--primary" data-toast="跳转到预约页面">查看预约</button>
+                <button class="btn btn--ghost" data-toast="已加入提醒">设置提醒</button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>馆藏</span>
+            </button>
+            <button class="tab" data-tab="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>检索</span>
+            </button>
+            <button class="tab" data-tab="reserve">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>预约</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

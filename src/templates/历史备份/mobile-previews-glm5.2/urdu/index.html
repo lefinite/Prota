@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>خبر اردو · Urdu Modern</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="Device Status Bar">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- Top Brand Bar -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark" lang="ur">خ</span>
+                <div class="brand-text">
+                  <span class="brand-name" lang="ur">خبر اردو</span>
+                  <span class="brand-sub">پاکستان کی خبریں</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="Notifications" data-toast="کوئی نوٹیفیکشن نہیں">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Hero Section with Urdu Headline (Signature: Large Nastaliq display) -->
+            <section class="hero-section" aria-label="Featured News">
+              <article class="featured-card">
+                <div class="featured-card__image">
+                  <div class="image-placeholder">
+                    <svg viewBox="0 0 200 120" fill="none" aria-hidden="true">
+                      <rect width="200" height="120" fill="#0F595E" opacity="0.1"/>
+                      <circle cx="100" cy="50" r="20" fill="#0F595E" opacity="0.2"/>
+                      <path d="M60 90 L140 90 L130 70 L70 70 Z" fill="#0F595E" opacity="0.15"/>
+                    </svg>
+                  </div>
+                  <span class="category-tag" lang="ur">اہم خبریں</span>
+                </div>
+                <div class="featured-card__content">
+                  <h1 class="featured-title" lang="ur">پاکستان نے عالمی کرکٹ ٹورنامنٹ جیت لیا</h1>
+                  <p class="featured-excerpt" lang="ur">پاکستان نے آج ایک تاریخی فتح حاصل کی، جس نے پورے ملک میں خوشی کی لہر دو رکھ دی۔ کپتان کی بے مثال قیادت نے ٹیم کو فتح تک پہنچایا۔</p>
+                  <div class="featured-meta">
+                    <span class="meta-time">2 گھنٹے پہلے</span>
+                    <span class="meta-category">کھیل</span>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+            <!-- Category Pills (RTL-aware) -->
+            <section class="categories" aria-label="News Categories">
+              <button class="category-pill is-active" data-category="all" lang="ur">تمام</button>
+              <button class="category-pill" data-category="politics" lang="ur">سیاست</button>
+              <button class="category-pill" data-category="sports" lang="ur">کھیل</button>
+              <button class="category-pill" data-category="business" lang="ur">کاروبار</button>
+              <button class="category-pill" data-category="tech" lang="ur">ٹیکنولوجی</button>
+            </section>
+
+            <!-- News List (RTL typography with proper line-height) -->
+            <section class="news-section" aria-label="News Feed">
+              <h2 class="section-title" lang="ur">تازہ ترین خبریں</h2>
+
+              <div class="news-list">
+                <article class="news-item" data-category="politics">
+                  <div class="news-item__thumbnail">
+                    <div class="thumbnail-placeholder">
+                      <svg viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                        <rect width="60" height="60" fill="#C05621" opacity="0.1"/>
+                        <circle cx="30" cy="25" r="10" fill="#C05621" opacity="0.2"/>
+                        <path d="M20 50 L40 50 L35 40 L25 40 Z" fill="#C05621" opacity="0.15"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="news-item__content">
+                    <span class="news-category" lang="ur">سیاست</span>
+                    <h3 class="news-title" lang="ur">وزیراعظم نے نئی ترقیاتی منصوبے کا افتتاح کیا</h3>
+                    <p class="news-excerpt" lang="ur"> حکومت نے ملک بھر میں نئی ترقیاتی منصوبوں کا آغاز کیا ہے...</p>
+                    <span class="news-time">4 گھنٹے پہلے</span>
+                  </div>
+                </article>
+
+                <article class="news-item" data-category="business">
+                  <div class="news-item__thumbnail">
+                    <div class="thumbnail-placeholder">
+                      <svg viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                        <rect width="60" height="60" fill="#0F595E" opacity="0.1"/>
+                        <rect x="15" y="15" width="30" height="25" rx="2" fill="#0F595E" opacity="0.2"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="news-item__content">
+                    <span class="news-category" lang="ur">کاروبار</span>
+                    <h3 class="news-title" lang="ur">ٹیکنالوجی کمپنیاں پاکستان میں سرمایہ کاری بڑھا رہی ہیں</h3>
+                    <p class="news-excerpt" lang="ur"> بین الاقوامی سرمایہ کاروں کی دلچسپی میں اضافہ دیکھا گیا...</p>
+                    <span class="news-time">6 گھنٹے پہلے</span>
+                  </div>
+                </article>
+
+                <article class="news-item" data-category="sports">
+                  <div class="news-item__thumbnail">
+                    <div class="thumbnail-placeholder">
+                      <svg viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                        <rect width="60" height="60" fill="#1F8F46" opacity="0.1"/>
+                        <circle cx="30" cy="30" r="12" stroke="#1F8F46" stroke-width="2" opacity="0.3"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="news-item__content">
+                    <span class="news-category" lang="ur">کھیل</span>
+                    <h3 class="news-title" lang="ur">قومی ہاکی ٹیم نے اپنی پہلی بین الاقوامی جیت ثبت کی</h3>
+                    <p class="news-excerpt" lang="ur">پاکستان ہاکی ٹیم نے ایک مشکل میچ میں کینیا کو شکست دی...</p>
+                    <span class="news-time">8 گھنٹے پہلے</span>
+                  </div>
+                </article>
+
+                <article class="news-item" data-category="tech">
+                  <div class="news-item__thumbnail">
+                    <div class="thumbnail-placeholder">
+                      <svg viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                        <rect width="60" height="60" fill="#C05621" opacity="0.1"/>
+                        <rect x="20" y="20" width="20" height="20" rx="2" fill="#C05621" opacity="0.2"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="news-item__content">
+                    <span class="news-category" lang="ur">ٹیکنولوجی</span>
+                    <h3 class="news-title" lang="ur">نیا موبائل ایپ سروس شروع ہوا</h3>
+                    <p class="news-excerpt" lang="ur">پاکستان کی پہلی مقامی ایپ سروس نے اپنی خدمات شروع کر دیں...</p>
+                    <span class="news-time">10 گھنٹے پہلے</span>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <!-- Quote Block (Signature: Cultural element with terracotta accent) -->
+            <section class="quote-section" aria-label="Daily Quote">
+              <blockquote class="quote-card">
+                <p class="quote-text" lang="ur">تعلیم قومی ترقی کی بنیاد ہے، اور ہر بچے کا حق ہے۔</p>
+                <footer class="quote-footer">
+                  <span class="quote-author" lang="ur">— محمد علی جناح</span>
+                  <span class="quote-source">قائد اعظم</span>
+                </footer>
+              </blockquote>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- Bottom Tab Navigation -->
+          <nav class="tabbar" aria-label="Main Navigation">
+            <button class="tab is-active" data-tab="home" lang="ur">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>ہوم</span>
+            </button>
+            <button class="tab" data-tab="categories" lang="ur">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>زمرے</span>
+            </button>
+            <button class="tab tab--fab" data-tab="search" aria-label="Search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" /></svg>
+            </button>
+            <button class="tab" data-tab="saved" lang="ur">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+              <span>محفوظ</span>
+            </button>
+            <button class="tab" data-tab="settings" lang="ur">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>ترتیبات</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

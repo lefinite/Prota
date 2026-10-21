@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Priceless 钱包 · Mastercard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-mark" aria-hidden="true">
+                <span class="brand-mark__c brand-mark__c--red"></span>
+                <span class="brand-mark__c brand-mark__c--yellow"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">Priceless 钱包</span>
+                <span class="brand-bar__sub">世界卡 · 尾号 4242</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="本期账单 8/25 出账，已开启提醒" aria-label="账单通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：体育场消费卡 + 轨道弧 -->
+            <section class="spend-card" aria-label="本周消费">
+              <span class="spend-card__ghost" aria-hidden="true">¥</span>
+              <svg class="spend-card__orbit" viewBox="0 0 300 170" fill="none" aria-hidden="true">
+                <path d="M232 108 C 180 168, 60 168, 8 108" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <p class="eyebrow">本周消费 · 8/11 – 8/17</p>
+              <p class="spend-card__amount"><span class="spend-card__currency">¥</span>1,248<span class="spend-card__dec">.60</span></p>
+              <div class="spend-card__row">
+                <span class="spend-card__delta">较上周 −8%</span>
+                <span class="spend-card__note">月额度已用 32%</span>
+              </div>
+              <div class="spend-card__limit">
+                <div class="spend-card__track"><span class="spend-card__fill" style="--w: 32%"></span></div>
+                <span class="spend-card__limit-label">¥6,420 / ¥20,000</span>
+              </div>
+              <div class="spend-card__portrait">
+                <span class="spend-card__globe" aria-hidden="true">岛</span>
+                <button class="satellite" type="button" data-toast="已打开消费星球 · 本月 5 家新店" aria-label="查看消费星球">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h13M13 6l6 6-6 6" />
+                  </svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="卡包与优惠">
+              <div class="duo-card">
+                <h2 class="duo-card__title">卡包</h2>
+                <div class="wallet-row">
+                  <span class="wallet-row__chip wallet-row__chip--ink" aria-hidden="true">MC</span>
+                  <div class="wallet-row__body">
+                    <span class="wallet-row__name">世界卡</span>
+                    <span class="wallet-row__meta">•• 4242 · 默认卡</span>
+                  </div>
+                </div>
+                <div class="wallet-row">
+                  <span class="wallet-row__chip wallet-row__chip--cream" aria-hidden="true">Tr</span>
+                  <div class="wallet-row__body">
+                    <span class="wallet-row__name">旅行卡</span>
+                    <span class="wallet-row__meta">•• 8801 · 待激活</span>
+                  </div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">Priceless 优惠</h2>
+                <p class="offer">
+                  <span class="offer__name">外滩餐厅周 · 顶级套餐 8 折</span>
+                  <em class="offer__tag">限时</em>
+                </p>
+                <p class="offer">
+                  <span class="offer__name">双倍积分 · 出行类消费</span>
+                  <em class="offer__tag offer__tag--new">新</em>
+                </p>
+                <button class="duo-card__more" type="button" data-toast="已收藏 2 条优惠，有效期 30 天">收藏优惠</button>
+              </div>
+            </section>
+
+            <!-- 4. 交易记录 Feed -->
+            <section class="feed" aria-label="交易记录">
+              <div class="feed__head">
+                <p class="eyebrow">交易记录</p>
+                <div class="chips" role="tablist" aria-label="筛选交易">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="pending">待入账</button>
+                  <button class="chip" type="button" data-filter="refund">退款</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">咖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">蓝瓶咖啡 · 早餐</span>
+                    <span class="feed-item__meta">今天 08:24 · 餐饮 <em class="feed-item__chip" data-state="done">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">−68.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏商户" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__glyph" aria-hidden="true">家</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">MUJI · 家居</span>
+                    <span class="feed-item__meta">今天 12:40 · 购物 <em class="feed-item__chip" data-state="pending">待入账</em></span>
+                  </div>
+                  <b class="feed-item__amount">−329.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏商户" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="refund">
+                  <span class="feed-item__glyph" aria-hidden="true">退</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">退款 · 城市骑行卡</span>
+                    <span class="feed-item__meta">昨天 17:02 · 退款 <em class="feed-item__chip" data-state="refund">已到账</em></span>
+                  </div>
+                  <b class="feed-item__amount feed-item__amount--in">+120.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏商户" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">馆</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">城市美术馆 · 双人票</span>
+                    <span class="feed-item__meta">8/14 · 文娱 <em class="feed-item__chip" data-state="done">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">−120.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏商户" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">行</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">地铁 2 号线</span>
+                    <span class="feed-item__meta">8/13 · 出行 <em class="feed-item__chip" data-state="done">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">−4.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏商户" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__glyph" aria-hidden="true">费</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">世界卡年费</span>
+                    <span class="feed-item__meta">8/12 · 年度 <em class="feed-item__chip" data-state="pending">待入账</em></span>
+                  </div>
+                  <b class="feed-item__amount">−1,800.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏商户" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快速支付">
+              <input class="pay-input" id="payInput" type="text" inputmode="decimal" placeholder="输入金额，如：128.00" />
+              <div class="action-row">
+                <button class="btn-ink" type="button" id="payBtn">立即支付</button>
+                <button class="btn-outline" type="button" data-toast="8 月账单已生成 · ¥6,420.00">查看账单</button>
+              </div>
+              <button class="consent" type="button" data-toast="已同意《快捷支付协议》，本次会话有效">同意《快捷支付协议》</button>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab：漂浮药丸导航 -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="钱包">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="6" width="17" height="13" rx="4" /><path d="M3.5 10.5h17" />
+              </svg>
+              <span>钱包</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="优惠">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5v7a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 15.5z" /><path d="M14.5 12h2" />
+              </svg>
+              <span>优惠</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="支付" aria-label="扫码支付">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" /><circle cx="12" cy="12" r="2.5" />
+              </svg>
+              <span>支付</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="卡片">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="7" width="18" height="12" rx="3" /><path d="M6.5 13.5h4" />
+              </svg>
+              <span>卡片</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

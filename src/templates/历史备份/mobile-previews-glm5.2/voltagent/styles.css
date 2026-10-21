@@ -1,0 +1,363 @@
+/* =========================================================================
+ * mobile-previews/voltagent — VoltAgent AI 控制台
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/voltagent 的 :root token
+ * 页面：AI Agent 控制台（任务执行、日志监控）
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/voltagent）—— */
+  --bg: #07110c;
+  --surface: #101c16;
+  --surface-warm: #14281e;
+  --fg: #f4fff8;
+  --fg-2: #c8dfd0;
+  --muted: #8ba493;
+  --meta: #7cff6b;
+  --border: #254132;
+  --border-soft: #1a3024;
+  --accent: #7cff6b;
+  --accent-on: #07110c;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #52e875;
+  --warn: #facc15;
+  --danger: #fb7185;
+  --font-display: Inter, system-ui, sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 22px;
+  --text-2xl: 32px;
+  --text-3xl: 46px;
+  --text-4xl: 64px;
+  --leading-body: 1.56;
+  --leading-tight: 1.07;
+  --tracking-display: -0.02em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 68px;
+  --section-y-phone: 48px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 24px 70px rgba(0, 0, 0, 0.42);
+  --focus-ring: 0 0 0 4px rgba(124, 255, 107, 0.30);
+  --motion-fast: 120ms;
+  --motion-base: 210ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1180px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+
+  /* —— 手机外壳（暗色系统协调）—— */
+  --page-backdrop-top: #0a1a10;
+  --page-backdrop-bottom: #051008;
+  --phone-shell: #14281e;
+  --phone-shell-edge: #0d1c14;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.5);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(7, 17, 12, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+  border: 1px solid var(--border);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · VoltAgent AI 控制台 ===== */
+
+/* 顶部品牌栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.topbar__brand { display: flex; align-items: center; gap: 10px; }
+.voltagent-logo { width: 32px; height: 32px; flex-shrink: 0; }
+.voltagent-logo svg { filter: drop-shadow(0 0 4px var(--accent)); }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--fg); }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.iconbtn {
+  position: relative; width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--fg);
+  border: 1px solid var(--border);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 17px; height: 17px; }
+.iconbtn:active { background: var(--surface); border-color: var(--accent); }
+.status-dot {
+  position: absolute; bottom: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Agent 状态面板（signature - 绿色脉冲） */
+.agent-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.agent-panel::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: shimmer 2s linear infinite;
+}
+.agent-panel__header { display: flex; justify-content: space-between; align-items: center; }
+.agent-panel__label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+.agent-panel__count { font-size: 24px; font-weight: 700; color: var(--accent); }
+.agent-panel__tasks {
+  margin: 4px 0 12px; font-family: var(--font-mono);
+  font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
+  line-height: 1; color: var(--fg);
+}
+.agent-panel__tasks .number { color: var(--accent); }
+
+.agent-panel__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.agent-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px;
+  display: flex; flex-direction: column; gap: 2px;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+.agent-card--active { border-color: var(--accent); }
+.agent-card--active::after {
+  content: ""; position: absolute; top: 8px; right: 8px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
+}
+.agent-card { position: relative; }
+.agent-card__name { font-size: 11px; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-card__status { font-size: 9px; font-weight: 700; letter-spacing: 0.05em; }
+.agent-card--active .agent-card__status { color: var(--accent); }
+.agent-card--idle .agent-card__status { color: var(--muted); }
+.agent-card__metric { font-size: 14px; font-weight: 700; color: var(--fg-2); }
+
+.btn {
+  font-size: var(--text-sm); font-weight: 600;
+  padding: 12px 16px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all var(--motion-fast) var(--ease-standard);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--surface); color: var(--fg);
+}
+.btn svg { width: 16px; height: 16px; }
+.btn:active { background: var(--bg); border-color: var(--accent); }
+.btn--primary {
+  background: var(--surface); border: 1px solid var(--accent);
+  color: var(--accent); width: 100%;
+}
+.btn--primary:active { background: var(--accent); color: var(--accent-on); }
+
+/* 代码命令行（signature - 终端风格） */
+.command-block {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 14px 16px;
+  margin-top: 14px;
+}
+.command-block__label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+  color: var(--muted); text-transform: uppercase; margin-bottom: 10px;
+}
+.command-block__label .code-icon { width: 14px; height: 14px; color: var(--accent); }
+.command-block__code {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-family: var(--font-mono); font-size: 13px;
+}
+.command-block__code code { color: var(--fg-2); }
+.copy-btn {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--muted);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.copy-btn:active, .copy-btn:hover { color: var(--accent); }
+.copy-btn svg { width: 14px; height: 14px; }
+
+/* 执行日志 */
+.log-section { margin-top: 18px; }
+.section-title {
+  margin: 0 0 10px; font-size: var(--text-sm); font-weight: 700;
+  color: var(--fg); letter-spacing: -0.01em;
+}
+.log-list { display: flex; flex-direction: column; gap: 2px; }
+.log-entry {
+  display: grid; grid-template-columns: 60px 1fr auto;
+  align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--surface); border: 1px solid var(--border);
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+.log-entry--success { border-color: color-mix(in oklab, var(--success), transparent 70%); }
+.log-entry--running { border-color: var(--accent); }
+.log-entry--warn { border-color: color-mix(in oklab, var(--warn), transparent 70%); }
+.log-entry__time {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--muted);
+}
+.log-entry__content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.log-entry__cmd {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.log-entry__meta { font-size: 10px; color: var(--muted); }
+.log-entry__status {
+  font-size: 14px; font-weight: 700;
+}
+.log-entry--success .log-entry__status { color: var(--success); }
+.log-entry--warn .log-entry__status { color: var(--warn); }
+.log-entry__status--pulse {
+  color: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 性能指标 */
+.metrics-section { margin-top: 18px; }
+.metrics-grid { display: flex; flex-direction: column; gap: 10px; }
+.metric-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.metric-card__label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.metric-card__value {
+  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+  color: var(--fg); line-height: 1; margin-top: 4px;
+}
+.metric-card__unit { font-size: 12px; color: var(--muted); font-weight: 500; }
+.metric-card__bar {
+  margin-top: 8px; height: 3px; border-radius: 999px;
+  background: var(--bg); overflow: hidden;
+}
+.metric-card__bar-fill {
+  display: block; height: 100%; width: var(--p);
+  border-radius: 999px; background: var(--accent);
+  animation: grow 900ms var(--ease-standard) both;
+}
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: end;
+  padding: 10px 12px 18px; background: var(--surface);
+  box-shadow: 0 -1px 0 var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--muted); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--accent);
+  font-size: var(--text-xs); padding: 10px 18px; border-radius: var(--radius-sm);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20; font-weight: 600; font-family: var(--font-mono);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.agent-panel, .command-block, .log-section, .metrics-section {
+  animation: rise 520ms var(--ease-standard) both;
+}
+.command-block { animation-delay: 70ms; }
+.log-section { animation-delay: 140ms; }
+.metrics-section { animation-delay: 200ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .status-dot { animation: none; }
+  .log-entry__status--pulse { animation: none; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

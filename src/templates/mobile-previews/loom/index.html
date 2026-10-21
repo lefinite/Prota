@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>回声 Echo · Loom</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 5.5v13l11-6.5z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">回声 Echo</span>
+                <span class="brand-bar__sub">产品小组 · 6 条未看</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已开启新消息提醒" aria-label="消息设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：最新一条视频消息 -->
+            <article class="video-hero" aria-label="最新视频消息">
+              <div class="video-hero__frame">
+                <span class="video-hero__badge">新</span>
+                <button class="video-hero__play" type="button" id="playBtn" aria-label="播放视频">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 5.5v13l11-6.5z" />
+                  </svg>
+                </button>
+                <span class="video-hero__duration" id="heroDuration">04:32</span>
+                <div class="video-hero__wave" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="video-hero__body">
+                <span class="video-hero__avatar" aria-hidden="true">林</span>
+                <div class="video-hero__info">
+                  <h2 class="video-hero__title">周五评审 · 下期路线图</h2>
+                  <p class="video-hero__meta">林珂 · 2 小时前 · 团队频道</p>
+                </div>
+              </div>
+              <div class="video-hero__progress">
+                <div class="video-hero__track"><span class="video-hero__fill" id="heroFill" style="--w: 48%"></span></div>
+                <span class="video-hero__pct" id="heroPct">已看 48%</span>
+              </div>
+            </article>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="本周回顾与团队动态">
+              <div class="duo-card">
+                <h3 class="duo-card__title">本周观看</h3>
+                <p class="duo-card__num">2.4<span> 小时</span></p>
+                <p class="duo-card__note">32 段视频 · 平均 1 分 12 秒看完</p>
+                <p class="duo-card__note duo-card__note--rec"><span class="rec-dot" aria-hidden="true"></span>你已连续录制 4 天</p>
+              </div>
+              <div class="duo-card">
+                <h3 class="duo-card__title">团队未看</h3>
+                <div class="avatar-stack" aria-label="3 位成员有未看消息">
+                  <span class="avatar-stack__item">陈</span>
+                  <span class="avatar-stack__item">苏</span>
+                  <span class="avatar-stack__item">周</span>
+                  <span class="avatar-stack__item avatar-stack__item--more">+3</span>
+                </div>
+                <button class="duo-card__btn" type="button" data-toast="已提醒 6 位成员观看">一键提醒</button>
+              </div>
+            </section>
+
+            <!-- 4. 收件箱 Feed -->
+            <section class="feed" aria-label="收件箱">
+              <div class="feed__head">
+                <h2 class="feed__title">收件箱</h2>
+                <div class="chips" role="tablist" aria-label="筛选消息">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="unseen">未看</button>
+                  <button class="chip" type="button" data-filter="seen">已看</button>
+                  <button class="chip" type="button" data-filter="draft">草稿</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="unseen">
+                  <span class="feed-item__avatar" data-tone="a" aria-hidden="true">陈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">客户反馈速记</span>
+                    <span class="feed-item__meta">陈默 · 10:24 · 01:48 <em class="feed-item__chip" data-state="unseen">未看</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏消息" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="seen">
+                  <span class="feed-item__avatar" data-tone="b" aria-hidden="true">苏</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">设计走查录屏 · 深色模式</span>
+                    <span class="feed-item__meta">苏芮 · 昨天 · 12:06 <em class="feed-item__chip" data-state="seen">已看</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏消息" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="seen">
+                  <span class="feed-item__avatar" data-tone="c" aria-hidden="true">周</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">周一站会录播</span>
+                    <span class="feed-item__meta">周一 · 08/11 · 08:15 <em class="feed-item__chip" data-state="transcribed">转录完成</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏消息" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="unseen">
+                  <span class="feed-item__avatar" data-tone="a" aria-hidden="true">阿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">新人自我介绍 · 后端</span>
+                    <span class="feed-item__meta">阿哲 · 08/11 · 02:01 <em class="feed-item__chip" data-state="unseen">未看</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏消息" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <span class="feed-item__avatar feed-item__avatar--draft" aria-hidden="true">我</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">产品演示 · 手势页（未发送）</span>
+                    <span class="feed-item__meta">我 · 昨天 17:02 · 03:20 <em class="feed-item__chip" data-state="draft">草稿</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏消息" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="seen">
+                  <span class="feed-item__avatar" data-tone="b" aria-hidden="true">林</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Q3 目标对齐 · 全员会</span>
+                    <span class="feed-item__meta">林珂 · 08/08 · 15:40 <em class="feed-item__chip" data-state="seen">已看</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏消息" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="搜索与录制">
+              <input class="search-input" id="searchInput" type="search" placeholder="搜索消息、发件人或关键词…" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="recordBtn">
+                  <span class="btn-primary__dot" aria-hidden="true"></span><span id="recordLabel">录制新视频</span>
+                </button>
+                <button class="btn-ghost" type="button" data-toast="已筛选出 6 条未看消息">仅看未读</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="收件箱">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5.5h16v11H8.5L4 20z" /><path d="M8 9.5h8M8 12.5h5" />
+              </svg>
+              <span>收件箱</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="素材库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="5" width="16" height="14" rx="2.5" /><path d="M9.5 9.5v5l4.5-2.5z" />
+              </svg>
+              <span>素材库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="录制" aria-label="录制视频">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4.5" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+              </svg>
+              <span>录制</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="草稿">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v10" /><path d="M8.5 10.5L12 14l3.5-3.5" /><path d="M5 18.5h14" />
+              </svg>
+              <span>草稿</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

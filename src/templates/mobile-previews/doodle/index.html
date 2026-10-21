@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>歪歪手帐 · Doodle</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark wob-a" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20l1.2-4.2L16.4 4.6a2 2 0 0 1 2.9 0l.1.1a2 2 0 0 1 0 2.9L8.2 18.8 4 20z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">歪歪手帐</span>
+                <span class="brand-bar__sub">8 月 15 日 · 星期五</span>
+              </div>
+              <button class="brand-bar__icon wob-b" type="button" data-toast="贴纸罐已打开，挑一张贴上吧" aria-label="贴纸罐">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：今日心情（手绘表情）-->
+            <section class="mood-card wob-a" aria-label="今日心情">
+              <div class="mood-card__row">
+                <button class="mood-face" id="moodFace" type="button" aria-label="换个心情，点我换表情">
+                  <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                    <circle id="faceHead" cx="32" cy="32" r="24" stroke-width="3" />
+                    <circle id="faceEyeL" cx="24" cy="27" r="2.6" stroke-width="2.5" />
+                    <circle id="faceEyeR" cx="40" cy="27" r="2.6" stroke-width="2.5" />
+                    <path id="faceMouth" d="M24 41q8 7 16 0" stroke-width="3" stroke-linecap="round" />
+                    <path id="faceBrowL" d="M20 20q4 -2.5 8 0" stroke-width="2.5" stroke-linecap="round" />
+                    <path id="faceBrowR" d="M36 20q4 -2.5 8 0" stroke-width="2.5" stroke-linecap="round" />
+                    <path id="faceBlushL" d="M16 34q2 2 4 0" stroke-width="2" stroke-linecap="round" />
+                    <path id="faceBlushR" d="M44 34q2 2 4 0" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <div class="mood-card__text">
+                  <span class="mood-card__eyebrow">今天的心情是</span>
+                  <h1 class="mood-card__word" id="moodWord">有点小确幸</h1>
+                  <svg class="mood-card__squiggle" viewBox="0 0 150 14" aria-hidden="true">
+                    <path d="M3 8q6-8 12 0t12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0" fill="none" stroke-width="3" stroke-linecap="round" />
+                  </svg>
+                  <p class="mood-card__hint">点一下表情，换个心情</p>
+                </div>
+              </div>
+              <div class="mood-card__stickers" role="group" aria-label="今日贴纸">
+                <button class="sticker" type="button" aria-pressed="false">☀️<span>晴天</span></button>
+                <button class="sticker is-on" type="button" aria-pressed="true">🐈<span>撸猫</span></button>
+                <button class="sticker" type="button" aria-pressed="false">🍜<span>吃面</span></button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="本周手帐与贴纸罐">
+              <div class="duo-card wob-b">
+                <h2 class="duo-card__title">本周涂了</h2>
+                <p class="duo-card__num">5<span> / 7 天</span></p>
+                <p class="duo-card__note">比上周多涂了一天，进步！</p>
+                <div class="week-steps" aria-label="本周打卡 5 天">
+                  <i class="is-done">一</i><i class="is-done">二</i><i class="is-done">三</i><i>四</i><i class="is-done">五</i><i class="is-done">六</i><i>日</i>
+                </div>
+              </div>
+              <div class="duo-card wob-a">
+                <h2 class="duo-card__title">贴纸罐</h2>
+                <p class="duo-card__num">38<span> 张</span></p>
+                <p class="duo-card__note">再攒 12 张，解锁「雨天限定」</p>
+                <div class="jar-dots" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i class="is-new"></i>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 手帐流水 Feed -->
+            <section class="feed" aria-label="手帐流水">
+              <div class="feed__head">
+                <h2 class="feed__title">最近的手帐</h2>
+                <div class="chips" role="tablist" aria-label="按心情筛选">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="joy">开心</button>
+                  <button class="chip" type="button" data-filter="calm">平静</button>
+                  <button class="chip" type="button" data-filter="low">低落</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="joy">
+                  <span class="feed-item__glyph wob-a" aria-hidden="true">🌈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">下班撞见晚霞</span>
+                    <span class="feed-item__meta">今天 18:42 <em class="feed-item__chip" data-level="joy">开心</em></span>
+                  </div>
+                  <button class="feed-item__pin" type="button" aria-label="钉进收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="calm">
+                  <span class="feed-item__glyph wob-b" aria-hidden="true">📖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">读了 30 页《夜航西飞》</span>
+                    <span class="feed-item__meta">今天 13:05 <em class="feed-item__chip" data-level="calm">平静</em></span>
+                  </div>
+                  <button class="feed-item__pin" type="button" aria-label="钉进收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="joy">
+                  <span class="feed-item__glyph wob-a" aria-hidden="true">🐈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">楼下的橘猫让我摸了！</span>
+                    <span class="feed-item__meta">昨天 21:20 <em class="feed-item__chip" data-level="joy">开心</em></span>
+                  </div>
+                  <button class="feed-item__pin is-on" type="button" aria-label="钉进收藏" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="low">
+                  <span class="feed-item__glyph wob-b" aria-hidden="true">🌧️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">淋雨回家，鞋全湿</span>
+                    <span class="feed-item__meta">昨天 19:03 <em class="feed-item__chip" data-level="low">低落</em></span>
+                  </div>
+                  <button class="feed-item__pin" type="button" aria-label="钉进收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="calm">
+                  <span class="feed-item__glyph wob-a" aria-hidden="true">🍵</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">泡了壶白茶，发呆半小时</span>
+                    <span class="feed-item__meta">周三 15:30 <em class="feed-item__chip" data-level="calm">平静</em></span>
+                  </div>
+                  <button class="feed-item__pin" type="button" aria-label="钉进收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 7 3 3H6l3-3-1-7z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="写手帐">
+              <input class="doodle-input wob-b" id="doodleInput" type="text" placeholder="写一句给今天，如：桂花开了，好香……" />
+              <div class="action-row">
+                <button class="btn-orange wob-a" type="button" id="pasteBtn">贴进手帐</button>
+                <button class="btn-sketch wob-b" type="button" data-toast="已翻到空白页，画点什么吧">画一页</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="手帐">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4z" /><path d="M5 4v13a3 3 0 0 0 3 3" /><path d="M9 9h6M9 13h4" />
+              </svg>
+              <span>手帐</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="贴纸">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+              </svg>
+              <span>贴纸</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="涂鸦" aria-label="涂鸦">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20l1.2-4.2L16.4 4.6a2 2 0 0 1 2.9 0l.1.1a2 2 0 0 1 0 2.9L8.2 18.8 4 20z" />
+              </svg>
+              <span>涂鸦</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="周历">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4" />
+              </svg>
+              <span>周历</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

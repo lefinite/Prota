@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Sanity 内容工坊 · Sanity</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">S</span>
+                <div class="brand-text">
+                  <span class="brand-name">Sanity</span>
+                  <span class="brand-sub">内容工坊</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="发布" data-toast="正在发布...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
+              </button>
+            </header>
+
+            <!-- 内容统计卡（signature：纯色阶深度 + 技术标签） -->
+            <section class="stats-card" aria-label="内容统计">
+              <div class="stats-card__header">
+                <span class="stats-label">STUDIO OVERVIEW</span>
+                <span class="badge badge--green">运行中</span>
+              </div>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-value">247</span>
+                  <span class="stat-label">文档</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value">12</span>
+                  <span class="stat-label">schema</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value">8</span>
+                  <span class="stat-label">作者</span>
+                </div>
+              </div>
+              <div class="tech-tags">
+                <span class="tech-tag">GROQ</span>
+                <span class="tech-tag">REALTIME</span>
+                <span class="tech-tag">CDN</span>
+              </div>
+            </section>
+
+            <!-- Schema 类型卡片 -->
+            <section class="schema-row" aria-label="Schema 类型">
+              <div class="schema-card schema-card--post">
+                <span class="schema-icon">📄</span>
+                <span class="schema-name">文章</span>
+                <span class="schema-count">142</span>
+              </div>
+              <div class="schema-card schema-card--author">
+                <span class="schema-icon">👤</span>
+                <span class="schema-name">作者</span>
+                <span class="schema-count">24</span>
+              </div>
+              <div class="schema-card schema-card--category">
+                <span class="schema-icon">🏷️</span>
+                <span class="schema-name">分类</span>
+                <span class="schema-count">18</span>
+              </div>
+            </section>
+
+            <!-- 内容文档列表 -->
+            <section class="content-list" aria-label="最近文档">
+              <div class="section-header">
+                <span class="section-label">RECENT DOCUMENTS</span>
+                <button class="filter-btn" data-filter="all" aria-pressed="true">全部</button>
+              </div>
+
+              <ul class="doc-list" id="docList">
+                <li class="doc" data-type="post">
+                  <span class="doc-type">POST</span>
+                  <div class="doc-main">
+                    <span class="doc-title">如何构建可扩展的内容架构</span>
+                    <span class="doc-meta">article · 2m ago</span>
+                  </div>
+                  <div class="doc-status">
+                    <span class="status-badge status-badge--published">已发布</span>
+                  </div>
+                </li>
+                <li class="doc" data-type="author">
+                  <span class="doc-type">AUTHOR</span>
+                  <div class="doc-main">
+                    <span class="doc-title">张明</span>
+                    <span class="doc-meta">profile · 1h ago</span>
+                  </div>
+                  <div class="doc-status">
+                    <span class="status-badge status-badge--draft">草稿</span>
+                  </div>
+                </li>
+                <li class="doc" data-type="page">
+                  <span class="doc-type">PAGE</span>
+                  <div class="doc-main">
+                    <span class="doc-title">首页横幅内容</span>
+                    <span class="doc-meta">landing · 3h ago</span>
+                  </div>
+                  <div class="doc-status">
+                    <span class="status-badge status-badge--published">已发布</span>
+                  </div>
+                </li>
+                <li class="doc" data-type="post">
+                  <span class="doc-type">POST</span>
+                  <div class="doc-main">
+                    <span class="doc-title">2024 年度技术回顾</span>
+                    <span class="doc-meta">article · 1d ago</span>
+                  </div>
+                  <div class="doc-status">
+                    <span class="status-badge status-badge--published">已发布</span>
+                  </div>
+                </li>
+                <li class="doc" data-type="category">
+                  <span class="doc-type">CATEGORY</span>
+                  <div class="doc-main">
+                    <span class="doc-title">人工智能</span>
+                    <span class="doc-meta">taxonomy · 2d ago</span>
+                  </div>
+                  <div class="doc-status">
+                    <span class="status-badge status-badge--changed">已修改</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-zone">
+              <button class="action-btn action-btn--primary" data-toast="新建文档">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                <span>新建文档</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="导入内容">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
+                <span>导入</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="desk">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9" /></svg>
+              <span>工作台</span>
+            </button>
+            <button class="tab" data-tab="schema">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg>
+              <span>Schema</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="api">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+              <span>API</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

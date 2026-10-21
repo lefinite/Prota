@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>跳蚤 FLEA · Brutalism-Inspired</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 4h18v4l-2 2v10H5V10L3 8V4zm7 4h4V6h-4v2zM9 12v6h2v-6H9zm4 0v6h2v-6h-2z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">跳蚤 <em>FLEA</em></span>
+                <span class="brand-bar__sub">以物换物 · 大学路 42 号 · 每周日</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="摊主群：本周主题「胶片与磁带」已置顶" aria-label="市集公告">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 11l14-6v14L3 13v-2z" /><path d="M7 12v6M17 13a3 3 0 0 1 0 6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：周日市集公告（硬阴影黄块 + 斜置邮戳）-->
+            <section class="hero-board" aria-label="本周市集公告">
+              <div class="hero-board__head">
+                <p class="hero-board__eyebrow">MARKET No.042</p>
+                <span class="hero-board__stamp">本周主题<br />胶片 × 磁带</span>
+              </div>
+              <h1 class="hero-board__title">周日<mark>旧物</mark>市集</h1>
+              <ul class="hero-board__meta">
+                <li>05.11 · 14:00 — 18:00</li>
+                <li>大学路 42 号 · 后院空地</li>
+                <li>免费入场 · 摊位 ¥20 / 位</li>
+              </ul>
+              <div class="hero-board__slots">
+                <div class="hero-board__track">
+                  <span class="hero-board__fill" id="slotFill" style="--w: 70%"></span>
+                </div>
+                <b id="slotText">42 / 60 摊位已订</b>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="我的摊位与想换清单">
+              <div class="duo-card">
+                <h2 class="duo-card__title">我的摊位</h2>
+                <p class="duo-card__num">B-12</p>
+                <p class="duo-card__note">已换出 6 件 · 收藏 21 人</p>
+                <button class="duo-card__link" type="button" data-toast="摊位续订已提交 · 周五前确认">续订下周</button>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">想换清单</h2>
+                <div class="wish" role="group" aria-label="想换物品勾选">
+                  <button class="wish__item is-on" type="button" aria-pressed="true">胶片相机</button>
+                  <button class="wish__item" type="button" aria-pressed="false">磁带随身听</button>
+                  <button class="wish__item" type="button" aria-pressed="false">黑胶 LP</button>
+                  <button class="wish__item is-on" type="button" aria-pressed="true">机械键盘轴</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 好物 Feed -->
+            <section class="feed" aria-label="市集好物">
+              <div class="feed__head">
+                <h2 class="feed__title">本周好物</h2>
+                <div class="chips" role="tablist" aria-label="筛选好物">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="swap">可换</button>
+                  <button class="chip" type="button" data-filter="sale">直售</button>
+                  <button class="chip" type="button" data-filter="free">免费</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="sale">
+                  <span class="feed-item__glyph" aria-hidden="true">042</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">宾得 K1000 · 胶片机</span>
+                    <span class="feed-item__meta">九成新 · 附 50mm F2 · B 区 03</span>
+                  </div>
+                  <b class="feed-item__price">¥680</b>
+                  <button class="feed-item__star" type="button" aria-label="想换这件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="swap">
+                  <span class="feed-item__glyph" aria-hidden="true">041</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">索尼 WM-EX67 随身听</span>
+                    <span class="feed-item__meta">走带正常 · 想换黑胶 LP 两张</span>
+                  </div>
+                  <b class="feed-item__price feed-item__price--swap">可换</b>
+                  <button class="feed-item__star" type="button" aria-label="想换这件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="free">
+                  <span class="feed-item__glyph" aria-hidden="true">040</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">北欧木脚台灯 · 缺灯罩</span>
+                    <span class="feed-item__meta">自提 · A 区门口</span>
+                  </div>
+                  <b class="feed-item__price feed-item__price--free">免费</b>
+                  <button class="feed-item__star" type="button" aria-label="想换这件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="swap">
+                  <span class="feed-item__glyph" aria-hidden="true">039</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">手冲壶 0.9L · 铜柄</span>
+                    <span class="feed-item__meta">想换机械键盘轴体一把</span>
+                  </div>
+                  <b class="feed-item__price feed-item__price--swap">可换</b>
+                  <button class="feed-item__star" type="button" aria-label="想换这件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sale">
+                  <span class="feed-item__glyph" aria-hidden="true">038</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">山地车铃 · 黄铜</span>
+                    <span class="feed-item__meta">八成新 · C 区 11</span>
+                  </div>
+                  <b class="feed-item__price">¥15</b>
+                  <button class="feed-item__star" type="button" aria-label="想换这件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sale">
+                  <span class="feed-item__glyph" aria-hidden="true">037</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">黑砂茶则一套 · 五件</span>
+                    <span class="feed-item__meta">包浆自然 · B 区 07</span>
+                  </div>
+                  <b class="feed-item__price">¥120</b>
+                  <button class="feed-item__star" type="button" aria-label="想换这件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="发布好物">
+              <input class="quick-input" id="itemInput" type="text" placeholder="想出的物，如：理光 XR-10 · 附 35mm" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="publishBtn">发布好物</button>
+                <button class="btn-ghost" type="button" data-toast="我的摊位：B-12 · 已换出 6 件">我的摊位</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="市集">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20V9l8-5 8 5v11" /><path d="M9 20v-6h6v6" />
+              </svg>
+              <span>市集</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="好物">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" />
+                <rect x="4" y="13" width="7" height="7" /><rect x="13" y="13" width="7" height="7" />
+              </svg>
+              <span>好物</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发布" aria-label="发布好物">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>发布</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="交换">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8h13M14 4l4 4-4 4" /><path d="M20 16H7M10 12l-4 4 4 4" />
+              </svg>
+              <span>交换</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

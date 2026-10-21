@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>泥泥星球 · Claymorphism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">🪐</div>
+                <div class="brand-text">
+                  <span class="brand-name">泥泥星球</span>
+                  <span class="brand-sub">欢迎回来，小探险家！</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="消息" data-toast="2 条新好友消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <span class="iconbtn__badge">2</span>
+              </button>
+            </header>
+
+            <!-- Hero 星球卡片（signature：puffy 膨胀效果 + 蓝紫渐变） -->
+            <section class="planet-card" aria-label="我的星球">
+              <div class="planet-card__visual">
+                <div class="planet planet--gradient">
+                  <div class="planet__ring"></div>
+                  <div class="planet__crater planet__crater--1"></div>
+                  <div class="planet__crater planet__crater--2"></div>
+                  <div class="planet__crater planet__crater--3"></div>
+                </div>
+              </div>
+              <div class="planet-card__info">
+                <p class="planet-card__label">我的星球等级</p>
+                <p class="planet-card__level">LV.12</p>
+                <p class="planet-card__exp">2,450 / 3,000 经验值</p>
+              </div>
+              <button class="planet-card__cta puffy-btn puffy-btn--primary" data-toast="开始冒险！">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                冒险任务
+              </button>
+            </section>
+
+            <!-- 能量卡片 -->
+            <section class="energy-section" aria-label="能量状态">
+              <div class="energy-card energy-card--coins">
+                <div class="energy-card__icon">🪙</div>
+                <div class="energy-card__info">
+                  <span class="energy-card__label">星币</span>
+                  <span class="energy-card__value">1,280</span>
+                </div>
+                <button class="energy-card__btn puffy-btn puffy-btn--small" data-toast="商城即将开放">获取</button>
+              </div>
+              <div class="energy-card energy-card--gems">
+                <div class="energy-card__icon">💎</div>
+                <div class="energy-card__info">
+                  <span class="energy-card__label">宝石</span>
+                  <span class="energy-card__value">86</span>
+                </div>
+                <button class="energy-card__btn puffy-btn puffy-btn--small" data-toast="挖矿中...">挖矿</button>
+              </div>
+            </section>
+
+            <!-- 好友列表 -->
+            <section class="friends-section" aria-label="星友在线">
+              <div class="section-head">
+                <h2>在线星友</h2>
+                <button class="see-all puffy-btn puffy-btn--ghost" data-toast="查看全部好友">全部</button>
+              </div>
+
+              <ul class="friends-list" id="friendsList">
+                <li class="friend-card">
+                  <div class="friend-avatar friend-avatar--pink">
+                    <span>小</span>
+                    <span class="friend-status friend-status--online"></span>
+                  </div>
+                  <div class="friend-info">
+                    <span class="friend-name">小雨果</span>
+                    <span class="friend-activity">正在搭城堡...</span>
+                  </div>
+                  <button class="friend-action puffy-btn puffy-btn--tiny" data-toast="已向小雨果挥手">👋</button>
+                </li>
+                <li class="friend-card">
+                  <div class="friend-avatar friend-avatar--blue">
+                    <span>星</span>
+                    <span class="friend-status friend-status--online"></span>
+                  </div>
+                  <div class="friend-info">
+                    <span class="friend-name">星星队长</span>
+                    <span class="friend-activity">准备冒险中</span>
+                  </div>
+                  <button class="friend-action puffy-btn puffy-btn--tiny" data-toast="已向星星队长挥手">👋</button>
+                </li>
+                <li class="friend-card">
+                  <div class="friend-avatar friend-avatar--purple">
+                    <span>幻</span>
+                    <span class="friend-status friend-status--away"></span>
+                  </div>
+                  <div class="friend-info">
+                    <span class="friend-name">幻幻</span>
+                    <span class="friend-activity">15分钟前在线</span>
+                  </div>
+                  <button class="friend-action puffy-btn puffy-btn--tiny" data-toast="已向幻幻挥手">👋</button>
+                </li>
+                <li class="friend-card">
+                  <div class="friend-avatar friend-avatar--green">
+                    <span>乐</span>
+                    <span class="friend-status friend-status--playing"></span>
+                  </div>
+                  <div class="friend-info">
+                    <span class="friend-name">乐乐</span>
+                    <span class="friend-activity">游戏中🎮</span>
+                  </div>
+                  <button class="friend-action puffy-btn puffy-btn--tiny" data-toast="已向乐乐挥手">👋</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 每日任务 -->
+            <section class="tasks-section" aria-label="每日任务">
+              <div class="section-head">
+                <h2>每日任务</h2>
+                <span class="task-count">2/4 完成</span>
+              </div>
+
+              <div class="task-list">
+                <div class="task-item task-item--done">
+                  <span class="task-check">✓</span>
+                  <div class="task-info">
+                    <span class="task-name">登录星球</span>
+                    <span class="task-reward">+50 星币</span>
+                  </div>
+                  <span class="task-status task-status--success">已完成</span>
+                </div>
+                <div class="task-item task-item--done">
+                  <span class="task-check">✓</span>
+                  <div class="task-info">
+                    <span class="task-name">和好友打招呼</span>
+                    <span class="task-reward">+30 星币</span>
+                  </div>
+                  <span class="task-status task-status--success">已完成</span>
+                </div>
+                <div class="task-item">
+                  <span class="task-check task-check--circle"></span>
+                  <div class="task-info">
+                    <span class="task-name">完成一个小游戏</span>
+                    <span class="task-reward">+100 星币</span>
+                  </div>
+                  <button class="task-btn puffy-btn puffy-btn--small" data-toast="进入游戏列表">去完成</button>
+                </div>
+                <div class="task-item">
+                  <span class="task-check task-check--circle"></span>
+                  <div class="task-info">
+                    <span class="task-name">装扮自己的星球</span>
+                    <span class="task-reward">+80 星币</span>
+                  </div>
+                  <button class="task-btn puffy-btn puffy-btn--small" data-toast="打开装扮商店">去装扮</button>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>星球</span>
+            </button>
+            <button class="tab" data-tab="games">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m14-4h.01" /></svg>
+              <span>游戏</span>
+            </button>
+            <button class="tab tab--fab puffy-btn puffy-btn--fab" data-tab="chat" aria-label="聊天">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+            </button>
+            <button class="tab" data-tab="shop">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+              <span>商店</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

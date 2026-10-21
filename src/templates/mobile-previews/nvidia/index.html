@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>算力舱 GEARBAY · NVIDIA</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16v16H4z" /><path d="M4 10h16M10 4v16" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">算力舱 <i>GEARBAY</i></span>
+                <span class="brand-bar__sub">RTX 4090 × 4 · 集群在线</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="驱动 550.54 已是最新，CUDA 12.4" aria-label="系统设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3.2" /><path d="M12 3.5v2M12 18.5v2M4.9 7.8l1.7 1M17.4 15.2l1.7 1M4.9 16.2l1.7-1M17.4 8.8l1.7-1" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：GPU 利用率控制台 -->
+            <section class="hero-panel" aria-label="GPU 状态">
+              <div class="hero-panel__head">
+                <span class="micro">GPU-0 · RTX 4090</span>
+                <em class="chip-status">运行中</em>
+              </div>
+              <p class="hero-panel__util"><b id="utilNum">98</b><i>%</i></p>
+              <span class="micro micro--dim">SM 利用率 · 最近 15 分钟</span>
+              <div class="meters">
+                <div class="meter">
+                  <div class="meter__head"><span>显存 22.4 / 24.0 GB</span><b>93%</b></div>
+                  <div class="meter__track"><span class="meter__fill" id="memFill" style="--w: 93%"></span></div>
+                </div>
+                <div class="meter">
+                  <div class="meter__head"><span>核心温度 71°C</span><b data-warn>偏高</b></div>
+                  <div class="meter__track"><span class="meter__fill" style="--w: 78%"></span></div>
+                </div>
+                <div class="meter">
+                  <div class="meter__head"><span>整机功耗 412 W</span><b>68%</b></div>
+                  <div class="meter__track"><span class="meter__fill" style="--w: 68%"></span></div>
+                </div>
+              </div>
+              <div class="hero-panel__foot micro">
+                <span>驱动 550.54</span><span>CUDA 12.4</span><span>风扇 62%</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="吞吐与队列">
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日吞吐</h2>
+                <p class="duo-card__num">1.24<span>M tokens</span></p>
+                <div class="spark" role="img" aria-label="近 7 小时每小时的 tokens 吞吐柱状图，第 5 小时最高">
+                  <i style="--h: 38%"></i><i style="--h: 56%"></i><i style="--h: 47%"></i><i style="--h: 72%"></i><i style="--h: 95%"></i><i style="--h: 63%"></i><i style="--h: 84%"></i>
+                </div>
+                <p class="duo-card__note micro">近 7 小时 · 峰值 14:00</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">队列状态</h2>
+                <ul class="queue-list">
+                  <li><b>3</b><span>运行中</span></li>
+                  <li><b>2</b><span>排队</span></li>
+                  <li><b>14</b><span>今日完成</span></li>
+                </ul>
+                <p class="duo-card__note">下一个空窗预计 21:40 · GPU-2</p>
+              </div>
+            </section>
+
+            <!-- 4. 训练任务 Feed -->
+            <section class="feed" aria-label="任务队列">
+              <div class="feed__head">
+                <h2 class="feed__title">任务队列</h2>
+                <div class="chips" role="tablist" aria-label="筛选任务">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="run">运行中</button>
+                  <button class="chip" type="button" data-filter="queue">排队</button>
+                  <button class="chip" type="button" data-filter="done">完成</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="run">
+                  <span class="feed-item__glyph" aria-hidden="true">▶</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">llm_sft_v3</span>
+                    <span class="feed-item__meta">step 8.4k / 12k · ETA 42 分钟 <em class="feed-item__chip feed-item__chip--run">运行中</em></span>
+                  </div>
+                  <b class="feed-item__amount">70%</b>
+                  <button class="feed-item__star is-on" type="button" aria-label="关注任务" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="run">
+                  <span class="feed-item__glyph" aria-hidden="true">▶</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">sd_lora_anime</span>
+                    <span class="feed-item__meta">step 2.1k / 4k · ETA 18 分钟 <em class="feed-item__chip feed-item__chip--run">运行中</em></span>
+                  </div>
+                  <b class="feed-item__amount">52%</b>
+                  <button class="feed-item__star" type="button" aria-label="关注任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="queue">
+                  <span class="feed-item__glyph" aria-hidden="true">≡</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">whisper_asr_batch</span>
+                    <span class="feed-item__meta">等待 GPU-2 · 预计 21:40 启动 <em class="feed-item__chip feed-item__chip--queue">排队</em></span>
+                  </div>
+                  <b class="feed-item__amount">0%</b>
+                  <button class="feed-item__star" type="button" aria-label="关注任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="queue">
+                  <span class="feed-item__glyph" aria-hidden="true">≡</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">embed_rerank_v2</span>
+                    <span class="feed-item__meta">等待 GPU-2 · 排队第 2 位 <em class="feed-item__chip feed-item__chip--queue">排队</em></span>
+                  </div>
+                  <b class="feed-item__amount">0%</b>
+                  <button class="feed-item__star" type="button" aria-label="关注任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">✓</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">cnn_cls_textile</span>
+                    <span class="feed-item__meta">今日 13:12 完成 · best f1 0.913 <em class="feed-item__chip">完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">100%</b>
+                  <button class="feed-item__star" type="button" aria-label="关注任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">✓</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">llm_sft_v2</span>
+                    <span class="feed-item__meta">昨日 23:47 完成 · 已导出权重 <em class="feed-item__chip">完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">100%</b>
+                  <button class="feed-item__star" type="button" aria-label="关注任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="启动任务">
+              <input class="quick-input" id="quickInput" type="text" maxlength="24" placeholder="任务名称，如：llm_sft_v4" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="launchBtn">启动新任务</button>
+                <button class="btn-ghost" type="button" data-toast="日志流已连接：tail -f gearbay.log">查看日志</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="概览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>概览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h14M5 19h9" />
+              </svg>
+              <span>任务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="节点">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="6" /><rect x="4" y="14" width="16" height="6" /><path d="M8 7h.01M8 17h.01" />
+              </svg>
+              <span>节点</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3.2" /><path d="M12 3.5v2M12 18.5v2M4.9 7.8l1.7 1M17.4 15.2l1.7 1M4.9 16.2l1.7-1M17.4 8.8l1.7-1" />
+              </svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

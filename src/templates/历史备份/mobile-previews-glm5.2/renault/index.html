@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Renault Drive · 电动出行</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L3 7l9 5 9-5-9-5zM3 17l9 5 9-5M3 12l9 5 9-5"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">RENAULT</span>
+                  <span class="brand-sub">电动出行</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="菜单" data-toast="菜单">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
+            </header>
+
+            <!-- 电池状态（signature：Renault Yellow 强调焦点） -->
+            <section class="battery-hero" aria-label="电池状态">
+              <div class="battery-hero__ring">
+                <svg class="battery-ring" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="4" opacity="0.1"/>
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="270 339.3" stroke-dashoffset="0" transform="rotate(-90 60 60)" class="battery-ring-fill"/>
+                </svg>
+                <div class="battery-hero__content">
+                  <span class="battery-hero__value">78%</span>
+                  <span class="battery-hero__label">剩余电量</span>
+                </div>
+              </div>
+              <div class="battery-hero__meta">
+                <span class="range-item">
+                  <span class="range-item__val">420 km</span>
+                  <span class="range-item__label">预估续航</span>
+                </span>
+                <span class="range-item">
+                  <span class="range-item__val">1h 25m</span>
+                  <span class="range-item__label">充电至80%</span>
+                </span>
+              </div>
+            </section>
+
+            <!-- 车辆状态卡片 -->
+            <section class="status-grid" aria-label="车辆状态">
+              <div class="status-card">
+                <div class="status-card__icon status-card__icon--tire">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <span class="status-card__title">轮胎</span>
+                <span class="status-card__value status-card__value--good">2.4 bar</span>
+              </div>
+              <div class="status-card">
+                <div class="status-card__icon status-card__icon--oil">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                </div>
+                <span class="status-card__title">机油</span>
+                <span class="status-card__value status-card__value--good">正常</span>
+              </div>
+              <div class="status-card">
+                <div class="status-card__icon status-card__icon--brake">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <span class="status-card__title">刹车</span>
+                <span class="status-card__value status-card__value--warn">检查</span>
+              </div>
+            </section>
+
+            <!-- 车型列表 -->
+            <section class="list-block" aria-label="我的车队">
+              <div class="list-block__head">
+                <h2>我的车队</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选车型">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="electric" role="tab" aria-selected="false">电动</button>
+                  <button class="chip" data-filter="hybrid" role="tab" aria-selected="false">混动</button>
+                </div>
+              </div>
+
+              <ul class="car-list" id="carList">
+                <li class="car" data-type="electric">
+                  <div class="car__image car__image--zoe">
+                    <svg viewBox="0 0 64 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M8 16l4-8h32l8 8v10H8V16z" fill="currentColor" opacity="0.2"/>
+                      <circle cx="14" cy="26" r="4"/>
+                      <circle cx="46" cy="26" r="4"/>
+                      <path d="M20 8h16"/>
+                    </svg>
+                  </div>
+                  <div class="car__main">
+                    <span class="car__name">ZOE</span>
+                    <span class="car__sub">E-Tech 电动 · 420km 续航</span>
+                  </div>
+                  <div class="car__right">
+                    <span class="badge badge--active">当前</span>
+                  </div>
+                </li>
+                <li class="car" data-type="hybrid">
+                  <div class="car__image car__image--captur">
+                    <svg viewBox="0 0 64 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M6 14l6-6h36l10 6v10H6V14z" fill="currentColor" opacity="0.2"/>
+                      <circle cx="14" cy="24" r="4"/>
+                      <circle cx="50" cy="24" r="4"/>
+                      <path d="M20 8h16"/>
+                    </svg>
+                  </div>
+                  <div class="car__main">
+                    <span class="car__name">CAPTUR</span>
+                    <span class="car__sub">E-Tech 插电混动 · 50km 纯电</span>
+                  </div>
+                  <div class="car__right">
+                    <span class="badge badge--parked">已停放</span>
+                  </div>
+                </li>
+                <li class="car" data-type="electric">
+                  <div class="car__image car__image--megane">
+                    <svg viewBox="0 0 64 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M4 15l8-10h36l8 8v10H4V15z" fill="currentColor" opacity="0.2"/>
+                      <circle cx="14" cy="25" r="4"/>
+                      <circle cx="48" cy="25" r="4"/>
+                      <path d="M22 7h18"/>
+                    </svg>
+                  </div>
+                  <div class="car__main">
+                    <span class="car__name">MEGANE E-TECH</span>
+                    <span class="car__sub">纯电动 · 470km 续航</span>
+                  </div>
+                  <div class="car__right">
+                    <span class="badge badge--charging">充电中</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快捷操作 -->
+            <section class="action-bar" aria-label="快捷操作">
+              <button class="action-btn action-btn--yellow" data-toast="启动远程空调">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+                <span>远程空调</span>
+              </button>
+              <button class="action-btn action-btn--outline" data-toast="锁定车辆">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>锁定</span>
+              </button>
+              <button class="action-btn action-btn--outline" data-toast="规划路线">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                <span>导航</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="cars">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+              <span>车队</span>
+            </button>
+            <button class="tab tab--fab" data-tab="charge" aria-label="充电">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13 2L3 14h8l-2 8L19 10h-8l2-8z"/>
+              </svg>
+            </button>
+            <button class="tab" data-tab="map">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+              <span>地图</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

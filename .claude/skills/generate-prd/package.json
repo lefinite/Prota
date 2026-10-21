@@ -1,0 +1,17 @@
+{
+  "name": "generate-business-prd",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-contained screenshot evidence helper for the business PRD skill.",
+  "scripts": {
+    "capture": "node ../../../tools/capture/prd-evidence.mjs",
+    "capture:confirm": "node ../../../tools/capture/prd-evidence.mjs --confirm-before-shot",
+    "capture:evidence": "node ../../../tools/capture/prd-evidence.mjs --evidence",
+    "check": "node --check ../../../tools/capture/prd-evidence.mjs",
+    "install-browsers": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

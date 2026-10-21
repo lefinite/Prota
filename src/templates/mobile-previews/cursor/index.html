@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>随行 · Cursor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 4l6 8-6 8" />
+                  <path d="M13 19h5" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">随行</span>
+                <span class="brand-bar__sub">readify · main · 会话 #4821</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已开启会话完成提醒" aria-label="会话提醒">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：AI 会话时间线 -->
+            <section class="session-card" aria-label="AI 会话时间线">
+              <div class="session-card__head">
+                <div>
+                  <span class="session-card__chip">进行中</span>
+                  <span class="session-card__mono">运行 6:42 · 上下文 42.3k</span>
+                </div>
+                <span class="session-card__live" aria-hidden="true"></span>
+              </div>
+              <h1 class="session-card__title">重构阅读器状态模块</h1>
+              <p class="session-card__note">先确认滚动位置与字体档位的读写路径，再决定拆分粒度。</p>
+
+              <ol class="timeline" role="list" aria-label="Agent 执行步骤">
+                <li class="timeline__step" data-state="thinking">
+                  <i class="timeline__dot" aria-hidden="true"></i>
+                  <div class="timeline__body">
+                    <span class="timeline__label">thinking · 思考</span>
+                    <span class="timeline__text">梳理 useReaderStore 的依赖关系</span>
+                  </div>
+                </li>
+                <li class="timeline__step" data-state="grep">
+                  <i class="timeline__dot" aria-hidden="true"></i>
+                  <div class="timeline__body">
+                    <span class="timeline__label">grep · 检索</span>
+                    <span class="timeline__text">grep "useReaderStore" · 命中 12 处</span>
+                  </div>
+                </li>
+                <li class="timeline__step" data-state="read">
+                  <i class="timeline__dot" aria-hidden="true"></i>
+                  <div class="timeline__body">
+                    <span class="timeline__label">read · 阅读</span>
+                    <span class="timeline__text">reader-v16.js · 1,204 行</span>
+                  </div>
+                </li>
+                <li class="timeline__step is-current" data-state="edit">
+                  <i class="timeline__dot" aria-hidden="true"></i>
+                  <div class="timeline__body">
+                    <span class="timeline__label">edit · 编辑</span>
+                    <span class="timeline__text">reader-state.ts <b class="u-delta">+18 −6</b></span>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="session-card__foot">
+                <div class="progress" role="progressbar" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100" aria-label="会话进度 64%">
+                  <span class="progress__fill" style="--w: 64%"></span>
+                </div>
+                <div class="session-card__foot-meta">
+                  <span>进度 64%</span>
+                  <span>预计还需 3 分钟</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="改动与检查">
+              <div class="diff-card">
+                <h2 class="duo-card__title">代码改动</h2>
+                <pre class="diff" aria-label="reader-state.ts 的改动预览"><code><span class="diff__file">reader-state.ts · +18 −6</span><span class="diff__line diff__line--del">- const page = store.getState().page;</span><span class="diff__line diff__line--add">+ const page = store((s) => s.page);</span><span class="diff__line diff__line--del">- useEffect(syncFont, [font, size]);</span><span class="diff__line diff__line--add">+ useLayoutEffect(syncFont, [font, size]);</span></code></pre>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">检查</h2>
+                <div class="check-row">
+                  <i class="check-row__dot" data-level="ok"></i>
+                  <span class="check-row__name">vitest</span>
+                  <b class="check-row__val">42 通过 · 1 跳过</b>
+                </div>
+                <div class="check-row">
+                  <i class="check-row__dot" data-level="ok"></i>
+                  <span class="check-row__name">lint</span>
+                  <b class="check-row__val">0 警告</b>
+                </div>
+                <div class="check-row">
+                  <i class="check-row__dot" data-level="run"></i>
+                  <span class="check-row__name">tsc</span>
+                  <b class="check-row__val">运行中</b>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 会话事件 Feed -->
+            <section class="feed" aria-label="会话事件">
+              <div class="feed__head">
+                <h2 class="feed__title">事件</h2>
+                <div class="chips" role="tablist" aria-label="筛选事件类型">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="edit">编辑</button>
+                  <button class="chip" type="button" data-filter="search">检索</button>
+                  <button class="chip" type="button" data-filter="run">测试</button>
+                  <button class="chip" type="button" data-filter="think">思考</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="edit">
+                  <i class="feed-item__dot" data-state="edit" aria-hidden="true"></i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">编辑 reader-state.ts</span>
+                    <span class="feed-item__meta">刚刚 <em class="feed-item__chip">待审</em></span>
+                  </div>
+                  <b class="feed-item__delta">+18 −6</b>
+                  <button class="feed-item__check" type="button" aria-label="标记已审" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="search">
+                  <i class="feed-item__dot" data-state="grep" aria-hidden="true"></i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">检索 "useReaderStore"</span>
+                    <span class="feed-item__meta">3 分钟前 · 命中 12 处</span>
+                  </div>
+                  <b class="feed-item__delta">12 hits</b>
+                  <button class="feed-item__check" type="button" aria-label="标记已审" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="run">
+                  <i class="feed-item__dot" data-state="run" aria-hidden="true"></i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">运行 vitest --watch</span>
+                    <span class="feed-item__meta">4 分钟前 · 全部通过</span>
+                  </div>
+                  <b class="feed-item__delta u-ok">42 ✓</b>
+                  <button class="feed-item__check" type="button" aria-label="标记已审" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="edit">
+                  <i class="feed-item__dot" data-state="edit" aria-hidden="true"></i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">编辑 tokens.css</span>
+                    <span class="feed-item__meta">5 分钟前 <em class="feed-item__chip">已审</em></span>
+                  </div>
+                  <b class="feed-item__delta">+2 −2</b>
+                  <button class="feed-item__check is-on" type="button" aria-label="标记已审" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="think">
+                  <i class="feed-item__dot" data-state="thinking" aria-hidden="true"></i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">思考 评估滚动恢复策略</span>
+                    <span class="feed-item__meta">6 分钟前 · 2 个方案</span>
+                  </div>
+                  <b class="feed-item__delta">18.4k</b>
+                  <button class="feed-item__check" type="button" aria-label="标记已审" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="run">
+                  <i class="feed-item__dot" data-state="run" aria-hidden="true"></i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">构建 pnpm build</span>
+                    <span class="feed-item__meta">8 分钟前 · 成功</span>
+                  </div>
+                  <b class="feed-item__delta u-ok">11.2s</b>
+                  <button class="feed-item__check" type="button" aria-label="标记已审" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="给 Agent 下指令">
+              <input class="quick-input" id="quickInput" type="text" placeholder="补充要求，如：保留 v15 的滚动恢复逻辑……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="approveBtn">批准全部修改</button>
+                <button class="btn-ghost" type="button" data-toast="已打回 · Agent 将重写当前步骤">打回当前步</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="会话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12z" />
+              </svg>
+              <span>会话</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="改动">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4" />
+              </svg>
+              <span>改动</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="指令" aria-label="发送指令">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+              <span>指令</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="终端">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M7 9l3 3-3 3M13 15h4" />
+              </svg>
+              <span>终端</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z" />
+              </svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

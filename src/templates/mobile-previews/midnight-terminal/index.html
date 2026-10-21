@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>夜航 NightOps · Midnight Terminal</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">~%</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">夜航 NightOps</span>
+                <span class="brand-bar__sub">prod · us-east · v2.14.3</span>
+              </div>
+              <button class="brand-bar__icon" type="button" id="syncBtn" aria-label="同步状态">
+                <i class="pulse-dot" aria-hidden="true"></i>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-2.6-6.3" /><path d="M21 3v6h-6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：终端 -->
+            <section class="hero-card" aria-label="最近一次部署终端输出">
+              <div class="hero-card__bar">
+                <i class="hero-card__dot hero-card__dot--red"></i>
+                <i class="hero-card__dot hero-card__dot--amber"></i>
+                <i class="hero-card__dot hero-card__dot--green"></i>
+                <span class="hero-card__bar-title">deploy — zsh</span>
+                <span class="hero-card__bar-status" id="termStatus">● live</span>
+              </div>
+              <div class="term" id="term" aria-live="polite" aria-label="部署日志"></div>
+              <div class="hero-card__foot">
+                <span class="mono">uptime 99.98% · 14d</span>
+                <span class="hero-card__ok mono">✓ 全部服务正常</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="服务健康与构建队列">
+              <div class="duo-card">
+                <h2 class="duo-card__title">服务延迟</h2>
+                <ul class="svc-list">
+                  <li>
+                    <span class="svc-list__name mono"><i class="dot dot--ok"></i>api-gateway</span>
+                    <span class="svc-list__track"><span class="svc-list__fill" style="--w: 28%"></span></span>
+                    <b class="mono">32ms</b>
+                  </li>
+                  <li>
+                    <span class="svc-list__name mono"><i class="dot dot--ok"></i>auth</span>
+                    <span class="svc-list__track"><span class="svc-list__fill" style="--w: 16%"></span></span>
+                    <b class="mono">18ms</b>
+                  </li>
+                  <li>
+                    <span class="svc-list__name mono"><i class="dot dot--info"></i>webhooks</span>
+                    <span class="svc-list__track"><span class="svc-list__fill" style="--w: 64%"></span></span>
+                    <b class="mono">45ms</b>
+                  </li>
+                </ul>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">构建队列</h2>
+                <p class="build-num mono">6<span>/8</span></p>
+                <div class="build-track"><span class="build-fill" style="--w: 75%" id="buildFill"></span></div>
+                <p class="duo-card__note mono">web@sha256:9f3a · ETA 2m 10s</p>
+              </div>
+            </section>
+
+            <!-- 4. 部署历史 Feed -->
+            <section class="feed" aria-label="部署历史">
+              <div class="feed__head">
+                <h2 class="feed__title">部署历史</h2>
+                <div class="chips" role="tablist" aria-label="筛选环境">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="prod">prod</button>
+                  <button class="chip" type="button" data-filter="staging">staging</button>
+                  <button class="chip" type="button" data-filter="dev">dev</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="prod">
+                  <span class="feed-item__glyph mono" aria-hidden="true">±</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">a3f9c21 · fix: 网关重试</span>
+                    <span class="feed-item__meta mono">prod · 09:12<em class="state-chip state-chip--ok">成功</em></span>
+                  </div>
+                  <b class="feed-item__time mono">42s</b>
+                  <button class="feed-item__pin" type="button" aria-label="置顶关注" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z" /><path d="M12 15v6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="staging">
+                  <span class="feed-item__glyph mono" aria-hidden="true">±</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">77be0e4 · feat: 事件流</span>
+                    <span class="feed-item__meta mono">staging · 08:47<em class="state-chip state-chip--run">构建中</em></span>
+                  </div>
+                  <b class="feed-item__time mono">…</b>
+                  <button class="feed-item__pin" type="button" aria-label="置顶关注" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z" /><path d="M12 15v6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="prod">
+                  <span class="feed-item__glyph mono" aria-hidden="true">±</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">c04d8fa · chore: 依赖升级</span>
+                    <span class="feed-item__meta mono">prod · 昨天 22:30<em class="state-chip state-chip--ok">成功</em></span>
+                  </div>
+                  <b class="feed-item__time mono">38s</b>
+                  <button class="feed-item__pin" type="button" aria-label="置顶关注" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z" /><path d="M12 15v6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="dev">
+                  <span class="feed-item__glyph mono" aria-hidden="true">±</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">e91a23b · wip: 表单校验</span>
+                    <span class="feed-item__meta mono">dev · 昨天 20:15<em class="state-chip state-chip--pend">待发布</em></span>
+                  </div>
+                  <b class="feed-item__time mono">—</b>
+                  <button class="feed-item__pin" type="button" aria-label="置顶关注" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z" /><path d="M12 15v6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="staging">
+                  <span class="feed-item__glyph mono" aria-hidden="true">±</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">5b2c6d0 · fix: 白屏</span>
+                    <span class="feed-item__meta mono">staging · 昨天 18:02<em class="state-chip state-chip--back">已回滚</em></span>
+                  </div>
+                  <b class="feed-item__time mono">51s</b>
+                  <button class="feed-item__pin" type="button" aria-label="置顶关注" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z" /><path d="M12 15v6" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快速部署">
+              <input class="quick-input mono" id="cmdInput" type="text" placeholder="$ 输入 commit 或命令，如：a3f9c21" />
+              <div class="action-row">
+                <button class="btn-accent" type="button" id="deployBtn">
+                  <span aria-hidden="true">▸</span> 立即部署
+                </button>
+                <button class="btn-ghost" type="button" data-toast="日志已导出：nightops-2026-08-15.log">导出日志</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="概览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="3" width="8" height="5" rx="2" />
+                <rect x="13" y="10" width="8" height="11" rx="2" /><rect x="3" y="13" width="8" height="8" rx="2" />
+              </svg>
+              <span class="mono">概览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5h16M4 10h10M4 15h13M4 20h8" />
+              </svg>
+              <span class="mono">日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="部署" aria-label="新建部署">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span class="mono">部署</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="服务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="7" rx="2" /><rect x="3" y="13" width="18" height="7" rx="2" />
+                <path d="M7 7.5h.01M7 16.5h.01" />
+              </svg>
+              <span class="mono">服务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3.2" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3H9.8L9.4 5.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4.4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.06-.4.1-.8.1-1.2z" />
+              </svg>
+              <span class="mono">设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

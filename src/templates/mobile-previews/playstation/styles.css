@@ -1,0 +1,980 @@
+/* ============================================================
+ * 游戏库 · PlayStation — mobile preview
+ * token 来源：design-systems/playstation/tokens.css（:root 整块注入）
+ * 三表面频道：黑 hero → 白内容 → 蓝色 Tabbar 锚点；
+ * SST 300 细字重标题；主按钮悬停 = 青色填充 + 白描边 + 蓝环 + 1.2× 缩放。
+ * 品牌扩展（DESIGN.md §2）：--commerce 商城橙，仅用于购买态 CTA。
+ * ============================================================ */
+
+:root {
+  /* ─── PlayStation tokens ────────────────────────────────── */
+  --bg: #000000;             /* Console Black — masthead / hero canvas */
+  --surface: #ffffff;        /* Paper White — primary content panel */
+  --surface-warm: #f5f7fa;   /* Ice Mist — atmospheric panel lift */
+
+  --fg: #ffffff;             /* Inverse White — text on dark canvas */
+  --fg-2: var(--fg);         /* alias — single display weight throughout */
+  --muted: #cccccc;          /* Mute Gray — tertiary labels on dark */
+  --meta: var(--muted);      /* alias — one muted tier */
+
+  --border: #cccccc;         /* Mute Gray — input edges, default rule */
+  --border-soft: #f3f3f3;    /* Divider Tint — quiet horizontal rule */
+
+  --accent: #0070cc;         /* PlayStation Blue — primary CTA / anchor */
+  --accent-on: #ffffff;
+  --accent-hover: #1eaedb;   /* PlayStation Cyan — hover/focus only */
+  --accent-active: #0068bd;  /* Dark Link Blue — pressed state */
+
+  --success: #16a34a;
+  --warn: #eab308;
+  --danger: #c81b3a;         /* Warning Red — form errors */
+
+  --font-display: "SST", "Playstation SST", Arial, Helvetica, sans-serif;
+  --font-body: "SST", "Playstation SST", Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 12px;           /* Micro Caption */
+  --text-sm: 14px;           /* Caption Body / Mini CTA */
+  --text-base: 18px;         /* Body Relaxed */
+  --text-lg: 22px;           /* Compact Display */
+  --text-xl: 28px;           /* Mid Display */
+  --text-2xl: 35px;          /* Large Display */
+  --text-3xl: 44px;          /* Hero Display L */
+  --text-4xl: 54px;          /* Hero Display XL */
+
+  --leading-body: 1.5;
+  --leading-tight: 1.25;
+  --tracking-display: -0.1px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --section-y-desktop: 96px;
+  --section-y-tablet: 64px;
+  --section-y-phone: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: rgba(0, 0, 0, 0.08) 0 5px 9px 0; /* Feather tile lift */
+
+  --focus-ring: 0 0 0 2px #0070cc;
+
+  --motion-fast: 180ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --container-max: 1600px;
+  --container-gutter-desktop: 64px;
+  --container-gutter-tablet: 32px;
+  --container-gutter-phone: 16px;
+
+  /* ─── 品牌扩展（DESIGN.md §2 Commerce / Neutrals）──────── */
+  --commerce: #d53b00;        /* Commerce Orange — 仅商城购买态 */
+  --commerce-active: #aa2f00; /* Commerce Orange Active */
+  --panel-title: #000000;     /* Display Ink — 白面板标题 */
+  --panel-ink: var(--panel-ink);       /* Deep Charcoal — 白面板正文 */
+  --panel-body: var(--panel-body);      /* Body Gray — 白面板次级 */
+
+  /* ─── 手机壳（与设计系统协调）──────────────────────────── */
+  --page-backdrop-top: #0d0f12;
+  --page-backdrop-bottom: #020305;
+  --phone-shell: #101114;
+  --phone-shell-edge: #030304;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(0, 112, 204, 0.1), transparent 45%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* ===== Shared mobile frame ===== */
+.demo-stage {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.phone-shell {
+  position: relative;
+  width: 382px;
+  height: 826px;
+  padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--screen-radius);
+  background: var(--phone-screen);
+}
+
+.status-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 0;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.status-bar__time {
+  min-width: 54px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.status-bar__island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  border-radius: 999px;
+  background: #111217;
+  transform: translateX(-50%);
+}
+
+.status-bar__right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 74px;
+}
+
+.status-bar__icon {
+  width: 15px;
+  height: 15px;
+}
+
+.battery {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border: 1.8px solid currentColor;
+  border-radius: 4px;
+}
+
+.battery::before {
+  content: "";
+  position: absolute;
+  inset: 2px 6px 2px 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.battery::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -4px;
+  width: 2px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: auto;
+  padding: 66px 22px 116px;
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage {
+    padding: 0;
+  }
+
+  .phone-shell {
+    width: min(100vw, 382px);
+    height: min(100vh, 826px);
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--phone-screen);
+  }
+
+  .phone-screen {
+    border-radius: 0;
+  }
+}
+
+/* ===== 1. 顶部品牌栏（黑频道）===== */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--space-5);
+}
+
+.brand-bar__mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: var(--fg);
+}
+
+.brand-bar__mark svg {
+  width: 26px;
+  height: 26px;
+}
+
+.brand-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-right: auto;
+}
+
+.brand-bar__name {
+  font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: var(--text-lg);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+
+.brand-bar__sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.brand-bar__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  color: var(--fg);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.brand-bar__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.brand-bar__icon:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ===== 2. 焦点游戏 Hero（黑 hero 面板，signature）===== */
+.game-hero {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #121314, #000000); /* 品牌暗部分区渐变 */
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.game-hero__art {
+  height: 128px;
+  background:
+    radial-gradient(120% 140% at 78% 12%, color-mix(in oklab, var(--accent), black 18%), transparent 58%),
+    linear-gradient(115deg, color-mix(in oklab, var(--accent), black 52%) 0%, color-mix(in oklab, var(--accent), black 78%) 46%, color-mix(in oklab, var(--bg), var(--accent) 14%) 100%);
+}
+
+.game-hero__glow {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--fg), transparent 76%);
+  background: radial-gradient(circle at 36% 34%, color-mix(in oklab, var(--fg), transparent 58%), transparent 62%);
+}
+
+.game-hero__body {
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.game-hero__title {
+  margin: 0 0 3px;
+  font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: var(--text-3xl); /* 44px · 细字重 quiet authority */
+  font-weight: 300;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg);
+}
+
+.game-hero__sub {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.trophy__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.trophy__head b {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.trophy__track {
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklab, var(--fg), transparent 86%);
+  overflow: hidden;
+}
+
+.trophy__fill {
+  display: block;
+  height: 100%;
+  width: var(--w);
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left;
+  animation: trophy-grow 900ms var(--ease-standard) 160ms backwards;
+}
+
+@keyframes trophy-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.game-hero__cta {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+/* 胶囊主按钮：悬停 = 青色填充 + 白描边 + 蓝环 + 1.2×（power-on）*/
+.btn-pill {
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-on);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.btn-pill:hover {
+  background: var(--accent-hover); /* 青：只在悬停出现 */
+  border-color: var(--fg);
+  box-shadow: 0 0 0 2px var(--accent);
+  transform: scale(1.2);
+}
+
+.btn-pill:active {
+  opacity: 0.6;
+  transform: none;
+}
+
+.btn-pill--wide {
+  width: 100%;
+}
+
+.btn-pill-ghost {
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in oklab, var(--fg), transparent 62%);
+  background: transparent;
+  color: var(--fg);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.btn-pill-ghost:hover {
+  background: var(--accent-hover);
+  border-color: var(--fg);
+  box-shadow: 0 0 0 2px var(--accent);
+  transform: scale(1.2);
+}
+
+.btn-pill-ghost:active {
+  opacity: 0.6;
+  transform: none;
+}
+
+/* 商城橙：仅购买态 */
+.btn-commerce {
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: var(--radius-pill);
+  background: var(--commerce);
+  color: var(--fg);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.45px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.btn-commerce:hover {
+  background: var(--accent-hover);
+  border-color: var(--fg);
+  box-shadow: 0 0 0 2px var(--accent);
+  transform: scale(1.2);
+}
+
+.btn-commerce:active {
+  background: var(--commerce-active);
+  opacity: 0.7;
+  transform: none;
+}
+
+/* ===== 3. 内容卡 ×3（白色编辑层）===== */
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elev-raised);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  color: var(--panel-ink); /* Deep Charcoal — 白面板正文 */
+}
+
+.panel__title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--panel-title);
+}
+
+.hot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.hot-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hot-tile__art {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(160deg, color-mix(in oklab, var(--accent), white 26%), color-mix(in oklab, var(--accent), black 58%));
+}
+
+.hot-tile__art--b {
+  background: linear-gradient(160deg, color-mix(in oklab, var(--accent), white 60%), color-mix(in oklab, var(--accent), black 30%));
+}
+
+.hot-tile__art--c {
+  background: linear-gradient(160deg, color-mix(in oklab, var(--panel-ink), white 52%), color-mix(in oklab, var(--accent), black 66%));
+}
+
+.hot-tile__name {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--panel-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hot-tile__cta {
+  padding: 5px 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--fg);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.324px;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.hot-tile__cta:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 0 2px var(--accent);
+  transform: scale(1.12);
+}
+
+.hot-tile__cta:active {
+  opacity: 0.6;
+  transform: none;
+}
+
+.trophy-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.trophy-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-warm); /* Ice Mist */
+}
+
+.trophy-stat b {
+  font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: var(--text-lg);
+  font-weight: 300;
+  color: var(--panel-title);
+  line-height: var(--leading-tight);
+}
+
+.trophy-stat span {
+  font-size: var(--text-xs);
+  color: var(--panel-body); /* Body Gray — 白面板次级 */
+}
+
+.friends {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.friend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.friend + .friend {
+  margin-top: 11px;
+}
+
+.friend__avatar {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--accent), white 76%);
+  color: color-mix(in oklab, var(--accent), black 40%);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.friend__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.friend__name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--panel-ink);
+}
+
+.friend__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  color: var(--panel-body);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--accent), black 50%);
+}
+
+.dot--on {
+  background: var(--accent);
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-warm);
+  font-style: normal;
+  font-size: var(--text-xs);
+  color: var(--panel-body);
+  white-space: nowrap;
+}
+
+.tag--live {
+  background: color-mix(in oklab, var(--accent), white 84%);
+  color: color-mix(in oklab, var(--accent), black 32%);
+}
+
+.tag--off {
+  background: var(--border-soft);
+  color: color-mix(in oklab, var(--panel-ink), transparent 52%);
+}
+
+.tag--dl {
+  background: color-mix(in oklab, var(--accent), white 74%);
+  color: color-mix(in oklab, var(--accent), black 26%);
+}
+
+.tag--done {
+  background: color-mix(in oklab, var(--success), white 86%);
+  color: color-mix(in oklab, var(--success), black 24%);
+}
+
+/* ===== 4. 游戏库 Feed ===== */
+.feed__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: 10px;
+}
+
+.feed__title {
+  margin: 0;
+  font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: var(--text-base);
+  font-weight: 400;
+  color: var(--fg);
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+}
+
+.chip {
+  padding: 5px 13px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in oklab, var(--fg), transparent 76%);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard);
+}
+
+.chip:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.chip.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.feed__list {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px var(--space-4);
+  background: color-mix(in oklab, var(--surface), black 88%);
+  border: 1px solid color-mix(in oklab, var(--fg), transparent 92%);
+  border-radius: var(--radius-md);
+}
+
+.feed-item + .feed-item {
+  margin-top: var(--space-2);
+}
+
+.feed-item[hidden] {
+  display: none;
+}
+
+.feed-item__cover {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+}
+
+.feed-item__cover i {
+  font-style: normal;
+  font-size: var(--text-sm);
+  color: color-mix(in oklab, var(--fg), black 10%);
+}
+
+.feed-item__cover--a { background: linear-gradient(150deg, color-mix(in oklab, var(--accent), white 20%), color-mix(in oklab, var(--accent), black 62%)); }
+.feed-item__cover--b { background: linear-gradient(150deg, color-mix(in oklab, var(--accent), white 62%), color-mix(in oklab, var(--accent), black 26%)); }
+.feed-item__cover--c { background: linear-gradient(150deg, color-mix(in oklab, var(--panel-ink), white 56%), color-mix(in oklab, var(--accent), black 64%)); }
+.feed-item__cover--d { background: linear-gradient(150deg, color-mix(in oklab, var(--accent), black 26%), color-mix(in oklab, var(--panel-ink), var(--accent) 30%)); }
+.feed-item__cover--e { background: linear-gradient(150deg, color-mix(in oklab, var(--accent), white 40%), color-mix(in oklab, var(--panel-ink), white 22%)); }
+
+.feed-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.feed-item__name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-item__meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.feed-item__track {
+  display: block;
+  height: 3px;
+  width: 100%;
+  max-width: 150px;
+  margin-top: 3px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklab, var(--fg), transparent 86%);
+  overflow: hidden;
+}
+
+.feed-item__track i {
+  display: block;
+  height: 100%;
+  width: var(--w);
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left;
+  animation: trophy-grow 800ms var(--ease-standard) backwards;
+}
+
+.feed-item__star {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.feed-item__star svg {
+  width: 16px;
+  height: 16px;
+}
+
+.feed-item__star:hover {
+  color: var(--fg);
+}
+
+.feed-item__star.is-on {
+  color: var(--accent-hover);
+}
+
+.feed-item__star.is-on svg {
+  fill: currentColor;
+}
+
+/* ===== 5. 操作区 ===== */
+.action-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 6px 0 10px;
+}
+
+/* ===== 6. 底部 Tab（PlayStation 蓝锚点）===== */
+.tabbar {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  height: 78px;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0));
+  background: var(--accent); /* 蓝色页脚锚点 */
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  letter-spacing: 0.14px;
+  color: color-mix(in oklab, var(--fg), transparent 24%);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.tabbar__item svg {
+  width: 21px;
+  height: 21px;
+}
+
+.tabbar__item:hover {
+  color: var(--fg);
+}
+
+.tabbar__item.is-active {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+  font-weight: 500;
+}
+
+/* ===== toast ===== */
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 30;
+  max-width: 82%;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-warm);
+  color: var(--panel-ink);
+  font-size: var(--text-xs);
+  box-shadow: 0 5px 9px 0 rgba(0, 0, 0, 0.16);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== 无障碍与动效降级 ===== */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 隐藏滚动条（真机 App 观感）===== */
+* {
+  scrollbar-width: none !important;
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}

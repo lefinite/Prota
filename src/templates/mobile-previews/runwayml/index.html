@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>幕轨 · Runway 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__mark">幕轨</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__sub mono">GEN-4 · TURBO · 剩余 640 credits</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="素材库已同步（86 个镜头）" aria-label="素材库">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5l5 2.5-5 2.5v-5z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：生成中的镜头（签名：胶片分镜条）-->
+            <section class="hero" aria-label="正在生成">
+              <div class="hero__viewport" role="img" aria-label="生成预览：雨天霓虹街道上的出租车">
+                <div class="hero__scene" aria-hidden="true"></div>
+                <div class="hero__scan" aria-hidden="true"></div>
+                <div class="hero__badge mono">RENDERING 62%</div>
+              </div>
+              <p class="hero__prompt mono">"雨夜霓虹街道，跟拍一辆驶过的出租车，35mm 胶片感"</p>
+              <div class="hero__film" aria-label="分镜胶片条">
+                <button class="frame is-done" type="button" aria-label="镜头 1，已完成"><span>01</span></button>
+                <button class="frame is-done" type="button" aria-label="镜头 2，已完成"><span>02</span></button>
+                <button class="frame is-run" type="button" aria-label="镜头 3，生成中"><span>03</span></button>
+                <button class="frame" type="button" aria-label="镜头 4，排队中"><span>04</span></button>
+                <button class="frame" type="button" aria-label="镜头 5，排队中"><span>05</span></button>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-white" type="button" id="renderBtn">继续生成</button>
+                <button class="btn-ghost" type="button" data-toast="已导出 ProRes 442 MB">导出成片</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="资产">
+              <div class="duo__card">
+                <h2 class="duo__title mono">PROJECTS</h2>
+                <p class="duo__num">4<span> 部</span></p>
+                <p class="duo__meta">城市夜曲 · 面包房 · 海泳 · 无题</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">CREDITS</h2>
+                <p class="duo__num">640</p>
+                <div class="meter"><i style="--w: 64%"></i></div>
+                <p class="duo__meta">月度重置于 11-01</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：生成历史 -->
+            <section class="feed" aria-label="生成历史">
+              <div class="feed__head">
+                <h2 class="feed__title mono">RECENT</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="video">视频</button>
+                  <button class="chip" type="button" data-filter="image">图象</button>
+                  <button class="chip" type="button" data-filter="fail">失败</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="video">
+                  <div class="feed-item__thumb t-1" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">城市夜曲 · 镜头 03</span>
+                    <span class="feed-item__meta mono">10s · 1080p · 生成中 62%</span>
+                  </div>
+                  <em class="state st-run">62%</em>
+                </li>
+                <li class="feed-item" data-kind="video">
+                  <div class="feed-item__thumb t-2" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">城市夜曲 · 镜头 02</span>
+                    <span class="feed-item__meta mono">10s · 1080p · 2 小时前</span>
+                  </div>
+                  <em class="state st-done">✓</em>
+                </li>
+                <li class="feed-item" data-kind="image">
+                  <div class="feed-item__thumb t-3" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">面包房 · 定妆帧 ×4</span>
+                    <span class="feed-item__meta mono">1920² · 昨天</span>
+                  </div>
+                  <em class="state st-done">✓</em>
+                </li>
+                <li class="feed-item" data-kind="fail">
+                  <div class="feed-item__thumb t-4 is-dim" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">海泳 · 镜头 07</span>
+                    <span class="feed-item__meta mono">超时 · credits 已退回</span>
+                  </div>
+                  <em class="state st-fail">重试</em>
+                </li>
+                <li class="feed-item" data-kind="video">
+                  <div class="feed-item__thumb t-5" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">海泳 · 镜头 06</span>
+                    <span class="feed-item__meta mono">8s · 720p · 昨天</span>
+                  </div>
+                  <em class="state st-done">✓</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新镜头">
+              <div class="chips chips--ratio">
+                <button class="chip is-active" type="button">16:9</button>
+                <button class="chip" type="button">2.39:1</button>
+                <button class="chip" type="button">9:16</button>
+              </div>
+              <input class="action__input" id="promptInput" type="text" placeholder="描述下一个镜头……" />
+              <div class="action__row">
+                <button class="btn-white btn-white--wide" type="button" id="genBtn">Generate</button>
+                <button class="btn-ghost btn-ghost--wide" type="button" data-toast="已从素材库插入参考帧">参考帧</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="工作台">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5l5 2.5-5 2.5v-5z"/></svg>
+              <span>工作台</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="项目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7h6l2 2h10v10H3V7z"/></svg>
+              <span>项目</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="生成" aria-label="生成">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>生成</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="素材">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="13" width="7" height="7"/><rect x="14" y="13" width="7" height="7"/></svg>
+              <span>素材</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

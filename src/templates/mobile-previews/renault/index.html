@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>闪电站 · Renault E-Tech</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__diamond"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">闪电站</span>
+                <span class="brand-bar__sub">MEGANE E-TECH · 沪AD·82K1</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="车机已连接 · 固件 5.2.1 为最新版本" aria-label="车辆设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3.2" />
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09A1.7 1.7 0 0 0 10.13 2.7V2.6a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1.03h.09a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.03Z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：Absolute Black 极光电量卡 -->
+            <section class="charge-hero" aria-label="电池电量与充电">
+              <div class="charge-hero__top">
+                <span class="charge-hero__label">电池电量</span>
+                <span class="charge-hero__status" id="heroStatus">已连接 · 家充桩 7 kW</span>
+              </div>
+              <div class="charge-hero__main">
+                <p class="charge-hero__soc"><b id="socNum">78</b><i>%</i></p>
+                <div class="charge-hero__range">
+                  <span>续航里程</span>
+                  <b><i id="rangeNum">412</i> km</b>
+                </div>
+              </div>
+              <div class="charge-hero__track" role="progressbar" aria-label="当前电量 78%">
+                <span class="charge-hero__fill" id="socFill" style="--w: 78%"></span>
+              </div>
+              <div class="charge-hero__foot">
+                <span>预计 46 分钟充满</span>
+                <span>谷时 23:00 起 · ¥0.31/度</span>
+              </div>
+              <button class="charge-hero__cta" id="chargeBtn" type="button">立即充电</button>
+            </section>
+
+            <!-- 3. 双内容卡：黑白棋盘节奏 -->
+            <section class="duo-grid" aria-label="能耗与预约">
+              <div class="duo-card duo-card--dark">
+                <h2 class="duo-card__title">行程能耗</h2>
+                <div class="eco-row">
+                  <div class="eco-row__head"><span>本周</span><b>14.2 <i>kWh/100km</i></b></div>
+                  <div class="eco-row__track"><span class="eco-row__fill" style="--w: 62%"></span></div>
+                </div>
+                <div class="eco-row">
+                  <div class="eco-row__head"><span>上周</span><b>16.8 <i>kWh/100km</i></b></div>
+                  <div class="eco-row__track"><span class="eco-row__fill eco-row__fill--dim" style="--w: 84%"></span></div>
+                </div>
+                <p class="duo-card__note">较上周节能 15%，能量回收贡献 3.1 kWh</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">谷时预约</h2>
+                <p class="duo-card__time">23:00<span>–07:00</span></p>
+                <p class="duo-card__note">低谷电价自动开始充电</p>
+                <button class="switch is-on" id="scheduleToggle" type="button" role="switch" aria-checked="true" aria-label="谷时预约充电开关">
+                  <span class="switch__knob"></span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 4. 附近充电站 Feed -->
+            <section class="feed" aria-label="附近充电站">
+              <div class="feed__head">
+                <h2 class="feed__title">附近充电站</h2>
+                <div class="chips" role="tablist" aria-label="筛选充电站">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="fast">快充</button>
+                  <button class="chip" type="button" data-filter="idle">空闲</button>
+                  <button class="chip" type="button" data-filter="busy">占用</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="fast">
+                  <span class="feed-item__glyph" aria-hidden="true">⚡</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">国家电网 · 世纪公园站</span>
+                    <span class="feed-item__meta">1.2 km · 60 kW <em class="feed-item__chip">快充</em></span>
+                  </div>
+                  <b class="feed-item__price">¥1.20<i>/度</i></b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该充电站" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="busy">
+                  <span class="feed-item__glyph" aria-hidden="true">🅿️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">星星充电 · 张江地铁站</span>
+                    <span class="feed-item__meta">3.5 km · 7 kW <em class="feed-item__chip" data-level="busy">占用</em></span>
+                  </div>
+                  <b class="feed-item__price">¥0.98<i>/度</i></b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该充电站" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="idle">
+                  <span class="feed-item__glyph" aria-hidden="true">🔌</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">特来电 · 联洋广场</span>
+                    <span class="feed-item__meta">2.8 km · 120 kW <em class="feed-item__chip" data-level="idle">空闲</em></span>
+                  </div>
+                  <b class="feed-item__price">¥1.90<i>/度</i></b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该充电站" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="idle">
+                  <span class="feed-item__glyph" aria-hidden="true">🔋</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">小桔充电 · 世纪大道</span>
+                    <span class="feed-item__meta">4.1 km · 80 kW <em class="feed-item__chip" data-level="idle">空闲</em></span>
+                  </div>
+                  <b class="feed-item__price">¥1.05<i>/度</i></b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该充电站" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="fast">
+                  <span class="feed-item__glyph" aria-hidden="true">⚡</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">国家电网 · 源深体育中心</span>
+                    <span class="feed-item__meta">5.6 km · 60 kW <em class="feed-item__chip">快充</em></span>
+                  </div>
+                  <b class="feed-item__price">¥1.40<i>/度</i></b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该充电站" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="路线与远程控制">
+              <input class="quick-input" id="siteInput" type="text" placeholder="搜索目的地或充电站，如：世纪公园" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="planBtn">规划充电路线</button>
+                <button class="btn-ghost" type="button" data-toast="远程空调已启动 · 24°C · 5 分钟后自动关闭">远程空调</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="车况">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>车况</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h14M5 19h9" />
+              </svg>
+              <span>行程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="充电" aria-label="一键充电">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z" />
+              </svg>
+              <span>充电</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="电站">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" /><circle cx="12" cy="10" r="2.6" />
+              </svg>
+              <span>电站</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

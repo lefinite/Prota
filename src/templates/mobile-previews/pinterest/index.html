@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>拾光 · Pinterest</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9.5" />
+                  <path d="M10 17.5c0-3 .8-4.3 1.3-7" />
+                  <path d="M11.3 10.5c-.4-1.9.7-3.6 2.5-3.6 1.7 0 2.7 1.2 2.7 3 0 2.3-1.4 4.3-3.2 4.3-1 0-1.7-.7-1.7-1.7" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">拾光</span>
+                <span class="brand-bar__sub">今日灵感 · 已保存 32 个</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="3 条新推荐：你的朋友存了这些" aria-label="消息通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：masonry 灵感瀑布流 -->
+            <section class="masonry-wrap" aria-label="为你推荐">
+              <div class="masonry-head">
+                <h2 class="masonry-head__title">为你推荐</h2>
+                <span class="masonry-head__note">根据「原木风」兴趣更新</span>
+              </div>
+              <div class="masonry">
+                <figure class="pin">
+                  <div class="pin__art pin__art--wood" role="img" aria-label="原木风书房灵感图">
+                    <button class="pin__save" type="button" aria-label="保存灵感" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  <figcaption class="pin__title">原木书房 · 长桌靠窗</figcaption>
+                </figure>
+                <figure class="pin">
+                  <div class="pin__art pin__art--knit" role="img" aria-label="暖冬针织灵感图">
+                    <span class="pin__count">1.2k 已存</span>
+                    <button class="pin__save" type="button" aria-label="保存灵感" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  <figcaption class="pin__title">暖冬针织 · 奶油色系</figcaption>
+                </figure>
+                <figure class="pin pin--featured">
+                  <div class="pin__art pin__art--kitchen" role="img" aria-label="奶油风厨房灵感图（精选）">
+                    <button class="pin__save" type="button" aria-label="保存灵感" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  <figcaption class="pin__title">奶油风厨房 · 本周精选</figcaption>
+                </figure>
+                <figure class="pin">
+                  <div class="pin__art pin__art--clay" role="img" aria-label="陶土花器灵感图">
+                    <button class="pin__save" type="button" aria-label="保存灵感" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  <figcaption class="pin__title">陶土花器 · 手作</figcaption>
+                </figure>
+                <figure class="pin">
+                  <div class="pin__art pin__art--terrace" role="img" aria-label="苔绿露台灵感图">
+                    <span class="pin__count">864 已存</span>
+                    <button class="pin__save" type="button" aria-label="保存灵感" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  <figcaption class="pin__title">苔绿露台 · 微景观</figcaption>
+                </figure>
+                <figure class="pin">
+                  <div class="pin__art pin__art--coffee" role="img" aria-label="手冲咖啡角灵感图">
+                    <button class="pin__save" type="button" aria-label="保存灵感" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  <figcaption class="pin__title">手冲咖啡角 · 晨间</figcaption>
+                </figure>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 ×2：今日画板 + 灵感趋势 -->
+            <section class="duo-grid" aria-label="画板与趋势">
+              <div class="board-card">
+                <h2 class="board-card__title">今日画板</h2>
+                <div class="board-card__stack" aria-hidden="true">
+                  <i class="board-card__sq board-card__sq--a"></i>
+                  <i class="board-card__sq board-card__sq--b"></i>
+                  <i class="board-card__sq board-card__sq--c"></i>
+                </div>
+                <p class="board-card__name">暖冬厨房改造</p>
+                <p class="board-card__note">24 个灵感 · 3 天前更新</p>
+                <button class="btn-sand btn-sand--full" type="button" data-toast="画板「暖冬厨房改造」已保存到本地">保存画板</button>
+              </div>
+              <div class="trend-card">
+                <h2 class="trend-card__title">灵感趋势</h2>
+                <div class="trend-tags">
+                  <button class="trend-tag" type="button" data-toast="已订阅标签：#原木风">#原木风</button>
+                  <button class="trend-tag" type="button" data-toast="已订阅标签：#奶油风">#奶油风</button>
+                  <button class="trend-tag" type="button" data-toast="已订阅标签：#中古器物">#中古器物</button>
+                  <button class="trend-tag" type="button" data-toast="已订阅标签：#阳台绿植">#阳台绿植</button>
+                  <button class="trend-tag" type="button" data-toast="已订阅标签：#手冲咖啡">#手冲咖啡</button>
+                  <button class="trend-tag" type="button" data-toast="已订阅标签：#黏土手作">#黏土手作</button>
+                </div>
+                <p class="trend-card__note">本周新增 12 个相关灵感</p>
+              </div>
+            </section>
+
+            <!-- 4. 收藏动态 Feed -->
+            <section class="feed" aria-label="收藏动态">
+              <div class="feed__head">
+                <h2 class="feed__title">收藏动态</h2>
+                <div class="chips" role="tablist" aria-label="筛选动态">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="saved">已保存</button>
+                  <button class="chip" type="button" data-filter="rec">推荐</button>
+                  <button class="chip" type="button" data-filter="live">回放</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="saved">
+                  <span class="feed-item__thumb feed-item__thumb--wood" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">原木风书房 · 收进「家装灵感」</span>
+                    <span class="feed-item__meta">10 分钟前 <em class="tag tag--saved">已保存</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="快速保存" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="rec">
+                  <span class="feed-item__thumb feed-item__thumb--clay" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">陶土色系搭配 · 小满推荐</span>
+                    <span class="feed-item__meta">1 小时前 <em class="tag">推荐</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="快速保存" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="live">
+                  <span class="feed-item__thumb feed-item__thumb--coffee" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">周末手冲角 · 直播回放</span>
+                    <span class="feed-item__meta">昨天 <em class="tag tag--live">回放</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="快速保存" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="saved">
+                  <span class="feed-item__thumb feed-item__thumb--terrace" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">苔绿露台 · 收进「阳台计划」</span>
+                    <span class="feed-item__meta">昨天 <em class="tag tag--saved">已保存</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="快速保存" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="saved">
+                  <span class="feed-item__thumb feed-item__thumb--kitchen" aria-hidden="true"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">中古餐边柜 · 待整理</span>
+                    <span class="feed-item__meta">周二 <em class="tag tag--draft">草稿</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="快速保存" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="搜索与画板">
+              <input class="search-input" id="searchInput" type="text" placeholder="搜索灵感，如：原木风书房……" />
+              <div class="action-row">
+                <button class="btn-red" type="button" id="createBoardBtn">创建画板</button>
+                <button class="btn-sand" type="button" data-toast="合集链接已复制，可发给朋友">分享合集</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 11l8-7 8 7" /><path d="M6 10v9h12v-9" />
+              </svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="搜索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" /><path d="M20 20l-4.2-4.2" />
+              </svg>
+              <span>搜索</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="创建" aria-label="创建画板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>创建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="画板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" />
+                <rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" />
+              </svg>
+              <span>画板</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

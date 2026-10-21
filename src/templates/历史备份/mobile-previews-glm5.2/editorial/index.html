@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>阅读杂志 · Editorial</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">阅</span>
+                <div class="brand-text">
+                  <span class="brand-name">阅读杂志</span>
+                  <span class="brand-sub">本周精选 · 第 42 期</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="书签" data-toast="已保存到书签">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 签名卡：大标题 + 摘要 + 阅读进度 -->
+            <article class="hero-article" aria-label="封面文章">
+              <p class="kicker">封面故事</p>
+              <h1 class="headline">设计的语言：为什么字体选择决定了一切</h1>
+              <p class="deck">当衬线遇上现代屏幕，一场关于可读性与美学的对话正在重新定义数字阅读体验。</p>
+              <div class="article-meta">
+                <span class="author">李明远</span>
+                <span class="meta-sep">·</span>
+                <span class="duration">12 分钟阅读</span>
+              </div>
+
+              <!-- 阅读进度条 -->
+              <div class="reading-progress">
+                <span class="reading-progress__fill" style="--p: 68%"></span>
+              </div>
+
+              <div class="article-actions">
+                <button class="action-btn" data-toast="已加入稍后阅读">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14" /></svg>
+                  稍后读
+                </button>
+                <button class="action-btn" data-toast="分享功能即将上线">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                  分享
+                </button>
+              </div>
+            </article>
+
+            <!-- 引语签名：editorial 特色 -->
+            <blockquote class="pull-quote" aria-label="精选摘录">
+              <svg class="quote-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H15.017C14.4647 8 14.017 8.44772 14.017 9V11C14.017 11.5523 13.5693 12 13.017 12H12.017V5H22.017V15C22.017 18.3137 19.3307 21 16.017 21H14.017ZM5.01697 21L5.01697 18C5.01697 16.8954 5.91239 16 7.01697 16H10.017C10.5693 16 11.017 15.5523 11.017 15V9C11.017 8.44772 10.5693 8 10.017 8H6.01697C5.46468 8 5.01697 8.44772 5.01697 9V11C5.01697 11.5523 4.56925 12 4.01697 12H3.01697V5H13.017V15C13.017 18.3137 10.3307 21 7.01697 21H5.01697Z" /></svg>
+              <p class="pull-quote__text">好的设计是无形的，但伟大的设计会在你意识到之前就开始讲述故事。</p>
+              <cite class="pull-quote__author">— 《设计的语言》第一章</cite>
+            </blockquote>
+
+            <!-- 编辑精选双卡 -->
+            <section class="feature-row" aria-label="编辑精选">
+              <article class="feature-card">
+                <span class="feature-card__tag">设计</span>
+                <h3 class="feature-card__title">色彩心理学：温暖的力量</h3>
+                <p class="feature-card__excerpt">探索暖色调如何影响用户的情绪与决策过程。</p>
+                <span class="feature-card__meta">8 分钟 · 陈晓华</span>
+              </article>
+              <article class="feature-card">
+                <span class="feature-card__tag">技术</span>
+                <h3 class="feature-card__title">CSS Grid 与杂志排版的复兴</h3>
+                <p class="feature-card__excerpt">当网页布局拥抱印刷设计的美学原则。</p>
+                <span class="feature-card__meta">15 分钟 · 王思远</span>
+              </article>
+            </section>
+
+            <!-- 文章列表 -->
+            <section class="article-list" aria-label="更多文章">
+              <h2 class="section-heading">本周推荐</h2>
+
+              <div class="chips" id="categoryChips" role="tablist" aria-label="文章分类">
+                <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                <button class="chip" data-filter="design" role="tab" aria-selected="false">设计</button>
+                <button class="chip" data-filter="tech" role="tab" aria-selected="false">技术</button>
+                <button class="chip" data-filter="culture" role="tab" aria-selected="false">文化</button>
+              </div>
+
+              <ul class="article-items" id="articleList">
+                <li class="article-item" data-category="design">
+                  <span class="article-item__num">01</span>
+                  <div class="article-item__main">
+                    <span class="article-item__tag">设计</span>
+                    <h4 class="article-item__title">极简主义的尽头是什么？</h4>
+                    <span class="article-item__meta">张静 · 6 分钟</span>
+                  </div>
+                  <span class="bookmark-toggle" role="button" tabindex="0" aria-label="收藏" data-toast="已收藏"></span>
+                </li>
+                <li class="article-item" data-category="tech">
+                  <span class="article-item__num">02</span>
+                  <div class="article-item__main">
+                    <span class="article-item__tag">技术</span>
+                    <h4 class="article-item__title">Web 字体加载优化的艺术</h4>
+                    <span class="article-item__meta">刘涛 · 10 分钟</span>
+                  </div>
+                  <span class="bookmark-toggle bookmark-toggle--active" role="button" tabindex="0" aria-label="取消收藏" data-toast="已取消收藏"></span>
+                </li>
+                <li class="article-item" data-category="culture">
+                  <span class="article-item__num">03</span>
+                  <div class="article-item__main">
+                    <span class="article-item__tag">文化</span>
+                    <h4 class="article-item__title">数字时代的阅读仪式感</h4>
+                    <span class="article-item__meta">周默 · 7 分钟</span>
+                  </div>
+                  <span class="bookmark-toggle" role="button" tabindex="0" aria-label="收藏" data-toast="已收藏"></span>
+                </li>
+                <li class="article-item" data-category="design">
+                  <span class="article-item__num">04</span>
+                  <div class="article-item__main">
+                    <span class="article-item__tag">设计</span>
+                    <h4 class="article-item__title">衬线字体的现代复兴</h4>
+                    <span class="article-item__meta">林雅 · 9 分钟</span>
+                  </div>
+                  <span class="bookmark-toggle" role="button" tabindex="0" aria-label="收藏" data-toast="已收藏"></span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 订阅卡片 -->
+            <section class="subscribe-card" aria-label="订阅周刊">
+              <div class="subscribe-card__content">
+                <h3 class="subscribe-card__title">订阅我们的周刊</h3>
+                <p class="subscribe-card__text">每周精选设计思考与技术洞察，直达您的邮箱。</p>
+              </div>
+              <button class="subscribe-btn" data-toast="感谢订阅！请查收确认邮件">订阅</button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
+              <span>探索</span>
+            </button>
+            <button class="tab tab--center" data-tab="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            </button>
+            <button class="tab" data-tab="bookmarks">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+              <span>书签</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

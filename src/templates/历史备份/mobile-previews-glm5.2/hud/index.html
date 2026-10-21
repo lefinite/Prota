@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>TELEMETRY · HUD</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">09:41:23</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <span class="status-indicator status-indicator--active"></span>
+              <span class="signal-bars">
+                <span class="signal-bar"></span>
+                <span class="signal-bar"></span>
+                <span class="signal-bar"></span>
+                <span class="signal-bar"></span>
+              </span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">T</div>
+                <div class="brand-text">
+                  <span class="brand-label">TELEMETRY</span>
+                  <span class="brand-sub">UAV-OS v2.4.1</span>
+                </div>
+              </div>
+              <div class="status-badge status-badge--active">LIVE</div>
+            </header>
+
+            <!-- Hero Signature: 飞行数据遥测 -->
+            <section class="telemetry-panel" aria-label="Flight Telemetry">
+              <div class="panel-header">
+                <span class="panel-label">FLIGHT DATA</span>
+                <span class="panel-time">T+00:14:23</span>
+              </div>
+              <div class="telemetry-grid">
+                <div class="telemetry-value">
+                  <span class="telemetry-label">ALT</span>
+                  <span class="data-value" id="altitude">2,847</span>
+                  <span class="telemetry-unit">M</span>
+                </div>
+                <div class="telemetry-value">
+                  <span class="telemetry-label">SPD</span>
+                  <span class="data-value" id="speed">142</span>
+                  <span class="telemetry-unit">KTS</span>
+                </div>
+                <div class="telemetry-value">
+                  <span class="telemetry-label">HDG</span>
+                  <span class="data-value" id="heading">237</span>
+                  <span class="telemetry-unit">°</span>
+                </div>
+                <div class="telemetry-value">
+                  <span class="telemetry-label">VS</span>
+                  <span class="data-value data-value--warn" id="vspeed">-450</span>
+                  <span class="telemetry-unit">F/M</span>
+                </div>
+              </div>
+              <div class="attitude-indicator">
+                <div class="attitude-horizon">
+                  <div class="attitude-pitch"></div>
+                </div>
+                <div class="attitude-crosshair"></div>
+              </div>
+            </section>
+
+            <!-- 系统状态双卡 -->
+            <section class="system-cards">
+              <div class="system-card">
+                <span class="system-label">FUEL</span>
+                <div class="fuel-gauge">
+                  <span class="fuel-bar" style="--fuel: 67%"></span>
+                </div>
+                <span class="system-value">67%</span>
+              </div>
+              <div class="system-card">
+                <span class="system-label">BATTERY</span>
+                <div class="battery-level">
+                  <span class="battery-fill" style="--charge: 89%"></span>
+                </div>
+                <span class="system-value">89%</span>
+              </div>
+            </section>
+
+            <!-- 警告列表 -->
+            <section class="alerts-panel">
+              <div class="alerts-header">
+                <span class="alerts-label">SYSTEM ALERTS</span>
+                <div class="alert-filters" id="alertFilters" role="tablist">
+                  <button class="alert-filter is-active" data-filter="all">ALL</button>
+                  <button class="alert-filter" data-filter="warning">WARN</button>
+                  <button class="alert-filter" data-filter="alert">ALERT</button>
+                </div>
+              </div>
+              <ul class="alert-list" id="alertList">
+                <li class="alert-item" data-level="warning">
+                  <span class="alert-dot alert-dot--warning"></span>
+                  <div class="alert-main">
+                    <span class="alert-title">WIND SHEAR DETECTED</span>
+                    <span class="alert-code">WS-002</span>
+                  </div>
+                  <span class="alert-time">00:02:14</span>
+                </li>
+                <li class="alert-item" data-level="alert">
+                  <span class="alert-dot alert-dot--alert"></span>
+                  <div class="alert-main">
+                    <span class="alert-title">PROXIMITY ALERT</span>
+                    <span class="alert-code">PX-041</span>
+                  </div>
+                  <span class="alert-time">00:01:47</span>
+                </li>
+                <li class="alert-item" data-level="warning">
+                  <span class="alert-dot alert-dot--warning"></span>
+                  <div class="alert-main">
+                    <span class="alert-title">HIGH DESCENT RATE</span>
+                    <span class="alert-code">VS-003</span>
+                  </div>
+                  <span class="alert-time">00:00:58</span>
+                </li>
+                <li class="alert-item" data-level="info">
+                  <span class="alert-dot alert-dot--info"></span>
+                  <div class="alert-main">
+                    <span class="alert-title">GPS SIGNAL ACQUIRED</span>
+                    <span class="alert-code">GPS-12</span>
+                  </div>
+                  <span class="alert-time">00:00:23</span>
+                </li>
+                <li class="alert-item" data-level="warning">
+                  <span class="alert-dot alert-dot--warning"></span>
+                  <div class="alert-main">
+                    <span class="alert-title">FUEL RESERVES LOW</span>
+                    <span class="alert-code">FU-015</span>
+                  </div>
+                  <span class="alert-time">00:00:15</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="control-panel">
+              <button class="ctrl-btn ctrl-btn--primary" data-toast="ENGAGING AUTOPILOT">
+                <span class="ctrl-icon">AP</span>
+                <span>ENGAGE AUTOPILOT</span>
+              </button>
+              <div class="ctrl-row">
+                <button class="ctrl-btn ctrl-btn--secondary" data-toast="RETURNING HOME">RTH</button>
+                <button class="ctrl-btn ctrl-btn--secondary" data-toast="HOLD POSITION">HOLD</button>
+                <button class="ctrl-btn ctrl-btn--secondary" data-toast="LANDING INITIATED">LAND</button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="Main Navigation">
+            <button class="tab is-active" data-tab="telemetry">
+              <span>TEL</span>
+            </button>
+            <button class="tab" data-tab="map">
+              <span>MAP</span>
+            </button>
+            <button class="tab" data-tab="waypoints">
+              <span>WPT</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <span>SYS</span>
+            </button>
+            <button class="tab" data-tab="logs">
+              <span>LOG</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

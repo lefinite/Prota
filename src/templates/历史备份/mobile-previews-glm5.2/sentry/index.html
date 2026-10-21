@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ErrorFlow · Sentry</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">ErrorFlow</span>
+                  <span class="brand-sub">Issues Monitor</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="Settings Panel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+            </header>
+
+            <!-- 错误率概览卡（signature：深紫色背景 + 数据可视化） -->
+            <section class="error-rate-card" aria-label="错误率监控">
+              <div class="error-rate-card__header">
+                <span class="error-rate-card__label">ERROR RATE</span>
+                <span class="error-rate-card__period">Last 24h</span>
+              </div>
+              <p class="error-rate-card__value">0.12%</p>
+              <div class="error-rate-card__sparkline" aria-label="错误趋势图">
+                <svg viewBox="0 0 200 40" preserveAspectRatio="none">
+                  <path d="M0,30 Q20,25 40,28 T80,20 T120,24 T160,18 T200,22" fill="none" stroke="var(--accent)" stroke-width="2"/>
+                  <path d="M0,30 Q20,25 40,28 T80,20 T120,24 T160,18 T200,22 L200,40 L0,40 Z" fill="var(--accent)" fill-opacity="0.2"/>
+                </svg>
+              </div>
+              <div class="error-rate-card__stats">
+                <div class="stat-item">
+                  <span class="stat-item__value">2.4k</span>
+                  <span class="stat-item__label">Total Errors</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-item__value">156</span>
+                  <span class="stat-item__label">New Issues</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-item__value stat-item__value--lime">98.8%</span>
+                  <span class="stat-item__label">Uptime</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 项目选择器 + 状态过滤 -->
+            <section class="filter-section">
+              <div class="project-select" data-toast="选择项目">
+                <span>production-api</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              <div class="chips" id="statusChips" role="tablist" aria-label="按状态筛选">
+                <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+                <button class="chip" data-filter="unresolved" role="tab" aria-selected="false">Unresolved</button>
+                <button class="chip" data-filter="regressed" role="tab" aria-selected="false">Regressed</button>
+              </div>
+            </section>
+
+            <!-- 问题列表 -->
+            <section class="issues-section">
+              <div class="issues-header">
+                <h2>Recent Issues</h2>
+                <span class="issues-count">156 issues</span>
+              </div>
+
+              <ul class="issue-list" id="issueList">
+                <li class="issue-card" data-type="unresolved">
+                  <div class="issue-card__main">
+                    <span class="issue-level issue-level--error">ERROR</span>
+                    <div class="issue-info">
+                      <span class="issue-title">NullPointerException in AuthService</span>
+                      <span class="issue-meta">Runtime Exception · 24 occurrences</span>
+                    </div>
+                  </div>
+                  <div class="issue-card__side">
+                    <span class="issue-time">2m ago</span>
+                    <span class="badge badge--critical">Critical</span>
+                  </div>
+                </li>
+
+                <li class="issue-card" data-type="unresolved">
+                  <div class="issue-card__main">
+                    <span class="issue-level issue-level--warning">WARN</span>
+                    <div class="issue-info">
+                      <span class="issue-title">Slow database query detected</span>
+                      <span class="issue-meta">Performance · 8 occurrences</span>
+                    </div>
+                  </div>
+                  <div class="issue-card__side">
+                    <span class="issue-time">15m ago</span>
+                    <span class="badge badge--warning">Warning</span>
+                  </div>
+                </li>
+
+                <li class="issue-card" data-type="regressed">
+                  <div class="issue-card__main">
+                    <span class="issue-level issue-level--error">ERROR</span>
+                    <div class="issue-info">
+                      <span class="issue-title">API rate limit exceeded</span>
+                      <span class="issue-meta">HTTP 429 · 142 occurrences</span>
+                    </div>
+                  </div>
+                  <div class="issue-card__side">
+                    <span class="issue-time">1h ago</span>
+                    <span class="badge badge--regressed">Regressed</span>
+                  </div>
+                </li>
+
+                <li class="issue-card" data-type="unresolved">
+                  <div class="issue-card__main">
+                    <span class="issue-level issue-level--info">INFO</span>
+                    <div class="issue-info">
+                      <span class="issue-title">Memory usage spike detected</span>
+                      <span class="issue-meta">Resource · 3 occurrences</span>
+                    </div>
+                  </div>
+                  <div class="issue-card__side">
+                    <span class="issue-time">2h ago</span>
+                    <span class="badge badge--info">Info</span>
+                  </div>
+                </li>
+
+                <li class="issue-card" data-type="unresolved">
+                  <div class="issue-card__main">
+                    <span class="issue-level issue-level--error">ERROR</span>
+                    <div class="issue-info">
+                      <span class="issue-title">Payment processing timeout</span>
+                      <span class="issue-meta">Payment Gateway · 1 occurrence</span>
+                    </div>
+                  </div>
+                  <div class="issue-card__side">
+                    <span class="issue-time">3h ago</span>
+                    <span class="badge badge--critical">Critical</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="issues">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              <span>Issues</span>
+            </button>
+            <button class="tab" data-tab="releases">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88z"/><path d="M5 19.5h14"/><path d="M17.23 8.53 9.44 16.32"/></svg>
+              <span>Releases</span>
+            </button>
+            <button class="tab" data-tab="performance">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <span>Performance</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.364 6.364-4.243 4.243M9.879 9.879 5.636 5.636m12.728 12.728-4.243-4.243M9.879 14.121l-4.243 4.243"/></svg>
+              <span>Settings</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

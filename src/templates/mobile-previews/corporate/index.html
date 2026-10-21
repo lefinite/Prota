@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>核签 · Corporate</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 21h14" />
+                  <path d="M9 21v-2.5h6V21" />
+                  <path d="M7.5 15.5c0-1.3-2.2-2.2-2.2-4.6A2.9 2.9 0 0 1 8.2 8a2.9 2.9 0 0 1 5.6 0 2.9 2.9 0 0 1 2.9 2.9c0 2.4-2.2 3.3-2.2 4.6" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">核签</span>
+                <span class="brand-bar__sub">华信集团 · 内部审批</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="2 件加急件将在 2 小时后超时" aria-label="审批提醒">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：当前待签文件 + 签批链 -->
+            <section class="doc-card" aria-label="当前待签文件">
+              <div class="doc-card__top">
+                <span class="doc-card__badge">加急</span>
+                <span class="doc-card__label">待我签批 · 明日 12:00 前</span>
+              </div>
+              <h1 class="doc-card__title">华东区 Q4 差旅预算追加申请</h1>
+              <p class="doc-card__amount">¥ 86,400<span class="doc-card__amount-note">.00 · 超预算 12%</span></p>
+
+              <div class="chain" role="list" aria-label="签批流程：张伟发起，李敏已签，当前等待财务复核，最后归档">
+                <div class="chain__node is-done" role="listitem">
+                  <span class="chain__avatar">张</span>
+                  <span class="chain__label">张伟 · 发起</span>
+                </div>
+                <i class="chain__link is-done" aria-hidden="true"></i>
+                <div class="chain__node is-done" role="listitem">
+                  <span class="chain__avatar">李</span>
+                  <span class="chain__label">李敏 · 已签</span>
+                </div>
+                <i class="chain__link" aria-hidden="true"></i>
+                <div class="chain__node is-current" role="listitem">
+                  <span class="chain__avatar">财</span>
+                  <span class="chain__label">财务 · 你</span>
+                </div>
+                <i class="chain__link" aria-hidden="true"></i>
+                <div class="chain__node" role="listitem">
+                  <span class="chain__avatar">档</span>
+                  <span class="chain__label">归档</span>
+                </div>
+              </div>
+
+              <div class="doc-card__foot">
+                <span>单号 FI-2026-0815-114</span>
+                <span>已流转 <b>3 / 4</b> 步</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="本月概览与超时提醒">
+              <div class="duo-card">
+                <h2 class="duo-card__title">本月概览</h2>
+                <div class="stat-row">
+                  <div class="stat">
+                    <b>128</b>
+                    <span>已签</span>
+                  </div>
+                  <div class="stat">
+                    <b>9</b>
+                    <span>退回</span>
+                  </div>
+                  <div class="stat">
+                    <b>26<i>s</i></b>
+                    <span>均用时</span>
+                  </div>
+                </div>
+                <p class="duo-card__note">签批时效高于集团 87% 的部门</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">超时提醒</h2>
+                <div class="due-row">
+                  <span class="due-row__dot" data-level="danger"></span>
+                  <span class="due-row__name">王锐 · 晚宴报销</span>
+                  <b>2 小时</b>
+                </div>
+                <div class="due-row">
+                  <span class="due-row__dot" data-level="warn"></span>
+                  <span class="due-row__name">周涛 · 样机租赁</span>
+                  <b>明日 9:00</b>
+                </div>
+                <p class="duo-card__note">超时将自动升级至分管副总</p>
+              </div>
+            </section>
+
+            <!-- 4. 待签 Feed -->
+            <section class="feed" aria-label="待签列表">
+              <div class="feed__head">
+                <h2 class="feed__title">待签 <b>6</b> 件</h2>
+                <div class="chips" role="tablist" aria-label="筛选待签类型">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="travel">差旅</button>
+                  <button class="chip" type="button" data-filter="purchase">采购</button>
+                  <button class="chip" type="button" data-filter="expense">报销</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="travel">
+                  <span class="feed-item__glyph" aria-hidden="true">陈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">陈晓 · 上海客户拜访差旅</span>
+                    <span class="feed-item__meta">09:32 · 往返高铁 2 天 <em class="feed-item__chip" data-level="danger">加急</em></span>
+                  </div>
+                  <b class="feed-item__amount">3,280</b>
+                  <button class="seal" type="button" aria-label="盖章签批" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="M8.2 12.4l2.6 2.6 5-5.6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="purchase">
+                  <span class="feed-item__glyph" aria-hidden="true">市</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">市场部 · 年会物料采购单</span>
+                    <span class="feed-item__meta">09:05 · 已比价 3 家 <em class="feed-item__chip">待签</em></span>
+                  </div>
+                  <b class="feed-item__amount">41,000</b>
+                  <button class="seal" type="button" aria-label="盖章签批" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="M8.2 12.4l2.6 2.6 5-5.6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="expense">
+                  <span class="feed-item__glyph" aria-hidden="true">王</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">王锐 · 客户答谢晚宴报销</span>
+                    <span class="feed-item__meta">昨天 17:48 · 发票 2 张 <em class="feed-item__chip" data-level="warn">待复核</em></span>
+                  </div>
+                  <b class="feed-item__amount">8,650</b>
+                  <button class="seal" type="button" aria-label="盖章签批" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="M8.2 12.4l2.6 2.6 5-5.6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="purchase">
+                  <span class="feed-item__glyph" aria-hidden="true">研</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">研发部 · GPU 服务器扩容</span>
+                    <span class="feed-item__meta">昨天 14:20 · 附技术评审 <em class="feed-item__chip">待签</em></span>
+                  </div>
+                  <b class="feed-item__amount">128,000</b>
+                  <button class="seal" type="button" aria-label="盖章签批" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="M8.2 12.4l2.6 2.6 5-5.6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="expense">
+                  <span class="feed-item__glyph" aria-hidden="true">李</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">李萌 · 杭州出差报销</span>
+                    <span class="feed-item__meta">周三 10:12 · 行程单齐全 <em class="feed-item__chip" data-level="ok">已批</em></span>
+                  </div>
+                  <b class="feed-item__amount">2,140</b>
+                  <button class="seal" type="button" aria-label="盖章签批" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="M8.2 12.4l2.6 2.6 5-5.6" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="travel">
+                  <span class="feed-item__glyph" aria-hidden="true">周</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">周涛 · 展会样机租赁</span>
+                    <span class="feed-item__meta">周三 08:55 · 展位 B12 <em class="feed-item__chip">待签</em></span>
+                  </div>
+                  <b class="feed-item__amount">5,600</b>
+                  <button class="seal" type="button" aria-label="盖章签批" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8.5" />
+                      <path d="M8.2 12.4l2.6 2.6 5-5.6" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="签批操作">
+              <input class="quick-input" id="quickInput" type="text" placeholder="签批意见，如：同意，按预算执行……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="approveBtn">批准并盖章</button>
+                <button class="btn-ghost" type="button" data-toast="已退回 · 请补充发票与行程单">退回补充</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="待签">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12l2 2 4.5-4.5" />
+                <path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3z" />
+              </svg>
+              <span>待签</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="已办">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h14M5 19h9" />
+              </svg>
+              <span>已办</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发起" aria-label="发起审批">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>发起</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="抄送">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M3 7l9 6 9-6" />
+              </svg>
+              <span>抄送</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

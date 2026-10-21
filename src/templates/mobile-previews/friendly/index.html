@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>小炉 · Friendly</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 20v-5a6 6 0 0 1 12 0v5" />
+                  <path d="M4 20h16" />
+                  <path d="M12 9V6.5" />
+                  <circle cx="12" cy="5" r="1.3" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">小炉</span>
+                <span class="brand-bar__sub">周五 · 欧包日</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="入炉前 5 分钟会响铃提醒你" aria-label="烤箱提醒">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：二发倒计时圆环 -->
+            <section class="proof-card" id="proofCard" aria-label="二次发酵倒计时">
+              <div class="proof-card__ring" role="img" aria-label="二发还剩 32 分 10 秒，约完成三分之二">
+                <div class="proof-card__dial" id="proofDial">
+                  <b class="proof-card__time" id="proofTime">32:10</b>
+                  <span class="proof-card__cap">二发 · 乡村欧包</span>
+                </div>
+              </div>
+              <div class="proof-card__env">
+                <span class="proof-card__pill">26°C</span>
+                <span class="proof-card__pill">湿度 75%</span>
+                <span class="proof-card__pill">已发 1.7 倍</span>
+              </div>
+              <button class="proof-card__toggle" type="button" id="proofToggle" aria-pressed="true">暂停计时</button>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="烤箱与配方">
+              <div class="duo-card">
+                <h2 class="duo-card__title">烤箱预热</h2>
+                <div class="heat-row">
+                  <div class="heat-row__head"><span>石板层</span><b>180 / 230°C</b></div>
+                  <div class="heat-row__track"><span class="heat-row__fill" style="--w: 78%" data-level="warm"></span></div>
+                </div>
+                <p class="duo-card__note">还差 50 庒，入炉前正好到位</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">配方步骤</h2>
+                <div class="step-dots" aria-label="八步已完成四步">
+                  <i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i></i><i></i><i></i><i></i>
+                </div>
+                <p class="duo-card__note">整形完成 · 下一步割包</p>
+              </div>
+            </section>
+
+            <!-- 4. 烘焙日记 Feed -->
+            <section class="feed" aria-label="烘焙日记">
+              <div class="feed__head">
+                <h2 class="feed__title">烘焙日记</h2>
+                <div class="chips" role="tablist" aria-label="筛选日记">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="good">成功</button>
+                  <button class="chip" type="button" data-filter="meh">待改进</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="meh">
+                  <span class="feed-item__glyph" aria-hidden="true">🍞</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">乡村欧包</span>
+                    <span class="feed-item__meta">10-12 · 割包略深 <em class="feed-item__chip" data-level="meh">待改进</em></span>
+                  </div>
+                  <span class="feed-item__stars" aria-label="三星">★★★</span>
+                  <button class="feed-item__redo" type="button" aria-label="再烤一次" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                      <path d="M20 4v7h-7" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="good">
+                  <span class="feed-item__glyph" aria-hidden="true">🥯</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">全麦贝果</span>
+                    <span class="feed-item__meta">10-05 · 煮面恰到好处 <em class="feed-item__chip">成功</em></span>
+                  </div>
+                  <span class="feed-item__stars" aria-label="五星">★★★★★</span>
+                  <button class="feed-item__redo" type="button" aria-label="再烤一次" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                      <path d="M20 4v7h-7" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="good">
+                  <span class="feed-item__glyph" aria-hidden="true">🥐</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">肉桂卷</span>
+                    <span class="feed-item__meta">09-28 · 黄油略多 <em class="feed-item__chip">成功</em></span>
+                  </div>
+                  <span class="feed-item__stars" aria-label="四星">★★★★</span>
+                  <button class="feed-item__redo" type="button" aria-label="再烤一次" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                      <path d="M20 4v7h-7" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="good">
+                  <span class="feed-item__glyph" aria-hidden="true">🥖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">恰巴塔</span>
+                    <span class="feed-item__meta">09-21 · 气孔漂亮 <em class="feed-item__chip">成功</em></span>
+                  </div>
+                  <span class="feed-item__stars" aria-label="五星">★★★★★</span>
+                  <button class="feed-item__redo" type="button" aria-label="再烤一次" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                      <path d="M20 4v7h-7" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="meh">
+                  <span class="feed-item__glyph" aria-hidden="true">🍰</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">磅蛋糕</span>
+                    <span class="feed-item__meta">09-14 · 表面开裂 <em class="feed-item__chip" data-level="meh">待改进</em></span>
+                  </div>
+                  <span class="feed-item__stars" aria-label="二星">★★</span>
+                  <button class="feed-item__redo" type="button" aria-label="再烤一次" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                      <path d="M20 4v7h-7" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="入炉与记录">
+              <input class="quick-input" id="bakeInput" type="text" placeholder="给这炉写点什么，比如：换了新面粉…" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="bakeBtn">开始烘烤 20:00</button>
+                <button class="btn-ghost" type="button" data-toast="配方卡片已生成，去发给朋友们">分享配方</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="烤箱">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="4" />
+                <path d="M8 15a4 4 0 0 1 8 0" />
+                <circle cx="9" cy="9" r="1" /><circle cx="15" cy="9" r="1" />
+              </svg>
+              <span>烤箱</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日记">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v18H6.5A1.5 1.5 0 0 1 5 19.5z" />
+                <path d="M9 8h6M9 12h4" />
+              </svg>
+              <span>日记</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="计时" aria-label="新计时器">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>计时</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="配方">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3h12v6a6 6 0 0 1-12 0z" />
+                <path d="M9 21h6M12 15v6" />
+              </svg>
+              <span>配方</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

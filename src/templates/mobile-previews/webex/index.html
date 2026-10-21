@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>围桌 · Webex 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M16 8l-8 8"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">围桌 · 产品周会</span>
+                <span class="brand-bar__sub">进行中 42:18 · 6 人在线 · 静音由主持管理</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已举手，主持人看到后会邀请你发言" aria-label="举手">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V10M11 10V4.5a1.5 1.5 0 0 1 3 0V10M14 10V6a1.5 1.5 0 0 1 3 0v6.5c0 4-2.5 7-6.5 7s-6-2.5-6.5-6L3.5 11c-.5-1.5 1-2.5 2-1.5l1.5 2"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：会议画布（签名：发言者大格 + 成员彩环）-->
+            <section class="hero" aria-label="会议画面">
+              <div class="hero__stage">
+                <div class="hero__speaker" role="img" aria-label="当前发言者：阿茂，正在共享屏幕讲解数据表">
+                  <div class="hero__screen" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i>
+                  </div>
+                  <span class="hero__name"><i class="ring ring--orange"></i>阿茂 · 共享中</span>
+                  <span class="hero__badge mono" id="speakBadge">发言 03:12</span>
+                </div>
+                <div class="hero__strip">
+                  <span class="pip"><i class="ring ring--cyan"></i>小满</span>
+                  <span class="pip"><i class="ring ring--mint"></i>岩井</span>
+                  <span class="pip"><i class="ring ring--pink"></i>琳达</span>
+                  <span class="pip is-muted"><i class="ring"></i>周工</span>
+                  <span class="pip"><i class="ring ring--purple"></i>你</span>
+                </div>
+              </div>
+              <div class="hero__controls">
+                <button class="ctrl is-on" type="button" id="muteBtn" aria-label="静音">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+                </button>
+                <button class="ctrl" type="button" data-toast="摄像头已开启（虚拟背景：书房）" aria-label="视频">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3"/></svg>
+                </button>
+                <button class="ctrl" type="button" data-toast="白板已打开，全员可协作" aria-label="白板">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4h14v12H5z"/><path d="M9 20h6M12 16v4M8 9l2 2 4-4"/></svg>
+                </button>
+                <button class="ctrl ctrl--leave" type="button" data-toast="已离开会议 · 会后纪要稍后送达" aria-label="离开">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 5H5v14h4M14 8l4 4-4 4M8 12h10"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="议程">
+              <div class="duo__card">
+                <h2 class="duo__title">议程 · 3/5</h2>
+                <ul class="agenda">
+                  <li class="is-done">数据表口径对齐</li>
+                  <li class="is-done">双 11 排期</li>
+                  <li class="is-now">客服人力缺口</li>
+                  <li>Q4 招聘</li>
+                  <li>闲聊五分钟</li>
+                </ul>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">会议洞察</h2>
+                <p class="duo__num">9<span> 条待办</span></p>
+                <p class="duo__meta">AI 已从对话提取 · @你的人 2 处</p>
+                <button class="btn-mini" type="button" data-toast="待办已同步到你的日历">同步待办</button>
+              </div>
+            </section>
+
+            <!-- 4. Feed：会议记录 -->
+            <section class="feed" aria-label="记录">
+              <div class="feed__head">
+                <h2 class="feed__title">今日会议</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="live">进行中</button>
+                  <button class="chip" type="button" data-filter="done">已结束</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="meet" data-kind="live">
+                  <div class="meet__when mono">NOW</div>
+                  <div class="meet__body">
+                    <span class="meet__name">产品周会 · 6 人</span>
+                    <span class="meet__meta">09:30 - 10:30 · 会议室「海棠」</span>
+                  </div>
+                  <em class="live-dot"></em>
+                </li>
+                <li class="meet" data-kind="done">
+                  <div class="meet__when mono">11:00</div>
+                  <div class="meet__body">
+                    <span class="meet__name">客户访谈 · 云帆物流</span>
+                    <span class="meet__meta">纪要已生成 · 12 条要点</span>
+                  </div>
+                </li>
+                <li class="meet" data-kind="done">
+                  <div class="meet__when mono">14:00</div>
+                  <div class="meet__body">
+                    <span class="meet__name">设计评审 · 结算页 v3</span>
+                    <span class="meet__meta">回放 38 分钟 · 5 条批注</span>
+                  </div>
+                </li>
+                <li class="meet" data-kind="done">
+                  <div class="meet__when mono">16:30</div>
+                  <div class="meet__body">
+                    <span class="meet__name">1:1 · 与经理</span>
+                    <span class="meet__meta">私人纪要 · 仅你可见</span>
+                  </div>
+                </li>
+                <li class="meet" data-kind="done">
+                  <div class="meet__when mono">18:00</div>
+                  <div class="meet__body">
+                    <span class="meet__name">跨组对齐 · 数据口径</span>
+                    <span class="meet__meta">3 人小会 · 已取消改异步</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="发起">
+              <input class="action__input" id="titleInput" type="text" placeholder="新会议标题…" />
+              <div class="chips chips--kind">
+                <button class="chip is-active" type="button">即时会</button>
+                <button class="chip" type="button">预约</button>
+                <button class="chip" type="button"> webinar</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-teal" type="button" id="startBtn">开始会议</button>
+                <button class="btn-ghost" type="button" data-toast="个人会议室链接已复制">复制链接</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="会议">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3"/></svg>
+              <span>会议</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="消息">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 3V5z"/></svg>
+              <span>消息</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发起" aria-label="发起">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>发起</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>
+              <span>日程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

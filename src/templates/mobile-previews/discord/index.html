@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>星舰公会 · Discord</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.3 4.9A16.5 16.5 0 0 0 16.1 3.6l-.3.6a12.4 12.4 0 0 1 3.7 1.9 11.4 11.4 0 0 0-9-1.1c-.5.1-1 .3-1.5.5-.5.2-1 .4-1.4.6a13 13 0 0 1 4.9-1.5L12 3.6A16.5 16.5 0 0 0 7.7 4.9 19.4 19.4 0 0 0 3.4 18.7a16.7 16.7 0 0 0 5 2.5l.9-1.6a9.9 9.9 0 0 1-2.4-1.2l.5-.4a11.9 11.9 0 0 0 10.2 0l.5.4a9.9 9.9 0 0 1-2.4 1.2l.9 1.6a16.7 16.7 0 0 0 5-2.5 19.3 19.3 0 0 0-4.3-13.8ZM9.7 14.9c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">星舰公会</span>
+                <span class="brand-bar__sub">语音房 4 人在线 · 等级 2</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已静音「公告」频道，直到明早" aria-label="通知设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：语音房 · 突袭前夜 -->
+            <section class="voice-card" id="voiceCard" aria-label="语音房">
+              <div class="voice-card__top">
+                <span class="voice-card__label"># 集合点 · 语音房</span>
+                <span class="voice-card__live" id="voiceState">3 人在线</span>
+              </div>
+              <div class="voice-card__crew" role="list" aria-label="语音房成员">
+                <div class="member" role="listitem">
+                  <span class="member__avatar" style="--role: var(--success)">指</span>
+                  <i class="member__dot member__dot--online" title="在线"></i>
+                </div>
+                <div class="member is-speaking" role="listitem">
+                  <span class="member__avatar" style="--role: var(--warn)">阿</span>
+                  <i class="member__dot member__dot--idle" title="挂机"></i>
+                </div>
+                <div class="member" role="listitem">
+                  <span class="member__avatar" style="--role: var(--accent)">甜</span>
+                  <i class="member__dot member__dot--online" title="在线"></i>
+                </div>
+                <div class="member is-speaking" role="listitem">
+                  <span class="member__avatar" style="--role: var(--danger)">波</span>
+                  <i class="member__dot member__dot--dnd" title="勿扰"></i>
+                </div>
+                <div class="member member--empty" role="listitem">
+                  <span class="member__avatar member__avatar--empty">+</span>
+                </div>
+              </div>
+              <div class="voice-card__meta">
+                <span class="voice-card__timer" id="voiceTimer">23:47</span>
+                <span class="voice-card__net">已连接 · 延迟 32ms · 96kbps</span>
+              </div>
+              <a class="voice-card__mention" href="#" id="mentionPill">
+                <i class="voice-card__ping" aria-hidden="true"></i>
+                <span><b>@指挥</b> 提到了你 ·「明早 8 点集合」</span>
+                <em>19:42</em>
+              </a>
+              <div class="voice-card__actions">
+                <button class="btn-blurple" type="button" id="joinBtn">加入语音</button>
+                <button class="btn-secondary" type="button" id="muteBtn" aria-pressed="false">闭麦</button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="本周副本与公会等级">
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周副本</h2>
+                <div class="raid-row">
+                  <div class="raid-row__head"><span>熔火之心</span><b>已通关</b></div>
+                  <div class="raid-row__track"><span class="raid-row__fill" style="--w: 100%"></span></div>
+                </div>
+                <div class="raid-row">
+                  <div class="raid-row__head"><span>黑翼之巢</span><b>6 / 8</b></div>
+                  <div class="raid-row__track"><span class="raid-row__fill" style="--w: 75%" data-level="mid"></span></div>
+                </div>
+                <div class="raid-row">
+                  <div class="raid-row__head"><span>安其拉</span><b>2 / 9</b></div>
+                  <div class="raid-row__track"><span class="raid-row__fill" style="--w: 22%" data-level="warn"></span></div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">公会等级</h2>
+                <p class="duo-card__num">Lv.2<span>加成</span></p>
+                <p class="duo-card__note">经验 6,240 / 10,000，本周团本 +420</p>
+                <div class="boost-steps">
+                  <i class="is-done"></i><i class="is-done"></i><i></i><i></i><i></i>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 频道消息 Feed -->
+            <section class="feed" aria-label="频道消息">
+              <div class="feed__head">
+                <h2 class="feed__title"># 集合点</h2>
+                <div class="chips" role="tablist" aria-label="筛选消息">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="mention">提及</button>
+                  <button class="chip" type="button" data-filter="voice">语音</button>
+                  <button class="chip" type="button" data-filter="system">系统</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item feed-item--mention" data-kind="mention">
+                  <span class="feed-item__avatar" style="--role: var(--success)">指</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__head">
+                      <b class="feed-item__name" style="--role: var(--success)">指挥·阿瑞斯</b>
+                      <time>19:42</time>
+                    </span>
+                    <span class="feed-item__text"><em class="mention-pill">@你</em> 明早 8 点门口集合，坦克先吃合剂，<b>别迟到</b></span>
+                  </div>
+                  <button class="feed-item__react" type="button" aria-label="添加表情回应" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                    <i>3</i>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="chat">
+                  <span class="feed-item__avatar" style="--role: var(--warn)">甜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__head">
+                      <b class="feed-item__name" style="--role: var(--warn)">甜甜圈</b>
+                      <time>19:38</time>
+                    </span>
+                    <span class="feed-item__text">带俩坦，昨晚那波两个治疗同时掉线，太伤了</span>
+                  </div>
+                  <button class="feed-item__react" type="button" aria-label="添加表情回应" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                    <i>1</i>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="voice">
+                  <span class="feed-item__avatar" style="--role: var(--danger)">波</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__head">
+                      <b class="feed-item__name" style="--role: var(--danger)">阿波</b>
+                      <time>19:31</time>
+                    </span>
+                    <span class="feed-item__text">正在语音房 · 已闭麦 <em class="feed-item__chip">语音中</em></span>
+                  </div>
+                  <button class="feed-item__react" type="button" aria-label="添加表情回应" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                    <i>0</i>
+                  </button>
+                </li>
+                <li class="feed-item feed-item--system" data-kind="system">
+                  <span class="feed-item__avatar feed-item__avatar--sys" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__head">
+                      <b class="feed-item__name">系统</b>
+                      <time>19:26</time>
+                    </span>
+                    <span class="feed-item__text"><b>北落</b> 加入了 #集合点 <em class="feed-item__chip">加入</em></span>
+                  </div>
+                </li>
+                <li class="feed-item" data-kind="chat">
+                  <span class="feed-item__avatar" style="--role: var(--accent)">小</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__head">
+                      <b class="feed-item__name" style="--role: var(--accent)">小满</b>
+                      <time>18:55</time>
+                    </span>
+                    <span class="feed-item__text">药水我囤了 200 组，开荒随便造</span>
+                  </div>
+                  <button class="feed-item__react" type="button" aria-label="添加表情回应" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                    <i>5</i>
+                  </button>
+                </li>
+                <li class="feed-item feed-item--system" data-kind="system">
+                  <span class="feed-item__avatar feed-item__avatar--sys" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__head">
+                      <b class="feed-item__name">系统</b>
+                      <time>18:40</time>
+                    </span>
+                    <span class="feed-item__text">周常奖励已发放：金币 ×2,400 <em class="feed-item__chip">奖励</em></span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="发送消息">
+              <input class="msg-input" id="msgInput" type="text" placeholder="给 #集合点 发消息……" />
+              <div class="action-row">
+                <button class="btn-blurple" type="button" id="sendBtn">发送</button>
+                <button class="btn-secondary" type="button" data-toast="已插入 @指挥，对方会收到提醒">@指挥</button>
+                <button class="btn-ghost" type="button" data-toast="表情面板将在全屏视图打开">表情</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="公会">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>公会</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="消息">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>消息</span>
+              <i class="tabbar__badge">1</i>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="语音" aria-label="加入语音">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4" />
+              </svg>
+              <span>语音</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="成员">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>成员</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="10" r="2.6" /><path d="M7.2 16.5c1-2.2 2.8-3.3 4.8-3.3s3.8 1.1 4.8 3.3" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

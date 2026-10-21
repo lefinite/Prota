@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Runway 创作台 · Runway</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <span class="brand-mark">Runway</span>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索项目">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 电影感图片区域（signature：全屏摄影作为主要 UI 元素） -->
+            <section class="hero-cinematic" aria-label="特色项目">
+              <div class="hero-image" style="--hero-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                  <span class="hero-label">FEATURED PROJECT</span>
+                  <h2 class="hero-title">赛博朋克城市</h2>
+                  <p class="hero-sub">Gen-2 AI 生成 · 4K 渲染</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- 项目分类筛选 -->
+            <section class="filter-bar">
+              <button class="filter-btn is-active" data-filter="all">全部</button>
+              <button class="filter-btn" data-filter="video">视频</button>
+              <button class="filter-btn" data-filter="image">图像</button>
+              <button class="filter-btn" data-filter="render">渲染</button>
+            </section>
+
+            <!-- 项目网格（编辑杂志风格布局） -->
+            <section class="projects-grid" aria-label="项目库">
+              <div class="section-label">YOUR PROJECTS</div>
+
+              <div class="project-list" id="projectList">
+                <!-- 大卡片 -->
+                <article class="project-card project-card--large" data-type="video">
+                  <div class="project-thumb" style="--thumb-gradient: linear-gradient(145deg, #667eea 0%, #764ba2 100%)">
+                    <span class="project-badge">视频</span>
+                  </div>
+                  <div class="project-info">
+                    <h3 class="project-title">霓虹雨夜</h3>
+                    <p class="project-meta">2m 34s · 今天 14:32</p>
+                    <div class="project-status">
+                      <span class="status-dot status-dot--processing"></span>
+                      渲染中 78%
+                    </div>
+                  </div>
+                </article>
+
+                <!-- 小卡片 1 -->
+                <article class="project-card" data-type="image">
+                  <div class="project-thumb" style="--thumb-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+                    <span class="project-badge">图像</span>
+                  </div>
+                  <div class="project-info">
+                    <h3 class="project-title">日落海滩</h3>
+                    <p class="project-meta">今天 11:20</p>
+                  </div>
+                </article>
+
+                <!-- 小卡片 2 -->
+                <article class="project-card" data-type="render">
+                  <div class="project-thumb" style="--thumb-gradient: linear-gradient(160deg, #00c6ff 0%, #0072ff 100%)">
+                    <span class="project-badge">渲染</span>
+                  </div>
+                  <div class="project-info">
+                    <h3 class="project-title">抽象流体</h3>
+                    <p class="project-meta">昨天 18:45</p>
+                  </div>
+                </article>
+
+                <!-- 中卡片 -->
+                <article class="project-card project-card--medium" data-type="video">
+                  <div class="project-thumb" style="--thumb-gradient: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%)">
+                    <span class="project-badge">视频</span>
+                  </div>
+                  <div class="project-info">
+                    <h3 class="project-title">春日樱花</h3>
+                    <p class="project-meta">45s · 昨天 09:15</p>
+                    <div class="project-status">
+                      <span class="status-dot status-dot--done"></span>
+                      已完成
+                    </div>
+                  </div>
+                </article>
+
+                <!-- 小卡片 3 -->
+                <article class="project-card" data-type="image">
+                  <div class="project-thumb" style="--thumb-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">
+                    <span class="project-badge">图像</span>
+                  </div>
+                  <div class="project-info">
+                    <h3 class="project-title">金色沙漠</h3>
+                    <p class="project-meta">3天前</p>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <!-- 创作操作区 -->
+            <section class="action-zone">
+              <button class="create-btn" data-toast="新建项目">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                <span>新建项目</span>
+              </button>
+              <button class="import-btn" data-toast="导入媒体">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
+                <span>导入</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>项目</span>
+            </button>
+            <button class="tab" data-tab="generate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>
+              <span>生成</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="快速创作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+              <span>素材</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

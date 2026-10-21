@@ -1,0 +1,403 @@
+/* =========================================================================
+ * mobile-previews/forest-calm — 森系自然
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：data/templates.json 的 preview token + DESIGN.md 推导值
+ * 页面：ForestMind · 冥想正念 App
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（来自 templates.json preview + DESIGN.md）—— */
+  --bg: #f7f5ed;
+  --surface: #ffffff;
+  --surface-warm: #f9f7ef;
+  --fg: #1f2937;
+  --fg-2: #374151;
+  --muted: #6b7280;
+  --meta: #4d7c0f;
+  --border: #e5e1d5;
+  --border-soft: #f0ede4;
+  --accent: #4d7c0f;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #4d7c0f;
+  --warn: #a16207;
+  --danger: #b91c1c;
+  --font-display: "Fraunces", "Noto Serif SC", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 30px;
+  --text-3xl: 42px;
+  --text-4xl: 56px;
+  --leading-body: 1.7;
+  --leading-tight: 1.1;
+  --tracking-display: -0.01em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 6px 20px rgba(77, 124, 15, 0.08);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 60%);
+  --motion-fast: 180ms;
+  --motion-base: 280ms;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-breathe: cubic-bezier(0.4, 0.0, 0.2, 1);
+
+  /* —— 手机外壳（与森系协调）—— */
+  --page-backdrop-top: #e8e4d8;
+  --page-backdrop-bottom: #d9d5c5;
+  --phone-shell: #f5f3e9;
+  --phone-shell-edge: #e8e4d8;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(77, 124, 15, 0.15);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(247, 245, 237, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 600; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #2d3748; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.6px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · ForestMind ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.topbar__brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 42px; height: 42px; border-radius: var(--radius-lg);
+  display: grid; place-items: center; font-weight: 600; font-size: 18px;
+  color: var(--accent-on); background: var(--accent);
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.3; }
+.brand-name {
+  font-size: var(--text-lg); font-weight: 600;
+  font-family: var(--font-display); color: var(--fg);
+}
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.iconbtn {
+  width: 42px; height: 42px; border-radius: var(--radius-pill);
+  display: grid; place-items: center; color: var(--muted);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: var(--surface); color: var(--fg); }
+
+/* 呼吸引导 · signature */
+.breath-card {
+  text-align: center;
+  padding: 32px 20px;
+  margin-bottom: 28px;
+}
+.breath-circle {
+  position: relative;
+  width: 140px; height: 140px;
+  margin: 0 auto 20px;
+  display: grid; place-items: center;
+}
+.breath-circle::before {
+  content: "";
+  position: absolute; inset: -8px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, var(--accent), transparent);
+  opacity: 0.15;
+  animation: breathe-glow 8s var(--ease-breathe) infinite;
+}
+.breath-circle__inner {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.12;
+  animation: breathe-pulse 8s var(--ease-breathe) infinite;
+}
+.breath-label {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--accent);
+  animation: breathe-text 8s var(--ease-breathe) infinite;
+}
+.breath-text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--fg);
+  line-height: var(--leading-tight);
+}
+.breath-sub {
+  margin: 8px 0 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* 自然声音网格 */
+.sounds-section { margin-bottom: 28px; }
+.section-header {
+  display: flex; flex-direction: column;
+  margin-bottom: 16px;
+}
+.section-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--fg);
+}
+.section-sub {
+  margin-top: 4px;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.sounds-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.sound-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  transition: all var(--motion-base) var(--ease-standard);
+}
+.sound-card:active { transform: scale(0.96); }
+.sound-card--active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent), transparent 96%);
+}
+.sound-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-md);
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent), transparent 92%);
+}
+.sound-card--active .sound-icon {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+.sound-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--fg);
+}
+.sound-wave {
+  display: flex; gap: 3px; align-items: center; height: 16px;
+}
+.sound-wave span {
+  width: 3px; background: var(--border);
+  border-radius: 999px;
+  animation: wave 1.2s ease-in-out infinite;
+}
+.sound-wave span:nth-child(1) { height: 8px; animation-delay: 0s; }
+.sound-wave span:nth-child(2) { height: 12px; animation-delay: 0.2s; }
+.sound-wave span:nth-child(3) { height: 6px; animation-delay: 0.4s; }
+.sound-card--active .sound-wave span {
+  background: var(--accent);
+  animation-play-state: running;
+}
+.sound-card:not(.sound-card--active) .sound-wave span {
+  animation-play-state: paused;
+}
+
+/* 冥想旅程列表 */
+.journey-section { margin-bottom: 12px; }
+.journey-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.journey-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.journey-item--current {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent), transparent 96%);
+}
+.journey-icon {
+  flex: none;
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  display: grid; place-items: center;
+  color: var(--muted);
+  background: var(--bg);
+}
+.journey-icon svg { width: 20px; height: 20px; }
+.journey-icon--complete {
+  color: var(--success);
+  background: color-mix(in oklab, var(--success), transparent 92%);
+}
+.journey-icon--current {
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent), transparent 92%);
+  animation: pulse 2s ease-in-out infinite;
+}
+.journey-content {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.journey-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--fg);
+}
+.journey-meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.journey-badge {
+  padding: 4px 10px;
+  background: color-mix(in oklab, var(--success), transparent 88%);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.journey-start {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: var(--accent-on);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.journey-start:active { transform: scale(0.94); }
+
+.bottom-spacer { height: 12px; }
+
+/* Tab Bar */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: end;
+  padding: 10px 12px 18px; background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 24px; height: 24px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--surface);
+  font-size: var(--text-xs); padding: 12px 20px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Animations */
+.breath-card, .sounds-section, .journey-section { animation: rise 600ms var(--ease-standard) both; }
+.sounds-section { animation-delay: 100ms; }
+.journey-section { animation-delay: 200ms; }
+
+@keyframes breathe-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.12; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+}
+@keyframes breathe-glow {
+  0%, 100% { transform: rotate(0deg); opacity: 0.1; }
+  50% { transform: rotate(180deg); opacity: 0.2; }
+}
+@keyframes breathe-text {
+  0%, 40% { content: "吸气"; }
+  50%, 90% { content: "呼气"; }
+}
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.8); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

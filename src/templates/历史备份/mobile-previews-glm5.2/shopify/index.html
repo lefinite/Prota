@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>StorePulse · Shopify</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">S</div>
+                <div class="brand-text">
+                  <span class="brand-name">StorePulse</span>
+                  <span class="brand-sub">Your store dashboard</span>
+                </div>
+              </div>
+              <button class="pill-btn pill-btn--ghost" aria-label="通知" data-toast="Notifications">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+            </header>
+
+            <!-- 收入概览（signature：超大数字 + neon green 强调） -->
+            <section class="revenue-hero" aria-label="收入概览">
+              <p class="revenue-label">Total Revenue</p>
+              <p class="revenue-amount">$42,890</p>
+              <div class="revenue-change">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                <span>24.5% vs last month</span>
+              </div>
+              <div class="revenue-sparkline" aria-label="收入趋势">
+                <svg viewBox="0 0 200 32" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="sparkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:var(--accent);stop-opacity:0.4" />
+                      <stop offset="100%" style="stop-color:var(--accent);stop-opacity:0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,28 Q20,24 40,26 T80,18 T120,22 T160,12 T200,16" fill="none" stroke="var(--accent)" stroke-width="2"/>
+                  <path d="M0,28 Q20,24 40,26 T80,18 T120,22 T160,12 T200,16 L200,32 L0,32 Z" fill="url(#sparkGradient)"/>
+                </svg>
+              </div>
+            </section>
+
+            <!-- 核心指标卡片 -->
+            <section class="metrics-grid" aria-label="核心指标">
+              <div class="metric-card">
+                <span class="metric-label">Orders</span>
+                <span class="metric-value">1,248</span>
+                <span class="metric-delta metric-delta--up">+18.2%</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Visitors</span>
+                <span class="metric-value">8.4k</span>
+                <span class="metric-delta metric-delta--up">+12.8%</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Conversion</span>
+                <span class="metric-value">3.2%</span>
+                <span class="metric-delta metric-delta--down">-0.4%</span>
+              </div>
+            </section>
+
+            <!-- 产品筛选 -->
+            <section class="filter-section">
+              <div class="section-title">
+                <h2>Top Products</h2>
+                <button class="view-all" data-toast="查看全部产品">View all</button>
+              </div>
+              <div class="chips" id="productFilter" role="tablist" aria-label="产品筛选">
+                <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+                <button class="chip" data-filter="today" role="tab" aria-selected="false">Today</button>
+                <button class="chip" data-filter="week" role="tab" aria-selected="false">This Week</button>
+              </div>
+            </section>
+
+            <!-- 产品列表 -->
+            <section class="products-section">
+              <ul class="product-list" id="productList">
+                <li class="product-item" data-period="all">
+                  <div class="product-image">
+                    <span class="product-initial">W</span>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Wireless Earbuds Pro</span>
+                    <span class="product-meta">Electronics · 234 sold</span>
+                  </div>
+                  <div class="product-right">
+                    <span class="product-revenue">$12,450</span>
+                    <span class="product-growth">+15%</span>
+                  </div>
+                </li>
+
+                <li class="product-item" data-period="all">
+                  <div class="product-image">
+                    <span class="product-initial">S</span>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Smart Watch Series 5</span>
+                    <span class="product-meta">Wearables · 189 sold</span>
+                  </div>
+                  <div class="product-right">
+                    <span class="product-revenue">$18,720</span>
+                    <span class="product-growth">+28%</span>
+                  </div>
+                </li>
+
+                <li class="product-item" data-period="today">
+                  <div class="product-image">
+                    <span class="product-initial">C</span>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Canvas Backpack</span>
+                    <span class="product-meta">Accessories · 56 sold</span>
+                  </div>
+                  <div class="product-right">
+                    <span class="product-revenue">$3,360</span>
+                    <span class="product-growth">+8%</span>
+                  </div>
+                </li>
+
+                <li class="product-item" data-period="week">
+                  <div class="product-image">
+                    <span class="product-initial">P</span>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Portable Power Bank</span>
+                    <span class="product-meta">Electronics · 142 sold</span>
+                  </div>
+                  <div class="product-right">
+                    <span class="product-revenue">$4,830</span>
+                    <span class="product-growth">+22%</span>
+                  </div>
+                </li>
+
+                <li class="product-item" data-period="all">
+                  <div class="product-image">
+                    <span class="product-initial">L</span>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">Leather Wallet Classic</span>
+                    <span class="product-meta">Accessories · 98 sold</span>
+                  </div>
+                  <div class="product-right">
+                    <span class="product-revenue">$2,940</span>
+                    <span class="product-growth">+5%</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快速操作 -->
+            <section class="actions-section">
+              <button class="action-btn" data-toast="添加产品">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                <span>Add Product</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="查看分析">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>View Analytics</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>Home</span>
+            </button>
+            <button class="tab" data-tab="orders">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>Orders</span>
+            </button>
+            <button class="tab" data-tab="products">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+              <span>Products</span>
+            </button>
+            <button class="tab" data-tab="customers">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              <span>Customers</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

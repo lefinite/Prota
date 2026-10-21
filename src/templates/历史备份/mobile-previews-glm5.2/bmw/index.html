@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BMW Connect · BMW</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="demo-stage">
+    <div class="phone-shell">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="status-bar" aria-label="设备状态栏">
+          <span class="status-bar__time" id="statusTime">9:41</span>
+          <div class="status-bar__island" aria-hidden="true"></div>
+          <div class="status-bar__right" aria-hidden="true">
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+            <span class="battery"></span>
+          </div>
+        </div>
+
+        <main class="app-content" id="appContent">
+          <!-- 顶部品牌栏 -->
+          <header class="topbar">
+            <div class="topbar__brand">
+              <span class="brand-mark">BMW</span>
+              <div class="brand-text">
+                <span class="brand-name">Connect</span>
+                <span class="brand-sub">iX M60</span>
+              </div>
+            </div>
+            <button class="iconbtn" aria-label="个人中心" data-toast="打开个人中心">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+            </button>
+          </header>
+
+          <!-- 车辆状态卡片（signature：零圆角 + 60px 大写 Light 显示） -->
+          <section class="vehicle-card">
+            <div class="vehicle-header">
+              <span class="vehicle-model">BMW iX</span>
+              <span class="vehicle-badge">已连接</span>
+            </div>
+            <div class="vehicle-range">
+              <span class="vehicle-range__val">428</span>
+              <span class="vehicle-range__unit">KM 剩余续航</span>
+            </div>
+            <div class="vehicle-progress">
+              <span class="vehicle-progress__bar" style="--p: 78%"></span>
+            </div>
+            <div class="vehicle-meta">
+              <span>电量 78%</span>
+              <span>预计 3小时充满</span>
+            </div>
+          </section>
+
+          <!-- 快捷控制网格 -->
+          <section class="control-section">
+            <h2 class="section-title">快捷控制</h2>
+            <div class="control-grid">
+              <button class="control-card" data-toast="空调已开启">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" /></svg>
+                <span class="control-label">空调</span>
+                <span class="control-state">22°C</span>
+              </button>
+              <button class="control-card" data-toast="座椅加热已开启">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c-4 0-8 4-8 9s4 9 8 9 8-4 8-9-4-9-8-9z" /></svg>
+                <span class="control-label">座椅加热</span>
+                <span class="control-state">2档</span>
+              </button>
+              <button class="control-card" data-toast="车门已解锁">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M9 11V7a3 3 0 0 1 6 0v4" /></svg>
+                <span class="control-label">车门锁</span>
+                <span class="control-state">已解锁</span>
+              </button>
+              <button class="control-card" data-toast="后备箱已开启">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-6 8 6v12" /><path d="M12 2v10" /></svg>
+                <span class="control-label">后备箱</span>
+                <span class="control-state">关闭</span>
+              </button>
+              <button class="control-card" data-toast="车窗已开启">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-5 7 5v14" /></svg>
+                <span class="control-label">车窗</span>
+                <span class="control-state">全关</span>
+              </button>
+              <button class="control-card" data-toast="灯光控制">
+                <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+                <span class="control-label">灯光</span>
+                <span class="control-state">自动</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- 车辆状态列表 -->
+          <section class="status-section">
+            <h2 class="section-title">车辆状态</h2>
+            <ul class="status-list">
+              <li class="status-item">
+                <div class="status-icon status-icon--ok">✓</div>
+                <div class="status-main">
+                  <span class="status-title">轮胎压力</span>
+                  <span class="status-sub">全部正常</span>
+                </div>
+                <span class="status-value">2.3 bar</span>
+              </li>
+              <li class="status-item">
+                <div class="status-icon status-icon--ok">✓</div>
+                <div class="status-main">
+                  <span class="status-title">机油液位</span>
+                  <span class="status-sub">正常</span>
+                </div>
+                <span class="status-value">85%</span>
+              </li>
+              <li class="status-item">
+                <div class="status-icon status-icon--warn">!</div>
+                <div class="status-main">
+                  <span class="status-title">雨刮水</span>
+                  <span class="status-sub">需要补充</span>
+                </div>
+                <span class="status-value status-value--warn">15%</span>
+              </li>
+              <li class="status-item">
+                <div class="status-icon status-icon--ok">✓</div>
+                <div class="status-main">
+                  <span class="status-title">刹车片</span>
+                  <span class="status-sub">前轮正常</span>
+                </div>
+                <span class="status-value">12mm</span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 行程信息 -->
+          <section class="trip-section">
+            <h2 class="section-title">行程信息</h2>
+            <div class="trip-card">
+              <div class="trip-row">
+                <span class="trip-label">总里程</span>
+                <span class="trip-value">24,580 KM</span>
+              </div>
+              <div class="trip-row">
+                <span class="trip-label">平均能耗</span>
+                <span class="trip-value">18.2 kWh/100km</span>
+              </div>
+              <div class="trip-row">
+                <span class="trip-label">本周行驶</span>
+                <span class="trip-value">342 KM</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 操作区 -->
+          <section class="action-section">
+            <button class="btn-primary" data-toast="远程启动已触发">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v8l6 6" /><circle cx="12" cy="12" r="10" /></svg>
+              远程启动
+            </button>
+            <button class="btn-secondary" data-toast="导航至车辆">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+              导航至车辆
+            </button>
+          </section>
+
+          <div class="bottom-spacer" aria-hidden="true"></div>
+        </main>
+
+        <!-- 底部 Tab -->
+        <nav class="tabbar" aria-label="主导航">
+          <button class="tab is-active" data-tab="status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" /></svg>
+            <span>状态</span>
+          </button>
+          <button class="tab" data-tab="control">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M2 12h20" /></svg>
+            <span>控制</span>
+          </button>
+          <button class="tab" data-tab="nav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>导航</span>
+          </button>
+          <button class="tab" data-tab="schedule">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>日程</span>
+          </button>
+          <button class="tab" data-tab="service">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span>服务</span>
+          </button>
+        </nav>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>画廊志 · Artistic Gallery</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">🎨</span>
+                <div class="brand-text">
+                  <span class="brand-name">画廊志</span>
+                  <span class="brand-sub">策展人：Ping</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索藏品">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero画廊卡片（signature：棕褐色主色的大图展示） -->
+            <section class="gallery-card" aria-label="当前展览">
+              <div class="gallery-card__image"></div>
+              <div class="gallery-card__overlay">
+                <span class="gallery-card__label">当前展览</span>
+                <h3 class="gallery-card__title">抽象表现主义</h3>
+                <p class="gallery-card__artist">策展：纽约现代艺术馆</p>
+                <div class="gallery-card__meta">
+                  <span class="gallery-card__stat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    1.2k 浏览
+                  </span>
+                  <span class="gallery-card__date">至 8月20日</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 艺术家卡片 -->
+            <section class="artist-row" aria-label="精选艺术家">
+              <div class="artist-card">
+                <span class="artist-card__avatar">👨‍🎨</span>
+                <span class="artist-card__name">Pollock</span>
+                <span class="artist-card__works">12 作品</span>
+              </div>
+              <div class="artist-card">
+                <span class="artist-card__avatar">👩‍🎨</span>
+                <span class="artist-card__name">Kahlo</span>
+                <span class="artist-card__works">8 作品</span>
+              </div>
+            </section>
+
+            <!-- 作品列表 -->
+            <section class="list-block" aria-label="藏品目录">
+              <div class="list-block__head">
+                <h2>藏品目录</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选藏品">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="painting" role="tab" aria-selected="false">油画</button>
+                  <button class="chip" data-filter="sculpture" role="tab" aria-selected="false">雕塑</button>
+                </div>
+              </div>
+
+              <ul class="artwork-list" id="artworkList">
+                <li class="artwork" data-type="painting">
+                  <span class="artwork__thumb" style="background: linear-gradient(135deg, #e8c4a0 0%, #d4a574 100%);"></span>
+                  <div class="artwork__main">
+                    <span class="artwork__title">秋日变奏曲</span>
+                    <span class="artwork__sub">2024 · 油画 · 120×80cm</span>
+                  </div>
+                  <div class="artwork__right">
+                    <button class="artwork__like" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="artwork" data-type="sculpture">
+                  <span class="artwork__thumb" style="background: linear-gradient(135deg, #b8a99a 0%, #9a8b7c 100%);"></span>
+                  <div class="artwork__main">
+                    <span class="artwork__title">凝固的时间</span>
+                    <span class="artwork__sub">2023 · 青铜雕塑 · 高180cm</span>
+                  </div>
+                  <div class="artwork__right">
+                    <button class="artwork__like is-liked" aria-label="取消收藏" data-toast="已取消收藏">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="artwork" data-type="painting">
+                  <span class="artwork__thumb" style="background: linear-gradient(135deg, #c9b896 0%, #b0a080 100%);"></span>
+                  <div class="artwork__main">
+                    <span class="artwork__title">城市印象</span>
+                    <span class="artwork__sub">2024 · 油画 · 150×100cm</span>
+                  </div>
+                  <div class="artwork__right">
+                    <button class="artwork__like" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="artwork" data-type="sculpture">
+                  <span class="artwork__thumb" style="background: linear-gradient(135deg, #d4c4b0 0%, #c0b0a0 100%);"></span>
+                  <div class="artwork__main">
+                    <span class="artwork__title">无尽的回响</span>
+                    <span class="artwork__sub">2024 · 大理石 · 200×60×50cm</span>
+                  </div>
+                  <div class="artwork__right">
+                    <button class="artwork__like" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="artwork" data-type="painting">
+                  <span class="artwork__thumb" style="background: linear-gradient(135deg, #a09080 0%, #887868 100%);"></span>
+                  <div class="artwork__main">
+                    <span class="artwork__title">夜曲</span>
+                    <span class="artwork__sub">2023 · 油画 · 90×120cm</span>
+                  </div>
+                  <div class="artwork__right">
+                    <button class="artwork__like" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 展览进度 -->
+            <section class="exhibit-card" aria-label="展览进度">
+              <div class="exhibit-card__head">
+                <span class="exhibit-card__title">展览浏览进度</span>
+                <span class="exhibit-card__num">67 <span class="muted">/ 100</span></span>
+              </div>
+              <div class="exhibit-card__bar" aria-hidden="true">
+                <span class="exhibit-card__bar-fill" style="--p: 67%"></span>
+              </div>
+              <p class="exhibit-card__note">已浏览 67%，还有 33 件精彩藏品等待发现。</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="gallery">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <span>画廊</span>
+            </button>
+            <button class="tab" data-tab="artists">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>艺术家</span>
+            </button>
+            <button class="tab tab--fab" data-tab="upload" aria-label="上传作品">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <button class="tab" data-tab="exhibitions">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>展览</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

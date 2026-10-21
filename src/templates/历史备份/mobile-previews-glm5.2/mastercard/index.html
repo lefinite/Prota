@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Mastercard Pay · Mastercard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-logo">
+                  <span class="brand-circle brand-circle--red"></span>
+                  <span class="brand-circle brand-circle--yellow"></span>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">Mastercard</span>
+                  <span class="brand-sub">Pay</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+            </header>
+
+            <!-- 卡片展示（signature：圆形卡片头像 + 卫星按钮 + 橙色轨道） -->
+            <section class="card-showcase" aria-label="我的卡片">
+              <div class="eyebrow">
+                <span class="eyebrow__dot"></span>
+                MY CARD
+              </div>
+              <div class="card-portrait">
+                <div class="card-orbit card-orbit--1" aria-hidden="true"></div>
+                <div class="card-orbit card-orbit--2" aria-hidden="true"></div>
+                <div class="card-circle">
+                  <span class="card-number">•••• 4582</span>
+                  <span class="card-name">PING</span>
+                  <span class="card-brand">World</span>
+                </div>
+                <button class="satellite-btn" data-toast="卡片详情" aria-label="查看卡片详情">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+              <div class="card-balance">
+                <span class="card-balance__label">可用额度</span>
+                <span class="card-balance__amount">¥ 86,420<span class="dec">.00</span></span>
+              </div>
+            </section>
+
+            <!-- 快捷操作 -->
+            <section class="quick-actions" aria-label="快捷操作">
+              <button class="action-pill action-pill--primary" data-toast="立即支付">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                立即支付
+              </button>
+              <button class="action-pill action-pill--secondary" data-toast="转账">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l-4 2 4 2M17 14l4-2-4-2M3 12h18" /></svg>
+                转账
+              </button>
+              <button class="action-pill action-pill--secondary" data-toast="账单">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+                账单
+              </button>
+            </section>
+
+            <!-- 交易列表 -->
+            <section class="transaction-section" aria-label="最近交易">
+              <div class="section-header">
+                <div class="eyebrow">
+                  <span class="eyebrow__dot"></span>
+                  TRANSACTIONS
+                </div>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选交易">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="today" role="tab" aria-selected="false">今天</button>
+                  <button class="chip" data-filter="week" role="tab" aria-selected="false">本周</button>
+                </div>
+              </div>
+
+              <ul class="transaction-list" id="txList">
+                <li class="transaction-item" data-date="today">
+                  <div class="transaction-portrait">
+                    <span class="transaction-emoji">☕</span>
+                    <button class="portrait-satellite" data-toast="星巴克详情" aria-label="详情">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                  <div class="transaction-main">
+                    <span class="transaction-title">星巴克</span>
+                    <span class="transaction-sub">今天 09:12 · 餐饮</span>
+                  </div>
+                  <div class="transaction-right">
+                    <span class="transaction-amount">-32.00</span>
+                    <span class="transaction-badge">成功</span>
+                  </div>
+                </li>
+                <li class="transaction-item" data-date="today">
+                  <div class="transaction-portrait">
+                    <span class="transaction-emoji">💼</span>
+                    <button class="portrait-satellite" data-toast="工资详情" aria-label="详情">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                  <div class="transaction-main">
+                    <span class="transaction-title">8 月工资</span>
+                    <span class="transaction-sub">今天 08:00 · 收入</span>
+                  </div>
+                  <div class="transaction-right">
+                    <span class="transaction-amount transaction-amount--positive">+8,640.00</span>
+                    <span class="transaction-badge">已到账</span>
+                  </div>
+                </li>
+                <li class="transaction-item" data-date="week">
+                  <div class="transaction-portrait">
+                    <span class="transaction-emoji">🛒</span>
+                    <button class="portrait-satellite" data-toast="山姆详情" aria-label="详情">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                  <div class="transaction-main">
+                    <span class="transaction-title">山姆会员店</span>
+                    <span class="transaction-sub">昨天 19:40 · 日用</span>
+                  </div>
+                  <div class="transaction-right">
+                    <span class="transaction-amount">-318.60</span>
+                    <span class="transaction-badge">成功</span>
+                  </div>
+                </li>
+                <li class="transaction-item" data-date="week">
+                  <div class="transaction-portrait">
+                    <span class="transaction-emoji">🚗</span>
+                    <button class="portrait-satellite" data-toast="滴滴详情" aria-label="详情">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                  <div class="transaction-main">
+                    <span class="transaction-title">滴滴出行</span>
+                    <span class="transaction-sub">昨天 18:05 · 交通</span>
+                  </div>
+                  <div class="transaction-right">
+                    <span class="transaction-amount">-24.50</span>
+                    <span class="transaction-badge">成功</span>
+                  </div>
+                </li>
+                <li class="transaction-item" data-date="week">
+                  <div class="transaction-portrait">
+                    <span class="transaction-emoji">🎬</span>
+                    <button class="portrait-satellite" data-toast="Netflix详情" aria-label="详情">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                  <div class="transaction-main">
+                    <span class="transaction-title">Netflix</span>
+                    <span class="transaction-sub">前天 10:00 · 订阅</span>
+                  </div>
+                  <div class="transaction-right">
+                    <span class="transaction-amount">-68.00</span>
+                    <span class="transaction-badge">成功</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 消费趋势 -->
+            <section class="trend-card" aria-label="消费趋势">
+              <div class="eyebrow">
+                <span class="eyebrow__dot"></span>
+                SPENDING
+              </div>
+              <div class="trend-header">
+                <span class="trend-title">本月消费</span>
+                <span class="trend-amount">¥ 4,210</span>
+              </div>
+              <div class="trend-chart" aria-hidden="true">
+                <div class="trend-bar" style="--h: 65%"></div>
+                <div class="trend-bar" style="--h: 45%"></div>
+                <div class="trend-bar" style="--h: 80%"></div>
+                <div class="trend-bar" style="--h: 35%"></div>
+                <div class="trend-bar" style="--h: 55%"></div>
+                <div class="trend-bar" style="--h: 90%"></div>
+                <div class="trend-bar" style="--h: 70%"></div>
+              </div>
+              <div class="trend-labels">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="cards">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20" /></svg>
+              <span>卡片</span>
+            </button>
+            <button class="tab" data-tab="pay">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+              <span>支付</span>
+            </button>
+            <button class="tab" data-tab="activity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>活动</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>豆亭 · Pacman</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__logo">豆亭</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">ARCADE 24H</span>
+                <span class="brand-bar__sub">街机积分挑战 · 第 7 赛季</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="排行榜已刷新" aria-label="排行">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-8M21 19H3"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：积分赛（签名：点状迷宫 + 吃豆人）-->
+            <section class="hero" aria-label="积分挑战">
+              <div class="hero__maze" id="maze" role="img" aria-label="街机迷宫，黄色吃豆人正在吃豆">
+                <span class="pac"></span>
+                <span class="ghost ghost--red"></span>
+                <span class="ghost ghost--cyan"></span>
+                <span class="cherry">🍒</span>
+              </div>
+              <div class="hero__scores">
+                <div class="score">
+                  <span class="pixel-label">SCORE</span>
+                  <b id="scoreNum">18,420</b>
+                </div>
+                <div class="score">
+                  <span class="pixel-label">HIGH</span>
+                  <b class="is-amber">52,900</b>
+                </div>
+                <div class="score">
+                  <span class="pixel-label">LIVES</span>
+                  <b class="lives"><i></i><i></i><i></i></b>
+                </div>
+              </div>
+              <button class="btn-start" type="button" id="playBtn">INSERT COIN ▶</button>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="赛季">
+              <div class="duo__card">
+                <h2 class="duo__title">周挑战</h2>
+                <p class="duo__num">3/5<span> 关</span></p>
+                <div class="dots"><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i><i></i></div>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">今日排行</h2>
+                <p class="duo__num">#4</p>
+                <p class="duo__meta">距奖杯圈还差 2,100 分</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：排行榜 -->
+            <section class="feed" aria-label="排行榜">
+              <div class="feed__head">
+                <h2 class="feed__title">HIGH SCORES</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="friend">好友</button>
+                  <button class="chip" type="button" data-filter="crew">战队</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="friend">
+                  <span class="rank rank--1">1</span>
+                  <span class="feed-item__glyph" style="--c:#ff3b3b"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Blinky 主播</span>
+                    <span class="feed-item__meta">连机 4 小时 · 昨日 23:58</span>
+                  </div>
+                  <b class="feed-item__score">52,900</b>
+                </li>
+                <li class="feed-item" data-kind="crew">
+                  <span class="rank rank--2">2</span>
+                  <span class="feed-item__glyph" style="--c:#ff9900"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Clyde 队长</span>
+                    <span class="feed-item__meta">战队「四幽灵」· 昨日 21:12</span>
+                  </div>
+                  <b class="feed-item__score">44,150</b>
+                </li>
+                <li class="feed-item" data-kind="friend">
+                  <span class="rank rank--3">3</span>
+                  <span class="feed-item__glyph" style="--c:#00ff66"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Inky 学徒</span>
+                    <span class="feed-item__meta">进步神速 · 昨日 19:40</span>
+                  </div>
+                  <b class="feed-item__score">39,880</b>
+                </li>
+                <li class="feed-item" data-kind="friend">
+                  <span class="rank">4</span>
+                  <span class="feed-item__glyph" style="--c:#ffcc00"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">你（Pinky 追击手）</span>
+                    <span class="feed-item__meta">PB · 今天 10:24</span>
+                  </div>
+                  <b class="feed-item__score is-me">18,420</b>
+                </li>
+                <li class="feed-item" data-kind="crew">
+                  <span class="rank">5</span>
+                  <span class="feed-item__glyph" style="--c:#ff3b3b"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Blinky 二号机</span>
+                    <span class="feed-item__meta">战队「四幽灵」· 今天 09:02</span>
+                  </div>
+                  <b class="feed-item__score">16,770</b>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="应战">
+              <div class="chips chips--mode">
+                <button class="chip is-active" type="button">经典迷宫</button>
+                <button class="chip" type="button">限时 3 分钟</button>
+                <button class="chip" type="button">无尽隧道</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-start btn-start--wide" type="button" data-toast="已向 Blinky 主播发起挑战">挑战第 1 名</button>
+                <button class="btn-ghost" type="button" data-toast="复活币 ×2 · 本周日过期">复活币 ×2</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="挑战">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.4 5.4 5.6.7-4.2 3.9 1.1 5.7L12 16l-4.9 2.7 1.1-5.7L4 9.1l5.6-.7L12 3z"/></svg>
+              <span>挑战</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="排行">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-8M21 19H3"/></svg>
+              <span>排行</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="开玩" aria-label="开玩">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 4l13 8-13 8V4z"/></svg>
+              <span>开玩</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="战队">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/></svg>
+              <span>战队</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

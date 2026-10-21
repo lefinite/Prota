@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>玄响 · Sleek</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5.5v13l10-6.5-10-6.5z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">玄响</span>
+                <span class="brand-bar__sub">HI-FI · 深夜模式</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="输出设备：WH-1000 耳机 · LDAC 已连接" aria-label="输出设备">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 14v-2a8 8 0 0 1 16 0v2" /><path d="M4 14a2 2 0 0 1 2 2v2a2 2 0 0 1-4 0v-2a2 2 0 0 1 2-2zM20 14a2 2 0 0 1 2 2v2a2 2 0 0 1-4 0v-2a2 2 0 0 1 2-2z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：发光旋转唱片 -->
+            <section class="now" aria-label="正在播放">
+              <div class="now__disc-wrap">
+                <div class="now__disc" id="disc" aria-hidden="true">
+                  <i class="now__disc-hole"></i>
+                </div>
+                <div class="now__eq" id="eq" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="now__info">
+                <span class="now__eyebrow">正在播放 · 深夜电台</span>
+                <h1 class="now__title">北纬四十度的雨</h1>
+                <p class="now__artist">白噪与钢琴 · 专辑《城市安眠》</p>
+                <div class="now__progress">
+                  <span class="now__fill" id="trackFill" style="--w: 42%"></span>
+                </div>
+                <div class="now__times">
+                  <span id="elapsed">1:47</span>
+                  <span>4:12</span>
+                </div>
+                <div class="now__controls">
+                  <button class="now__ctrl" type="button" data-toast="上一首 · 「城市熄灯以后」" aria-label="上一首">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6h2v12H7zM20 6l-9 6 9 6V6z" /></svg>
+                  </button>
+                  <button class="now__ctrl now__ctrl--play" type="button" id="playBtn" aria-pressed="true" aria-label="暂停或继续播放">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="now__icon-pause"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="now__icon-play"><path d="M8 5.5v13l10-6.5-10-6.5z" /></svg>
+                  </button>
+                  <button class="now__ctrl" type="button" data-toast="下一首 · 「午夜蓝调电台」" aria-label="下一首">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6h2v12h-2zM4 6l9 6-9 6V6z" /></svg>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="电台与音质">
+              <div class="duo-card">
+                <h2 class="duo-card__title">深夜电台 <em class="duo-card__live">直播</em></h2>
+                <div class="wave" role="img" aria-label="电台音量波形">
+                  <i style="--h: 42%"></i><i style="--h: 70%"></i><i style="--h: 55%"></i><i style="--h: 88%"></i>
+                  <i style="--h: 60%"></i><i style="--h: 96%"></i><i style="--h: 48%"></i><i style="--h: 76%"></i>
+                  <i style="--h: 52%"></i><i style="--h: 84%"></i><i style="--h: 38%"></i><i style="--h: 64%"></i>
+                </div>
+                <p class="duo-card__note">雨夜白噪音 · 1.2 万人正在收听</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">音质</h2>
+                <div class="spec-row"><span>编码</span><b>FLAC 24bit / 96kHz</b></div>
+                <div class="spec-row"><span>输出</span><b>耳机 · LDAC</b></div>
+                <div class="spec-row"><span>延迟</span><b>88 ms</b></div>
+                <button class="duo-card__chip" type="button" data-toast="无损音质已锁定 · 本月剩余流量 42 GB">无损已开启</button>
+              </div>
+            </section>
+
+            <!-- 4. 深夜歌单 Feed -->
+            <section class="feed" aria-label="深夜歌单">
+              <div class="feed__head">
+                <h2 class="feed__title">今夜为你而选</h2>
+                <div class="chips" role="tablist" aria-label="筛选歌单">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="fav">收藏</button>
+                  <button class="chip" type="button" data-filter="new">新歌</button>
+                  <button class="chip" type="button" data-filter="queue">待播</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__art" aria-hidden="true">城市</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">城市安眠曲</span>
+                    <span class="feed-item__meta">白噪与钢琴 <em class="feed-item__chip is-new">新歌</em></span>
+                  </div>
+                  <span class="feed-item__dur">3:12</span>
+                  <button class="feed-item__heart" type="button" aria-label="收藏这首歌" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.2 5c2 0 3.3 1 4 2.2h3.6C14.5 6 15.8 5 17.8 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20z" transform="scale(0.92) translate(1,0.6)" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item is-playing" data-kind="playing">
+                  <span class="feed-item__art" aria-hidden="true">午夜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">午夜蓝调电台</span>
+                    <span class="feed-item__meta">慢转乐队 <em class="feed-item__chip is-playing"><i></i>播放中</em></span>
+                  </div>
+                  <span class="feed-item__dur">4:08</span>
+                  <button class="feed-item__heart" type="button" aria-label="收藏这首歌" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.2 5c2 0 3.3 1 4 2.2h3.6C14.5 6 15.8 5 17.8 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20z" transform="scale(0.92) translate(1,0.6)" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="queue">
+                  <span class="feed-item__art" aria-hidden="true">低空</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">低空飞行</span>
+                    <span class="feed-item__meta">频段 <em class="feed-item__chip">待播</em></span>
+                  </div>
+                  <span class="feed-item__dur">3:44</span>
+                  <button class="feed-item__heart" type="button" aria-label="收藏这首歌" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.2 5c2 0 3.3 1 4 2.2h3.6C14.5 6 15.8 5 17.8 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20z" transform="scale(0.92) translate(1,0.6)" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="fav">
+                  <span class="feed-item__art" aria-hidden="true">霓虹</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">霓虹熄灭之后</span>
+                    <span class="feed-item__meta">夜行 <em class="feed-item__chip is-fav">收藏</em></span>
+                  </div>
+                  <span class="feed-item__dur">5:02</span>
+                  <button class="feed-item__heart is-on" type="button" aria-label="取消收藏" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.2 5c2 0 3.3 1 4 2.2h3.6C14.5 6 15.8 5 17.8 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20z" transform="scale(0.92) translate(1,0.6)" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="queue">
+                  <span class="feed-item__art" aria-hidden="true">站台</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">无人的站台</span>
+                    <span class="feed-item__meta">三层公寓 <em class="feed-item__chip">待播</em></span>
+                  </div>
+                  <span class="feed-item__dur">2:57</span>
+                  <button class="feed-item__heart" type="button" aria-label="收藏这首歌" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.2 5c2 0 3.3 1 4 2.2h3.6C14.5 6 15.8 5 17.8 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20z" transform="scale(0.92) translate(1,0.6)" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__art" aria-hidden="true">月亮</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">四点钟的月亮</span>
+                    <span class="feed-item__meta">频段少女 <em class="feed-item__chip is-new">新歌</em></span>
+                  </div>
+                  <span class="feed-item__dur">4:19</span>
+                  <button class="feed-item__heart" type="button" aria-label="收藏这首歌" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.2 5c2 0 3.3 1 4 2.2h3.6C14.5 6 15.8 5 17.8 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20z" transform="scale(0.92) translate(1,0.6)" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="搜索与播放">
+              <input class="quick-input" id="searchInput" type="text" placeholder="搜索歌曲、电台、艺术家……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="resumeBtn">继续播放</button>
+                <button class="btn-ghost" type="button" id="shuffleBtn">随机夜曲</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="发现">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+              </svg>
+              <span>发现</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="电台">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="8" width="18" height="12" rx="3" /><path d="M17 3L8 8M8 14h.01M12 14h.01M16 14h.01M8 17h8" />
+              </svg>
+              <span>电台</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="乐库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V6l10-2v12" /><circle cx="7" cy="18" r="2.5" /><circle cx="17" cy="16" r="2.5" />
+              </svg>
+              <span>乐库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

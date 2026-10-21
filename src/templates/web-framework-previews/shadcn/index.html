@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Readify 控制台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+    <!-- Shell -->
+    <div class="shell">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">R</div>
+                <span class="logo-text">Readify</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" href="#" data-view="dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                    <span>控制台</span>
+                </a>
+                <a class="nav-item" href="#" data-view="members">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>成员</span>
+                </a>
+                <a class="nav-item" href="#" data-view="content">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                    <span>内容</span>
+                </a>
+                <a class="nav-item" href="#" data-view="analytics">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    <span>数据</span>
+                </a>
+                <a class="nav-item" href="#" data-view="settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">P</div>
+                    <div class="user-meta">
+                        <div class="user-name">Ping Zhao</div>
+                        <div class="user-email">ping@readify.app</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                </button>
+                <div class="header-title">
+                    <h1 id="viewTitle">控制台</h1>
+                    <p class="header-subtitle" id="viewSubtitle">欢迎回来，Ping。以下是你的工作区概况。</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-ghost btn-sm" id="btnExport">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        导出
+                    </button>
+                    <button class="btn btn-primary btn-sm" id="btnInvite">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                        邀请成员
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section class="view view--active" id="view-dashboard">
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">总成员</span>
+                            <div class="stat-icon stat-icon--blue">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--up">+3</span> 本周新增</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">文章总数</span>
+                            <div class="stat-icon stat-icon--green">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">1,284</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--up">+47</span> 本周新增</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">月活跃读者</span>
+                            <div class="stat-icon stat-icon--purple">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">8.9K</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--up">+12.4%</span> 环比上月</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">待处理反馈</span>
+                            <div class="stat-icon stat-icon--amber">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">13</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--down">5</span> 条超过24小时</div>
+                    </div>
+                </div>
+
+                <!-- Two Column Layout -->
+                <div class="grid-2col">
+                    <!-- Activity Feed -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">近期活动</h3>
+                            <button class="btn btn-ghost btn-xs">查看全部</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list" id="activityList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Top Content -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">热门内容</h3>
+                            <span class="badge badge-muted">本月</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="content-list" id="topContentList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Members Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">最近活跃成员</h3>
+                        <button class="btn btn-ghost btn-xs" data-goto="members">管理成员</button>
+                    </div>
+                    <div class="card-body card-body--table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>成员</th>
+                                    <th>角色</th>
+                                    <th>最近阅读</th>
+                                    <th>文章数</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentMembersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Members View -->
+            <section class="view" id="view-members">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-input">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+                            <input type="text" id="memberSearch" placeholder="搜索成员…" />
+                        </div>
+                        <select class="select" id="filterRole">
+                            <option value="">全部角色</option>
+                            <option value="admin">管理员</option>
+                            <option value="editor">编辑</option>
+                            <option value="viewer">读者</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn btn-outline btn-sm" id="btnBulkActions" disabled>
+                            批量操作
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btnAddMember">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                            添加成员
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body card-body--table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="col-check"><input type="checkbox" id="selectAll" /></th>
+                                    <th>成员</th>
+                                    <th>邮箱</th>
+                                    <th>角色</th>
+                                    <th>加入时间</th>
+                                    <th>状态</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <span class="table-count" id="memberCount">0 名成员</span>
+                        <div class="pagination">
+                            <button class="btn btn-ghost btn-xs" disabled>上一页</button>
+                            <span class="page-info">第 1 页，共 1 页</span>
+                            <button class="btn btn-ghost btn-xs" disabled>下一页</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content View -->
+            <section class="view" id="view-content">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-input">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+                            <input type="text" id="contentSearch" placeholder="搜索文章…" />
+                        </div>
+                        <select class="select" id="filterStatus">
+                            <option value="">全部状态</option>
+                            <option value="published">已发布</option>
+                            <option value="draft">草稿</option>
+                            <option value="review">审核中</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn btn-primary btn-sm" id="btnNewContent">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                            新建文章
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body card-body--table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>标题</th>
+                                    <th>作者</th>
+                                    <th>分类</th>
+                                    <th>阅读量</th>
+                                    <th>状态</th>
+                                    <th>更新时间</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="contentBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <span class="table-count" id="contentCount">0 篇文章</span>
+                        <div class="pagination">
+                            <button class="btn btn-ghost btn-xs" disabled>上一页</button>
+                            <span class="page-info">第 1 页，共 1 页</span>
+                            <button class="btn btn-ghost btn-xs" disabled>下一页</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics View -->
+            <section class="view" id="view-analytics">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">本月阅读量</span>
+                            <div class="stat-icon stat-icon--blue">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">42.6K</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--up">+18.2%</span> 环比</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">平均阅读时长</span>
+                            <div class="stat-icon stat-icon--green">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">6.4m</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--up">+0.8m</span> 环比</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">新注册用户</span>
+                            <div class="stat-icon stat-icon--purple">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">387</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--up">+24.1%</span> 环比</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">跳出率</span>
+                            <div class="stat-icon stat-icon--amber">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">32.1%</div>
+                        <div class="stat-footer"><span class="stat-delta stat-delta--down">-2.3%</span> 环比</div>
+                    </div>
+                </div>
+                <div class="grid-2col">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">阅读趋势</h3>
+                            <select class="select select--sm" id="trendRange">
+                                <option>近 7 天</option>
+                                <option>近 30 天</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart" id="trendChart"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">热门分类</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="category-bars" id="categoryBars"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section class="view" id="view-settings">
+                <div class="settings-grid">
+                    <div class="settings-nav">
+                        <a class="settings-nav-item active" href="#" data-section="general">通用</a>
+                        <a class="settings-nav-item" href="#" data-section="appearance">外观</a>
+                        <a class="settings-nav-item" href="#" data-section="notifications">通知</a>
+                        <a class="settings-nav-item" href="#" data-section="security">安全</a>
+                    </div>
+                    <div class="settings-content">
+                        <div class="settings-section active" id="section-general">
+                            <h3 class="settings-title">通用设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">工作区名称</label>
+                                <input type="text" class="form-input" value="Readify" />
+                                <p class="form-hint">此名称将显示给所有成员。</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">语言</label>
+                                <select class="form-select">
+                                    <option>简体中文</option>
+                                    <option>English</option>
+                                    <option>日本語</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">时区</label>
+                                <select class="form-select">
+                                    <option>Asia/Shanghai (UTC+8)</option>
+                                    <option>America/New_York (UTC-5)</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary">保存更改</button>
+                            </div>
+                        </div>
+                        <div class="settings-section" id="section-appearance">
+                            <h3 class="settings-title">外观设置</h3>
+                            <div class="form-group">
+                                <label class="form-label">主题</label>
+                                <div class="theme-options">
+                                    <label class="theme-option active">
+                                        <input type="radio" name="theme" value="light" checked />
+                                        <div class="theme-preview theme-preview--light"></div>
+                                        <span>浅色</span>
+                                    </label>
+                                    <label class="theme-option">
+                                        <input type="radio" name="theme" value="dark" />
+                                        <div class="theme-preview theme-preview--dark"></div>
+                                        <span>深色</span>
+                                    </label>
+                                    <label class="theme-option">
+                                        <input type="radio" name="theme" value="system" />
+                                        <div class="theme-preview theme-preview--system"></div>
+                                        <span>跟随系统</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">主色调</label>
+                                <div class="color-options">
+                                    <label class="color-option active"><input type="radio" name="accent" value="#18181b" checked /><span style="background:#18181b"></span></label>
+                                    <label class="color-option"><input type="radio" name="accent" value="#2563eb" /><span style="background:#2563eb"></span></label>
+                                    <label class="color-option"><input type="radio" name="accent" value="#7c3aed" /><span style="background:#7c3aed"></span></label>
+                                    <label class="color-option"><input type="radio" name="accent" value="#059669" /><span style="background:#059669"></span></label>
+                                    <label class="color-option"><input type="radio" name="accent" value="#dc2626" /><span style="background:#dc2626"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary">保存更改</button>
+                            </div>
+                        </div>
+                        <div class="settings-section" id="section-notifications">
+                            <h3 class="settings-title">通知设置</h3>
+                            <div class="form-group form-group--toggle">
+                                <div>
+                                    <label class="form-label">新成员加入</label>
+                                    <p class="form-hint">当有新成员加入工作区时通知你。</p>
+                                </div>
+                                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                            </div>
+                            <div class="form-group form-group--toggle">
+                                <div>
+                                    <label class="form-label">新文章发布</label>
+                                    <p class="form-hint">当团队成员发布新文章时通知你。</p>
+                                </div>
+                                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                            </div>
+                            <div class="form-group form-group--toggle">
+                                <div>
+                                    <label class="form-label">用户反馈</label>
+                                    <p class="form-hint">当收到新的用户反馈时通知你。</p>
+                                </div>
+                                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+                            </div>
+                            <div class="form-group form-group--toggle">
+                                <div>
+                                    <label class="form-label">每周数据报告</label>
+                                    <p class="form-hint">每周一发送工作区数据汇总到你的邮箱。</p>
+                                </div>
+                                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                            </div>
+                        </div>
+                        <div class="settings-section" id="section-security">
+                            <h3 class="settings-title">安全设置</h3>
+                            <div class="form-group form-group--toggle">
+                                <div>
+                                    <label class="form-label">两步验证</label>
+                                    <p class="form-hint">为所有成员启用两步验证。</p>
+                                </div>
+                                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">会话超时</label>
+                                <select class="form-select">
+                                    <option>30 分钟</option>
+                                    <option>1 小时</option>
+                                    <option>4 小时</option>
+                                    <option>24 小时</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IP 白名单</label>
+                                <textarea class="form-textarea" rows="3" placeholder="每行一个 IP 地址，例如：192.168.1.1"></textarea>
+                                <p class="form-hint">留空表示不限制 IP。</p>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary">保存更改</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Invite Modal -->
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>邀请新成员</h2>
+                <button class="btn-close" id="closeInviteModal" aria-label="关闭">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">邮箱地址</label>
+                    <input type="email" class="form-input" id="inviteEmail" placeholder="name@example.com" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色</label>
+                    <select class="form-select" id="inviteRole">
+                        <option value="viewer">读者 - 只能阅读内容</option>
+                        <option value="editor">编辑 - 可以创建和编辑内容</option>
+                        <option value="admin">管理员 - 拥有所有权限</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="cancelInvite">取消</button>
+                <button class="btn btn-primary" id="sendInvite">发送邀请</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Detail Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="drawer" id="memberDrawer">
+        <div class="drawer-header">
+            <h3>成员详情</h3>
+            <button class="btn-close" id="closeDrawer" aria-label="关闭">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="drawer-body" id="drawerBody"></div>
+        <div class="drawer-footer">
+            <button class="btn btn-outline btn-block" id="drawerAction">停用账号</button>
+        </div>
+    </aside>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="./app.js"></script>
+</body>
+</html>

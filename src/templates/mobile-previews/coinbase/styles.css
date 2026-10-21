@@ -1,0 +1,841 @@
+/* ============================================================
+ * coinbook · Inspired by Coinbase — mobile preview
+ * token 来源：design-systems/coinbase/tokens.css（:root 整块注入）
+ * 数字资产钱包：白画布 + 近黑 Hero 资产卡 + 56px pill CTA + 单一功能蓝
+ * ============================================================ */
+
+:root {
+  /* ─── Coinbase tokens（design-systems/coinbase/tokens.css 整块） ── */
+  --bg:           #ffffff;
+  --surface:      #eef0f3;
+  --surface-warm: var(--surface);
+  --fg:    #0a0b0d;
+  --fg-2:  var(--fg);
+  --muted: #5b616e;
+  --meta:  var(--muted);
+  --border:      rgba(91, 97, 110, 0.2);
+  --border-soft: var(--border);
+  --accent:        #0052ff;
+  --accent-on:     #ffffff;
+  --accent-hover:  #578bfa;
+  --accent-active: #0667d0;
+  --success: #16a34a;
+  --warn:    #eab308;
+  --danger:  #dc2626;
+  --font-display:
+    "CoinbaseDisplay", "Coinbase Display",
+    "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Arial, sans-serif;
+  --font-body:
+    "CoinbaseText", "CoinbaseSans", "Coinbase Sans",
+    "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", "JetBrains Mono",
+    Menlo, Monaco, Consolas, monospace;
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   32px;
+  --text-2xl:  36px;
+  --text-3xl:  52px;
+  --text-4xl:  80px;
+  --leading-body:     1.5;
+  --leading-tight:    1.0;
+  --tracking-display: -0.01em;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet:  64px;
+  --section-y-phone:   40px;
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   32px;
+  --radius-pill: 9999px;
+  --elev-flat:   none;
+  --elev-ring:   0 0 0 1px var(--border);
+  --elev-raised: 0 1px 2px color-mix(in oklab, var(--fg), transparent 92%);
+  --focus-ring: 0 0 0 2px var(--fg);
+  --motion-fast:   150ms;
+  --motion-base:   200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max:            1280px;
+  --container-gutter-desktop: 24px;
+  --container-gutter-tablet:  16px;
+  --container-gutter-phone:   16px;
+
+  /* ─── 本页补齐 token ───────────────────────────────────────
+   * Dark Card #282b31（DESIGN.md §2 Surface）——行情徽标底等 */
+  --dark-card: #282b31;
+  --pill-radius: 56px; /* 56px pill CTA 半径（DESIGN.md §4） */
+
+  /* ─── 手机壳（与设计系统协调）──────────────────────────── */
+  --page-backdrop-top: #f2f4f8;
+  --page-backdrop-bottom: #d9dfe9;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e8ebf0;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(10, 11, 13, 0.18);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.9), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* ===== Shared mobile frame ===== */
+.demo-stage {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.phone-shell {
+  position: relative;
+  width: 382px;
+  height: 826px;
+  padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--screen-radius);
+  background: var(--phone-screen);
+}
+
+.status-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 0;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.status-bar__time {
+  min-width: 54px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.status-bar__island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  border-radius: 999px;
+  background: #111217;
+  transform: translateX(-50%);
+}
+
+.status-bar__right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 74px;
+}
+
+.status-bar__icon {
+  width: 15px;
+  height: 15px;
+}
+
+.battery {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border: 1.8px solid currentColor;
+  border-radius: 4px;
+}
+
+.battery::before {
+  content: "";
+  position: absolute;
+  inset: 2px 6px 2px 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.battery::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -4px;
+  width: 2px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: auto;
+  padding: 66px 22px 116px;
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage {
+    padding: 0;
+  }
+
+  .phone-shell {
+    width: min(100vw, 382px);
+    height: min(100vh, 826px);
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--phone-screen);
+  }
+
+  .phone-screen {
+    border-radius: 0;
+  }
+}
+
+/* ===== 1. 顶部品牌栏 ===== */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.brand-bar__mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--fg);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.brand-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: auto;
+}
+
+.brand-bar__name {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+  text-transform: lowercase;
+}
+
+.brand-bar__sub {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.brand-bar__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.brand-bar__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.brand-bar__icon:hover {
+  background: color-mix(in oklab, var(--surface), var(--fg) 8%);
+}
+
+/* ===== 2. Hero / 签名卡：近黑资产卡 ===== */
+.hero-asset {
+  background: var(--fg); /* Near Black——深度来自明暗对比，不靠阴影 */
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 18px;
+  margin-bottom: 14px;
+  color: var(--bg);
+}
+
+.hero-asset__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-asset__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: color-mix(in oklab, var(--bg), transparent 34%);
+}
+
+.hero-asset__chip {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklab, var(--success), transparent 84%);
+  color: var(--success);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.hero-asset__amount {
+  margin: 10px 0 4px;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: var(--leading-tight); /* 1.00 超紧行高 */
+  letter-spacing: var(--tracking-display);
+}
+
+.hero-asset__amount-dec {
+  font-size: 26px;
+  color: color-mix(in oklab, var(--bg), transparent 38%);
+}
+
+.hero-asset__spark {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin: 8px 0 14px;
+  overflow: visible;
+}
+
+.hero-asset__line {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 640;
+  stroke-dashoffset: 640;
+  animation: spark-draw 1100ms var(--ease-standard) 200ms forwards;
+}
+
+.hero-asset__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.hero-asset__foot {
+  margin: 14px 0 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: color-mix(in oklab, var(--bg), transparent 44%);
+}
+
+@keyframes spark-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 56px pill 按钮 */
+.pill-primary {
+  padding: 12px 16px;
+  border-radius: var(--pill-radius);
+  background: var(--accent); /* Coinbase Blue——功能性用蓝 1/2 */
+  color: var(--accent-on);
+  font-size: var(--text-base);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.pill-primary:hover {
+  background: var(--accent-hover);
+}
+
+.pill-primary:active {
+  background: var(--accent-active);
+}
+
+.pill-secondary {
+  padding: 12px 16px;
+  border-radius: var(--pill-radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.pill-secondary:hover {
+  background: color-mix(in oklab, var(--surface), var(--fg) 10%);
+}
+
+.pill-outline {
+  padding: 12px 16px;
+  border-radius: var(--pill-radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.pill-outline:hover {
+  border-color: var(--muted);
+}
+
+.pill-primary--block {
+  width: 100%;
+}
+
+/* ===== 3. 双内容卡 ===== */
+.duo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.duo-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.duo-card__title {
+  margin: 0 0 10px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.duo-card__num {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+}
+
+.duo-card__num span {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.target-track {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.target-fill {
+  display: block;
+  height: 100%;
+  width: var(--w);
+  border-radius: inherit;
+  background: var(--fg);
+  transform-origin: left;
+  animation: fill-grow 800ms var(--ease-standard) 200ms backwards;
+}
+
+.duo-card__note {
+  margin: 10px 0 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.duo-card__link {
+  margin-top: 10px;
+  padding: 0;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent); /* 功能性用蓝 2/2：文字链接 */
+  cursor: pointer;
+}
+
+.duo-card__link:hover {
+  color: var(--accent-hover);
+}
+
+@keyframes fill-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ===== 4. 行情 Feed ===== */
+.feed__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.feed__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard);
+}
+
+.chip:hover {
+  color: var(--fg);
+}
+
+.chip.is-active {
+  background: var(--dark-card);
+  color: var(--bg);
+}
+
+.feed__list {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.feed-item + .feed-item {
+  border-top: 1px solid var(--border);
+}
+
+.feed-item[hidden] {
+  display: none;
+}
+
+.feed-item.is-flash {
+  background: var(--surface);
+}
+
+.feed-item__glyph {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--dark-card);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.feed-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.feed-item__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-item__meta {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.feed-item__price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.feed-item__delta {
+  min-width: 62px;
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.feed-item__delta[data-kind="up"] {
+  background: color-mix(in oklab, var(--success), transparent 88%);
+  color: var(--success);
+}
+
+.feed-item__delta[data-kind="down"] {
+  background: color-mix(in oklab, var(--danger), transparent 90%);
+  color: var(--danger);
+}
+
+.feed-item__delta[data-kind="flat"] {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.feed-item__star {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: color-mix(in oklab, var(--muted), transparent 40%);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.feed-item__star svg {
+  width: 15px;
+  height: 15px;
+}
+
+.feed-item__star:hover {
+  color: var(--fg);
+}
+
+.feed-item__star.is-on {
+  color: var(--accent-hover);
+}
+
+.feed-item__star.is-on svg {
+  fill: var(--accent-hover);
+}
+
+/* ===== 5. 操作区 ===== */
+.action-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.amount-input {
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: var(--pill-radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.amount-input::placeholder {
+  font-family: var(--font-body);
+  color: var(--muted);
+}
+
+.amount-input:focus-visible {
+  border-color: var(--muted);
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 10px;
+}
+
+/* ===== 6. 底部 Tab ===== */
+.tabbar {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  height: 78px;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.tabbar__item svg {
+  width: 21px;
+  height: 21px;
+}
+
+.tabbar__item:hover {
+  color: var(--fg);
+}
+
+.tabbar__item.is-active {
+  color: var(--fg);
+}
+
+
+
+
+/* ===== toast ===== */
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 30;
+  max-width: 82%;
+  padding: 10px 18px;
+  border-radius: var(--pill-radius);
+  background: var(--dark-card);
+  color: var(--bg);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== 无障碍与动效降级 ===== */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 隐藏滚动条（真机 App 观感）===== */
+* {
+  scrollbar-width: none !important;
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}

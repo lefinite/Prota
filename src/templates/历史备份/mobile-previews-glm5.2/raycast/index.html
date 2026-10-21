@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Raycast Command · Developer Tools</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">Raycast</span>
+                  <span class="brand-sub">开发者工具箱</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置面板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              </button>
+            </header>
+
+            <!-- 命令面板（signature：macOS 风格命令输入区） -->
+            <section class="command-bar" aria-label="命令面板">
+              <div class="command-bar__input">
+                <svg class="command-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" placeholder="输入命令或搜索..." id="commandInput" />
+                <div class="command-bar__shortcut">
+                  <span class="key">⌘</span><span class="key">K</span>
+                </div>
+              </div>
+              <div class="command-bar__hint">
+                <span class="pip pip--active"></span>最近使用
+                <span class="pip pip--muted"></span>扩展
+                <span class="pip pip--muted"></span>脚本
+              </div>
+            </section>
+
+            <!-- 快速命令卡片 -->
+            <section class="quick-actions" aria-label="快速操作">
+              <button class="action-card" data-toast="已启动 Git 扩展">
+                <div class="action-card__icon action-card__icon--git">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3m0 6v6M3 12h3m6 0h3"/></svg>
+                </div>
+                <span class="action-card__title">Git 管理</span>
+                <span class="action-card__meta">⌘ G</span>
+              </button>
+              <button class="action-card" data-toast="已打开项目管理器">
+                <div class="action-card__icon action-card__icon--project">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M8 12h8"/></svg>
+                </div>
+                <span class="action-card__title">项目切换</span>
+                <span class="action-card__meta">⌘ P</span>
+              </button>
+              <button class="action-card" data-toast="正在连接 SSH...">
+                <div class="action-card__icon action-card__icon--ssh">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01M10 12h.01"/></svg>
+                </div>
+                <span class="action-card__title">SSH 主机</span>
+                <span class="action-card__meta">⌘ S</span>
+              </button>
+            </section>
+
+            <!-- 系统状态双卡 -->
+            <section class="stat-row" aria-label="系统状态">
+              <div class="stat-card">
+                <span class="stat-card__cap">CPU 使用</span>
+                <span class="stat-card__val">34%</span>
+                <span class="stat-card__foot">
+                  <span class="pip pip--success"></span>8 核活跃
+                </span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-card__cap">内存占用</span>
+                <span class="stat-card__val">8.2GB</span>
+                <span class="stat-card__foot">
+                  <span class="pip pip--warn"></span>32GB 总量
+                </span>
+              </div>
+            </section>
+
+            <!-- 扩展列表 -->
+            <section class="list-block" aria-label="已安装扩展">
+              <div class="list-block__head">
+                <h2>扩展</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选扩展">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="dev" role="tab" aria-selected="false">开发</button>
+                  <button class="chip" data-filter="productivity" role="tab" aria-selected="false">效率</button>
+                </div>
+              </div>
+
+              <ul class="ext-list" id="extList">
+                <li class="ext" data-type="dev">
+                  <span class="ext__icon ext__icon--code">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  </span>
+                  <div class="ext__main">
+                    <span class="ext__title">GitHub</span>
+                    <span class="ext__sub">仓库、PR、Issues</span>
+                  </div>
+                  <div class="ext__right">
+                    <span class="badge badge--installed">已安装</span>
+                  </div>
+                </li>
+                <li class="ext" data-type="productivity">
+                  <span class="ext__icon ext__icon--jira">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 15h6"/></svg>
+                  </span>
+                  <div class="ext__main">
+                    <span class="ext__title">Jira</span>
+                    <span class="ext__sub">任务跟踪与看板</span>
+                  </div>
+                  <div class="ext__right">
+                    <span class="badge badge--installed">已安装</span>
+                  </div>
+                </li>
+                <li class="ext" data-type="dev">
+                  <span class="ext__icon ext__icon--docker">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M8 20v-4M16 20v-4M6 20v-6M18 20v-6"/><rect x="4" y="4" width="16" height="4" rx="1"/></svg>
+                  </span>
+                  <div class="ext__main">
+                    <span class="ext__title">Docker</span>
+                    <span class="ext__sub">容器管理</span>
+                  </div>
+                  <div class="ext__right">
+                    <span class="badge badge--update">更新</span>
+                  </div>
+                </li>
+                <li class="ext" data-type="productivity">
+                  <span class="ext__icon ext__icon--slack">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5V10c0 .83.67 1.5 1.5 1.5h1.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/></svg>
+                  </span>
+                  <div class="ext__main">
+                    <span class="ext__title">Slack</span>
+                    <span class="ext__sub">消息与通知</span>
+                  </div>
+                  <div class="ext__right">
+                    <span class="badge badge--installed">已安装</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 热键提示 -->
+            <section class="hotkey-card" aria-label="快捷键提示">
+              <div class="hotkey-card__head">
+                <span class="hotkey-card__title">常用快捷键</span>
+              </div>
+              <div class="hotkey-list">
+                <div class="hotkey-item">
+                  <div class="hotkey-keys">
+                    <span class="key">⌘</span><span class="key">,</span>
+                  </div>
+                  <span class="hotkey-desc">打开设置</span>
+                </div>
+                <div class="hotkey-item">
+                  <div class="hotkey-keys">
+                    <span class="key">⌘</span><span class="key">⇧</span><span class="key">K</span>
+                  </div>
+                  <span class="hotkey-desc">搜索窗口</span>
+                </div>
+                <div class="hotkey-item">
+                  <div class="hotkey-keys">
+                    <span class="key">⌘</span><span class="key">⌥</span><span class="key">Space</span>
+                  </div>
+                  <span class="hotkey-desc">计算器</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="extensions">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              <span>扩展</span>
+            </button>
+            <button class="tab tab--fab" data-tab="command" aria-label="打开命令面板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+            <button class="tab" data-tab="scripts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <span>脚本</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

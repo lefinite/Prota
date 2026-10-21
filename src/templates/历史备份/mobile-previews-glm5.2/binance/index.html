@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BinanceTrade · Binance</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="demo-stage">
+    <div class="phone-shell">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="status-bar" aria-label="设备状态栏">
+          <span class="status-bar__time" id="statusTime">9:41</span>
+          <div class="status-bar__island" aria-hidden="true"></div>
+          <div class="status-bar__right" aria-hidden="true">
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+            <span class="battery"></span>
+          </div>
+        </div>
+
+        <main class="app-content" id="appContent">
+          <!-- 顶部品牌栏 -->
+          <header class="topbar">
+            <div class="topbar__brand">
+              <span class="brand-mark">◆</span>
+              <div class="brand-text">
+                <span class="brand-name">Binance</span>
+                <span class="brand-sub">Trade</span>
+              </div>
+            </div>
+            <div class="topbar__actions">
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+              <button class="iconbtn" aria-label="扫描" data-toast="扫描二维码">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM17 17l4 4M21 17l-4 4" /></svg>
+              </button>
+            </div>
+          </header>
+
+          <!-- 总资产卡片（signature：Binance Yellow Pill 按钮作为焦点） -->
+          <section class="portfolio-card">
+            <p class="portfolio-card__label">总资产估值 (USDT)</p>
+            <p class="portfolio-card__amount">$ 24,832<span class="dec">.50</span></p>
+            <div class="portfolio-card__meta">
+              <span class="trend trend--up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                +12.8%
+              </span>
+              <span class="portfolio-card__hint">24h</span>
+            </div>
+
+            <div class="portfolio-card__actions">
+              <button class="btn-pill btn-pill--primary" data-toast="充币入口">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" /></svg>
+                充币
+              </button>
+              <button class="btn-pill btn-pill--secondary" data-toast="提币入口">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12h14" /></svg>
+                提币
+              </button>
+              <button class="btn-pill btn-pill--secondary" data-toast="交易入口">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l-4 2 4 2M17 14l4-2-4-2M3 12h18" /></svg>
+                交易
+              </button>
+            </div>
+          </section>
+
+          <!-- 价格行情列表 -->
+          <section class="ticker-section">
+            <div class="section-header">
+              <h2>行情</h2>
+              <div class="chips" role="tablist" aria-label="筛选行情">
+                <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">自选</button>
+                <button class="chip" data-filter="gainers" role="tab" aria-selected="false">涨幅</button>
+                <button class="chip" data-filter="losers" role="tab" aria-selected="false">跌幅</button>
+              </div>
+            </div>
+
+            <ul class="ticker-list" id="tickerList">
+              <li class="ticker-item" data-type="gainers">
+                <span class="ticker-icon">₿</span>
+                <div class="ticker-main">
+                  <span class="ticker-title">BTC/USDT</span>
+                  <span class="ticker-vol">Vol 24.5K</span>
+                </div>
+                <div class="ticker-right">
+                  <span class="ticker-price">$43,285</span>
+                  <span class="ticker-change ticker-change--up">+5.24%</span>
+                </div>
+              </li>
+              <li class="ticker-item" data-type="gainers">
+                <span class="ticker-icon">◎</span>
+                <div class="ticker-main">
+                  <span class="ticker-title">BNB/USDT</span>
+                  <span class="ticker-vol">Vol 128K</span>
+                </div>
+                <div class="ticker-right">
+                  <span class="ticker-price">$312.40</span>
+                  <span class="ticker-change ticker-change--up">+3.18%</span>
+                </div>
+              </li>
+              <li class="ticker-item" data-type="losers">
+                <span class="ticker-icon">◎</span>
+                <div class="ticker-main">
+                  <span class="ticker-title">ETH/USDT</span>
+                  <span class="ticker-vol">Vol 89K</span>
+                </div>
+                <div class="ticker-right">
+                  <span class="ticker-price">$2,285</span>
+                  <span class="ticker-change ticker-change--down">-1.42%</span>
+                </div>
+              </li>
+              <li class="ticker-item" data-type="losers">
+                <span class="ticker-icon">◎</span>
+                <div class="ticker-main">
+                  <span class="ticker-title">SOL/USDT</span>
+                  <span class="ticker-vol">Vol 56K</span>
+                </div>
+                <div class="ticker-right">
+                  <span class="ticker-price">$98.45</span>
+                  <span class="ticker-change ticker-change--down">-2.86%</span>
+                </div>
+              </li>
+              <li class="ticker-item" data-type="gainers">
+                <span class="ticker-icon">◎</span>
+                <div class="ticker-main">
+                  <span class="ticker-title">AVAX/USDT</span>
+                  <span class="ticker-vol">Vol 34K</span>
+                </div>
+                <div class="ticker-right">
+                  <span class="ticker-price">$42.80</span>
+                  <span class="ticker-change ticker-change--up">+8.12%</span>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 持仓列表 -->
+          <section class="holdings-section">
+            <div class="section-header">
+              <h2>持仓</h2>
+              <button class="text-link" data-toast="查看全部持仓">全部</button>
+            </div>
+
+            <div class="holding-cards">
+              <div class="holding-card">
+                <div class="holding-card__top">
+                  <span class="holding-icon">₿</span>
+                  <div class="holding-info">
+                    <span class="holding-symbol">BTC</span>
+                    <span class="holding-amount">0.524 BTC</span>
+                  </div>
+                </div>
+                <div class="holding-card__bottom">
+                  <span class="holding-value">$22,681.40</span>
+                  <span class="holding-change holding-change--up">+$2,428</span>
+                </div>
+              </div>
+              <div class="holding-card">
+                <div class="holding-card__top">
+                  <span class="holding-icon">◎</span>
+                  <div class="holding-info">
+                    <span class="holding-symbol">BNB</span>
+                    <span class="holding-amount">12.5 BNB</span>
+                  </div>
+                </div>
+                <div class="holding-card__bottom">
+                  <span class="holding-value">$3,905.00</span>
+                  <span class="holding-change holding-change--up">+$456</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 操作区 -->
+          <section class="action-section">
+            <button class="btn-yellow" data-toast="打开交易页面">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3l9 9-9 9" /></svg>
+              立即交易
+            </button>
+          </section>
+
+          <div class="bottom-spacer" aria-hidden="true"></div>
+        </main>
+
+        <!-- 底部 Tab -->
+        <nav class="tabbar" aria-label="主导航">
+          <button class="tab is-active" data-tab="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+            <span>首页</span>
+          </button>
+          <button class="tab" data-tab="markets">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M7 14l4-4 3 3 5-6" /></svg>
+            <span>行情</span>
+          </button>
+          <button class="tab" data-tab="trade">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14" /></svg>
+            <span>交易</span>
+          </button>
+          <button class="tab" data-tab="futures">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 10l-4 2 4 2M17 14l4-2-4-2M3 12h18" /></svg>
+            <span>合约</span>
+          </button>
+          <button class="tab" data-tab="wallet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+            <span>资产</span>
+          </button>
+        </nav>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>心息 · Neumorphism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">心</span>
+                <div class="brand-text">
+                  <span class="brand-name">心息</span>
+                  <span class="brand-sub">早安，给自己一点时间</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="提醒" data-toast="已开启静音模式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero signature：冥想时长环形进度 -->
+            <section class="hero-card" aria-label="今日冥想">
+              <div class="progress-ring" aria-hidden="true">
+                <svg class="progress-ring__svg" viewBox="0 0 120 120">
+                  <circle class="progress-ring__bg" cx="60" cy="60" r="52" fill="none" />
+                  <circle class="progress-ring__bar" cx="60" cy="60" r="52" fill="none" stroke-dasharray="327" stroke-dashoffset="82" />
+                </svg>
+                <div class="progress-ring__content">
+                  <span class="progress-ring__val">15</span>
+                  <span class="progress-ring__label">分钟</span>
+                </div>
+              </div>
+              <p class="hero-card__greeting">今日冥想已完成</p>
+              <button class="hero-card__cta" data-toast="开始新的冥想">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                开始冥想
+              </button>
+            </section>
+
+            <!-- 习惯追踪卡 -->
+            <section class="stat-row" aria-label="习惯追踪">
+              <div class="habit-card">
+                <span class="habit-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </span>
+                <span class="habit-card__title">早起</span>
+                <span class="habit-card__streak">连续 5 天</span>
+              </div>
+              <div class="habit-card">
+                <span class="habit-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </span>
+                <span class="habit-card__title">日记</span>
+                <span class="habit-card__streak">连续 12 天</span>
+              </div>
+            </section>
+
+            <!-- 呼吸练习列表 -->
+            <section class="list-block" aria-label="呼吸练习">
+              <div class="list-block__head">
+                <h2>呼吸练习</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选练习">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="relax" role="tab" aria-selected="false">放松</button>
+                  <button class="chip" data-filter="focus" role="tab" aria-selected="false">专注</button>
+                </div>
+              </div>
+
+              <ul class="breathe-list" id="breatheList">
+                <li class="breathe" data-type="relax">
+                  <span class="breathe__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9Z"/></svg>
+                  </span>
+                  <div class="breathe__main">
+                    <span class="breathe__title">4-7-8 呼吸法</span>
+                    <span class="breathe__sub">放松身心 · 5 分钟</span>
+                  </div>
+                  <button class="breathe__btn" data-toast="开始呼吸练习" aria-label="开始">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                  </button>
+                </li>
+                <li class="breathe" data-type="focus">
+                  <span class="breathe__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polygon points="2 17 12 22 22 17"/><polygon points="2 12 12 17 22 12"/></svg>
+                  </span>
+                  <div class="breathe__main">
+                    <span class="breathe__title">箱式呼吸</span>
+                    <span class="breathe__sub">提升专注 · 3 分钟</span>
+                  </div>
+                  <button class="breathe__btn" data-toast="开始呼吸练习" aria-label="开始">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                  </button>
+                </li>
+                <li class="breathe" data-type="relax">
+                  <span class="breathe__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5v9a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5v-9L12 3 4.5 9.5Z"/></svg>
+                  </span>
+                  <div class="breathe__main">
+                    <span class="breathe__title">身体扫描</span>
+                    <span class="breathe__sub">深度放松 · 10 分钟</span>
+                  </div>
+                  <button class="breathe__btn" data-toast="开始呼吸练习" aria-label="开始">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                  </button>
+                </li>
+                <li class="breathe" data-type="focus">
+                  <span class="breathe__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16"/></svg>
+                  </span>
+                  <div class="breathe__main">
+                    <span class="breathe__title">专注冥想</span>
+                    <span class="breathe__sub">正念练习 · 15 分钟</span>
+                  </div>
+                  <button class="breathe__btn" data-toast="开始呼吸练习" aria-label="开始">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 今日目标 -->
+            <section class="goal-card" aria-label="今日目标">
+              <div class="goal-card__head">
+                <span class="goal-card__title">今日目标</span>
+                <span class="goal-card__num">2 <span class="muted">/ 3 完成</span></span>
+              </div>
+              <div class="goal-card__items">
+                <label class="goal-item">
+                  <input type="checkbox" checked disabled>
+                  <span class="goal-item__text">晨间冥想</span>
+                </label>
+                <label class="goal-item">
+                  <input type="checkbox" checked disabled>
+                  <span class="goal-item__text">午间呼吸</span>
+                </label>
+                <label class="goal-item">
+                  <input type="checkbox" class="goal-item__check">
+                  <span class="goal-item__text">睡前放松</span>
+                </label>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="meditate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>冥想</span>
+            </button>
+            <button class="tab tab--fab" data-tab="breathe" aria-label="呼吸">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 1 0 8 0"/></svg>
+            </button>
+            <button class="tab" data-tab="habits">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 7-7"/></svg>
+              <span>习惯</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

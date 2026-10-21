@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Pixel Quest · Retro Game</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">▣</span>
+                <div class="brand-text">
+                  <span class="brand-name">Pixel Quest</span>
+                  <span class="brand-sub">复古冒险</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="游戏设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature: 像素艺术风格大标题 -->
+            <section class="hero-card" aria-label="游戏状态">
+              <div class="hero-title-bar">
+                <span class="hero-title">LEVEL 1-1</span>
+                <span class="hero-subtitle">世界 1-1</span>
+              </div>
+              <div class="hero-stats">
+                <div class="stat-item">
+                  <span class="stat-label">SCORE</span>
+                  <span class="stat-value">098,750</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">COINS</span>
+                  <span class="stat-value">●●○○○</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">TIME</span>
+                  <span class="stat-value">298</span>
+                </div>
+              </div>
+              <div class="hero-progress">
+                <div class="progress-label">关卡进度</div>
+                <div class="progress-bar" aria-label="关卡进度 65%">
+                  <div class="progress-fill" style="width: 65%"></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 能力卡片（chunky controls signature） -->
+            <section class="ability-section" aria-label="角色能力">
+              <h2 class="section-title">角色能力</h2>
+              <div class="ability-grid">
+                <div class="ability-card" data-toast="火球术 Lv.3">
+                  <span class="ability-icon">🔥</span>
+                  <span class="ability-name">火球术</span>
+                  <span class="ability-level">Lv.3</span>
+                </div>
+                <div class="ability-card" data-toast="瞬移 Lv.2">
+                  <span class="ability-icon">✨</span>
+                  <span class="ability-name">瞬移</span>
+                  <span class="ability-level">Lv.2</span>
+                </div>
+                <div class="ability-card" data-toast="护盾 Lv.1">
+                  <span class="ability-icon">🛡️</span>
+                  <span class="ability-name">护盾</span>
+                  <span class="ability-level">Lv.1</span>
+                </div>
+                <div class="ability-card ability-card--locked" data-toast="未解锁">
+                  <span class="ability-icon">🔒</span>
+                  <span class="ability-name">???</span>
+                  <span class="ability-level">???</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 背包物品列表 -->
+            <section class="inventory-section" aria-label="背包物品">
+              <div class="list-head">
+                <h2>背包</h2>
+                <div class="chips" id="filterChips" role="tablist">
+                  <button class="chip is-active" data-filter="all" role="tab">全部</button>
+                  <button class="chip" data-filter="weapon" role="tab">武器</button>
+                  <button class="chip" data-filter="potion" role="tab">药水</button>
+                </div>
+              </div>
+
+              <ul class="inventory-list" id="inventoryList">
+                <li class="inventory-item" data-type="weapon">
+                  <span class="item-icon">⚔️</span>
+                  <div class="item-main">
+                    <span class="item-name">勇者之剑</span>
+                    <span class="item-desc">攻击 +12 · 稀有</span>
+                  </div>
+                  <div class="item-right">
+                    <span class="item-count">x1</span>
+                    <span class="item-badge item-badge--rare">RARE</span>
+                  </div>
+                </li>
+
+                <li class="inventory-item" data-type="potion">
+                  <span class="item-icon">🧪</span>
+                  <div class="item-main">
+                    <span class="item-name">生命药水</span>
+                    <span class="item-desc">恢复 50 HP</span>
+                  </div>
+                  <div class="item-right">
+                    <span class="item-count">x5</span>
+                    <span class="item-badge item-badge--common">COMMON</span>
+                  </div>
+                </li>
+
+                <li class="inventory-item" data-type="weapon">
+                  <span class="item-icon">🏹</span>
+                  <div class="item-main">
+                    <span class="item-name">精灵弓</span>
+                    <span class="item-desc">攻击 +8 · 精准</span>
+                  </div>
+                  <div class="item-right">
+                    <span class="item-count">x1</span>
+                    <span class="item-badge item-badge--epic">EPIC</span>
+                  </div>
+                </li>
+
+                <li class="inventory-item" data-type="potion">
+                  <span class="item-icon">💫</span>
+                  <div class="item-main">
+                    <span class="item-name">魔法药水</span>
+                    <span class="item-desc">恢复 30 MP</span>
+                  </div>
+                  <div class="item-right">
+                    <span class="item-count">x3</span>
+                    <span class="item-badge item-badge--common">COMMON</span>
+                  </div>
+                </li>
+
+                <li class="inventory-item" data-type="weapon">
+                  <span class="item-icon">🪓</span>
+                  <div class="item-main">
+                    <span class="item-name">战斧</span>
+                    <span class="item-desc">攻击 +15 · 暴击</span>
+                  </div>
+                  <div class="item-right">
+                    <span class="item-count">x1</span>
+                    <span class="item-badge item-badge--legendary">LEGENDARY</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 任务目标 -->
+            <section class="quest-section" aria-label="当前任务">
+              <div class="quest-card">
+                <div class="quest-header">
+                  <span class="quest-title">当前任务</span>
+                  <span class="quest-tag">ACTIVE</span>
+                </div>
+                <div class="quest-info">
+                  <span class="quest-name">击败森林守护者</span>
+                  <p class="quest-desc">前往暗影森林，找到并击败森林守护者。小心它的毒雾攻击！</p>
+                </div>
+                <div class="quest-progress">
+                  <div class="quest-progress-bar">
+                    <div class="quest-progress-fill" style="width: 40%"></div>
+                  </div>
+                  <div class="quest-progress-text">2/5 已完成</div>
+                </div>
+                <button class="quest-btn" data-toast="开始任务">开始任务</button>
+              </div>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <div class="action-row">
+                <button class="action-btn action-btn--primary" data-toast="继续游戏">
+                  <span class="btn-icon">▶</span>
+                  <span>继续游戏</span>
+                </button>
+                <button class="action-btn action-btn--secondary" data-toast="查看地图">
+                  <span class="btn-icon">🗺️</span>
+                  <span>地图</span>
+                </button>
+              </div>
+              <div class="action-row">
+                <button class="action-btn action-btn--ghost" data-toast="商店">
+                  <span class="btn-icon">🏪</span>
+                  <span>商店</span>
+                </button>
+                <button class="action-btn action-btn--ghost" data-toast="成就">
+                  <span class="btn-icon">🏆</span>
+                  <span>成就</span>
+                </button>
+                <button class="action-btn action-btn--ghost" data-toast="图鉴">
+                  <span class="btn-icon">📖</span>
+                  <span>图鉴</span>
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <span>🏠</span>
+              <span>主页</span>
+            </button>
+            <button class="tab" data-tab="quest">
+              <span>⚔️</span>
+              <span>任务</span>
+            </button>
+            <button class="tab tab--fab" data-tab="play" aria-label="游戏">
+              <span>▶</span>
+            </button>
+            <button class="tab" data-tab="shop">
+              <span>🏪</span>
+              <span>商店</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <span>👤</span>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+    <title>思维导图</title>
+    <!--
+        MindMap editor runtime isolation boundary.
+
+        Everything React + @xiangfa/mindmap lives inside this same-origin
+        iframe and is loaded from the prebuilt LOCAL bundle
+        (vendor/mindmap-react.bundle.mjs, produced by esbuild at build time).
+        No CDN, no import map, no network dependency. The parent portal never
+        imports React; it only exchanges postMessage with this document.
+    -->
+    <link rel="stylesheet" href="./vendor/style.css?v=20260701-xmind-v8">
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Inter, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        #root,
+        #root > div {
+            height: 100%;
+        }
+        .prota-mindmap-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            height: 100%;
+            color: #64748b;
+            background: #fff;
+        }
+        .prota-mindmap-loader__mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2.5px solid #e2e8f0;
+            border-top-color: #0f9f6e;
+            animation: prota-mindmap-spin 0.8s linear infinite;
+        }
+        .prota-mindmap-loader strong {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .prota-mindmap-loader small {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        @keyframes prota-mindmap-spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Hide the thin underline beneath child-node text in ALL states
+           (including the text-edit state), per design request. */
+        .mindmap-node-underline {
+            display: none !important;
+            stroke: transparent !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        /* The edit input is rendered inside an SVG <foreignObject> whose
+           width/height we grow live to fit the typed text (see MindMapNode
+           patches). The input must fill that foreignObject so the text stays
+           inside the node box with the inline paddingLeft/paddingRight acting
+           as the inner margin. We also neutralize decorations: hide the
+           underline the library draws via inline borderBottom, plus borders. */
+        .mindmap-edit-input {
+            width: 100% !important;
+            height: 100% !important;
+            box-sizing: border-box !important;
+            background: transparent !important;
+            text-decoration: none !important;
+            border: none !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="prota-mindmap-loader" aria-label="正在加载思维导图">
+            <span class="prota-mindmap-loader__mark"></span>
+            <strong>正在准备思维导图画布</strong>
+            <small>支持双击编辑、Enter 新增、Delete 删除、拖拽排序</small>
+        </div>
+    </div>
+    <script type="module" src="./editor-app.js?v=20260701-xmind-v8"></script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>运营控制台 · Material Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- ============ Material Navigation Drawer (rail) ============ -->
+  <aside class="md-nav-rail" id="nav-rail">
+    <!-- Brand / hover-to-expand handled by .expanded -->
+    <div class="rail-items">
+      <button class="rail-item brand" data-rail="toggle" aria-label="展开导航">
+        <span class="rail-ico brand-mark">M</span>
+      </button>
+      <button class="rail-item active" data-nav="overview" data-label="概览">
+        <span class="rail-ico">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        </span>
+        <span class="rail-text">概览</span>
+      </button>
+      <button class="rail-item" data-nav="members" data-label="成员">
+        <span class="rail-ico">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </span>
+        <span class="rail-text">成员</span>
+      </button>
+      <button class="rail-item" data-nav="subscriptions" data-label="订阅">
+        <span class="rail-ico">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        </span>
+        <span class="rail-text">订阅</span>
+      </button>
+      <button class="rail-item" data-nav="activity" data-label="活动">
+        <span class="rail-ico">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+        </span>
+        <span class="rail-text">活动</span>
+      </button>
+      <button class="rail-item" data-nav="settings" data-label="设置">
+        <span class="rail-ico">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </span>
+        <span class="rail-text">设置</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Expanded navigation drawer (overlay) -->
+  <div class="md-nav-drawer" id="nav-drawer">
+    <div class="drawer-brand">
+      <div class="brand-mark-lg">M</div>
+      <div>
+        <div class="brand-title">Material Workspace</div>
+        <div class="brand-sub">Enterprise · Standard</div>
+      </div>
+    </div>
+    <nav class="drawer-nav">
+      <button class="drawer-nav-item active" data-nav="overview">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        <span>概览</span>
+      </button>
+      <button class="drawer-nav-item" data-nav="members">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <span>成员管理</span>
+      </button>
+      <button class="drawer-nav-item" data-nav="subscriptions">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        <span>订阅与计费</span>
+      </button>
+      <button class="drawer-nav-item" data-nav="activity">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+        <span>活动日志</span>
+      </button>
+      <button class="drawer-nav-item" data-nav="settings">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span>工作区设置</span>
+      </button>
+    </nav>
+    <div class="drawer-promo">
+      <div class="promo-title">升级到 Premium</div>
+      <div class="promo-desc">解锁 SSO、审计日志与高级分析。</div>
+      <button class="md-btn md-btn-tonal md-btn-full" data-action="upgrade">查看方案</button>
+    </div>
+  </div>
+  <div class="scrim" id="nav-scrim"></div>
+
+  <!-- ============ Main ============ -->
+  <div class="md-main">
+    <!-- Top App Bar (elevation on scroll) -->
+    <header class="md-topbar" id="topbar">
+      <div class="topbar-left">
+        <button class="md-icon-btn" data-action="toggle-nav" aria-label="打开导航">
+          <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="topbar-title">
+          <span class="topbar-title-text" id="topbar-title-text">概览</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="md-search">
+          <svg class="md-search-leading" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+          <input type="text" id="global-search" placeholder="搜索…" />
+        </div>
+        <button class="md-icon-btn md-badge-wrap" aria-label="通知">
+          <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span class="md-badge-dot"></span>
+        </button>
+        <button class="md-icon-btn" aria-label="帮助">
+          <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+        </button>
+        <div class="md-avatar-chip" id="user-chip">
+          <div class="md-avatar md-avatar-sm" style="background:#6750A4">P</div>
+          <span class="avatar-chip-name">Ping Z.</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ Overview View ============ -->
+    <main class="md-view" data-view="overview" id="view-overview">
+      <div class="view-head">
+        <div>
+          <h1 class="md-headline">工作区概览</h1>
+          <p class="md-body-md on-surface-variant">欢迎回来，这是你的工作区近况。</p>
+        </div>
+        <div class="view-head-actions">
+          <!-- Material segmented buttons -->
+          <div class="md-segmented" id="period-seg">
+            <button class="seg-btn active" data-tab="7d">7 天</button>
+            <button class="seg-btn" data-tab="30d">30 天</button>
+            <button class="seg-btn" data-tab="90d">90 天</button>
+          </div>
+          <button class="md-btn md-btn-tonal" data-action="export">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            导出
+          </button>
+          <button class="md-btn md-btn-filled" data-action="invite">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            邀请成员
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid" id="kpi-grid"></div>
+
+      <!-- Chart + Quick actions -->
+      <div class="overview-grid">
+        <div class="md-card chart-card">
+          <div class="card-head">
+            <div>
+              <h3 class="card-title">活跃趋势</h3>
+              <p class="card-sub on-surface-variant">每日活跃成员与新增任务</p>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item"><i class="legend-bar primary"></i>日活成员</span>
+              <span class="legend-item"><i class="legend-bar secondary"></i>新增任务</span>
+            </div>
+          </div>
+          <div class="chart-area" id="chart"></div>
+        </div>
+
+        <div class="md-card quick-card">
+          <div class="card-head">
+            <h3 class="card-title">快捷操作</h3>
+          </div>
+          <div class="quick-list">
+            <button class="quick-item" data-action="invite">
+              <span class="quick-ico tonal-purple">
+                <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-1V8H4v3H1v2h3v3h2v-3h3v-2H6zm9 0c-1.67 0-5 .83-5 2.5V16h10v-1.5c0-1.67-3.33-2.5-5-2.5z"/></svg>
+              </span>
+              <div class="quick-text">
+                <div class="quick-label">邀请新成员</div>
+                <div class="quick-hint on-surface-variant">通过邮箱发送邀请</div>
+              </div>
+            </button>
+            <button class="quick-item" data-action="manage-plan">
+              <span class="quick-ico tonal-blue">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+              </span>
+              <div class="quick-text">
+                <div class="quick-label">管理订阅</div>
+                <div class="quick-hint on-surface-variant">查看当前套餐与用量</div>
+              </div>
+            </button>
+            <button class="quick-item" data-action="export">
+              <span class="quick-ico tonal-green">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              </span>
+              <div class="quick-text">
+                <div class="quick-label">导出报表</div>
+                <div class="quick-hint on-surface-variant">下载 CSV 或 PDF</div>
+              </div>
+            </button>
+            <button class="quick-item" data-action="go-settings">
+              <span class="quick-ico tonal-orange">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              </span>
+              <div class="quick-text">
+                <div class="quick-label">工作区设置</div>
+                <div class="quick-hint on-surface-variant">名称、时区与权限</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent activity + Plan usage -->
+      <div class="overview-grid-2">
+        <div class="md-card">
+          <div class="card-head">
+            <h3 class="card-title">最近活动</h3>
+            <button class="md-btn md-btn-text md-btn-sm" data-action="view-all-activity">查看全部</button>
+          </div>
+          <ul class="activity-list" id="activity-list"></ul>
+        </div>
+        <div class="md-card plan-card">
+          <div class="card-head">
+            <h3 class="card-title">当前套餐</h3>
+          </div>
+          <div class="plan-top">
+            <span class="md-chip md-chip-tonal">Standard</span>
+            <span class="plan-price">¥899<span class="plan-cadence">/月</span></span>
+          </div>
+          <div class="plan-usage">
+            <div class="usage-row">
+              <div class="usage-info">
+                <span class="usage-label">席位</span>
+                <span class="usage-value on-surface-variant" id="seat-text">12 / 20</span>
+              </div>
+              <div class="md-progress"><div class="md-progress-bar" id="seat-bar" style="width:60%"></div></div>
+            </div>
+            <div class="usage-row">
+              <div class="usage-info">
+                <span class="usage-label">存储空间</span>
+                <span class="usage-value on-surface-variant">48.2 / 100 GB</span>
+              </div>
+              <div class="md-progress"><div class="md-progress-bar" style="width:48%"></div></div>
+            </div>
+            <div class="usage-row">
+              <div class="usage-info">
+                <span class="usage-label">API 调用</span>
+                <span class="usage-value on-surface-variant">12.4K / 50K</span>
+              </div>
+              <div class="md-progress"><div class="md-progress-bar" style="width:25%"></div></div>
+            </div>
+          </div>
+          <button class="md-btn md-btn-outlined md-btn-full" data-action="manage-plan">管理订阅</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ============ Members View ============ -->
+    <main class="md-view hidden" data-view="members" id="view-members">
+      <div class="view-head">
+        <div>
+          <h1 class="md-headline">成员管理</h1>
+          <p class="md-body-md on-surface-variant">管理工作区成员、角色与权限。</p>
+        </div>
+        <div class="view-head-actions">
+          <button class="md-btn md-btn-outlined" data-action="export">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            导出
+          </button>
+          <button class="md-btn md-btn-filled" data-action="invite">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            邀请成员
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter chips + search -->
+      <div class="filter-bar">
+        <div class="md-search md-search-wide">
+          <svg class="md-search-leading" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+          <input type="text" id="member-search" placeholder="按姓名或邮箱搜索…" />
+        </div>
+        <div class="filter-chips" id="filter-chips">
+          <button class="md-chip md-chip-filter active" data-filter="status" data-value="all">全部</button>
+          <button class="md-chip md-chip-filter" data-filter="status" data-value="active">活跃</button>
+          <button class="md-chip md-chip-filter" data-filter="status" data-value="pending">待激活</button>
+          <button class="md-chip md-chip-filter" data-filter="status" data-value="disabled">已停用</button>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="md-card md-table-card">
+        <div class="table-wrap">
+          <table class="md-table">
+            <thead>
+              <tr>
+                <th class="col-check"><div class="md-checkbox" id="check-all" role="checkbox" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div></th>
+                <th>成员</th>
+                <th>角色</th>
+                <th>状态</th>
+                <th>最后活跃</th>
+                <th>加入时间</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="member-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot">
+          <span class="on-surface-variant" id="member-count">共 0 名成员</span>
+          <div class="md-pagination">
+            <button class="md-icon-btn md-icon-sm" disabled><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+            <span class="page-info">第 1 页，共 1 页</span>
+            <button class="md-icon-btn md-icon-sm" disabled><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ============ Subscriptions View ============ -->
+    <main class="md-view hidden" data-view="subscriptions" id="view-subscriptions">
+      <div class="view-head">
+        <div>
+          <h1 class="md-headline">订阅与计费</h1>
+          <p class="md-body-md on-surface-variant">管理你的套餐、支付方式与发票。</p>
+        </div>
+      </div>
+
+      <div class="plans-grid">
+        <div class="md-card plan-option">
+          <div class="plan-option-head">
+            <span class="md-chip">Starter</span>
+            <span class="plan-option-price">¥299<small>/月</small></span>
+          </div>
+          <div class="plan-option-features on-surface-variant">
+            <div class="plan-feature">最多 10 个席位</div>
+            <div class="plan-feature">5 GB 存储</div>
+            <div class="plan-feature">基础支持</div>
+          </div>
+          <button class="md-btn md-btn-outlined md-btn-full" data-action="switch-plan" data-plan="Starter">降级到 Starter</button>
+        </div>
+
+        <div class="md-card plan-option plan-current">
+          <div class="plan-current-badge">当前套餐</div>
+          <div class="plan-option-head">
+            <span class="md-chip md-chip-tonal">Standard</span>
+            <span class="plan-option-price">¥899<small>/月</small></span>
+          </div>
+          <div class="plan-option-features on-surface-variant">
+            <div class="plan-feature">最多 20 个席位</div>
+            <div class="plan-feature">100 GB 存储</div>
+            <div class="plan-feature">优先支持</div>
+          </div>
+          <button class="md-btn md-btn-tonal md-btn-full" disabled>当前使用中</button>
+        </div>
+
+        <div class="md-card plan-option">
+          <div class="plan-option-head">
+            <span class="md-chip md-chip-tonal" style="background:var(--tertiary-container);color:var(--on-tertiary-container)">Premium</span>
+            <span class="plan-option-price">¥2,499<small>/月</small></span>
+          </div>
+          <div class="plan-option-features on-surface-variant">
+            <div class="plan-feature">无限席位</div>
+            <div class="plan-feature">1 TB 存储</div>
+            <div class="plan-feature">SSO 与审计日志</div>
+            <div class="plan-feature">专属客户经理</div>
+          </div>
+          <button class="md-btn md-btn-filled md-btn-full" data-action="switch-plan" data-plan="Premium">升级到 Premium</button>
+        </div>
+      </div>
+
+      <div class="md-card invoice-card">
+        <div class="card-head">
+          <h3 class="card-title">最近发票</h3>
+          <button class="md-btn md-btn-text md-btn-sm" data-action="view-all-invoices">查看全部</button>
+        </div>
+        <div class="invoice-list" id="invoice-list"></div>
+      </div>
+    </main>
+
+    <!-- ============ Activity View ============ -->
+    <main class="md-view hidden" data-view="activity" id="view-activity">
+      <div class="view-head">
+        <div>
+          <h1 class="md-headline">活动日志</h1>
+          <p class="md-body-md on-surface-variant">工作区内所有操作的完整记录。</p>
+        </div>
+      </div>
+      <div class="md-card">
+        <ul class="timeline-list" id="timeline-list"></ul>
+      </div>
+    </main>
+
+    <!-- ============ Settings View ============ -->
+    <main class="md-view hidden" data-view="settings" id="view-settings">
+      <div class="view-head">
+        <div>
+          <h1 class="md-headline">工作区设置</h1>
+          <p class="md-body-md on-surface-variant">配置工作区基本信息与安全策略。</p>
+        </div>
+        <div class="view-head-actions">
+          <button class="md-btn md-btn-text" data-action="discard-settings">放弃</button>
+          <button class="md-btn md-btn-filled" data-action="save-settings">保存更改</button>
+        </div>
+      </div>
+
+      <div class="settings-sections">
+        <div class="md-card">
+          <div class="card-head"><h3 class="card-title">基本信息</h3></div>
+          <div class="settings-rows">
+            <div class="setting-row">
+              <label class="setting-label">工作区名称</label>
+              <input type="text" class="md-text-field" value="Material Workspace" id="setting-name" />
+            </div>
+            <div class="setting-row">
+              <label class="setting-label">默认时区</label>
+              <div class="md-select">
+                <select id="setting-tz">
+                  <option>UTC+08:00 北京</option>
+                  <option>UTC+09:00 东京</option>
+                  <option>UTC-08:00 太平洋时间</option>
+                </select>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label class="setting-label">工作区 URL</label>
+              <div class="url-field">
+                <span class="url-prefix on-surface-variant">readify.io/</span>
+                <input type="text" class="md-text-field" value="material-ws" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="md-card">
+          <div class="card-head"><h3 class="card-title">安全策略</h3></div>
+          <div class="settings-rows">
+            <div class="switch-row">
+              <div>
+                <div class="switch-label">双因素认证</div>
+                <div class="switch-hint on-surface-variant">要求所有成员启用 2FA</div>
+              </div>
+              <button class="md-switch active" data-switch="mfa" role="switch" aria-checked="true"><span class="md-switch-thumb"></span></button>
+            </div>
+            <div class="switch-row">
+              <div>
+                <div class="switch-label">SSO 单点登录</div>
+                <div class="switch-hint on-surface-variant">通过 SAML 2.0 集成企业身份提供商</div>
+              </div>
+              <button class="md-switch" data-switch="sso" role="switch" aria-checked="false"><span class="md-switch-thumb"></span></button>
+            </div>
+            <div class="switch-row">
+              <div>
+                <div class="switch-label">会话超时</div>
+                <div class="switch-hint on-surface-variant">空闲 30 分钟后自动登出</div>
+              </div>
+              <button class="md-switch active" data-switch="timeout" role="switch" aria-checked="true"><span class="md-switch-thumb"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="md-card danger-card">
+          <div class="card-head"><h3 class="card-title" style="color:var(--error)">危险操作</h3></div>
+          <div class="danger-row">
+            <div>
+              <div class="switch-label">删除工作区</div>
+              <div class="switch-hint on-surface-variant">永久删除所有数据，此操作不可撤销。</div>
+            </div>
+            <button class="md-btn md-btn-text" style="color:var(--error)" data-action="delete-workspace">删除工作区</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============ Extended FAB (Overview only) ============ -->
+  <button class="md-fab" id="fab" data-action="invite">
+    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    <span class="fab-label">邀请</span>
+  </button>
+
+  <!-- ============ Invite Dialog ============ -->
+  <div class="md-dialog-overlay hidden" id="invite-dialog">
+    <div class="md-dialog" role="dialog" aria-modal="true" aria-labelledby="invite-title">
+      <div class="md-dialog-head">
+        <h2 class="md-dialog-title" id="invite-title">邀请新成员</h2>
+      </div>
+      <div class="md-dialog-body">
+        <div class="md-field">
+          <label for="invite-email">邮箱地址</label>
+          <input type="email" id="invite-email" class="md-text-field" placeholder="name@company.com" />
+          <span class="md-field-hint on-surface-variant">多个邮箱用逗号分隔</span>
+        </div>
+        <div class="md-field">
+          <label>角色</label>
+          <div class="md-select md-select-full">
+            <select id="invite-role">
+              <option value="member">成员 — 可查看和编辑</option>
+              <option value="admin">管理员 — 可管理成员</option>
+              <option value="guest">访客 — 只读访问</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="md-dialog-actions">
+        <button class="md-btn md-btn-text" data-action="close-dialog">取消</button>
+        <button class="md-btn md-btn-filled" data-action="send-invite" id="send-invite">发送邀请</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Snackbar host ============ -->
+  <div class="md-snackbar-host" id="snackbar-host" aria-live="polite"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

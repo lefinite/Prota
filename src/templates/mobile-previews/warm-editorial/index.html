@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>炉边 · Warm Editorial</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__word">炉边</span>
+              <span class="brand-bar__kicker">HEARTH · 人物与手艺专栏 · 第 64 期</span>
+              <button class="brand-bar__icon" type="button" data-toast="每周五清晨送达你的信箱" aria-label="订阅">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：封面访谈（签名：陶土色首字下沉）-->
+            <section class="hero" aria-label="本期封面">
+              <p class="hero__rubric">手艺 · 木作</p>
+              <h1 class="hero__title">「刨花落下来的<br />时候，一天才算开始」</h1>
+              <p class="hero__standfirst">木匠陈守拙，在城郊的工坊里做了四十年椅子。他说手艺不难，难的是坐得住。</p>
+              <div class="hero__byline">
+                <span>采访 · 苏晏</span>
+                <span>摄影 · 老周</span>
+                <span>24 分钟</span>
+              </div>
+              <button class="btn-terra" type="button" id="readBtn">开始阅读</button>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="本期">
+              <div class="duo__card">
+                <h2 class="duo__title">本期还有</h2>
+                <ul class="duo__list">
+                  <li><span>面包师的四点三十</span><b>18 分</b></li>
+                  <li><span>修钢笔的最后三家店</span><b>22 分</b></li>
+                  <li><span>一位抄谱人</span><b>15 分</b></li>
+                </ul>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">订阅</h2>
+                <p class="duo__num">12,846<span> 位读者</span></p>
+                <div class="duo__quote">
+                  <p>「每周五最值得等待的一封信。」</p>
+                  <span>—— 读者 一苇</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. Feed：往期拾遗 -->
+            <section class="feed" aria-label="往期">
+              <div class="feed__head">
+                <h2 class="feed__title">往期拾遗</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="craft">手艺</button>
+                  <button class="chip" type="button" data-filter="city">城记</button>
+                  <button class="chip" type="button" data-filter="essay">随笔</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="craft">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">修一把伞，等一场雨</span>
+                    <span class="feed-item__meta">第 63 期 · 19 分钟</span>
+                  </div>
+                  <button class="clip" type="button" aria-label="剪报" aria-pressed="false">✂</button>
+                </li>
+                <li class="feed-item" data-kind="city">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">凌晨四点的批发市场</span>
+                    <span class="feed-item__meta">第 62 期 · 21 分钟</span>
+                  </div>
+                  <button class="clip" type="button" aria-label="剪报" aria-pressed="false">✂</button>
+                </li>
+                <li class="feed-item" data-kind="essay">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">慢递：写给十年后的信</span>
+                    <span class="feed-item__meta">第 61 期 · 16 分钟</span>
+                  </div>
+                  <button class="clip is-on" type="button" aria-label="剪报" aria-pressed="true">✂</button>
+                </li>
+                <li class="feed-item" data-kind="craft">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">裁缝店的最后一件旗袍</span>
+                    <span class="feed-item__meta">第 60 期 · 24 分钟</span>
+                  </div>
+                  <button class="clip" type="button" aria-label="剪报" aria-pressed="false">✂</button>
+                </li>
+                <li class="feed-item" data-kind="city">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">天桥下面的下棋人</span>
+                    <span class="feed-item__meta">第 59 期 · 14 分钟</span>
+                  </div>
+                  <button class="clip" type="button" aria-label="剪报" aria-pressed="false">✂</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="来信">
+              <input class="action__input" id="letterInput" type="text" placeholder="给编辑部写一句读者来信…" />
+              <div class="action__row">
+                <button class="btn-terra" type="button" id="sendBtn">寄出来信</button>
+                <button class="btn-ghost" type="button" data-toast="全部 64 期已可离线阅读">离线缓存</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="本期">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h4"/></svg>
+              <span>本期</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="往期">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 19h5l-5-5v5zM15 4l5 5-9 9H6v-5l9-9z"/></svg>
+              <span>往期</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="朗读" aria-label="朗读">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>
+              <span>朗读</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="剪报">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="6.5" cy="7" r="3"/><circle cx="6.5" cy="17" r="3"/><path d="M9 8.5L20 17M9 15.5L20 7"/></svg>
+              <span>剪报</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>黑鸟训练 BLKBIRD · Nike</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar status-bar--on-dark" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 17l8.5-9.5 3 4L21 6" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">黑鸟训练</span>
+                <span class="brand-bar__sub">会员 · 第 32 训练周</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="购物袋：2 件装备待结算" aria-label="购物袋">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：全出血黑底 + 巨型大写字块 -->
+            <section class="hero-band" aria-label="本周跑量">
+              <div class="hero-band__inner">
+                <p class="hero-band__eyebrow">WEEK 32 · 会员训练周</p>
+                <h2 class="hero-band__display">
+                  RUN<br />THE<br />CITY
+                </h2>
+                <p class="hero-band__stat">
+                  <b>31.5</b><span>KM<br />本周跑量</span>
+                </p>
+                <p class="hero-band__note">比上周多 12%，配速稳定在 5'18"/km</p>
+                <div class="hero-band__row" role="list">
+                  <span role="listitem"><b>4</b> 次训练</span>
+                  <span role="listitem"><b>3:42</b> 总时长</span>
+                  <span role="listitem"><b>2</b> 次间歇</span>
+                </div>
+              </div>
+              <button class="hero-band__cta" type="button" data-toast="加入城市跑团，周日 6:30 江滨集合">加入城市跑团</button>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="课表与目标">
+              <div class="duo-card">
+                <h3 class="duo-card__title">本周课表</h3>
+                <div class="plan-days">
+                  <i class="is-done">一</i><i class="is-done">二</i><i class="is-rest">三</i><i class="is-today">四</i><i>五</i><i>六</i><i>日</i>
+                </div>
+                <p class="duo-card__note">今天：间歇跑 8×400m · 操场见</p>
+                <button class="duo-card__link" type="button" data-toast="完整课表已打开：本周 5 练 2 休">查看完整课表</button>
+              </div>
+              <div class="duo-card">
+                <h3 class="duo-card__title">月度目标</h3>
+                <div class="goal-row">
+                  <div class="goal-row__head"><span>跑量</span><b>158 / 200 KM</b></div>
+                  <div class="goal-row__track"><span class="goal-row__fill" style="--w: 79%"></span></div>
+                </div>
+                <div class="goal-row">
+                  <div class="goal-row__head"><span>次数</span><b>16 / 20 次</b></div>
+                  <div class="goal-row__track"><span class="goal-row__fill goal-row__fill--grey" style="--w: 80%"></span></div>
+                </div>
+                <p class="duo-card__note">还差 42 KM，冲刺会员徽章「城跑 200」</p>
+              </div>
+            </section>
+
+            <!-- 4. 训练记录 Feed -->
+            <section class="feed" aria-label="最近训练">
+              <div class="feed__head">
+                <h3 class="feed__title">最近训练</h3>
+                <div class="chips" role="tablist" aria-label="筛选训练记录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="missed">已跳过</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">🏃</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">晨跑 · 江滨轻松跑</span>
+                    <span class="feed-item__meta">昨天 06:40 · 8.2 KM · 44'12" <em class="feed-item__chip">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">5'23"</b>
+                  <button class="feed-item__star" type="button" aria-label="为这条训练叫好" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">⚡</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">间歇跑 · 8×400m</span>
+                    <span class="feed-item__meta">周二 19:00 · 6.8 KM · 39'05" <em class="feed-item__chip">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">4'48"</b>
+                  <button class="feed-item__star is-on" type="button" aria-label="为这条训练叫好" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="missed">
+                  <span class="feed-item__glyph" aria-hidden="true">🏋️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">力量训练 · 下肢爆发</span>
+                    <span class="feed-item__meta">周一 21:30 · 计划 40 分钟 <em class="feed-item__chip feed-item__chip--missed">已跳过</em></span>
+                  </div>
+                  <b class="feed-item__amount">—</b>
+                  <button class="feed-item__star" type="button" aria-label="为这条训练叫好" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">🏔️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">长距离 · 山地 LSD</span>
+                    <span class="feed-item__meta">上周日 07:00 · 21.1 KM · 1:58'47" <em class="feed-item__chip">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">5'37"</b>
+                  <button class="feed-item__star" type="button" aria-label="为这条训练叫好" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">🚴</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">交叉训练 · 骑行恢复</span>
+                    <span class="feed-item__meta">上周六 09:00 · 18.0 KM · 51'20" <em class="feed-item__chip">已完成</em></span>
+                  </div>
+                  <b class="feed-item__amount">低强度</b>
+                  <button class="feed-item__star" type="button" aria-label="为这条训练叫好" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="开始训练">
+              <input class="quick-input" id="quickInput" type="text" maxlength="24" placeholder="今晚练什么？写一句给自己" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="runBtn">开始跑步</button>
+                <button class="btn-ghost" type="button" data-toast="会员日：新款缓震跑鞋已加入愿望单">逛装备</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="训练">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 9v6M20 9v6M7 7v10M17 7v10M7 12h10" />
+              </svg>
+              <span>训练</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="开跑" aria-label="开始跑步">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 4l13 8-13 8V4z" />
+              </svg>
+              <span>开跑</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="装备">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" />
+              </svg>
+              <span>装备</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

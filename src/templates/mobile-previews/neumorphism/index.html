@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>绒音 Softwave · Neumorphism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">绒音</span>
+                <span class="brand-bar__sub">23:12 · 晚安，该松口气了</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已同步手环，入睡后自动调暗" aria-label="设备连接设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 6l-6 6 6 6M15 6l6 6-6 6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：软质音量旋钮 -->
+            <section class="hero-card" aria-label="正在播放的场景">
+              <div class="hero-card__head">
+                <span class="hero-card__label">正在播放</span>
+                <em class="hero-card__scene">细雨敲窗 · 篝火余温</em>
+              </div>
+              <div class="dial-zone">
+                <button class="dial-btn" type="button" id="volDown" aria-label="调低音量">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <path d="M5 12h14" />
+                  </svg>
+                </button>
+                <div class="dial" id="dial" aria-label="音量控制">
+                  <svg class="dial__ring" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle class="dial__track" cx="60" cy="60" r="52" />
+                    <circle class="dial__fill" id="dialFill" cx="60" cy="60" r="52" />
+                  </svg>
+                  <div class="dial__well">
+                    <b class="dial__num" id="volNum">68</b>
+                    <span class="dial__unit">音量</span>
+                  </div>
+                </div>
+                <button class="dial-btn" type="button" id="volUp" aria-label="调高音量">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </button>
+              </div>
+              <div class="hero-card__foot">
+                <span class="hero-card__timer" id="timerLabel">30 分钟后自动停止</span>
+                <button class="play-btn" type="button" id="playBtn" aria-pressed="true" aria-label="暂停播放">
+                  <svg class="play-btn__pause" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6.5" y="5" width="4" height="14" rx="1.6" />
+                    <rect x="13.5" y="5" width="4" height="14" rx="1.6" />
+                  </svg>
+                  <svg class="play-btn__play" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5.5v13l11-6.5z" />
+                  </svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="昨夜睡眠与定时">
+              <div class="duo-card">
+                <h2 class="duo-card__title">昨夜睡眠</h2>
+                <p class="duo-card__num">7<span>小时</span>42<span>分</span></p>
+                <p class="duo-card__note">深睡 2h18m · 比上周多 26 分钟</p>
+                <div class="sleep-bars" aria-hidden="true">
+                  <i style="--h: 46%"></i><i style="--h: 78%"></i><i style="--h: 62%"></i><i style="--h: 92%"></i><i style="--h: 55%"></i><i style="--h: 70%"></i><i style="--h: 84%"></i>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">定时与唤醒</h2>
+                <div class="chips" role="tablist" aria-label="定时关闭">
+                  <button class="chip" type="button" data-min="15">15 分</button>
+                  <button class="chip is-active" type="button" data-min="30">30 分</button>
+                  <button class="chip" type="button" data-min="60">60 分</button>
+                  <button class="chip" type="button" data-min="0">不限</button>
+                </div>
+                <div class="switch-row">
+                  <span class="switch-row__label">明早柔光唤醒</span>
+                  <button class="switch" type="button" role="switch" aria-checked="true" aria-label="明早柔光唤醒">
+                    <i class="switch__knob"></i>
+                  </button>
+                </div>
+                <p class="duo-card__note">7:20 用鸟鸣声渐亮叫醒你</p>
+              </div>
+            </section>
+
+            <!-- 4. 声音场景 Feed -->
+            <section class="feed" aria-label="声音场景">
+              <div class="feed__head">
+                <h2 class="feed__title">场景音库</h2>
+                <div class="chips chips--filter" role="tablist" aria-label="筛选场景">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="fav">最爱</button>
+                  <button class="chip" type="button" data-filter="focus">专注</button>
+                  <button class="chip" type="button" data-filter="sleep">助眠</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="fav">
+                  <span class="feed-item__glyph" aria-hidden="true">🌧️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">细雨敲窗</span>
+                    <span class="feed-item__meta">雨声 · 45 分钟 <em class="feed-item__chip">最爱</em></span>
+                  </div>
+                  <b class="feed-item__amount">正在播</b>
+                  <button class="feed-item__star is-on" type="button" aria-label="加入最爱" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sleep">
+                  <span class="feed-item__glyph" aria-hidden="true">🔥</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">篝火余温</span>
+                    <span class="feed-item__meta">木柴噼啪 · 循环 <em class="feed-item__chip">助眠</em></span>
+                  </div>
+                  <b class="feed-item__amount">循环</b>
+                  <button class="feed-item__star" type="button" aria-label="加入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sleep">
+                  <span class="feed-item__glyph" aria-hidden="true">🌊</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">深海潜流</span>
+                    <span class="feed-item__meta">低频涌动 · 60 分钟 <em class="feed-item__chip">助眠</em></span>
+                  </div>
+                  <b class="feed-item__amount">60min</b>
+                  <button class="feed-item__star" type="button" aria-label="加入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="focus">
+                  <span class="feed-item__glyph" aria-hidden="true">📖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">图书馆翻页</span>
+                    <span class="feed-item__meta">极轻底噪 · 循环 <em class="feed-item__chip">专注</em></span>
+                  </div>
+                  <b class="feed-item__amount">循环</b>
+                  <button class="feed-item__star" type="button" aria-label="加入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="fav">
+                  <span class="feed-item__glyph" aria-hidden="true">🐈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">猫咕噜</span>
+                    <span class="feed-item__meta">暖绒颤音 · 30 分钟 <em class="feed-item__chip">最爱</em></span>
+                  </div>
+                  <b class="feed-item__amount">30min</b>
+                  <button class="feed-item__star is-on" type="button" aria-label="加入最爱" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="focus">
+                  <span class="feed-item__glyph" aria-hidden="true">☕</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">街角咖啡馆</span>
+                    <span class="feed-item__meta">人声杯碟 · 90 分钟 <em class="feed-item__chip">专注</em></span>
+                  </div>
+                  <b class="feed-item__amount">90min</b>
+                  <button class="feed-item__star" type="button" aria-label="加入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="记录此刻">
+              <input class="quick-input" id="quickInput" type="text" maxlength="24" placeholder="给今晚起个名字，如：落雨的周六" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="sleepBtn">开始入睡</button>
+                <button class="btn-ghost" type="button" data-toast="已换一批场景，冷门宝藏也有">换一批场景</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="场景">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>场景</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="睡眠">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 13.5A8.5 8.5 0 1 1 10.5 4A6.8 6.8 0 0 0 20 13.5z" />
+              </svg>
+              <span>睡眠</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="混合" aria-label="声音混合台">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M6 4v10M12 4v16M18 4v7" /><circle cx="6" cy="17" r="2.4" /><circle cx="18" cy="14" r="2.4" />
+              </svg>
+              <span>混合</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="手环">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="6" width="10" height="12" rx="3" /><path d="M9.5 3.5h5M9.5 20.5h5" />
+              </svg>
+              <span>手环</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

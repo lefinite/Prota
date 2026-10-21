@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>LEVELS 代谢 · 血糖追踪</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 14c3 0 3-5 6-5s3 8 6 8 3-11 6-11" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">LEVELS 代谢</span>
+                <span class="brand-bar__sub" id="syncSub">8 月 15 日 · 传感器 12 天前佩戴</span>
+              </div>
+              <button class="brand-bar__icon" type="button" id="syncBtn" aria-label="同步传感器数据">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                  <path d="M20 5v6h-6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：当前血糖曲线 -->
+            <section class="glucose" aria-label="当前血糖">
+              <div class="glucose__head">
+                <span class="glucose__label">当前葡萄糖 · CURRENT GLUCOSE</span>
+                <span class="glucose__trend" id="glucoseTrend">平稳 +2</span>
+              </div>
+              <p class="glucose__value" id="glucoseValue">96<span>mg/dL</span></p>
+              <div class="glucose__chart" role="img" aria-label="今日血糖曲线，整体平稳处于目标区间内">
+                <svg viewBox="0 0 300 90" preserveAspectRatio="none">
+                  <line class="glucose__grid" x1="0" y1="30" x2="300" y2="30" />
+                  <line class="glucose__grid" x1="0" y1="60" x2="300" y2="60" />
+                  <path class="glucose__curve" d="M0,52 C25,50 40,40 65,38 S105,46 130,42 S175,24 200,20 S255,28 300,25" />
+                </svg>
+              </div>
+              <div class="glucose__scale">
+                <div class="glucose__scale-track">
+                  <span class="glucose__zone" aria-hidden="true"></span>
+                  <i class="glucose__marker" id="glucoseMarker" style="--x: 30%"></i>
+                </div>
+                <div class="glucose__scale-nums">
+                  <span>60</span>
+                  <span class="glucose__zone-label">目标 70–140</span>
+                  <span>180</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="代谢分与稳定时间">
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日代谢分</h2>
+                <p class="duo-card__score">87<span>/100</span></p>
+                <div class="score-row">
+                  <div class="score-row__head"><span>饮食</span><b>82</b></div>
+                  <div class="score-row__track"><span class="score-row__fill" style="--w: 82%"></span></div>
+                </div>
+                <div class="score-row">
+                  <div class="score-row__head"><span>运动</span><b>94</b></div>
+                  <div class="score-row__track"><span class="score-row__fill" style="--w: 94%"></span></div>
+                </div>
+                <div class="score-row">
+                  <div class="score-row__head"><span>睡眠</span><b>88</b></div>
+                  <div class="score-row__track"><span class="score-row__fill" style="--w: 88%"></span></div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">稳定时间</h2>
+                <div class="ring-wrap">
+                  <svg class="ring" viewBox="0 0 64 64" role="img" aria-label="今日 92% 时间血糖在目标区间内">
+                    <circle class="ring__track" cx="32" cy="32" r="26" />
+                    <circle class="ring__fill" cx="32" cy="32" r="26" style="--pct: 92%" />
+                  </svg>
+                  <div class="ring__label">
+                    <b>92%</b>
+                    <span>在区间</span>
+                  </div>
+                </div>
+                <p class="duo-card__note">22.1 小时平稳 · 较昨日 <b>+4%</b></p>
+              </div>
+            </section>
+
+            <!-- 4. 餐食 Feed -->
+            <section class="feed" aria-label="今日餐食">
+              <div class="feed__head">
+                <h2 class="feed__title">今日餐食</h2>
+                <div class="chips" role="tablist" aria-label="筛选餐食">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="breakfast">早餐</button>
+                  <button class="chip" type="button" data-filter="lunch">午餐</button>
+                  <button class="chip" type="button" data-filter="snack">加餐</button>
+                  <button class="chip" type="button" data-filter="high">反应偏高</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="breakfast">
+                  <span class="feed-item__glyph" aria-hidden="true">🥣</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">燕麦碗 · 蓝莓</span>
+                    <span class="feed-item__meta">08:12 · 碳水 45g · 峰值 +18</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="good">反应良好</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏常吃" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="lunch">
+                  <span class="feed-item__glyph" aria-hidden="true">🍗</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">鸡胸饭 · 西兰花</span>
+                    <span class="feed-item__meta">12:40 · 碳水 62g · 峰值 +24</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="good">反应良好</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏常吃" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="snack">
+                  <span class="feed-item__glyph" aria-hidden="true">☕</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">拿铁 · 半糖</span>
+                    <span class="feed-item__meta">15:20 · 碳水 12g · 峰值 +31</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="mid">反应一般</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏常吃" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="high">
+                  <span class="feed-item__glyph" aria-hidden="true">🍜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">牛肉拉面</span>
+                    <span class="feed-item__meta">18:05 · 碳水 89g · 峰值 +52</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="high">反应偏高</em>
+                  <button class="feed-item__star" type="button" aria-label="收藏常吃" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="snack">
+                  <span class="feed-item__glyph" aria-hidden="true">🍎</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">苹果 · 花生酱</span>
+                    <span class="feed-item__meta">20:30 · 碳水 20g · 峰值 +21</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="good">反应良好</em>
+                  <button class="feed-item__star is-on" type="button" aria-label="收藏常吃" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="记录餐食">
+              <input class="quick-input" id="mealInput" type="text" placeholder="记一笔：燕麦碗 · 45g 碳水……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="logBtn">记录餐食</button>
+                <button class="btn-ghost" type="button" data-toast="今日报告已生成 · 稳定性超过 91% 的用户">今日报告</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="今日">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" />
+              </svg>
+              <span>今日</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="趋势">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 17l5-6 4 3 6-8" /><path d="M14 6h4v4" />
+              </svg>
+              <span>趋势</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="拍照记录" aria-label="拍照记录餐食">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
+                <circle cx="12" cy="13" r="3.2" />
+              </svg>
+              <span>拍照记录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="餐食">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 3v7a2 2 0 0 0 4 0V3M7 12v9" /><path d="M16 3c-2 0-3 2.2-3 5s1 4.5 3 4.5 3-1.7 3-4.5-1-5-3-5zM16 12.5V21" />
+              </svg>
+              <span>餐食</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

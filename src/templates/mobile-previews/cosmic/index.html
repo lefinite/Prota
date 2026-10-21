@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>观星志 · Cosmic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
+                  <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">观星志</span>
+                <span class="brand-bar__sub">佘山观测点 · 今晚 20:00–24:00</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已定位：佘山观测点 · Bortle 4" aria-label="重新定位观测点">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：观星指数 + 轨道环 -->
+            <section class="sky-card" aria-label="今夜观星指数">
+              <div class="sky-card__index">
+                <span class="sky-card__label">观星指数</span>
+                <p class="sky-card__score">92<span class="sky-card__score-note">/ 100 · 极佳</span></p>
+                <ul class="sky-card__stats">
+                  <li><b>4.2</b><span>月龄</span></li>
+                  <li><b>Ⅱ 级</b><span>视宁度</span></li>
+                  <li><b>8%</b><span>云量</span></li>
+                </ul>
+              </div>
+
+              <div class="orbit" aria-hidden="true">
+                <i class="orbit__ring orbit__ring--outer"></i>
+                <i class="orbit__ring orbit__ring--mid"></i>
+                <i class="orbit__ring orbit__ring--inner"></i>
+                <span class="orbit__spin orbit__spin--slow"><i class="orbit__planet orbit__planet--jupiter"></i></span>
+                <span class="orbit__spin orbit__spin--fast"><i class="orbit__planet orbit__planet--saturn"></i></span>
+                <span class="orbit__moon" aria-hidden="true"></span>
+                <span class="orbit__core"></span>
+              </div>
+
+              <p class="sky-card__foot">深空窗口 22:40 起 · 月落 23:41 · 无月光干扰</p>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="月相与今夜目标">
+              <div class="duo-card">
+                <h2 class="duo-card__title">月相 · 蛾眉月</h2>
+                <div class="moon" role="img" aria-label="蛾眉月，照亮右侧 18%">
+                  <i class="moon__dark"></i>
+                  <i class="moon__lit"></i>
+                </div>
+                <div class="moon-meta">
+                  <span>照度 <b>18%</b></span>
+                  <span>月落 <b>23:41</b></span>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">今夜目标</h2>
+                <p class="duo-card__num">5<span>/8 已记录</span></p>
+                <p class="duo-card__note">连续记录 6 晚，超过 82% 的同好</p>
+                <div class="steps">
+                  <i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i></i><i></i><i></i>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 目标 Feed -->
+            <section class="feed" aria-label="今夜目标清单">
+              <div class="feed__head">
+                <h2 class="feed__title">今夜目标</h2>
+                <div class="chips" role="tablist" aria-label="筛选天体类型">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="planet">行星</button>
+                  <button class="chip" type="button" data-filter="deep">深空</button>
+                  <button class="chip" type="button" data-filter="double">双星</button>
+                  <button class="chip" type="button" data-filter="moon">月面</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="planet">
+                  <span class="feed-item__glyph" aria-hidden="true">🪐</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">木星 · 木卫三凌木</span>
+                    <span class="feed-item__meta">21:14 升起 · 星等 −2.4 <em class="feed-item__chip">大冲临近</em></span>
+                  </div>
+                  <b class="feed-item__mag">−2.4</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="deep">
+                  <span class="feed-item__glyph" aria-hidden="true">🌌</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">M31 仙女座星系</span>
+                    <span class="feed-item__meta">双筒可见 · 视直径 3°</span>
+                  </div>
+                  <b class="feed-item__mag">4.8</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="planet">
+                  <span class="feed-item__glyph" aria-hidden="true">🪐</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">土星 · 光环倾角 3.8°</span>
+                    <span class="feed-item__meta">23:02 中天 · 卡西尼缝可辨</span>
+                  </div>
+                  <b class="feed-item__mag">0.7</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="deep">
+                  <span class="feed-item__glyph" aria-hidden="true">✨</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">M42 猎户座大星云</span>
+                    <span class="feed-item__meta">肉眼可辨 · 佩剑位置</span>
+                  </div>
+                  <b class="feed-item__mag">4.0</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="double">
+                  <span class="feed-item__glyph" aria-hidden="true">💫</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">辇道增七 · 金蓝双星</span>
+                    <span class="feed-item__meta">小望远镜即可分解 <em class="feed-item__chip">双星</em></span>
+                  </div>
+                  <b class="feed-item__mag">3.9</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="moon">
+                  <span class="feed-item__glyph" aria-hidden="true">🌙</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阿尔卑斯月谷</span>
+                    <span class="feed-item__meta">明暗界线附近 · 22:30 最佳</span>
+                  </div>
+                  <b class="feed-item__mag">−12.7</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="添加观测目标">
+              <input class="quick-input" id="quickInput" type="text" placeholder="记一个目标，如：M13 武仙座球状星团" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="addBtn">加入今夜计划</button>
+                <button class="btn-ghost" type="button" data-toast="本夜星图已生成 · 含 8 个目标方位">生成星图</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="天象">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.5 19a4.5 4.5 0 1 0-1-8.9A6 6 0 0 0 4.7 12.3 3.5 3.5 0 0 0 6 19h11.5z" />
+              </svg>
+              <span>天象</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="星图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18M12 3c3 3.5 3 14 0 18-3-4-3-14.5 0-18z" />
+              </svg>
+              <span>星图</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="记录" aria-label="记录观测">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+              <span>记录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="目标">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5" />
+                <circle cx="12" cy="12" r="3.5" />
+              </svg>
+              <span>目标</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

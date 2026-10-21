@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>结绳 · Sanity 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__node" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">结绳 CMS</span>
+                <span class="brand-bar__sub mono">DATASET · city-guide · rev 4,182</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="Webhook：5 个监听中" aria-label="部署">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：结构化内容（签名：字段树 + 状态点）-->
+            <section class="hero" aria-label="正在编辑的文档">
+              <div class="hero__doc">
+                <div class="hero__type mono">TYPE: restaurant</div>
+                <h1 class="hero__title">半山小馆</h1>
+                <div class="hero__fields">
+                  <div class="field">
+                    <span class="mono">name</span>
+                    <b>string · 半山小馆</b>
+                  </div>
+                  <div class="field">
+                    <span class="mono">rating</span>
+                    <b>number · 4.7</b>
+                  </div>
+                  <div class="field">
+                    <span class="mono">tags</span>
+                    <b>array · 川菜·露台·夜宵（3）</b>
+                  </div>
+                  <div class="field field--warn">
+                    <span class="mono">cover</span>
+                    <b>image · ⚠ 未上传</b>
+                  </div>
+                </div>
+                <div class="hero__status">
+                  <span class="dot"></span>
+                  <span class="mono">DRAFT · 未发布</span>
+                  <span class="mono">编辑于 2 分钟前</span>
+                </div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-red" type="button" id="publishBtn">Publish</button>
+                <button class="btn-ghost" type="button" data-toast="已复制 GROQ 查询语句">Copy GROQ</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="数据集">
+              <div class="duo__card">
+                <h2 class="duo__title mono">DOCUMENTS</h2>
+                <p class="duo__num">342</p>
+                <p class="duo__meta">本周新增 18 · 草稿 7</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">BUILD</h2>
+                <p class="duo__num">2.1<span>s</span></p>
+                <div class="meter"><i style="--w: 88%"></i></div>
+                <p class="duo__meta">CDN 命中 96% · 边缘 12 处</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：内容流 -->
+            <section class="feed" aria-label="最近编辑">
+              <div class="feed__head">
+                <h2 class="feed__title mono">RECENT EDITS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="pub">已发布</button>
+                  <button class="chip" type="button" data-filter="draft">草稿</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="draft">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">半山小馆</span>
+                    <span class="feed-item__meta mono">restaurant · 你 · 2 分钟前 · 草稿</span>
+                  </div>
+                  <em class="state st-draft">DRAFT</em>
+                </li>
+                <li class="feed-item" data-kind="pub">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">巷口咖啡馆：三周年改造记</span>
+                    <span class="feed-item__meta mono">article · 阿茂 · 1 小时前</span>
+                  </div>
+                  <em class="state st-live">LIVE</em>
+                </li>
+                <li class="feed-item" data-kind="pub">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">十月活动日历（全 42 场）</span>
+                    <span class="feed-item__meta mono">event-list · 阿茂 · 昨天</span>
+                  </div>
+                  <em class="state st-live">LIVE</em>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">老城徒步路线 v3</span>
+                    <span class="feed-item__meta mono">route · 小满 · 昨天 · 待补图</span>
+                  </div>
+                  <em class="state st-draft">DRAFT</em>
+                </li>
+                <li class="feed-item" data-kind="pub">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">二十四节气 · 霜降专题</span>
+                    <span class="feed-item__meta mono">topic · 定时发布 · 10-23 06:00</span>
+                  </div>
+                  <em class="state st-sched">SCHEDULED</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="查询">
+              <div class="chips chips--type">
+                <button class="chip is-active" type="button">restaurant</button>
+                <button class="chip" type="button">article</button>
+                <button class="chip" type="button">route</button>
+              </div>
+              <input class="action__input mono" id="groqInput" type="text" placeholder='*[_type == "restaurant" && rating > 4.5]' />
+              <div class="action__row">
+                <button class="btn-red" type="button" id="runBtn">Run query</button>
+                <button class="btn-ghost" type="button" data-toast="Vision 已加载 342 张图并打标">Vision 打标</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="内容">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h4"/></svg>
+              <span>内容</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="结构">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v6M12 14v6M5 7h4v4H5zM15 13h4v4h-4z"/><path d="M7 11l3 3M17 13l-3-3"/></svg>
+              <span>结构</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="媒体">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="13" width="7" height="7"/><rect x="14" y="13" width="7" height="7"/></svg>
+              <span>媒体</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="部署">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
+              <span>部署</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>coinbook · Coinbase</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">c</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">coinbook</span>
+                <span class="brand-bar__sub">资产总览 · 实时行情</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="价格预警已开启：BTC 跌破 ¥58,000 提醒" aria-label="通知设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：近黑资产卡 -->
+            <section class="hero-asset" aria-label="总资产">
+              <div class="hero-asset__top">
+                <span class="hero-asset__label">总资产 · CNY 估值</span>
+                <span class="hero-asset__chip" data-kind="up">24h +2.41%</span>
+              </div>
+              <p class="hero-asset__amount">¥86,420<span class="hero-asset__amount-dec">.55</span></p>
+              <svg class="hero-asset__spark" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-label="近 7 日资产走势折线">
+                <polyline
+                  class="hero-asset__line"
+                  points="0,52 36,47 66,50 102,38 132,42 168,30 202,34 240,22 268,26 300,12"
+                />
+              </svg>
+              <div class="hero-asset__actions">
+                <button class="pill-primary" type="button" id="buyBtn">buy · 买入</button>
+                <button class="pill-secondary" type="button" data-toast="卖出面板即将上线（演示）">sell · 卖出</button>
+              </div>
+              <p class="hero-asset__foot">冷钱包已连接 · 2 个地址 · 上次同步 3 分钟前</p>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="持仓与定投">
+              <div class="duo-card">
+                <h2 class="duo-card__title">BTC 建仓目标</h2>
+                <p class="duo-card__num">0.1284<span> / 0.2 BTC</span></p>
+                <div class="target-track">
+                  <span class="target-fill" style="--w: 64%"></span>
+                </div>
+                <p class="duo-card__note">还差 0.0716 BTC 达标</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">智能定投</h2>
+                <p class="duo-card__num">¥500<span> / 周</span></p>
+                <p class="duo-card__note">下期扣款：周一 09:00 · 已连续 14 期</p>
+                <button class="duo-card__link" type="button" data-toast="定投计划已暂停，随时可恢复">暂停定投</button>
+              </div>
+            </section>
+
+            <!-- 4. 行情 Feed -->
+            <section class="feed" aria-label="行情自选">
+              <div class="feed__head">
+                <h2 class="feed__title">行情</h2>
+                <div class="chips" role="tablist" aria-label="筛选行情">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="fav">自选</button>
+                  <button class="chip" type="button" data-filter="up">涨幅榜</button>
+                  <button class="chip" type="button" data-filter="down">跌幅榜</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="up" data-fav="true">
+                  <span class="feed-item__glyph" aria-hidden="true">₿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">BTC 比特币</span>
+                    <span class="feed-item__meta">市值 No.1 · 24h 量 ¥312 亿</span>
+                  </div>
+                  <b class="feed-item__price">¥61,284</b>
+                  <span class="feed-item__delta" data-kind="up">+3.12%</span>
+                  <button class="feed-item__star" type="button" aria-label="加入自选" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up" data-fav="true">
+                  <span class="feed-item__glyph" aria-hidden="true">Ξ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">ETH 以太坊</span>
+                    <span class="feed-item__meta">市值 No.2 · 24h 量 ¥148 亿</span>
+                  </div>
+                  <b class="feed-item__price">¥21,455</b>
+                  <span class="feed-item__delta" data-kind="up">+1.87%</span>
+                  <button class="feed-item__star" type="button" aria-label="加入自选" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up" data-fav="false">
+                  <span class="feed-item__glyph" aria-hidden="true">◎</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">SOL Solana</span>
+                    <span class="feed-item__meta">市值 No.5 · 24h 量 ¥42 亿</span>
+                  </div>
+                  <b class="feed-item__price">¥982</b>
+                  <span class="feed-item__delta" data-kind="up">+5.64%</span>
+                  <button class="feed-item__star" type="button" aria-label="加入自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="down" data-fav="true">
+                  <span class="feed-item__glyph" aria-hidden="true">◈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">ARB Arbitrum</span>
+                    <span class="feed-item__meta">Layer2 · 24h 量 ¥8.4 亿</span>
+                  </div>
+                  <b class="feed-item__price">¥8.42</b>
+                  <span class="feed-item__delta" data-kind="down">-2.08%</span>
+                  <button class="feed-item__star" type="button" aria-label="加入自选" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="down" data-fav="false">
+                  <span class="feed-item__glyph" aria-hidden="true">Ð</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">DOGE 狗狗币</span>
+                    <span class="feed-item__meta"> meme · 24h 量 ¥16 亿</span>
+                  </div>
+                  <b class="feed-item__price">¥1.28</b>
+                  <span class="feed-item__delta" data-kind="down">-1.32%</span>
+                  <button class="feed-item__star" type="button" aria-label="加入自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up" data-fav="false">
+                  <span class="feed-item__glyph" aria-hidden="true">✕</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">USDC 稳定币</span>
+                    <span class="feed-item__meta">锚定美元 · 24h 量 ¥226 亿</span>
+                  </div>
+                  <b class="feed-item__price">¥7.21</b>
+                  <span class="feed-item__delta" data-kind="flat">0.00%</span>
+                  <button class="feed-item__star" type="button" aria-label="加入自选" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快捷兑换">
+              <input class="amount-input" id="amountInput" type="text" inputmode="decimal" placeholder="输入金额，如：500" />
+              <div class="action-row">
+                <button class="pill-primary pill-primary--block" type="button" id="convertBtn">convert · 兑换为 USDC</button>
+                <button class="pill-outline" type="button" data-toast="收款地址已复制：0x8f…3e2b">receive · 收款</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="资产">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="6" width="18" height="13" rx="3" /><path d="M3 10h18" />
+              </svg>
+              <span>资产</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行情">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 17l5-6 4 4 6-8" /><path d="M18 7h3v3" />
+              </svg>
+              <span>行情</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="扫码" aria-label="扫码转账">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><path d="M4 12h16" />
+              </svg>
+              <span>扫码</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发现">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" /><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z" />
+              </svg>
+              <span>发现</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

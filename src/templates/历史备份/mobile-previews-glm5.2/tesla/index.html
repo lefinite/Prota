@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Vehicle Control · Tesla</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">T</span>
+                <div class="brand-text">
+                  <span class="brand-name">TESLA</span>
+                  <span class="brand-sub">Model Y</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="车辆设置" data-toast="打开车辆设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature：车辆状态全景 -->
+            <section class="hero-section" aria-label="车辆状态">
+              <div class="hero-section__image">
+                <svg class="car-silhouette" viewBox="0 0 200 80" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20 45 L30 35 L50 32 L80 30 L120 30 L150 32 L170 35 L180 45 L180 55 L170 60 L30 60 L20 55 Z" fill="currentColor" fill-opacity="0.05"/>
+                  <circle cx="45" cy="58" r="10" stroke-width="2"/>
+                  <circle cx="155" cy="58" r="10" stroke-width="2"/>
+                  <path d="M55 40 L70 35 L130 35 L145 40" stroke-width="1"/>
+                  <path d="M75 38 L75 30" stroke-width="1"/>
+                  <path d="M125 38 L125 30" stroke-width="1"/>
+                </svg>
+              </div>
+              <div class="hero-section__info">
+                <p class="hero-section__range">284 km</p>
+                <p class="hero-section__label">Range</p>
+                <p class="hero-section__status">Parked · 78% Battery</p>
+              </div>
+            </section>
+
+            <!-- 控制双卡 -->
+            <section class="control-row" aria-label="快捷控制">
+              <div class="control-card">
+                <span class="control-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18M3 12h18"/></svg>
+                </span>
+                <span class="control-card__label">Frunk</span>
+                <span class="control-card__status">Closed</span>
+              </div>
+              <div class="control-card">
+                <span class="control-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg>
+                </span>
+                <span class="control-card__label">Trunk</span>
+                <span class="control-card__status">Closed</span>
+              </div>
+            </section>
+
+            <!-- 环境列表 -->
+            <section class="env-section" aria-label="环境控制">
+              <div class="section-header">
+                <h2>Climate</h2>
+                <div class="chips" id="climateChips" role="tablist">
+                  <button class="chip is-active" data-mode="auto" role="tab">Auto</button>
+                  <button class="chip" data-mode="cool" role="tab">Cool</button>
+                  <button class="chip" data-mode="heat" role="tab">Heat</button>
+                </div>
+              </div>
+
+              <ul class="control-list">
+                <li class="control-item">
+                  <span class="control-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                  </span>
+                  <div class="control-item__main">
+                    <span class="control-item__title">Cabin Overheat Protection</span>
+                    <span class="control-item__sub">On · No A/C needed</span>
+                  </div>
+                  <button class="toggle is-on" data-toast="开关过热保护" aria-label="切换">
+                    <span class="toggle__track"></span>
+                    <span class="toggle__thumb"></span>
+                  </button>
+                </li>
+                <li class="control-item">
+                  <span class="control-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 14c1.49 0 2.883.34 4.124.925"/><path d="M1 14c1.49 0 2.883.34 4.124.925"/><path d="M12 16v-4"/><path d="M12 16H4"/><path d="M12 16h8"/><path d="M12 3a9 9 0 0 1 9 9h-2a7 7 0 0 0-7-7"/></svg>
+                  </span>
+                  <div class="control-item__main">
+                    <span class="control-item__title">Defrost</span>
+                    <span class="control-item__sub">Rear · Off</span>
+                  </div>
+                  <button class="toggle" data-toast="开关后窗除霜" aria-label="切换">
+                    <span class="toggle__track"></span>
+                    <span class="toggle__thumb"></span>
+                  </button>
+                </li>
+                <li class="control-item">
+                  <span class="control-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                  </span>
+                  <div class="control-item__main">
+                    <span class="control-item__title">Seat Heater</span>
+                    <span class="control-item__sub">Driver · Level 2</span>
+                  </div>
+                  <button class="stepper" data-toast="调节座椅加热" aria-label="调节">
+                    <button class="stepper__btn stepper__btn--minus" data-action="decrease">−</button>
+                    <span class="stepper__value">2</span>
+                    <button class="stepper__btn stepper__btn--plus" data-action="increase">+</button>
+                  </button>
+                </li>
+                <li class="control-item">
+                  <span class="control-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </span>
+                  <div class="control-item__main">
+                    <span class="control-item__title">Charging</span>
+                    <span class="control-item__sub">Supercharger · 32 mi/min</span>
+                  </div>
+                  <span class="control-item__badge">Active</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="primary-cta" data-toast="开始驾驶">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Start Driving
+              </button>
+              <button class="secondary-cta" data-toast="打开充电口">
+                Open Charge Port
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="controls">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+              <span>Controls</span>
+            </button>
+            <button class="tab" data-tab="map">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+              <span>Map</span>
+            </button>
+            <button class="tab" data-tab="media">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <span>Media</span>
+            </button>
+            <button class="tab" data-tab="calendar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Calendar</span>
+            </button>
+            <button class="tab" data-tab="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Status</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>图纸间 · Mono Blueprint</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/><path d="M3 12h18"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">图纸间</span>
+                <span class="brand-bar__sub mono">DWG-2417 · 滨江泵站 · 电气平面图 R3</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="图档已同步，云端版本 R3" aria-label="同步">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：蓝图视口（签名：网格 + 标注线）-->
+            <section class="hero" aria-label="图纸视口">
+              <div class="hero__viewport" role="img" aria-label="电气平面图视口，含一个 2400 乘 1800 的标注框与三个图元">
+                <div class="hero__dims">
+                  <span class="hero__dim-x"><i></i><b>2400</b><i></i></span>
+                  <span class="hero__dim-y"><i></i><b>1800</b><i></i></span>
+                </div>
+                <div class="hero__element hero__element--pump" data-name="潜水泵 P-01">P-01</div>
+                <div class="hero__element hero__element--panel" data-name="配电箱 XL-2">XL-2</div>
+                <div class="hero__element hero__element--cable" data-name="电缆桥架 CT-1">CT-1</div>
+                <div class="hero__crosshair"></div>
+              </div>
+              <div class="hero__bar">
+                <span class="mono">SCALE 1:100</span>
+                <span class="mono" id="zoomLabel">ZOOM 100%</span>
+                <span class="mono">REV R3</span>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="图纸信息">
+              <div class="duo__card">
+                <h2 class="duo__title mono">OPEN ISSUES</h2>
+                <p class="duo__num">6<span> 条</span></p>
+                <p class="duo__meta">2 条与你相关 · 1 条超期</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">REVIEW</h2>
+                <div class="progress">
+                  <div class="progress__row"><span>结构</span><i style="--w: 100%"></i></div>
+                  <div class="progress__row"><span>电气</span><i style="--w: 72%"></i></div>
+                  <div class="progress__row"><span>暖通</span><i style="--w: 40%"></i></div>
+                </div>
+                <p class="duo__meta">会签进度 3/5 专业</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：批注列表 -->
+            <section class="feed" aria-label="批注">
+              <div class="feed__head">
+                <h2 class="feed__title">批注</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="open">待处理</button>
+                  <button class="chip" type="button" data-filter="ok">已闭合</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="open">
+                  <span class="feed-item__pin" aria-hidden="true">M1</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">P-01 位置与给排水图冲突</span>
+                    <span class="feed-item__meta">王小工 · 10-13 · 距轴线 C/3 偏移 450</span>
+                  </div>
+                  <em class="feed-item__state feed-item__state--open">待处理</em>
+                </li>
+                <li class="feed-item" data-kind="ok">
+                  <span class="feed-item__pin feed-item__pin--done" aria-hidden="true">M2</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">桥架宽度改为 200</span>
+                    <span class="feed-item__meta">李审 · 10-12 · 已更新 R3</span>
+                  </div>
+                  <em class="feed-item__state">已闭合</em>
+                </li>
+                <li class="feed-item" data-kind="open">
+                  <span class="feed-item__pin" aria-hidden="true">M3</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">XL-2 缺漏电保护标注</span>
+                    <span class="feed-item__meta">张安全 · 10-11 · 图例表同步</span>
+                  </div>
+                  <em class="feed-item__state feed-item__state--open">待处理</em>
+                </li>
+                <li class="feed-item" data-kind="ok">
+                  <span class="feed-item__pin feed-item__pin--done" aria-hidden="true">M4</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">标高由 +3.200 改为 +3.450</span>
+                    <span class="feed-item__meta">设计院 · 10-09 · 全图替换</span>
+                  </div>
+                  <em class="feed-item__state">已闭合</em>
+                </li>
+                <li class="feed-item" data-kind="open">
+                  <span class="feed-item__pin" aria-hidden="true">M5</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">CT-1 路由穿越伸缩缝需加补偿</span>
+                    <span class="feed-item__meta">周审 · 10-08 · 详见图集 D-4</span>
+                  </div>
+                  <em class="feed-item__state feed-item__state--open">待处理</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="添加批注">
+              <input class="action__input" id="markInput" type="text" placeholder="选择图元后输入批注，如：此处净空不足…" />
+              <div class="chips chips--tool">
+                <button class="chip is-active" type="button">测量</button>
+                <button class="chip" type="button">云线</button>
+                <button class="chip" type="button">引线</button>
+                <button class="chip" type="button">文字</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="markBtn">放置批注</button>
+                <button class="btn-ghost" type="button" data-toast="已导出 PDF 图纸（A1 出图）">导出 PDF</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="图纸">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>
+              <span>图纸</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="批注">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>批注</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="测量" aria-label="测量">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 17L17 3l4 4L7 21l-4-4z"/><path d="M7.5 12.5l2 2M11 9l2 2"/></svg>
+              <span>测量</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="图层">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+              <span>图层</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

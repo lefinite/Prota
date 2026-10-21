@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Orbit 币 · Futuristic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20" /></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">Orbit 币</span>
+                  <span class="brand-sub">加密资产追踪</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 资产总览（signature：科技感实时数据流） -->
+            <section class="asset-card" aria-label="资产总览">
+              <div class="asset-card__header">
+                <span class="asset-card__label">总资产估值</span>
+                <span class="asset-card__live">● 实时</span>
+              </div>
+              <p class="asset-card__amount">
+                <span class="currency">$</span>
+                <span class="integer">124,582</span>
+                <span class="decimal">.40</span>
+              </p>
+              <div class="asset-card__change asset-card__change--up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                +$2,340.20 (1.92%) 24h
+              </div>
+
+              <!-- 迷你图表 -->
+              <div class="mini-chart" aria-hidden="true">
+                <svg class="mini-chart__svg" viewBox="0 0 200 48" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="var(--accent)" stop-opacity="0.3"/>
+                      <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path class="mini-chart__area" d="M0,48 L0,32 L20,28 L40,35 L60,25 L80,30 L100,20 L120,24 L140,18 L160,22 L180,15 L200,18 L200,48 Z" fill="url(#chartGradient)"/>
+                  <path class="mini-chart__line" d="M0,32 L20,28 L40,35 L60,25 L80,30 L100,20 L120,24 L140,18 L160,22 L180,15 L200,18" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                </svg>
+              </div>
+
+              <div class="asset-card__actions">
+                <button class="action-btn action-btn--buy" data-toast="进入交易页面">买入</button>
+                <button class="action-btn action-btn--sell" data-toast="进入卖出页面">卖出</button>
+                <button class="action-btn action-btn--swap" data-toast="进入兑换页面">兑换</button>
+              </div>
+            </section>
+
+            <!-- 资产分布 -->
+            <section class="distribution-section">
+              <h3 class="section-title">资产分布</h3>
+              <div class="distribution-grid">
+                <div class="coin-card">
+                  <div class="coin-card__icon coin-card__icon--btc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/><path d="M12 2a14.5 14.5 0 0 1 0 20 14.5 14.5 0 0 1 0-20"/></svg>
+                  </div>
+                  <div class="coin-card__info">
+                    <span class="coin-card__name">Bitcoin</span>
+                    <span class="coin-card__symbol">BTC</span>
+                  </div>
+                  <div class="coin-card__value">
+                    <span class="coin-card__amount">$68,240</span>
+                    <span class="coin-card__pct coin-card__pct--up">+2.4%</span>
+                  </div>
+                </div>
+                <div class="coin-card">
+                  <div class="coin-card__icon coin-card__icon--eth">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                  </div>
+                  <div class="coin-card__info">
+                    <span class="coin-card__name">Ethereum</span>
+                    <span class="coin-card__symbol">ETH</span>
+                  </div>
+                  <div class="coin-card__value">
+                    <span class="coin-card__amount">$42,860</span>
+                    <span class="coin-card__pct coin-card__pct--up">+5.1%</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 实时行情 -->
+            <section class="market-section">
+              <div class="section-header">
+                <h3 class="section-title">实时行情</h3>
+                <div class="chips" id="marketChips" role="tablist" aria-label="筛选行情">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="gainer" role="tab" aria-selected="false">涨幅</button>
+                  <button class="chip" data-filter="loser" role="tab" aria-selected="false">跌幅</button>
+                </div>
+              </div>
+
+              <ul class="market-list" id="marketList">
+                <li class="market-item" data-type="gainer">
+                  <div class="market-item__base">
+                    <span class="market-item__symbol">SOL</span>
+                    <span class="market-item__name">Solana</span>
+                  </div>
+                  <div class="market-item__price">
+                    <span class="price">$142.80</span>
+                    <span class="change change--up">+8.24%</span>
+                  </div>
+                </li>
+                <li class="market-item" data-type="gainer">
+                  <div class="market-item__base">
+                    <span class="market-item__symbol">AVAX</span>
+                    <span class="market-item__name">Avalanche</span>
+                  </div>
+                  <div class="market-item__price">
+                    <span class="price">$38.45</span>
+                    <span class="change change--up">+6.12%</span>
+                  </div>
+                </li>
+                <li class="market-item" data-type="loser">
+                  <div class="market-item__base">
+                    <span class="market-item__symbol">XRP</span>
+                    <span class="market-item__name">Ripple</span>
+                  </div>
+                  <div class="market-item__price">
+                    <span class="price">$0.52</span>
+                    <span class="change change--down">-2.18%</span>
+                  </div>
+                </li>
+                <li class="market-item" data-type="gainer">
+                  <div class="market-item__base">
+                    <span class="market-item__symbol">LINK</span>
+                    <span class="market-item__name">Chainlink</span>
+                  </div>
+                  <div class="market-item__price">
+                    <span class="price">$14.92</span>
+                    <span class="change change--up">+4.56%</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 价格预警 -->
+            <section class="alert-card">
+              <div class="alert-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              </div>
+              <div class="alert-card__content">
+                <span class="alert-card__title">BTC 价格预警</span>
+                <span class="alert-card__desc">当前价格接近您的目标价 $70,000</span>
+              </div>
+              <button class="alert-card__action" data-toast="预警已设置">管理</button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>资产</span>
+            </button>
+            <button class="tab" data-tab="market">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6" /></svg>
+              <span>行情</span>
+            </button>
+            <button class="tab tab--fab" data-tab="trade" aria-label="交易">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16l-4-4 4-4M17 8l4 4-4 4M3 12h18" /></svg>
+            </button>
+            <button class="tab" data-tab="alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /></svg>
+              <span>预警</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

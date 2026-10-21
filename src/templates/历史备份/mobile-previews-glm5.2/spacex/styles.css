@@ -1,0 +1,389 @@
+/* =========================================================================
+ * mobile-previews/spacex — MISSION CONTROL
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/spacex 的 :root token（纯黑暗色 + 光谱白）
+ * 页面：Page content（MISSION CONTROL · 航天发射追踪 App）
+ * 特色：全大写 D-DIN 字体、幽灵按钮、零卡片、文字直接在图像上
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/spacex）—— */
+  --bg: #000000;
+  --surface: #000000;
+  --surface-warm: #000000;
+  --fg: #f0f0fa;
+  --fg-2: #f0f0fa;
+  --muted: rgba(240, 240, 250, 0.7);
+  --meta: rgba(240, 240, 250, 0.7);
+  --border: rgba(240, 240, 250, 0.35);
+  --border-soft: rgba(240, 240, 250, 0.1);
+  --accent: #f0f0fa;
+  --accent-on: #000000;
+  --accent-hover: #ffffff;
+  --accent-active: #d8d8e6;
+  --success: #16a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+  --font-display: "D-DIN-Bold", "D-DIN", "DIN Alternate", "Helvetica Neue", Arial, Verdana, sans-serif;
+  --font-body: "D-DIN", "DIN Alternate", "Helvetica Neue", Arial, Verdana, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 40px;
+  --text-4xl: 48px;
+  --leading-body: 1.5;
+  --leading-tight: 1.0;
+  --tracking-display: 0.02em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 120px;
+  --section-y-tablet: 80px;
+  --section-y-phone: 56px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-pill: 32px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: none;
+  --focus-ring: 0 0 0 2px var(--accent);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1440px;
+  --container-gutter-desktop: 24px;
+  --container-gutter-tablet: 20px;
+  --container-gutter-phone: 18px;
+
+  /* —— 手机外壳（纯黑系统）—— */
+  --page-backdrop-top: #050505;
+  --page-backdrop-bottom: #000000;
+  --phone-shell: #0a0a0a;
+  --phone-shell-edge: #111111;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.85);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background: linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* SpaceX 特色：全局大写 */
+.caps { text-transform: uppercase; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; letter-spacing: 0.96px; text-transform: uppercase; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #000; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content {
+  position: relative; z-index: 1; height: 100%; overflow: auto;
+  padding: 60px 0 100px;
+  background: var(--bg);
+}
+
+/* ===== Page content · MISSION CONTROL ===== */
+/* 背景图 + 遮罩：signature 元素 */
+.mission-bg {
+  position: absolute; inset: 60px 0 0; z-index: 0;
+  background: linear-gradient(180deg, #0a0a14 0%, #000 40%);
+}
+.mission-bg::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(96, 165, 250, 0.08), transparent 50%),
+    radial-gradient(ellipse at 80% 60%, rgba(139, 92, 246, 0.05), transparent 40%);
+}
+.mission-bg__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 50%, #000 100%);
+}
+
+/* 顶部透明导航 */
+.mission-nav {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; margin-bottom: 40px;
+}
+.mission-logo {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 700; letter-spacing: 1.17px;
+  text-transform: uppercase; color: var(--fg);
+}
+.mission-menu {
+  width: 40px; height: 40px; display: grid; place-items: center;
+  color: var(--fg); transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.mission-menu svg { width: 20px; height: 20px; stroke-width: 1.5; }
+.mission-menu:active { opacity: 0.6; }
+
+/* Hero signature：大写标题 + 倒计时 */
+.mission-hero {
+  position: relative; z-index: 2;
+  padding: 0 20px; margin-bottom: 48px;
+  text-align: center;
+}
+.mission-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm); font-weight: 700;
+  letter-spacing: 1.17px; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 16px;
+}
+.mission-title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl); font-weight: 700;
+  letter-spacing: 0.96px; line-height: var(--leading-tight);
+  text-transform: uppercase; margin: 0 0 28px;
+  color: var(--fg);
+}
+
+/* 倒计时：signature 聚焦点 */
+.countdown {
+  display: flex; justify-content: center; align-items: center; gap: 8px;
+  margin-bottom: 28px;
+}
+.countdown__unit {
+  display: flex; flex-direction: column; align-items: center;
+}
+.countdown__val {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 700;
+  letter-spacing: 0.96px; line-height: 1;
+  text-transform: uppercase;
+  min-width: 42px;
+}
+.countdown__lbl {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); margin-top: 4px;
+}
+.countdown__sep {
+  font-family: var(--font-display);
+  font-size: 24px; font-weight: 700; color: var(--muted);
+}
+
+/* Ghost Button：唯一圆角元素 */
+.ghost-btn {
+  display: inline-block;
+  padding: 14px 28px;
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 1.17px; text-transform: uppercase;
+  color: var(--fg);
+  background: rgba(240, 240, 250, 0.1);
+  border: 1px solid rgba(240, 240, 250, 0.35);
+  border-radius: var(--radius-pill);
+  transition: background var(--motion-base) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+}
+.ghost-btn:active {
+  background: rgba(240, 240, 250, 0.15);
+  color: var(--accent-hover);
+}
+
+/* 任务详情：文字直接在背景上 */
+.mission-details {
+  position: relative; z-index: 2;
+  padding: 0 20px; margin-bottom: 40px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.mission-detail {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.mission-detail__lbl {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted);
+}
+.mission-detail__val {
+  font-family: var(--font-body);
+  font-size: var(--text-sm); font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  color: var(--fg);
+}
+
+/* 发射列表：极简行，无卡片 */
+.launch-list {
+  position: relative; z-index: 2;
+  padding: 0 20px; margin-bottom: 24px;
+}
+.launch-list__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg); font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  margin: 0 0 16px; color: var(--fg);
+}
+.launch-filters {
+  display: inline-flex; gap: 4px; margin-bottom: 16px;
+}
+.launch-filter {
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  padding: 6px 12px;
+  color: var(--muted);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.launch-filter.is-active {
+  color: var(--fg);
+}
+
+.launch-items {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0;
+}
+.launch-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-soft);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.launch-item:last-child { border-bottom: 0; }
+.launch-item.is-hidden { display: none; }
+.launch-item__date {
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  color: var(--muted);
+  min-width: 52px;
+}
+.launch-item__main {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
+}
+.launch-item__name {
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.launch-item__loc {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 400;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  color: var(--muted);
+}
+.launch-item__status {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 4px 8px; border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.launch-item__status--up {
+  color: var(--fg); background: rgba(240, 240, 250, 0.12);
+}
+.launch-item__status--success {
+  color: var(--success); background: rgba(22, 163, 74, 0.15);
+}
+
+/* 底部透明导航 */
+.mission-tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 12px 16px 24px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.8));
+}
+.mission-tab {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  padding: 8px 0;
+  color: var(--muted);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.mission-tab.is-active { color: var(--fg); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 88px; transform: translate(-50%, 12px);
+  background: rgba(240, 240, 250, 0.15);
+  border: 1px solid rgba(240, 240, 250, 0.35);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.96px; text-transform: uppercase;
+  padding: 10px 20px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+.bottom-spacer { height: 20px; }
+
+/* 进场动画 */
+.mission-nav, .mission-hero, .mission-details, .launch-list { animation: fade-up 560ms var(--ease-standard) both; }
+.mission-hero { animation-delay: 80ms; }
+.mission-details { animation-delay: 160ms; }
+.launch-list { animation-delay: 240ms; }
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

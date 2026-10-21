@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Atlas Console · MongoDB</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z" fill="#00ed64"/>
+                  </svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">MongoDB</span>
+                  <span class="brand-sub">Atlas Console</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Hero 卡（signature：深色模式 + 霓虹绿高亮） -->
+            <section class="hero-card" aria-label="集群概览">
+              <div class="hero-label">CLUSTER OVERVIEW</div>
+              <h1 class="hero-title">Production Cluster</h1>
+              <div class="hero-status">
+                <span class="status-dot status-dot--active"></span>
+                <span>运行正常</span>
+              </div>
+              <div class="hero-metrics">
+                <div class="metric">
+                  <span class="metric__label">连接数</span>
+                  <span class="metric__value">847</span>
+                </div>
+                <div class="metric">
+                  <span class="metric__label">操作/秒</span>
+                  <span class="metric__value accent">2.4K</span>
+                </div>
+                <div class="metric">
+                  <span class="metric__label">延迟</span>
+                  <span class="metric__value">12ms</span>
+                </div>
+              </div>
+              <div class="hero-graph" aria-hidden="true">
+                <svg viewBox="0 0 200 40" preserveAspectRatio="none">
+                  <path d="M0 35 L20 30 L40 32 L60 25 L80 28 L100 20 L120 22 L140 18 L160 15 L180 10 L200 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M0 35 L20 30 L40 32 L60 25 L80 28 L100 20 L120 22 L140 18 L160 15 L180 10 L200 8 V40 H0 Z" fill="currentColor" fill-opacity="0.1"/>
+                </svg>
+              </div>
+            </section>
+
+            <!-- 快速操作网格 -->
+            <section class="quick-grid">
+              <button class="quick-card" data-toast="新建集群">
+                <div class="quick-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                </div>
+                <span>新建集群</span>
+              </button>
+              <button class="quick-card" data-toast="数据浏览">
+                <div class="quick-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                </div>
+                <span>数据浏览</span>
+              </button>
+              <button class="quick-card" data-toast="性能分析">
+                <div class="quick-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
+                </div>
+                <span>性能分析</span>
+              </button>
+              <button class="quick-card" data-toast="备份恢复">
+                <div class="quick-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <span>备份恢复</span>
+              </button>
+            </section>
+
+            <!-- 数据库列表 -->
+            <section class="db-block" aria-label="数据库列表">
+              <div class="db-block__head">
+                <h2>Databases</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选数据库">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="prod" role="tab" aria-selected="false">生产</button>
+                  <button class="chip" data-filter="dev" role="tab" aria-selected="false">开发</button>
+                </div>
+              </div>
+
+              <ul class="db-list" id="dbList">
+                <li class="db" data-type="prod">
+                  <span class="db__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                  </span>
+                  <div class="db__main">
+                    <span class="db__name">users_production</span>
+                    <span class="db__sub">12 collections · 2.4 GB</span>
+                  </div>
+                  <div class="db__right">
+                    <span class="badge badge--success">Healthy</span>
+                  </div>
+                </li>
+                <li class="db" data-type="prod">
+                  <span class="db__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                  </span>
+                  <div class="db__main">
+                    <span class="db__name">analytics_db</span>
+                    <span class="db__sub">8 collections · 8.1 GB</span>
+                  </div>
+                  <div class="db__right">
+                    <span class="badge badge--success">Healthy</span>
+                  </div>
+                </li>
+                <li class="db" data-type="dev">
+                  <span class="db__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                  </span>
+                  <div class="db__main">
+                    <span class="db__name">dev_testing</span>
+                    <span class="db__sub">5 collections · 128 MB</span>
+                  </div>
+                  <div class="db__right">
+                    <span class="badge badge--muted">Idle</span>
+                  </div>
+                </li>
+                <li class="db" data-type="prod">
+                  <span class="db__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                  </span>
+                  <div class="db__main">
+                    <span class="db__name">orders_archive</span>
+                    <span class="db__sub">24 collections · 15.6 GB</span>
+                  </div>
+                  <div class="db__right">
+                    <span class="badge badge--warn">High Load</span>
+                  </div>
+                </li>
+                <li class="db" data-type="dev">
+                  <span class="db__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                  </span>
+                  <div class="db__main">
+                    <span class="db__name">staging_env</span>
+                    <span class="db__sub">10 collections · 512 MB</span>
+                  </div>
+                  <div class="db__right">
+                    <span class="badge badge--muted">Idle</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 资源使用条 -->
+            <section class="resource-card" aria-label="资源使用">
+              <div class="resource-card__head">
+                <span class="resource-card__title">存储使用</span>
+                <span class="resource-card__num">26.2 <span class="muted">GB / 50 GB</span></span>
+              </div>
+              <div class="resource-card__bar" aria-hidden="true">
+                <span class="resource-card__bar-fill" style="--p: 52%"></span>
+              </div>
+              <p class="resource-card__note">已用 52%，预计可支撑 30 天。</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="clusters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              <span>集群</span>
+            </button>
+            <button class="tab" data-tab="databases">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              <span>数据库</span>
+            </button>
+            <button class="tab tab--fab" data-tab="query" aria-label="新建查询">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button class="tab" data-tab="metrics">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
+              <span>指标</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

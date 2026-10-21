@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>心流时钟 · Indigo Focus</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12c3-6 6-6 9 0s6 6 9 0" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">心流时钟</span>
+                <span class="brand-bar__sub">周四 · 已专注 2 小时 36 分</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="专注时通知将自动静音" aria-label="免打扰设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：靛蓝光环圆环计时器 -->
+            <section class="focus-hero" aria-label="专注计时器">
+              <div class="focus-hero__top">
+                <span class="focus-hero__label" id="sessionName">深度写作冲刺</span>
+                <span class="focus-hero__phase" id="phaseLabel">准备开始</span>
+              </div>
+              <div class="focus-hero__dial">
+                <svg viewBox="0 0 200 200" role="img" aria-label="专注倒计时进度环">
+                  <circle class="dial-track" cx="100" cy="100" r="84"></circle>
+                  <circle class="dial-progress" id="dialProgress" cx="100" cy="100" r="84"></circle>
+                </svg>
+                <div class="dial-center">
+                  <b class="dial-center__time" id="ringTime">25:00</b>
+                  <span class="dial-center__note" id="ringNote">25 分钟 · 一颗番茄</span>
+                </div>
+              </div>
+              <div class="focus-hero__dots" aria-label="今日番茄进度，共 3 颗">
+                <i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i></i>
+              </div>
+              <div class="dur-chips" role="tablist" aria-label="选择专注时长">
+                <button class="dur-chip is-active" type="button" data-min="25">25 分</button>
+                <button class="dur-chip" type="button" data-min="50">50 分</button>
+                <button class="dur-chip" type="button" data-min="90">90 分</button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="今日统计与白噪音">
+              <div class="soft-card">
+                <h2 class="soft-card__title">今日专注</h2>
+                <p class="soft-card__num">2<span>小时</span> 36<span>分</span></p>
+                <div class="hour-bars" role="img" aria-label="上午 8 点到下午 1 点的专注时长">
+                  <i style="--h: 30%"></i>
+                  <i style="--h: 64%"></i>
+                  <i style="--h: 48%"></i>
+                  <i style="--h: 86%"></i>
+                  <i style="--h: 22%"></i>
+                  <i style="--h: 58%"></i>
+                </div>
+                <p class="soft-card__note">连续第 4 天达成目标</p>
+              </div>
+              <div class="soft-card">
+                <h2 class="soft-card__title">白噪音</h2>
+                <div class="noise-chips">
+                  <button class="noise-chip is-active" type="button" aria-pressed="true">🌧 雨声</button>
+                  <button class="noise-chip" type="button" aria-pressed="false">☕ 咖啡馆</button>
+                  <button class="noise-chip" type="button" aria-pressed="false">🌲 森林</button>
+                  <button class="noise-chip" type="button" aria-pressed="false">🔇 静音</button>
+                </div>
+                <p class="soft-card__note">音量随番茄进度缓慢降低</p>
+              </div>
+            </section>
+
+            <!-- 4. 会话 Feed -->
+            <section class="feed" aria-label="专注会话记录">
+              <div class="feed__head">
+                <h2 class="feed__title">会话记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选会话">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">完成</button>
+                  <button class="chip" type="button" data-filter="paused">中断</button>
+                  <button class="chip" type="button" data-filter="live">进行中</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__ava" aria-hidden="true">写</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">深度写作冲刺</span>
+                    <span class="feed-item__meta">09:40 – 10:05 · 白噪音：雨声</span>
+                  </div>
+                  <b class="feed-item__dur">25m</b>
+                  <em class="status-chip status-chip--done">完成</em>
+                </li>
+                <li class="feed-item" data-kind="live">
+                  <span class="feed-item__ava feed-item__ava--live" aria-hidden="true">评</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">代码评审 · 通知模块</span>
+                    <span class="feed-item__meta">11:20 开始 · 已进行 18 分</span>
+                  </div>
+                  <b class="feed-item__dur">50m</b>
+                  <em class="status-chip status-chip--live">进行中</em>
+                </li>
+                <li class="feed-item" data-kind="paused">
+                  <span class="feed-item__ava" aria-hidden="true">周</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">周报整理</span>
+                    <span class="feed-item__meta">10:12 – 10:24 · 被会议打断</span>
+                  </div>
+                  <b class="feed-item__dur">12m</b>
+                  <em class="status-chip status-chip--paused">中断</em>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__ava" aria-hidden="true">读</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">论文精读 · 第三章</span>
+                    <span class="feed-item__meta">08:05 – 08:55 · 晨间第一颗</span>
+                  </div>
+                  <b class="feed-item__dur">50m</b>
+                  <em class="status-chip status-chip--done">完成</em>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__ava" aria-hidden="true">站</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">站会准备提纲</span>
+                    <span class="feed-item__meta">07:30 – 07:45 · 短会话</span>
+                  </div>
+                  <b class="feed-item__dur">15m</b>
+                  <em class="status-chip status-chip--done">完成</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="开始专注">
+              <input class="quick-input" id="quickInput" type="text" placeholder="这次专注什么？如：季度方案初稿" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="startBtn">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5.5v13l11-6.5z" />
+                  </svg>
+                  开始专注
+                </button>
+                <button class="btn-ghost" type="button" data-toast="已设置提醒：15:00 回来专注">稍后提醒</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="专注">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8" />
+                <path d="M12 9v4l2.5 2M9 2.5h6" />
+              </svg>
+              <span>专注</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="统计">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 20V10M12 20V4M19 20v-6" />
+              </svg>
+              <span>统计</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建专注会话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="清单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6l2 2 3-3M4 13l2 2 3-3M4 20l2 2 3-3M12 6h8M12 13h8M12 20h8" />
+              </svg>
+              <span>清单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

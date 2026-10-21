@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FlowPilot · AI 工作流运营中心（TDesign）</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<svg class="sprite" aria-hidden="true">
+ <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+ <symbol id="ic-flow" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="19" r="2"/><path d="M7 6h10M6 8l5 9M18 8l-5 9"/></symbol>
+ <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></symbol>
+ <symbol id="ic-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+ <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 2.4-6 6-6s6 2 6 6M14 15c3.7-.5 6 1.4 6.5 4.5"/></symbol>
+ <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.4 1A7 7 0 0 0 14.4 5L14 2.5h-4L9.6 5a7 7 0 0 0-2.1 1.9l-2.4-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.4-1A7 7 0 0 0 9.6 19l.4 2.5h4l.4-2.5a7 7 0 0 0 2.1-1.9l2.4 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></symbol>
+ <symbol id="ic-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2.3-2.5 4M12 17h.01"/></symbol>
+ <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></symbol>
+ <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M5 17h14l-1.5-2V10a5.5 5.5 0 0 0-11 0v5zM10 20h4"/></symbol>
+ <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+ <symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M18 9A7 7 0 0 0 6 7l-2 3M6 15a7 7 0 0 0 12 2l2-3"/></symbol>
+ <symbol id="ic-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+ <symbol id="ic-down" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></symbol>
+ <symbol id="ic-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+ <symbol id="ic-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></symbol>
+ <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19zM12 9v5M12 17h.01"/></symbol>
+</svg>
+
+<div class="app-shell">
+ <header class="app-header"><div class="brand"><span class="logo"><svg><use href="#ic-flow"/></svg></span><strong>FlowPilot</strong></div><div class="header-right"><label class="search-input"><svg><use href="#ic-search"/></svg><input id="globalSearch" placeholder="搜索工作流"><kbd>⌘ K</kbd></label><button id="noticeBtn" class="action-icon"><svg><use href="#ic-bell"/></svg><i></i></button><button id="createBtn" class="button primary"><svg><use href="#ic-plus"/></svg>新建工作流</button></div></header>
+ <aside class="navbar">
+  <div class="nav-section"><span class="nav-label">工作空间</span>
+   <button class="nav-link"><span><svg><use href="#ic-grid"/></svg></span>工作台</button>
+   <button class="nav-link active"><span><svg><use href="#ic-flow"/></svg></span>工作流<em>24</em></button>
+   <button class="nav-link"><span><svg><use href="#ic-clock"/></svg></span>运行记录</button>
+   <button class="nav-link"><span><svg><use href="#ic-db"/></svg></span>数据连接</button>
+   <button class="nav-link"><span><svg><use href="#ic-users"/></svg></span>团队成员</button>
+   <button class="nav-link"><span><svg><use href="#ic-settings"/></svg></span>系统设置</button>
+  </div>
+  <div class="navbar-bottom"><button class="nav-link"><span><svg><use href="#ic-help"/></svg></span>帮助与文档</button><div class="profile"><span class="avatar">林</span><div><strong>林知夏</strong><small>管理员</small></div><button><svg><use href="#ic-more"/></svg></button></div></div>
+ </aside>
+ <main class="main">
+  <div class="content">
+   <div class="breadcrumbs"><span>工作台</span><b>›</b><strong>工作流</strong></div>
+   <section class="title-row"><div><h1>工作流</h1><p>创建、监控并优化团队的自动化流程</p></div><div class="synced"><i></i>数据已更新 · 刚刚</div></section>
+   <section class="kpi-grid">
+    <article class="card kpi"><div><span>工作流总数</span><b>24</b><small><em>+3</em> 较上周</small></div><span class="kpi-icon indigo"><svg><use href="#ic-flow"/></svg></span></article>
+    <article class="card kpi"><div><span>今日运行</span><b>1,286</b><small><em>+12.5%</em> 较昨日</small></div><span class="kpi-icon cyan"><svg><use href="#ic-clock"/></svg></span></article>
+    <article class="card kpi"><div><span>成功率</span><b>97.8<sup>%</sup></b><small><em>+0.6%</em> 较昨日</small></div><span class="kpi-icon green"><svg><use href="#ic-check"/></svg></span></article>
+    <article class="card kpi"><div><span>节省时间</span><b>146<sup>小时</sup></b><small>本月累计</small></div><span class="kpi-icon grape"><svg><use href="#ic-clock"/></svg></span></article>
+   </section>
+   <section class="card trend-card"><div class="section-header"><div><h2>近 7 日运行趋势</h2><div class="legend"><span><i class="blue"></i>成功运行</span><span><i class="red"></i>失败运行</span></div></div><div id="rangeControl" class="segmented"><button class="active" data-range="7">7 天</button><button data-range="30">30 天</button><button data-range="90">90 天</button></div></div><div class="chart" id="chart"><div class="y-axis"><span>1,200</span><span>800</span><span>400</span><span>0</span></div><svg viewBox="0 0 960 100" preserveAspectRatio="none"><defs><linearGradient id="mantineArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4c6ef5" stop-opacity=".18"/><stop offset="1" stop-color="#4c6ef5" stop-opacity="0"/></linearGradient></defs><g class="grid"><path d="M0 8H960M0 36H960M0 65H960M0 94H960"/></g><path id="area" d="M0 75L160 58L320 64L480 36L640 43L800 23L960 33L960 94L0 94Z"/><polyline id="successLine" class="success-line" points="0,75 160,58 320,64 480,36 640,43 800,23 960,33"/><polyline id="failureLine" class="failure-line" points="0,87 160,84 320,86 480,80 640,82 800,78 960,80"/><g id="points"></g></svg><div id="xLabels" class="x-axis"></div><div id="chartTip" class="chart-tip" hidden></div></div></section>
+   <section class="card table-card">
+    <div class="table-top"><div id="statusTabs" class="tabs"><button class="active" data-tab="全部">全部 <span>24</span></button><button data-tab="运行中">运行中 <span>18</span></button><button data-tab="草稿">草稿 <span>4</span></button><button data-tab="已停用">已停用 <span>2</span></button></div><button id="batchButton" class="button subtle" disabled>批量操作<svg><use href="#ic-down"/></svg></button></div>
+    <div id="selectionBar" class="selection-bar" hidden><span>已选择 <strong id="selectedCount">0</strong> 项</span><div><button>批量启用</button><button>批量停用</button><button id="clearSelection">取消选择</button></div></div>
+    <div class="toolbar"><div><label class="small-search"><svg><use href="#ic-search"/></svg><input id="tableSearch" placeholder="搜索名称或创建人"></label><label class="select"><select id="statusFilter"><option value="">全部状态</option><option>运行中</option><option>异常</option><option>草稿</option><option>已停用</option></select><svg><use href="#ic-down"/></svg></label><label class="select"><select id="ownerFilter"><option value="">全部创建人</option><option>林知夏</option><option>周景明</option><option>陈雨桐</option><option>赵一澄</option></select><svg><use href="#ic-down"/></svg></label><label class="date-input"><span>更新时间</span><input id="dateFilter" type="date"></label></div><div class="toolbar-right"><span id="resultText">当前显示 6 条</span><button id="refreshBtn" class="action-icon small"><svg><use href="#ic-refresh"/></svg></button></div></div>
+    <div class="table-wrap"><table><colgroup><col class="check-col"><col class="name-col"><col class="status-col"><col class="trigger-col"><col class="today-col"><col class="rate-col"><col class="last-col"><col class="owner-col"><col class="action-col"></colgroup><thead><tr><th><input id="selectAll" type="checkbox"></th><th>工作流名称</th><th>状态</th><th>触发方式</th><th>今日运行</th><th>成功率</th><th>最近运行</th><th>创建人</th><th>操作</th></tr></thead><tbody id="rows"></tbody></table><div id="emptyState" class="empty" hidden><span><svg><use href="#ic-search"/></svg></span><strong>暂无匹配的工作流</strong><small>请调整搜索关键词或筛选条件</small><button id="resetFilters" class="button default">重置筛选</button></div><div id="loading" class="loading" hidden><i></i><span>正在刷新数据...</span></div></div>
+    <footer class="pagination-row"><span id="rangeText">第 1–6 条，共 24 条</span><div class="pagination"><button disabled>‹</button><button class="active" data-page="1">1</button><button data-page="2">2</button><button data-page="3">3</button><button data-page="4">4</button><button data-page="2">›</button></div><label class="select compact"><select id="pageSize"><option>6 条/页</option><option>12 条/页</option><option>24 条/页</option></select><svg><use href="#ic-down"/></svg></label></footer>
+   </section>
+  </div>
+ </main>
+</div>
+
+<div id="noticePopover" class="menu-popover notices" hidden><header>通知 <span>2 条未读</span></header><button><i class="dot red"></i><div><strong>高风险订单预警运行异常</strong><small>8 分钟前</small></div></button><button><i class="dot green"></i><div><strong>每日销售简报运行完成</strong><small>今天 09:00</small></div></button></div>
+<div id="actionMenu" class="menu-popover action-menu" hidden></div>
+
+<div id="modalOverlay" class="overlay" hidden><section class="modal" role="dialog" aria-modal="true"><header><div><h2>新建工作流</h2><p>创建一个自动化流程并分配负责人</p></div><button class="action-icon close-modal"><svg><use href="#ic-close"/></svg></button></header><form id="createForm" novalidate><div class="form-body"><label class="field full"><span>工作流名称 <b>*</b></span><input name="name" placeholder="请输入工作流名称"><small>请输入工作流名称</small></label><label class="field"><span>触发方式 <b>*</b></span><select name="trigger"><option value="">请选择触发方式</option><option>新增数据时</option><option>定时触发</option><option>手动触发</option></select><small>请选择触发方式</small></label><label class="field"><span>负责人 <b>*</b></span><select name="owner"><option value="">请选择负责人</option><option>林知夏</option><option>周景明</option><option>陈雨桐</option><option>赵一澄</option></select><small>请选择负责人</small></label><label class="field full"><span>描述</span><textarea name="description" maxlength="200" placeholder="简要说明工作流用途（选填）"></textarea><em>0 / 200</em></label><div class="info-box full"><b>i</b><span><strong>创建后将进入草稿状态</strong><small>你可以继续配置步骤、测试并发布工作流。</small></span></div></div><footer><button type="button" class="button default close-modal">取消</button><button type="submit" class="button primary">创建</button></footer></form></section></div>
+<div id="confirmOverlay" class="overlay" hidden><section class="modal confirm" role="alertdialog"><div class="confirm-body"><span><svg><use href="#ic-alert"/></svg></span><div><h2>确认删除工作流？</h2><p>删除后无法恢复，相关历史运行记录将保留。确定删除「<strong id="deleteName"></strong>」吗？</p></div></div><footer><button class="button default cancel-delete">取消</button><button id="confirmDelete" class="button red-button">确认删除</button></footer></section></div>
+<div id="drawerMask" class="drawer-mask" hidden></div><aside id="drawer" class="drawer" aria-hidden="true"><header><div><span class="badge red">异常</span><h2>高风险订单预警</h2><p>订单创建时 · 负责人 林知夏</p></div><button id="closeDrawer" class="action-icon"><svg><use href="#ic-close"/></svg></button></header><div class="drawer-content"><div class="alert-box"><svg><use href="#ic-alert"/></svg><div><strong>最近一次运行失败</strong><p>订单风控服务响应超时（错误码：RISK_GATEWAY_TIMEOUT）</p><small>发生于 8 分钟前，已连续失败 3 次</small></div></div><section><h3>运行统计</h3><div class="detail-grid"><div><span>今日运行</span><b>89</b></div><div><span>成功率</span><b class="red-text">83.2%</b></div><div><span>平均耗时</span><b>4.8s</b></div></div></section><section><h3>运行状态</h3><dl><div><dt>当前状态</dt><dd><span class="badge red">异常</span></dd></div><div><dt>触发方式</dt><dd>订单创建时</dd></div><div><dt>最近运行</dt><dd>8 分钟前</dd></div><div><dt>工作流 ID</dt><dd>WF-2026-0189</dd></div></dl></section><section><h3>操作日志</h3><ol class="timeline"><li class="bad"><i></i><div><strong>工作流运行失败</strong><p>风控服务响应超时，自动重试 3 次后终止</p><time>今天 16:42</time></div></li><li><i></i><div><strong>自动重试</strong><p>第 2 次重试已发起</p><time>今天 16:41</time></div></li><li class="good"><i></i><div><strong>工作流运行成功</strong><p>处理订单 #FP240812-8831</p><time>今天 16:28</time></div></li></ol></section></div><footer><button id="editBtn" class="button default">编辑工作流</button><button id="rerunBtn" class="button primary"><svg><use href="#ic-refresh"/></svg>重新运行</button></footer></aside>
+<div id="notifications" class="notification-stack" aria-live="polite"></div>
+<script src="app.js"></script></body></html>
+

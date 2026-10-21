@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>栖霞台 · Elegant</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__glyph">栖</span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">栖霞台</span>
+                <span class="brand-bar__sub">The Terrace · 秋季品鉴</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="礼宾已在线，随时为您服务" aria-label="联系礼宾">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：八道式品鉴菜单 -->
+            <section class="menu-card" aria-label="秋季品鉴菜单">
+              <div class="menu-card__head">
+                <h1 class="menu-card__title">秋季品鉴 · 八道式</h1>
+                <p class="menu-card__note">Chef's Tasting · 供双人及以上</p>
+              </div>
+              <ol class="courses">
+                <li class="course">
+                  <span class="course__no">壹</span>
+                  <div class="course__body">
+                    <span class="course__name">栗子浓汤 · 菌菇油</span>
+                    <span class="course__sub">开场 · 温食</span>
+                  </div>
+                </li>
+                <li class="course">
+                  <span class="course__no">贰</span>
+                  <div class="course__body">
+                    <span class="course__name">海鲈 · 黄油柠檬汁</span>
+                    <span class="course__sub">海鲜 · 主厨推荐</span>
+                  </div>
+                </li>
+                <li class="course">
+                  <span class="course__no">叁</span>
+                  <div class="course__body">
+                    <span class="course__name">慢炖牛颊 · 波尔多汁</span>
+                    <span class="course__sub">主菜 · 红肉</span>
+                  </div>
+                </li>
+                <li class="course">
+                  <span class="course__no">肆</span>
+                  <div class="course__body">
+                    <span class="course__name">桂花慕斯 · 白兰地无花果</span>
+                    <span class="course__sub">收尾 · 甜品</span>
+                  </div>
+                </li>
+              </ol>
+              <div class="menu-card__foot">
+                <span>每位 ¥ 688 · 酒水另计</span>
+                <span>余四道以当日食材为准</span>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 ×2 -->
+            <section class="duo-grid" aria-label="席位与侍酒">
+              <div class="duo-card">
+                <p class="duo-card__label">您的席位</p>
+                <p class="duo-card__big">周四 19:30</p>
+                <p class="duo-card__sub">10 月 16 日 · 双人 · 大厅靠窗</p>
+                <span class="duo-card__chip">已确认</span>
+              </div>
+              <div class="duo-card">
+                <p class="duo-card__label">侍酒推荐</p>
+                <ul class="wine-list">
+                  <li>
+                    <span>夏布利 · 一级园 2021</span>
+                    <b>¥ 480</b>
+                  </li>
+                  <li>
+                    <span>教皇新堡 2019</span>
+                    <b>¥ 620</b>
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- 4. 预订记录 Feed -->
+            <section class="feed" aria-label="预订记录">
+              <div class="feed__head">
+                <h2 class="feed__title">预订记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选预订">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="confirmed">已确认</button>
+                  <button class="chip" type="button" data-filter="pending">待确认</button>
+                  <button class="chip" type="button" data-filter="done">已完餐</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="confirmed">
+                  <span class="feed-item__glyph" aria-hidden="true">栖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">栖霞台 · 双人</span>
+                    <span class="feed-item__meta">10 月 16 日 19:30 <em class="feed-item__chip" data-tone="ok">已确认</em></span>
+                  </div>
+                  <b class="feed-item__amount">¥1,376</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏餐厅" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__glyph" aria-hidden="true">湖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">湖畔分店 · 六人</span>
+                    <span class="feed-item__meta">10 月 22 日 18:00 <em class="feed-item__chip" data-tone="warn">待确认</em></span>
+                  </div>
+                  <b class="feed-item__amount">¥2,900</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏餐厅" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">栖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">栖霞台 · 四人包间</span>
+                    <span class="feed-item__meta">9 月 28 日 19:00 <em class="feed-item__chip">已完餐</em></span>
+                  </div>
+                  <b class="feed-item__amount">¥3,120</b>
+                  <button class="feed-item__star is-on" type="button" aria-label="收藏餐厅" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">栖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">栖霞台 · 双人</span>
+                    <span class="feed-item__meta">9 月 14 日 12:30 <em class="feed-item__chip">已完餐</em></span>
+                  </div>
+                  <b class="feed-item__amount">¥1,540</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏餐厅" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="席位备注">
+              <input class="remark-input" id="remarkInput" type="text" placeholder="忌口或特殊需求，如：不吃香菜……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="confirmBtn">确认席位</button>
+                <button class="btn-ghost" type="button" data-toast="正在为您转接专属礼宾">联系礼宾</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="席位">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 3v7M16 3v7M8 10h8v11" />
+              </svg>
+              <span>席位</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="菜单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 3v8a2.5 2.5 0 0 1-5 0V3M4.5 11v10M17 3c-1.5 2-2 4-2 6h4v12" />
+              </svg>
+              <span>菜单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="酒单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 22h8M7 3h10l-1 7a4 4 0 0 1-8 0L7 3zM12 14v8" />
+              </svg>
+              <span>酒单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,326 @@
+/* =========================================================================
+ * mobile-previews/premium — Premium Luxury
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/premium 的 :root token
+ * 页面：ArtVault 艺术收藏顾问
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/premium）—— */
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --surface-warm: #f0e7d8;
+  --fg: #1c1b19;
+  --fg-2: #4b4740;
+  --muted: #746d63;
+  --meta: #a06a3b;
+  --border: #ded6c9;
+  --border-soft: #eee7dc;
+  --accent: #a06a3b;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #3f8f5f;
+  --warn: #c4872c;
+  --danger: #b84a4a;
+  --font-display: "Canela", Georgia, serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 19px;
+  --text-xl: 26px;
+  --text-2xl: 40px;
+  --text-3xl: 60px;
+  --text-4xl: 84px;
+  --leading-body: 1.58;
+  --leading-tight: 1.02;
+  --tracking-display: -0.02em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 112px;
+  --section-y-tablet: 80px;
+  --section-y-phone: 56px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 24px 64px rgba(28, 27, 25, 0.12);
+  --focus-ring: 0 0 0 4px rgba(160, 106, 59, 0.24);
+  --motion-fast: 170ms;
+  --motion-base: 280ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --container-max: 1160px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+
+  /* —— 手机外壳（与设计系统协调——青铜奢华）—— */
+  --page-backdrop-top: #f5f0e8;
+  --page-backdrop-bottom: #e8dcc8;
+  --phone-shell: #fcfaf6;
+  --phone-shell-edge: #e8dcc8;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(28, 27, 25, 0.16);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(252, 250, 246, 0.98), transparent 28%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 20px 104px; }
+
+/* ===== Page content · ArtVault 艺术收藏 ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.topbar__brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 44px; height: 44px; border-radius: var(--radius-lg);
+  display: grid; place-items: center; font-weight: 600; font-size: 16px;
+  color: var(--accent-on); background: var(--accent);
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+.brand-name { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 500; letter-spacing: 0.01em; }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 3px; }
+
+.iconbtn {
+  position: relative; width: 44px; height: 44px; border-radius: var(--radius-pill);
+  display: grid; place-items: center; color: var(--fg);
+  box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: color-mix(in oklab, var(--accent), transparent 88%); }
+
+/* 藏品总览卡：signature —— 青铜色大数字奢华聚焦 */
+.portfolio-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--elev-raised);
+  margin-bottom: 20px;
+}
+.portfolio-card__label { margin: 0; font-size: var(--text-sm); color: var(--muted); letter-spacing: 0.02em; }
+.portfolio-card__amount {
+  margin: 8px 0 0; font-family: var(--font-display);
+  font-size: var(--text-3xl); font-weight: 400; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--fg);
+}
+.portfolio-card__meta { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.trend { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 500; }
+.trend svg { width: 16px; height: 16px; }
+.trend--up { color: var(--success); }
+.portfolio-card__hint { font-size: var(--text-xs); color: var(--muted); }
+
+.portfolio-card__distribution { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+.dist-item { display: flex; align-items: center; gap: 10px; }
+.dist-bar { width: var(--share); height: 6px; background: var(--accent); border-radius: 999px; }
+.dist-label { font-size: var(--text-xs); color: var(--fg-2); }
+
+.portfolio-card__actions { display: flex; gap: 10px; margin-top: 22px; }
+.action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 16px; border-radius: var(--radius-md);
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--fg); background: var(--bg);
+  border: 1px solid var(--border);
+  transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+}
+.action-btn svg { width: 18px; height: 18px; color: var(--accent); }
+.action-btn:active { background: color-mix(in oklab, var(--accent), transparent 90%); border-color: var(--accent); }
+
+/* 精品推荐双卡 */
+.showcase-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+.art-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 18px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: box-shadow var(--motion-base) var(--ease-standard);
+}
+.art-card--featured {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(160, 106, 59, 0.15);
+}
+.art-card__frame { position: relative; margin-bottom: 4px; }
+.art-card__tag {
+  position: absolute; top: 0; right: 0;
+  font-size: 10px; font-weight: 600; padding: 4px 10px;
+  border-radius: var(--radius-pill); letter-spacing: 0.05em;
+  color: var(--accent-on); background: var(--accent);
+}
+.art-card__tag--new { background: var(--success); }
+.art-card__title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; margin: 0; line-height: 1.3; }
+.art-card__artist { font-size: var(--text-xs); color: var(--muted); margin: 0; }
+.art-card__price {
+  font-family: var(--font-display); font-size: var(--text-lg); font-weight: 500;
+  color: var(--accent); margin: 4px 0 0;
+}
+
+/* 拍品列表 */
+.auction-list { margin-top: 24px; }
+.list-block__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.list-block__head h2 { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 400; letter-spacing: -0.01em; }
+.chips { display: inline-flex; background: var(--surface-warm); border-radius: var(--radius-pill); padding: 4px; }
+.chip {
+  padding: 6px 14px; border-radius: var(--radius-pill); font-size: var(--text-xs);
+  color: var(--muted); transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); }
+
+.auction-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.auction-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid var(--border-soft);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.auction-item:last-child { border-bottom: 0; }
+.auction-item.is-hidden { display: none; }
+.auction-item__icon {
+  flex: none; width: 44px; height: 44px; border-radius: var(--radius-md);
+  display: grid; place-items: center; font-size: 16px; font-weight: 600;
+  background: var(--surface-warm); color: var(--accent);
+  font-family: var(--font-display);
+}
+.auction-item__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.auction-item__title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; }
+.auction-item__sub { font-size: var(--text-xs); color: var(--muted); }
+.auction-item__right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.auction-item__price {
+  font-family: var(--font-display); font-size: var(--text-sm); font-weight: 500;
+  color: var(--accent);
+}
+.auction-item__days { font-size: 11px; color: var(--muted); }
+
+/* 专家预约 */
+.expert-card {
+  margin-top: 20px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 18px 20px;
+}
+.expert-card__head { display: flex; align-items: baseline; justify-content: space-between; }
+.expert-card__title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; }
+.expert-card__num {
+  font-family: var(--font-display); font-size: var(--text-xl); font-weight: 400;
+  color: var(--accent);
+}
+.expert-card__num .muted { color: var(--muted); font-size: var(--text-sm); }
+.expert-card__progress { margin-top: 14px; height: 6px; border-radius: 999px; background: var(--border-soft); overflow: hidden; }
+.expert-card__progress-fill { display: block; height: 100%; width: var(--p); border-radius: 999px; background: var(--accent); transform-origin: left; animation: grow 1s var(--ease-standard) both; }
+.expert-card__note { margin: 10px 0 0; font-size: var(--text-xs); color: var(--muted); font-style: italic; }
+
+.bottom-spacer { height: 16px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+  padding: 10px 12px 20px; background: color-mix(in oklab, var(--surface), transparent 4%);
+  backdrop-filter: blur(12px); box-shadow: 0 -1px 0 var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 22px; height: 22px; }
+.tab.is-active { color: var(--accent); }
+.tab--fab {
+  justify-self: center; position: relative; top: -16px;
+  width: 54px; height: 54px; border-radius: var(--radius-pill);
+  background: var(--accent); color: var(--accent-on);
+  display: grid; place-items: center;
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--accent), transparent 55%);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.tab--fab svg { width: 24px; height: 24px; }
+.tab--fab:active { transform: scale(0.92); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 98px; transform: translate(-50%, 16px);
+  background: var(--fg); color: var(--surface);
+  font-family: var(--font-body);
+  font-size: var(--text-xs); padding: 11px 18px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.portfolio-card, .showcase-row, .auction-list, .expert-card { animation: rise 580ms var(--ease-standard) both; }
+.showcase-row { animation-delay: 80ms; }
+.auction-list { animation-delay: 160ms; }
+.expert-card { animation-delay: 240ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

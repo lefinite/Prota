@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>慢递 · Mono</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__mark" aria-hidden="true">[慢递]</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">SLOWPOST v1.4.2</span>
+                <span class="brand-bar__sub">12 封在路上 · 3 封今天到达</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="system: 时间锁已启用" aria-label="系统">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：终端式今日信件（签名：prompt 行 + 时间戳）-->
+            <section class="hero" aria-label="今天到达的信">
+              <p class="hero__log">2026-10-15 06:00 cron: dispatch_daily_letters()</p>
+              <p class="hero__log hero__log--ok">&gt; 3 letters unlocked today ✓</p>
+              <div class="hero__card">
+                <span class="hero__stamp">来自 2024-03-02 的你</span>
+                <h1 class="hero__title">写给拿到 offer 那天的自己</h1>
+                <p class="hero__body">「如果那天真的来了，记得先去楼下的面馆加个蛋……」</p>
+                <div class="hero__meta">
+                  <span>封存 588 天</span><span>·</span><span>1,432 字</span><span>·</span><span>已解锁</span>
+                </div>
+                <div class="hero__cta">
+                  <button class="btn-primary" type="button" id="openBtn">$ cat letter.txt</button>
+                  <button class="btn-ghost" type="button" data-toast="已回信并封存至 2027-01-01">$ reply --in 443d</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="统计">
+              <div class="duo__card">
+                <h2 class="duo__title">STATS/封存</h2>
+                <p class="duo__num">27<span> 封</span></p>
+                <div class="meter"><i style="--w: 64%"></i></div>
+                <p class="duo__meta">12 在途 · 15 已送达</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">STATS/最长等待</h2>
+                <p class="duo__num">1,204<span> 天</span></p>
+                <p class="duo__meta">2023-01-01 → 2026-05-09</p>
+                <p class="duo__meta">「三十岁问题清单」</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：信件队列 -->
+            <section class="feed" aria-label="信件队列">
+              <div class="feed__head">
+                <h2 class="feed__title">QUEUE</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">all</button>
+                  <button class="chip" type="button" data-filter="transit">在途</button>
+                  <button class="chip" type="button" data-filter="locked">未解锁</button>
+                  <button class="chip" type="button" data-filter="done">已读</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="transit">
+                  <span class="feed-item__glyph">✉</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">写给冬至的厨房</span>
+                    <span class="feed-item__meta">→ 2026-12-21 · 还剩 67 天</span>
+                  </div>
+                  <em class="feed-item__pct">98%</em>
+                </li>
+                <li class="feed-item" data-kind="locked">
+                  <span class="feed-item__glyph">🔒</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">2027 年第一天读</span>
+                    <span class="feed-item__meta">→ 2027-01-01 · 还剩 78 天</span>
+                  </div>
+                  <em class="feed-item__pct">79%</em>
+                </li>
+                <li class="feed-item" data-kind="transit">
+                  <span class="feed-item__glyph">✉</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">给搬家那天的备忘</span>
+                    <span class="feed-item__meta">→ 2026-11-30 · 还剩 46 天</span>
+                  </div>
+                  <em class="feed-item__pct">87%</em>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph">✓</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">写给拿到 offer 那天的自己</span>
+                    <span class="feed-item__meta">2026-10-15 06:00 已解锁</span>
+                  </div>
+                  <em class="feed-item__pct feed-item__pct--done">READ</em>
+                </li>
+                <li class="feed-item" data-kind="locked">
+                  <span class="feed-item__glyph">🔒</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">四十岁的体检报告附言</span>
+                    <span class="feed-item__meta">→ 2040-10-15 · 还剩 5,116 天</span>
+                  </div>
+                  <em class="feed-item__pct">4%</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：终端输入 -->
+            <section class="action" aria-label="写一封">
+              <div class="chips chips--when">
+                <button class="chip" type="button" data-days="30">+30d</button>
+                <button class="chip" type="button" data-days="180">+6mo</button>
+                <button class="chip is-active" type="button" data-days="365">+1y</button>
+                <button class="chip" type="button" data-days="1095">+3y</button>
+              </div>
+              <div class="action__prompt">
+                <span class="action__sign">$</span>
+                <input class="action__input" id="letterInput" type="text" placeholder="写给未来的自己，回车封存…" />
+              </div>
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="sealBtn">seal --time-locked</button>
+                <button class="btn-ghost" type="button" data-toast="queue: 12 letters in transit">$ queue ls</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="信箱">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+              <span>信箱</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="队列">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              <span>队列</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="写信" aria-label="写信">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>写信</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="时间轴">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v16M6 8h6M6 14h9"/><circle cx="18" cy="8" r="2"/><circle cx="15" cy="14" r="2"/></svg>
+              <span>时间轴</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

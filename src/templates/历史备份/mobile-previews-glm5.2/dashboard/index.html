@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Cloud Metrics Hub · Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M12 8l-4 4 4 4M16 12l-4-4-4 4" /></svg>
+                </span>
+                <div class="brand-text">
+                  <span class="brand-name">Metrics Hub</span>
+                  <span class="brand-sub">云监控平台</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 主指标卡签名：三个核心数据 -->
+            <section class="metrics-card" aria-label="核心指标">
+              <div class="metrics-card__header">
+                <span class="metrics-card__title">实时监控</span>
+                <span class="metrics-card__live">
+                  <span class="metrics-card__pulse"></span>
+                  实时
+                </span>
+              </div>
+              <div class="metrics-grid">
+                <div class="metric-item">
+                  <span class="metric-item__label">QPS</span>
+                  <span class="metric-item__value">2,847</span>
+                  <span class="metric-item__change metric-item__change--up">+12.5%</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-item__label">延迟</span>
+                  <span class="metric-item__value">24<span class="metric-item__unit">ms</span></span>
+                  <span class="metric-item__change metric-item__change--down">-8.3%</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-item__label">错误率</span>
+                  <span class="metric-item__value">0.03<span class="metric-item__unit">%</span></span>
+                  <span class="metric-item__change metric-item__change--stable">—</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 服务状态卡 -->
+            <section class="status-cards" aria-label="服务状态">
+              <div class="status-card status-card--healthy">
+                <div class="status-card__head">
+                  <span class="status-card__name">API 服务</span>
+                  <span class="status-badge status-badge--success">运行中</span>
+                </div>
+                <div class="status-card__metrics">
+                  <span class="status-card__stat">99.9% 可用</span>
+                  <span class="status-card__stat">3/3 实例</span>
+                </div>
+              </div>
+              <div class="status-card status-card--warning">
+                <div class="status-card__head">
+                  <span class="status-card__name">数据库</span>
+                  <span class="status-badge status-badge--warn">高负载</span>
+                </div>
+                <div class="status-card__metrics">
+                  <span class="status-card__stat">87% CPU</span>
+                  <span class="status-card__stat">12/16 连接</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 告警列表 -->
+            <section class="alerts-block" aria-label="告警列表">
+              <div class="list-block__head">
+                <h2>最近告警</h2>
+                <div class="chips" id="alertFilterChips" role="tablist" aria-label="筛选告警">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="critical" role="tab" aria-selected="false">严重</button>
+                  <button class="chip" data-filter="warning" role="tab" aria-selected="false">警告</button>
+                </div>
+              </div>
+
+              <ul class="alert-list" id="alertList">
+                <li class="alert-item alert-item--critical" data-type="critical">
+                  <span class="alert-item__icon">!</span>
+                  <div class="alert-item__main">
+                    <span class="alert-item__title">API 响应超时</span>
+                    <span class="alert-item__sub">production-api-01 · 5 分钟前</span>
+                  </div>
+                  <div class="alert-item__right">
+                    <span class="alert-item__time">10:32</span>
+                    <span class="badge badge--danger">严重</span>
+                  </div>
+                </li>
+                <li class="alert-item alert-item--warning" data-type="warning">
+                  <span class="alert-item__icon">⚠</span>
+                  <div class="alert-item__main">
+                    <span class="alert-item__title">内存使用率升高</span>
+                    <span class="alert-item__sub">db-primary-02 · 12 分钟前</span>
+                  </div>
+                  <div class="alert-item__right">
+                    <span class="alert-item__time">10:25</span>
+                    <span class="badge badge--warn">警告</span>
+                  </div>
+                </li>
+                <li class="alert-item alert-item--resolved" data-type="warning">
+                  <span class="alert-item__icon">✓</span>
+                  <div class="alert-item__main">
+                    <span class="alert-item__title">磁盘空间告警</span>
+                    <span class="alert-item__sub">storage-east-01 · 已恢复</span>
+                  </div>
+                  <div class="alert-item__right">
+                    <span class="alert-item__time">09:45</span>
+                    <span class="badge badge--success">已解决</span>
+                  </div>
+                </li>
+                <li class="alert-item alert-item--info" data-type="critical">
+                  <span class="alert-item__icon">i</span>
+                  <div class="alert-item__main">
+                    <span class="alert-item__title">部署完成</span>
+                    <span class="alert-item__sub">app-v2.3.1 · 1 小时前</span>
+                  </div>
+                  <div class="alert-item__right">
+                    <span class="alert-item__time">09:00</span>
+                    <span class="badge badge--info">信息</span>
+                  </div>
+                </li>
+                <li class="alert-item alert-item--resolved" data-type="warning">
+                  <span class="alert-item__icon">✓</span>
+                  <div class="alert-item__main">
+                    <span class="alert-item__title">证书即将过期</span>
+                    <span class="alert-item__sub">cdn-edge-03 · 已更新</span>
+                  </div>
+                  <div class="alert-item__right">
+                    <span class="alert-item__time">昨天</span>
+                    <span class="badge badge--muted">已处理</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 进度条 -->
+            <section class="progress-section" aria-label="配额使用">
+              <div class="progress-item">
+                <div class="progress-item__head">
+                  <span class="progress-item__label">CPU 配额</span>
+                  <span class="progress-item__num">72%</span>
+                </div>
+                <div class="progress-item__bar" aria-hidden="true">
+                  <span class="progress-item__bar-fill" style="--p: 72%"></span>
+                </div>
+              </div>
+              <div class="progress-item">
+                <div class="progress-item__head">
+                  <span class="progress-item__label">内存配额</span>
+                  <span class="progress-item__num">58%</span>
+                </div>
+                <div class="progress-item__bar" aria-hidden="true">
+                  <span class="progress-item__bar-fill" style="--p: 58%"></span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="overview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+              <span>概览</span>
+            </button>
+            <button class="tab" data-tab="metrics">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M12 8l-4 4 4 4M16 12l-4-4-4 4" /></svg>
+              <span>指标</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="新建仪表盘">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="alerts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              <span>告警</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24" /></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

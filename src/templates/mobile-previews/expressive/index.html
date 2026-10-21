@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>跳格子 · Expressive</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">跳</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">跳格子贴纸铺</span>
+                <span class="brand-bar__sub">本周新作 38 张 · 你的粉丝 1,246</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="3 条新粉丝留言" aria-label="消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 1 1-3.3-6.7"/><path d="M21 3v5h-5"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：贴纸墙（签名：旋转贴纸卡）-->
+            <section class="hero" aria-label="今日主推贴纸包">
+              <div class="hero__wall">
+                <div class="hero__sticker hero__sticker--a" aria-hidden="true">🦄</div>
+                <div class="hero__sticker hero__sticker--b" aria-hidden="true">🌈</div>
+                <div class="hero__sticker hero__sticker--c" aria-hidden="true">🍭</div>
+                <div class="hero__pack">
+                  <p class="hero__eyebrow">NEW PACK · 限时 3 天</p>
+                  <h1 class="hero__title">独角兽便利店</h1>
+                  <p class="hero__count"><b id="soldCount">2,841</b> 人已带走 · ¥6</p>
+                  <button class="btn-primary" type="button" id="buyPack">整套带走</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="创作与收入">
+              <div class="duo__card">
+                <h2 class="duo__title">连续创作</h2>
+                <p class="duo__num">21<span> 天 🔥</span></p>
+                <div class="hearts">
+                  <i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i><i></i><i></i>
+                </div>
+                <p class="duo__meta">再更 3 天解锁限定画笔</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">本月打赏</h2>
+                <p class="duo__num">¥486</p>
+                <p class="duo__meta">96 人打赏 · 最高 ¥88</p>
+                <button class="btn-mini" type="button" data-toast="提现申请已提交，24h 到账">提现</button>
+              </div>
+            </section>
+
+            <!-- 4. Feed：贴纸动态 -->
+            <section class="feed" aria-label="社区动态">
+              <div class="feed__head">
+                <h2 class="feed__title">新鲜出炉</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="pack">贴纸包</button>
+                  <button class="chip" type="button" data-filter="free">免费</button>
+                  <button class="chip" type="button" data-filter="hot">热门</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="pack">
+                  <span class="feed-item__glyph" aria-hidden="true">👾</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">像素小怪夜行记</span>
+                    <span class="feed-item__meta">@咕咕鸟 · 16 张 · ¥6</span>
+                  </div>
+                  <button class="feed-item__like" type="button" aria-label="喜欢" aria-pressed="false"><span>♥</span><i>1.2k</i></button>
+                </li>
+                <li class="feed-item" data-kind="hot">
+                  <span class="feed-item__glyph" aria-hidden="true">🐱</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">办公室摸鱼猫</span>
+                    <span class="feed-item__meta">@虾条 · 20 张 · 免费</span>
+                  </div>
+                  <button class="feed-item__like is-on" type="button" aria-label="喜欢" aria-pressed="true"><span>♥</span><i>8.9k</i></button>
+                </li>
+                <li class="feed-item" data-kind="pack">
+                  <span class="feed-item__glyph" aria-hidden="true">🧋</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">奶茶宇宙漫游指南</span>
+                    <span class="feed-item__meta">@波霸不胖 · 12 张 · ¥3</span>
+                  </div>
+                  <button class="feed-item__like" type="button" aria-label="喜欢" aria-pressed="false"><span>♥</span><i>2.4k</i></button>
+                </li>
+                <li class="feed-item" data-kind="free">
+                  <span class="feed-item__glyph" aria-hidden="true">🛼</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">旱冰场星期五</span>
+                    <span class="feed-item__meta">@轮子 · 9 张 · 免费</span>
+                  </div>
+                  <button class="feed-item__like" type="button" aria-label="喜欢" aria-pressed="false"><span>♥</span><i>677</i></button>
+                </li>
+                <li class="feed-item" data-kind="hot">
+                  <span class="feed-item__glyph" aria-hidden="true">🎭</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">剧场脸谱变变变</span>
+                    <span class="feed-item__meta">@阿脸 · 18 张 · ¥8</span>
+                  </div>
+                  <button class="feed-item__like" type="button" aria-label="喜欢" aria-pressed="false"><span>♥</span><i>3.1k</i></button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="快速开画">
+              <input class="action__input" id="ideaInput" type="text" placeholder="给今天的贴纸起个名字…" />
+              <div class="chips chips--style">
+                <button class="chip is-active" type="button">手绘风</button>
+                <button class="chip" type="button">像素风</button>
+                <button class="chip" type="button">3D 果冻</button>
+                <button class="chip" type="button">剪纸</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="publishBtn">开画并上架</button>
+                <button class="btn-ghost" type="button" data-toast="已保存草稿《无名贴纸》">存草稿</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="铺子">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10l1.5-6h13L20 10"/><path d="M4 10v9h16v-9"/><path d="M4 10h16"/></svg>
+              <span>铺子</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发现">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="开画" aria-label="开画">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7-4-4-7 7-1.5 5.5L12 19z"/><path d="M15 8l1.5-1.5a2 2 0 0 1 3 3L18 11"/></svg>
+              <span>开画</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="消息">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 12a8 8 0 1 1-4-6.9"/><path d="M4 20l1-4"/></svg>
+              <span>消息</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

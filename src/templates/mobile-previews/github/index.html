@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>星码 · GitHub</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏：仓库身份 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6.5A2.5 2.5 0 0 1 4 19.5z" />
+                  <path d="M8 7h7M8 11h7M8 15h4" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">星码</span>
+                <span class="brand-bar__sub">readify / design-systems · 私有 · 主分支</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="搜索仓库、代码与议题" aria-label="搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.8-3.8" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：提交热力图 -->
+            <section class="hero-card" aria-label="提交动态">
+              <div class="panel-head">
+                <span class="panel-head__title">提交动态 · 最近 16 周</span>
+                <span class="panel-head__link">1,842 次提交</span>
+              </div>
+              <div class="hero-card__body">
+                <div class="hero-card__top">
+                  <span class="hero-card__label">今年提交 · 连续 <b>46 天</b> · 最长 83 天</span>
+                  <span class="hero-card__delta">+18%</span>
+                </div>
+                <div class="heatmap" id="heatmap" role="img" aria-label="最近 16 周提交热力图，近期保持连续提交"></div>
+                <div class="hero-card__foot">
+                  <span class="heatmap-legend" aria-hidden="true">
+                    少 <i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i> 多
+                  </span>
+                  <span>本周 <b>5 天</b> 已提交</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡：工作流 + 评审 -->
+            <section class="duo-grid" aria-label="工作流与评审">
+              <div class="duo-card">
+                <h2 class="duo-card__title">Actions · 运行</h2>
+                <div class="run-row">
+                  <span class="run-row__dot run-row__dot--ok" aria-hidden="true"></span>
+                  <div class="run-row__body">
+                    <span class="run-row__name">构建与测试 · main</span>
+                    <span class="run-row__meta">成功 · 3 分 12 秒 · 12 分钟前</span>
+                  </div>
+                </div>
+                <div class="run-row">
+                  <span class="run-row__dot run-row__dot--run" aria-hidden="true"></span>
+                  <div class="run-row__body">
+                    <span class="run-row__name">部署预发环境</span>
+                    <span class="run-row__meta">进行中 · 1 分 05 秒</span>
+                  </div>
+                </div>
+                <button class="duo-card__link" type="button" data-toast="共 14 个工作流 · 2 个进行中">查看全部工作流</button>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">代码评审 · #128</h2>
+                <p class="duo-card__note">深色模式适配 · 2 项变更请求待处理</p>
+                <div class="reviewers" aria-label="评审人">
+                  <span class="reviewers__avatar">汉</span>
+                  <span class="reviewers__avatar">芯</span>
+                  <span class="reviewers__avatar reviewers__avatar--req">宇</span>
+                </div>
+                <button class="duo-card__link" type="button" data-toast="已打开 #128 的评审视图">开始评审</button>
+              </div>
+            </section>
+
+            <!-- 4. 拉取请求 Feed -->
+            <section class="feed" aria-label="拉取请求">
+              <div class="feed__head">
+                <h2 class="feed__title">拉取请求</h2>
+                <div class="chips" role="tablist" aria-label="筛选拉取请求">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="open">打开</button>
+                  <button class="chip" type="button" data-filter="merged">已合并</button>
+                  <button class="chip" type="button" data-filter="draft">草稿</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="open">
+                  <span class="feed-item__state feed-item__state--open" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="1.4" fill="currentColor" /></svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">修复移动端热力图滚动卡顿</span>
+                    <span class="feed-item__meta">#142 · 汉德 · 12 分钟前 <em class="feed-item__chip" data-tone="accent">ui</em><em class="feed-item__chip" data-tone="success">已批准</em></span>
+                  </div>
+                  <b class="feed-item__count">3</b>
+                  <button class="feed-item__watch" type="button" aria-label="关注 #142" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" /><circle cx="12" cy="12" r="2.8" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="merged">
+                  <span class="feed-item__state feed-item__state--merged" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="6" r="3" /><circle cx="7" cy="18" r="3" /><path d="M7 9v6" /><path d="M10 12h4a4 4 0 0 0 4-4V7" /></svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">增加移动端状态栏安全区适配</span>
+                    <span class="feed-item__meta">#141 · 芯羽 · 2 小时前 <em class="feed-item__chip" data-tone="merged">已合并</em></span>
+                  </div>
+                  <b class="feed-item__count">7</b>
+                  <button class="feed-item__watch" type="button" aria-label="关注 #141" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" /><circle cx="12" cy="12" r="2.8" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="open">
+                  <span class="feed-item__state feed-item__state--open" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="1.4" fill="currentColor" /></svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">优化预览页构建产物体积</span>
+                    <span class="feed-item__meta">#136 · 阿澈 · 昨天 <em class="feed-item__chip" data-tone="success">性能</em></span>
+                  </div>
+                  <b class="feed-item__count">2</b>
+                  <button class="feed-item__watch" type="button" aria-label="关注 #136" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" /><circle cx="12" cy="12" r="2.8" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <span class="feed-item__state feed-item__state--draft" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /></svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">重构 token 注入脚本</span>
+                    <span class="feed-item__meta">#138 · 汉德 · 昨天 <em class="feed-item__chip">草稿</em></span>
+                  </div>
+                  <b class="feed-item__count">0</b>
+                  <button class="feed-item__watch" type="button" aria-label="关注 #138" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" /><circle cx="12" cy="12" r="2.8" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="closed">
+                  <span class="feed-item__state feed-item__state--closed" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">回滚临时分域方案</span>
+                    <span class="feed-item__meta">#134 · 芯羽 · 前天 <em class="feed-item__chip" data-tone="danger">已关闭</em></span>
+                  </div>
+                  <b class="feed-item__count">5</b>
+                  <button class="feed-item__watch" type="button" aria-label="关注 #134" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" /><circle cx="12" cy="12" r="2.8" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快捷操作">
+              <input class="quick-input" id="quickInput" type="text" placeholder="新议题标题，如：搜索结果高亮丢失" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="mergeBtn">合并拉取请求 #142</button>
+                <button class="btn-ghost" type="button" id="issueBtn">新建议题</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="代码">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 6l-5 6 5 6" /><path d="M16 6l5 6-5 6" />
+              </svg>
+              <span>代码</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="通知">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+              </svg>
+              <span>通知</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="请求">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="6" r="2.5" /><circle cx="6" cy="18" r="2.5" /><circle cx="18" cy="18" r="2.5" />
+                <path d="M6 8.5v7" /><path d="M8.5 18H12" /><path d="M18 15.5V10a4 4 0 0 0-4-4h-2.5" />
+              </svg>
+              <span>请求</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

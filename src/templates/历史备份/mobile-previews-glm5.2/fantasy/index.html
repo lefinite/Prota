@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>幻境探险 · Fantasy</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">⚔</span>
+                <div class="brand-text">
+                  <span class="brand-name">幻境探险</span>
+                  <span class="brand-sub">龙骨之境 · Lv.42</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="任务" data-toast="3 个新任务">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 英雄卡（signature：魔法光晕效果） -->
+            <section class="hero-card" aria-label="角色状态">
+              <div class="hero-card__glow" aria-hidden="true"></div>
+              <div class="hero-card__avatar">
+                <span class="avatar-ring"></span>
+                <span class="avatar-icon">🧙</span>
+              </div>
+              <p class="hero-card__label">当前英雄</p>
+              <h2 class="hero-card__name">星辰术士·艾琳</h2>
+              <div class="hero-card__stats">
+                <div class="stat">
+                  <span class="stat__val">LV.42</span>
+                  <span class="stat__label">等级</span>
+                </div>
+                <div class="stat">
+                  <span class="stat__val">2,847</span>
+                  <span class="stat__label">战力</span>
+                </div>
+                <div class="stat">
+                  <span class="stat__val">98%</span>
+                  <span class="stat__label">胜率</span>
+                </div>
+              </div>
+
+              <div class="hero-card__exp">
+                <span class="exp-bar"><span class="exp-fill" style="--p: 78%"></span></span>
+                <span class="exp-label">经验值 7,840 / 10,000</span>
+              </div>
+            </section>
+
+            <!-- 技能卡片 -->
+            <section class="skills-grid">
+              <div class="skill-card skill-card--fire">
+                <span class="skill-card__icon">🔥</span>
+                <span class="skill-card__name">烈焰风暴</span>
+                <span class="skill-card__level">Lv.8</span>
+              </div>
+              <div class="skill-card skill-card--ice">
+                <span class="skill-card__icon">❄</span>
+                <span class="skill-card__name">冰霜护盾</span>
+                <span class="skill-card__level">Lv.5</span>
+              </div>
+              <div class="skill-card skill-card--light">
+                <span class="skill-card__icon">⚡</span>
+                <span class="skill-card__name">雷霆一击</span>
+                <span class="skill-card__level">Lv.3</span>
+              </div>
+            </section>
+
+            <!-- 任务列表 -->
+            <section class="quest-block" aria-label="当前任务">
+              <h2 class="quest-block__title">进行中的任务</h2>
+
+              <ul class="quest-list">
+                <li class="quest quest--main">
+                  <span class="quest__icon">⭐</span>
+                  <div class="quest__main">
+                    <span class="quest__title">击败暗影巨龙</span>
+                    <span class="quest__sub">主线任务 · 龙骨之境</span>
+                  </div>
+                  <div class="quest__right">
+                    <span class="quest__reward">+5000 经验</span>
+                    <span class="badge badge--main">主线</span>
+                  </div>
+                </li>
+                <li class="quest quest--daily">
+                  <span class="quest__icon">📜</span>
+                  <div class="quest__main">
+                    <span class="quest__title">收集魔法水晶 x3</span>
+                    <span class="quest__sub">每日任务 · 完成 1/3</span>
+                  </div>
+                  <div class="quest__right">
+                    <span class="quest__reward">+100 金币</span>
+                    <span class="badge badge--daily">每日</span>
+                  </div>
+                </li>
+                <li class="quest quest--event">
+                  <span class="quest__icon">🎁</span>
+                  <div class="quest__main">
+                    <span class="quest__title">限时挑战：连胜五场</span>
+                    <span class="quest__sub">活动任务 · 剩余 2:45:30</span>
+                  </div>
+                  <div class="quest__right">
+                    <span class="quest__reward">稀有宝箱</span>
+                    <span class="badge badge--event">限时</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 背包预览 -->
+            <section class="inventory-card" aria-label="背包概览">
+              <div class="inventory-card__head">
+                <span class="inventory-card__title">背包</span>
+                <span class="inventory-card__count">42 / 64</span>
+              </div>
+              <div class="inventory-grid">
+                <div class="inv-item inv-item--rare">
+                  <span class="inv-item__icon">⚔</span>
+                  <span class="inv-item__rarity"></span>
+                </div>
+                <div class="inv-item inv-item--epic">
+                  <span class="inv-item__icon">🛡</span>
+                  <span class="inv-item__rarity"></span>
+                </div>
+                <div class="inv-item inv-item--legend">
+                  <span class="inv-item__icon">👑</span>
+                  <span class="inv-item__rarity"></span>
+                </div>
+                <div class="inv-item inv-item--common">
+                  <span class="inv-item__icon">🧪</span>
+                  <span class="inv-item__rarity"></span>
+                </div>
+              </div>
+              <button class="inventory-card__btn" data-toast="打开背包">
+                <span>查看全部</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="quest">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>任务</span>
+            </button>
+            <button class="tab tab--fab" data-tab="battle" aria-label="战斗">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l3 3-3 3M18 22l-3-3 3-3M2 12h20M12 2l3 3-3 3M12 22l-3-3 3-3" /></svg>
+            </button>
+            <button class="tab" data-tab="heroes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M16 3.13a4 4 0 0 1 0 7.75M13 10H4a3 3 0 0 0-3 3v8M12 3.13a4 4 0 0 1 0 7.75M21 10h-7a3 3 0 0 0-3 3v8" /></svg>
+              <span>英雄</span>
+            </button>
+            <button class="tab" data-tab="shop">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              <span>商店</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

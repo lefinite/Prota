@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>PlayStation 游戏 · PlayStation</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <svg class="ps-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <text x="0" y="18" font-size="14" font-weight="700">PS</text>
+              </svg>
+              <div class="brand-text">
+                <span class="brand-name">PlayStation</span>
+                <span class="brand-sub">游戏 · 在此</span>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 游戏卡（signature：SST 300 + 三表面布局） -->
+            <section class="hero-game" aria-label="精选游戏">
+              <div class="hero-game__cover">
+                <div class="hero-game__overlay">
+                  <span class="pill pill--ps5">PS5</span>
+                </div>
+              </div>
+              <div class="hero-game__content">
+                <h2 class="hero-game__title">战神：诸神黄昏</h2>
+                <p class="hero-game__desc">北欧神话终章 · 史诗级冒险</p>
+                <div class="hero-game__price">
+                  <span class="price__current">¥398</span>
+                  <span class="price__original">¥468</span>
+                  <span class="price__badge">限时优惠</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 游戏封面卡 -->
+            <section class="game-grid" aria-label="热门游戏">
+              <div class="game-card" data-toast="查看详细">
+                <div class="game-card__cover" style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);">
+                  <span class="pill pill--ps5">PS5</span>
+                </div>
+                <h3 class="game-card__title">蜘蛛侠 2</h3>
+                <div class="game-card__meta">
+                  <span class="price">¥468</span>
+                  <button class="btn-mini" data-toast="已加入购物车">购买</button>
+                </div>
+              </div>
+              <div class="game-card" data-toast="查看详细">
+                <div class="game-card__cover" style="background: linear-gradient(180deg, #0f3460 0%, #16213e 100%);">
+                  <span class="pill pill--ps5">PS5</span>
+                </div>
+                <h3 class="game-card__title">最终幻想 VII 重生</h3>
+                <div class="game-card__meta">
+                  <span class="price">¥398</span>
+                  <button class="btn-mini" data-toast="已加入购物车">购买</button>
+                </div>
+              </div>
+              <div class="game-card" data-toast="查看详细">
+                <div class="game-card__cover" style="background: linear-gradient(180deg, #533483 0%, #16213e 100%);">
+                  <span class="pill pill--ps4">PS4</span>
+                </div>
+                <h3 class="game-card__title">最后生还者 II</h3>
+                <div class="game-card__meta">
+                  <span class="price">¥298</span>
+                  <button class="btn-mini" data-toast="已加入购物车">购买</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 优惠列表 -->
+            <section class="promo-list" aria-label="限时优惠">
+              <div class="list-block__head">
+                <h2>限时优惠</h2>
+              </div>
+              <ul class="promo-list__items">
+                <li class="promo-item" data-toast="查看详情">
+                  <div class="promo-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12l4 4v16H2V6z"/></svg>
+                  </div>
+                  <div class="promo-item__main">
+                    <span class="promo-item__title">Plus 会员月卡</span>
+                    <span class="promo-item__sub">免费游戏 · 云存储</span>
+                  </div>
+                  <div class="promo-item__right">
+                    <span class="price price--commerce">¥29</span>
+                    <span class="badge badge--sale">-30%</span>
+                  </div>
+                </li>
+                <li class="promo-item" data-toast="查看详情">
+                  <div class="promo-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15 13l-3 3-3-3M12 16v-7"/></svg>
+                  </div>
+                  <div class="promo-item__main">
+                    <span class="promo-item__title">点数充值卡 ¥100</span>
+                    <span class="promo-item__sub">购买游戏 · DLC</span>
+                  </div>
+                  <div class="promo-item__right">
+                    <span class="price price--commerce">¥85</span>
+                    <span class="badge badge--sale">-15%</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-zone" aria-label="快速操作">
+              <button class="cta-commerce" data-toast="前往 PlayStation Store">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l4 4-4 4M18 12H6"/></svg>
+                PlayStation Store
+              </button>
+              <div class="action-row">
+                <button class="cta-secondary" data-toast="查看库">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  游戏库
+                </button>
+                <button class="cta-secondary" data-toast="查看下载">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  下载
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="store">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l4 4-4 4M18 12H6"/></svg>
+              <span>商店</span>
+            </button>
+            <button class="tab tab--fab" data-tab="search" aria-label="搜索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+            <button class="tab" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>库</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

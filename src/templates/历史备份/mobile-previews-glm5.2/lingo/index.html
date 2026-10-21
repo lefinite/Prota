@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Lingo · 语言学习</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">L</span>
+                <div class="brand-text">
+                  <span class="brand-name">Lingo</span>
+                  <span class="brand-sub">继续学习</span>
+                </div>
+              </div>
+              <div class="topbar__streak">
+                <svg class="flame-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                <span>12 天</span>
+              </div>
+            </header>
+
+            <!-- Hero signature：学习进度卡 -->
+            <section class="progress-card" aria-label="今日学习进度">
+              <div class="progress-card__header">
+                <span class="progress-card__title">今日目标</span>
+                <span class="progress-card__subtitle">Spanish · B2 中级</span>
+              </div>
+              <div class="progress-card__main">
+                <div class="progress-ring">
+                  <svg class="progress-ring__svg" viewBox="0 0 100 100">
+                    <circle class="progress-ring__bg" cx="50" cy="50" r="40"/>
+                    <circle class="progress-ring__progress" cx="50" cy="50" r="40" style="--p: 68"/>
+                  </svg>
+                  <span class="progress-ring__text">68%</span>
+                </div>
+                <div class="progress-stats">
+                  <div class="progress-stat">
+                    <span class="progress-stat__val">32</span>
+                    <span class="progress-stat__label">XP</span>
+                  </div>
+                  <div class="progress-stat">
+                    <span class="progress-stat__val">3/5</span>
+                    <span class="progress-stat__label">课程</span>
+                  </div>
+                </div>
+              </div>
+              <p class="progress-card__tip">还差 2 节课达成今日目标，加油！</p>
+            </section>
+
+            <!-- 学习卡片组 -->
+            <section class="lesson-cards">
+              <div class="lesson-card lesson-card--active" data-lesson="vocab">
+                <div class="lesson-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <span class="lesson-card__title">词汇练习</span>
+                <span class="lesson-card__desc">日常用语 · 15 词</span>
+                <div class="lesson-card__meta">
+                  <span class="lesson-card__xp">+15 XP</span>
+                  <span class="lesson-card__time">5 分钟</span>
+                </div>
+              </div>
+              <div class="lesson-card lesson-card--locked" data-lesson="grammar">
+                <div class="lesson-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <span class="lesson-card__title">语法进阶</span>
+                <span class="lesson-card__desc">完成词汇后解锁</span>
+                <div class="lesson-card__meta">
+                  <span class="lesson-card__xp">+20 XP</span>
+                  <span class="lesson-card__lock">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 每日挑战 -->
+            <section class="challenge-section" aria-label="每日挑战">
+              <div class="section-header">
+                <h2>每日挑战</h2>
+                <span class="badge badge--fire">双倍 XP</span>
+              </div>
+              <div class="challenge-card">
+                <span class="challenge-card__icon">对话</span>
+                <div class="challenge-card__content">
+                  <span class="challenge-card__title">模拟对话练习</span>
+                  <span class="challenge-card__desc">与 AI 模拟真实场景对话</span>
+                </div>
+                <button class="challenge-card__btn" data-toast="开始对话挑战">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 成就列表 -->
+            <section class="achievements-section" aria-label="最近成就">
+              <div class="section-header">
+                <h2>最近成就</h2>
+              </div>
+              <ul class="achievement-list">
+                <li class="achievement">
+                  <span class="achievement__icon achievement__icon--gold">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </span>
+                  <div class="achievement__main">
+                    <span class="achievement__title">词汇大师</span>
+                    <span class="achievement__desc">学会 500 个单词</span>
+                  </div>
+                  <span class="achievement__date">今天</span>
+                </li>
+                <li class="achievement">
+                  <span class="achievement__icon achievement__icon--purple">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </span>
+                  <div class="achievement__main">
+                    <span class="achievement__title">连续 7 天</span>
+                    <span class="achievement__desc">保持学习习惯</span>
+                  </div>
+                  <span class="achievement__date">昨天</span>
+                </li>
+                <li class="achievement">
+                  <span class="achievement__icon achievement__icon--bronze">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </span>
+                  <div class="achievement__main">
+                    <span class="achievement__title">初学者</span>
+                    <span class="achievement__desc">完成第一课</span>
+                  </div>
+                  <span class="achievement__date">3天前</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快速开始按钮 -->
+            <section class="cta-section">
+              <button class="cta-btn" data-toast="继续学习！">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>继续学习</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="learn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>学习</span>
+            </button>
+            <button class="tab" data-tab="practice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              <span>练习</span>
+            </button>
+            <button class="tab tab--fab" data-tab="leaderboard" aria-label="排行榜">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>一页 · Notion</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round">
+                  <path d="M4.5 4.5h6.2l8.8 12.7V4.5" opacity="0" />
+                  <rect x="5" y="5" width="14" height="14" rx="1.6" />
+                  <path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">一页</span>
+                <span class="brand-bar__sub">陈一的 workspace · 周六 15:42</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="搜索已就绪：试试输入「周报」" aria-label="搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：今日笔记（可勾选的文档本体）-->
+            <section class="hero-card" aria-label="今日笔记">
+              <div class="hero-card__head">
+                <span class="hero-card__icon" aria-hidden="true">🌤</span>
+                <div class="hero-card__title-wrap">
+                  <h1 class="hero-card__title">周六 · 本周复盘</h1>
+                  <span class="hero-card__path">个人空间 / 日程</span>
+                </div>
+                <em class="pill-badge">进行中</em>
+              </div>
+              <p class="hero-card__excerpt">本周把阅读器原型推进到 v3，最大的收获是把「签名卡」拆成可复用的三段节奏。</p>
+              <ul class="todo-list" id="todoList">
+                <li>
+                  <button class="todo" type="button" role="checkbox" aria-checked="true" data-todo>
+                    <i class="todo__box" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    </i>
+                    <span class="todo__text">整理设计系统对照表</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="todo" type="button" role="checkbox" aria-checked="false" data-todo>
+                    <i class="todo__box" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    </i>
+                    <span class="todo__text">回复 <em class="mention">@小林</em> 的文档评论</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="todo" type="button" role="checkbox" aria-checked="false" data-todo>
+                    <i class="todo__box" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    </i>
+                    <span class="todo__text">把原型链接同步到 <em class="mention">#产品组</em></span>
+                  </button>
+                </li>
+              </ul>
+              <div class="hero-card__foot">
+                <span>更新于 15:32</span>
+                <span><b id="todoLeft">2</b> 条待办</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="快速访问与模板">
+              <div class="duo-card">
+                <h2 class="duo-card__title">快速访问</h2>
+                <ul class="quick-list">
+                  <li><span aria-hidden="true">📗</span> 产品需求 · 阅读器 v3</li>
+                  <li><span aria-hidden="true">✅</span> 本周任务看板</li>
+                  <li><span aria-hidden="true">🍜</span> 想吃的店</li>
+                </ul>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">模板库</h2>
+                <div class="tpl-grid">
+                  <button class="tpl" type="button" data-toast="模板「周报复盘」已插入今日笔记">
+                    <span aria-hidden="true">🗓</span>周报复盘
+                  </button>
+                  <button class="tpl" type="button" data-toast="模板「阅读清单」已插入今日笔记">
+                    <span aria-hidden="true">📚</span>阅读清单
+                  </button>
+                  <button class="tpl" type="button" data-toast="模板「会议纪要」已插入今日笔记">
+                    <span aria-hidden="true">📝</span>会议纪要
+                  </button>
+                  <button class="tpl" type="button" data-toast="模板「旅行计划」已插入今日笔记">
+                    <span aria-hidden="true">🧭</span>旅行计划
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 最近页面 Feed -->
+            <section class="feed" aria-label="最近页面">
+              <div class="feed__head">
+                <h2 class="feed__title">最近页面</h2>
+                <div class="chips" role="tablist" aria-label="筛选页面">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="doing">进行中</button>
+                  <button class="chip" type="button" data-filter="shared">共享</button>
+                  <button class="chip" type="button" data-filter="archived">归档</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="doing">
+                  <span class="feed-item__glyph" aria-hidden="true">📗</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">产品需求 · 阅读器 v3</span>
+                    <span class="feed-item__meta">5 分钟前 · 个人空间 <em class="feed-item__chip feed-item__chip--doing">进行中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="加入快速访问" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="shared">
+                  <span class="feed-item__glyph" aria-hidden="true">🤝</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Q3 品牌设计规范（与小林共享）</span>
+                    <span class="feed-item__meta">今天 11:20 · 团队空间 <em class="feed-item__chip feed-item__chip--shared">共享</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="加入快速访问" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="doing">
+                  <span class="feed-item__glyph" aria-hidden="true">✅</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">本周任务看板</span>
+                    <span class="feed-item__meta">昨天 22:04 · 个人空间 <em class="feed-item__chip feed-item__chip--doing">进行中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="加入快速访问" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="shared">
+                  <span class="feed-item__glyph" aria-hidden="true">💬</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">用户访谈速记 · 8 位读者</span>
+                    <span class="feed-item__meta">昨天 16:47 · 团队空间 <em class="feed-item__chip feed-item__chip--shared">共享</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="加入快速访问" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">📦</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">v2 旧版方案汇总</span>
+                    <span class="feed-item__meta">8 月 2 日 · 已归档 <em class="feed-item__chip">归档</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="加入快速访问" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">🍜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">想吃的店（已搬进新清单）</span>
+                    <span class="feed-item__meta">7 月 30 日 · 已归档 <em class="feed-item__chip">归档</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="加入快速访问" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="新建页面">
+              <input class="quick-input" id="quickInput" type="text" maxlength="30" placeholder="输入新页面标题，如：观影笔记" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="newPageBtn">新建页面</button>
+                <button class="btn-ghost" type="button" data-toast="已打开模板中心：12 个常用模板">浏览模板</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="主页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>主页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="收件箱">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5h16v12H8l-4 4V5z" />
+              </svg>
+              <span>收件箱</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建页面">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="搜索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
+              </svg>
+              <span>搜索</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3.2" /><path d="M12 3.5v2M12 18.5v2M4.9 7.8l1.7 1M17.4 15.2l1.7 1M4.9 16.2l1.7-1M17.4 8.8l1.7-1" />
+              </svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

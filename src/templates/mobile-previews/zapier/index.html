@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>自动流 · Zapier 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">⚡</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">自动流</span>
+                <span class="brand-bar__sub">14 个 Zap 运行中 · 本月已自动执行 8,412 次</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="任务用量：8,412 / 10,000（专业版）" aria-label="用量">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-7M21 19H3"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：主打 Zap（签名：触发→动作链）-->
+            <section class="hero" aria-label="主打 Zap">
+              <h1 class="hero__title">让繁琐的事<br />自己消失。</h1>
+              <div class="zap" aria-label="工作流：表单提交后生成工单并通知">
+                <div class="step step--trigger">
+                  <span class="step__badge">触发</span>
+                  <div class="step__app">
+                    <span class="glyph">📝</span>
+                    <div class="step__info">
+                      <b>表单有新提交</b>
+                      <span>问卷星 · 任何新答卷</span>
+                    </div>
+                  </div>
+                </div>
+                <i class="link" aria-hidden="true"></i>
+                <div class="step">
+                  <span class="step__badge step__badge--do">动作 1</span>
+                  <div class="step__app">
+                    <span class="glyph">🎫</span>
+                    <div class="step__info">
+                      <b>创建工单</b>
+                      <span>工单系统 · 指派给值班组</span>
+                    </div>
+                  </div>
+                </div>
+                <i class="link" aria-hidden="true"></i>
+                <div class="step">
+                  <span class="step__badge step__badge--do">动作 2</span>
+                  <div class="step__app">
+                    <span class="glyph">💬</span>
+                    <div class="step__info">
+                      <b>发送群通知</b>
+                      <span>飞书 · @值班同学 带摘要</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="hero__meta">
+                <span class="mono">今日运行 312 次 · 0 失败 · 平均 1.4s</span>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-orange" type="button" id="runBtn">手动运行一次</button>
+                <button class="btn-ghost" type="button" data-toast="编辑器已打开（多步编辑）">编辑此 Zap</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="统计">
+              <div class="duo__card">
+                <h2 class="duo__title">本月省时</h2>
+                <p class="duo__num">42<span> 小时</span></p>
+                <p class="duo__meta">≈ 5.25 个工作日 · 全自动完成</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">连接的应用</h2>
+                <p class="duo__num">11<span> 个</span></p>
+                <p class="duo__meta">表单 · 工单 · 群聊 · 表格 · 邮件…</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：Zap 列表 -->
+            <section class="feed" aria-label="我的 Zap">
+              <div class="feed__head">
+                <h2 class="feed__title">我的 Zap</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="on">运行中</button>
+                  <button class="chip" type="button" data-filter="off">已暂停</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="zaprow" data-kind="on">
+                  <i class="zaprow__led on"></i>
+                  <div class="zaprow__body">
+                    <span class="zaprow__name">表单 → 工单 → 群通知</span>
+                    <span class="zaprow__meta mono">今日 312 次 · 0 失败</span>
+                  </div>
+                  <label class="switch is-on"><input type="checkbox" checked><i></i></label>
+                </li>
+                <li class="zaprow" data-kind="on">
+                  <i class="zaprow__led on"></i>
+                  <div class="zaprow__body">
+                    <span class="zaprow__name">GitHub 提 PR → 草稿周报</span>
+                    <span class="zaprow__meta mono">今日 27 次 · 0 失败</span>
+                  </div>
+                  <label class="switch is-on"><input type="checkbox" checked><i></i></label>
+                </li>
+                <li class="zaprow" data-kind="off">
+                  <i class="zaprow__led"></i>
+                  <div class="zaprow__body">
+                    <span class="zaprow__name">快递到 → 日历提醒取件</span>
+                    <span class="zaprow__meta mono">已暂停 · 上次运行 10-09</span>
+                  </div>
+                  <label class="switch"><input type="checkbox"><i></i></label>
+                </li>
+                <li class="zaprow" data-kind="on">
+                  <i class="zaprow__led on"></i>
+                  <div class="zaprow__body">
+                    <span class="zaprow__name">账单邮件 → 记账表格</span>
+                    <span class="zaprow__meta mono">本月 48 次 · 2 次重试成功</span>
+                  </div>
+                  <label class="switch is-on"><input type="checkbox" checked><i></i></label>
+                </li>
+                <li class="zaprow" data-kind="on">
+                  <i class="zaprow__led on"></i>
+                  <div class="zaprow__body">
+                    <span class="zaprow__name">新成员入职 → 开通全套账号</span>
+                    <span class="zaprow__meta mono">本月 6 次 · 平均节省 40 分/人</span>
+                  </div>
+                  <label class="switch is-on"><input type="checkbox" checked><i></i></label>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新建">
+              <input class="action__input" id="ideaInput" type="text" placeholder="用一句话描述你想自动化的事…" />
+              <div class="action__row">
+                <button class="btn-orange" type="button" id="genBtn">AI 帮我搭</button>
+                <button class="btn-ghost" type="button" data-toast="模板库：1,200+ 现成工作流">浏览模板</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="Zap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>
+              <span>Zap</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="历史">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+              <span>历史</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="应用">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>
+              <span>应用</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

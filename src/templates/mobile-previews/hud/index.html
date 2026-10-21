@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>STRATUS 飞行台 · HUD</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__diamond"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">STRATUS 飞行台</span>
+                <span class="brand-bar__sub">任务 MX-217 · 巡航阶段</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="数据链已重连 · 延迟 84ms" aria-label="数据链状态">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 18l4-4M10 12l4-4M16 6l4-4" />
+                  <path d="M14 4h6v6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：主飞行读数 + 航向带 -->
+            <section class="hud-hero" aria-label="主飞行读数">
+              <div class="hud-hero__top">
+                <span class="hud-label">主飞行读数 / MASTER</span>
+                <span class="hud-hero__mode">AP · AUTO 巡航</span>
+              </div>
+
+              <div class="readout-grid">
+                <div class="readout">
+                  <i class="hud-label">ALT 高度</i>
+                  <b class="readout__val" id="altVal">3240</b>
+                  <u class="readout__unit">M</u>
+                </div>
+                <div class="readout">
+                  <i class="hud-label">SPD 空速</i>
+                  <b class="readout__val" id="spdVal">142</b>
+                  <u class="readout__unit">KT</u>
+                </div>
+                <div class="readout">
+                  <i class="hud-label">HDG 航向</i>
+                  <b class="readout__val" id="hdgVal">267</b>
+                  <u class="readout__unit">°</u>
+                </div>
+              </div>
+
+              <div class="tape" role="img" aria-label="航向带，当前航向 267 度">
+                <div class="tape__track" id="tapeTrack">
+                  <span class="tape__deg" style="left: calc(50% - 120px)">240</span>
+                  <span class="tape__deg" style="left: 50%">270</span>
+                  <span class="tape__deg" style="left: calc(50% + 120px)">300</span>
+                </div>
+                <i class="tape__caret" aria-hidden="true"></i>
+              </div>
+
+              <div class="status-strip">
+                <span class="stat"><i class="stat__dot" data-state="ok"></i>自动驾驶</span>
+                <span class="stat"><i class="stat__dot" data-state="ok"></i>定位 GPS-3D</span>
+                <span class="stat"><i class="stat__dot" data-state="standby"></i>数据链待命</span>
+                <span class="stat"><i class="stat__dot" data-state="warn"></i>油量 62%</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="垂直剖面与系统资源">
+              <div class="hud-card">
+                <h2 class="hud-card__title">垂直剖面 / VS</h2>
+                <p class="hud-card__readout">+2.4<span> M/S</span></p>
+                <div class="vs-bars" role="img" aria-label="近 7 分钟垂直速度，当前爬升">
+                  <i style="--h: 40%"></i>
+                  <i style="--h: 62%"></i>
+                  <i style="--h: 48%"></i>
+                  <i style="--h: 76%"></i>
+                  <i style="--h: 55%"></i>
+                  <i style="--h: 88%"></i>
+                  <i class="is-now" style="--h: 70%"></i>
+                </div>
+                <p class="hud-card__note">正在爬升 · 目标 3,600 M</p>
+              </div>
+              <div class="hud-card">
+                <h2 class="hud-card__title">系统资源 / SYS</h2>
+                <div class="res-row">
+                  <div class="res-row__head"><span>燃料 FUEL</span><b>62%</b></div>
+                  <div class="seg-bar" data-level="warn"><i></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i></div>
+                </div>
+                <div class="res-row">
+                  <div class="res-row__head"><span>氧气 O2</span><b>91%</b></div>
+                  <div class="seg-bar" data-level="ok"><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i></div>
+                </div>
+                <div class="res-row">
+                  <div class="res-row__head"><span>电瓶 BAT</span><b>84%</b></div>
+                  <div class="seg-bar" data-level="ok"><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 航点 Feed -->
+            <section class="feed" aria-label="航点序列">
+              <div class="feed__head">
+                <h2 class="feed__title">航点序列 / WPT</h2>
+                <div class="chips" role="tablist" aria-label="筛选航点">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="passed">已过</button>
+                  <button class="chip" type="button" data-filter="current">当前</button>
+                  <button class="chip" type="button" data-filter="ahead">前方</button>
+                  <button class="chip" type="button" data-filter="alert">告警</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="passed">
+                  <span class="feed-item__code" aria-hidden="true">WP01</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">滨海起飞场</span>
+                    <span class="feed-item__meta">09:14 过点 · 航段 1/6</span>
+                  </div>
+                  <b class="feed-item__brg">142°</b>
+                  <em class="tag tag--dim">已过</em>
+                </li>
+                <li class="feed-item" data-kind="passed">
+                  <span class="feed-item__code" aria-hidden="true">WP02</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">湖心转弯点</span>
+                    <span class="feed-item__meta">09:52 过点 · 高度 2,100 M</span>
+                  </div>
+                  <b class="feed-item__brg">087°</b>
+                  <em class="tag tag--dim">已过</em>
+                </li>
+                <li class="feed-item" data-kind="current">
+                  <span class="feed-item__code feed-item__code--live" aria-hidden="true">WP03</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">山脊爬升段</span>
+                    <span class="feed-item__meta">正在飞向 · 距离 14.2 NM</span>
+                  </div>
+                  <b class="feed-item__brg">267°</b>
+                  <em class="tag tag--live">当前</em>
+                </li>
+                <li class="feed-item" data-kind="alert ahead">
+                  <span class="feed-item__code feed-item__code--warn" aria-hidden="true">WP04</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">限高空域 R-58</span>
+                    <span class="feed-item__meta">前方 22 NM · <em class="feed-item__warn">需爬升至 3,600 M</em></span>
+                  </div>
+                  <b class="feed-item__brg">301°</b>
+                  <em class="tag tag--warn">告警</em>
+                </li>
+                <li class="feed-item" data-kind="ahead">
+                  <span class="feed-item__code" aria-hidden="true">WP05</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">备降场 GRASSY</span>
+                    <span class="feed-item__meta">前方 48 NM · 跑道 09</span>
+                  </div>
+                  <b class="feed-item__brg">285°</b>
+                  <em class="tag tag--dim">前方</em>
+                </li>
+                <li class="feed-item" data-kind="ahead">
+                  <span class="feed-item__code" aria-hidden="true">WP06</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">目的地 · 跑道 27</span>
+                    <span class="feed-item__meta">前方 73 NM · 预计 12:08</span>
+                  </div>
+                  <b class="feed-item__brg">274°</b>
+                  <em class="tag tag--dim">前方</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="航迹记录">
+              <input class="quick-input" id="quickInput" type="text" placeholder="输入航点备注，如：轻度颠簸……" />
+              <div class="action-row">
+                <button class="btn-primary is-rec" type="button" id="recBtn" aria-pressed="true">
+                  <i class="btn-primary__led" aria-hidden="true"></i>记录航迹 · REC
+                </button>
+                <button class="btn-ghost" type="button" data-toast="传感器校准完成 · 陀螺零漂 0.2°">校准传感器</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="仪表">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" /><path d="M12 5v3M12 16v3M5 12h3M16 12h3" />
+              </svg>
+              <span>仪表</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="航图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6l6-2 4 2 6-2v14l-6 2-4-2-6 2z" /><path d="M10 4v14M14 6v14" />
+              </svg>
+              <span>航图</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="标记" aria-label="标记当前位置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" />
+              </svg>
+              <span>标记</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h14M5 19h9" />
+              </svg>
+              <span>日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="机载">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12h4l2-5h6l2 5h4" /><path d="M6 12v4h12v-4" />
+              </svg>
+              <span>机载</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

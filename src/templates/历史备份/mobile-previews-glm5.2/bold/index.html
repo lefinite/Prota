@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>BOLD WORKSPACE · Bold</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">B</span>
+                <div class="brand-text">
+                  <span class="brand-name">BOLD</span>
+                  <span class="brand-sub">WORKSPACE</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="3 条新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 任务概览卡（signature：超大粗体标题 + 强对比数字） -->
+            <section class="overview-card" aria-label="任务概览">
+              <p class="overview-card__label">YOUR PROJECTS</p>
+              <p class="overview-card__title">正在进行的<br>创意项目</p>
+              <div class="overview-card__stats">
+                <div class="stat-box">
+                  <span class="stat-box__val">12</span>
+                  <span class="stat-box__label">活跃项目</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box__val">48</span>
+                  <span class="stat-box__label">待处理任务</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box__val">5</span>
+                  <span class="stat-box__label">本周截止</span>
+                </div>
+              </div>
+              <div class="overview-card__actions">
+                <button class="btn-primary" data-toast="创建新项目">+ 新建项目</button>
+                <button class="btn-secondary" data-toast="查看全部">全部</button>
+              </div>
+            </section>
+
+            <!-- 项目进度双卡 -->
+            <section class="project-row" aria-label="项目进度">
+              <div class="project-card project-card--urgent">
+                <span class="project-card__tag">URGENT</span>
+                <span class="project-card__title">品牌视觉升级</span>
+                <span class="project-card__client">Acme Corp</span>
+                <div class="project-card__progress" aria-hidden="true">
+                  <span class="project-card__bar" style="--p: 78%"></span>
+                </div>
+                <span class="project-card__meta">截止: 今天 18:00</span>
+              </div>
+              <div class="project-card project-card--normal">
+                <span class="project-card__tag">IN PROGRESS</span>
+                <span class="project-card__title">移动端界面</span>
+                <span class="project-card__client">TechStart</span>
+                <div class="project-card__progress" aria-hidden="true">
+                  <span class="project-card__bar" style="--p: 42%"></span>
+                </div>
+                <span class="project-card__meta">截止: 明周</span>
+              </div>
+            </section>
+
+            <!-- 任务列表 -->
+            <section class="task-list" aria-label="任务列表">
+              <div class="task-list__head">
+                <h2>今日任务</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选任务">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="todo" role="tab" aria-selected="false">待办</button>
+                  <button class="chip" data-filter="done" role="tab" aria-selected="false">完成</button>
+                </div>
+              </div>
+
+              <ul class="task-list__items" id="taskList">
+                <li class="task-item" data-type="todo">
+                  <button class="task-item__check" aria-label="标记完成" data-toast="任务已完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="task-item__main">
+                    <span class="task-item__title">完成首页视觉稿</span>
+                    <span class="task-item__sub">品牌视觉升级 · 高优先级</span>
+                  </div>
+                  <span class="task-item__badge task-item__badge--high">HIGH</span>
+                </li>
+                <li class="task-item" data-type="todo">
+                  <button class="task-item__check" aria-label="标记完成" data-toast="任务已完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="task-item__main">
+                    <span class="task-item__title">客户评审会议</span>
+                    <span class="task-item__sub">14:00 · 在线会议</span>
+                  </div>
+                  <span class="task-item__badge task-item__badge--med">MED</span>
+                </li>
+                <li class="task-item" data-type="done">
+                  <button class="task-item__check task-item__check--checked" aria-label="标记未完成" data-toast="任务已恢复">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="task-item__main">
+                    <span class="task-item__title task-item__title--done">图标库交付</span>
+                    <span class="task-item__sub">已完成 · 10:30</span>
+                  </div>
+                  <span class="task-item__badge task-item__badge--done">DONE</span>
+                </li>
+                <li class="task-item" data-type="todo">
+                  <button class="task-item__check" aria-label="标记完成" data-toast="任务已完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12" /></svg>
+                  </button>
+                  <div class="task-item__main">
+                    <span class="task-item__title">移动端原型</span>
+                    <span class="task-item__sub">TechStart 项目 · 第二版</span>
+                  </div>
+                  <span class="task-item__badge task-item__badge--low">LOW</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快速操作区 -->
+            <section class="quick-actions" aria-label="快速操作">
+              <h2>快速操作</h2>
+              <div class="action-grid">
+                <button class="action-card" data-toast="新建任务">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  <span>新任务</span>
+                </button>
+                <button class="action-card" data-toast="上传文件">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>上传</span>
+                </button>
+                <button class="action-card" data-toast="邀请协作者">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                  <span>邀请</span>
+                </button>
+                <button class="action-card" data-toast="日程视图">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span>日程</span>
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              <span>项目</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tab" data-tab="team">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>团队</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

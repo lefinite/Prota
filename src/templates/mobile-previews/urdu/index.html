@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>روزنامہ · Urdu Modern</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent" dir="rtl" lang="ur">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">ر</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">روزنامہ</span>
+                <span class="brand-bar__sub" lang="zh-CN">乌尔都每日文摘 · 旁遮普语增刊已上线</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="نوٹیفکیشن کھول دیے گئے" aria-label="通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：今日头版（签名：Nastaliq 大字 + 装饰边框）-->
+            <section class="hero" aria-label="آج کی سرخی">
+              <p class="hero__kicker" lang="zh-CN">今日头条 · 文化版</p>
+              <h1 class="hero__title">دریائے سندھ کی کہانی</h1>
+              <p class="hero__trans" lang="zh-CN">印度河的故事：一条河流的六千年</p>
+              <p class="hero__body" lang="ur">سندھ طاس میں تہذیبوں کا سلسلہ، نوشتہ جات اور مقامی روایات — ایک تفصیلی رپورٹ۔</p>
+              <div class="hero__foot">
+                <span class="hero__byline">بقول: زینب رضا</span>
+                <span class="hero__read" lang="zh-CN">12 分钟阅读</span>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-green" type="button" id="readBtn">پڑھیں · 开始阅读</button>
+                <button class="btn-ghost" type="button" data-toast="محفوظ کر لیا گیا · 已收藏">محفوظ</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="معلومات">
+              <div class="duo__card">
+                <h2 class="duo__title" lang="zh-CN">连续阅读</h2>
+                <p class="duo__num">۱۴<span> روز</span></p>
+                <p class="duo__meta" lang="zh-CN">14 天 · 每日一篇乌尔都短文</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title" lang="zh-CN">生词本</h2>
+                <p class="duo__num">۸۶</p>
+                <p class="duo__meta" lang="zh-CN">今日新学 6 词 · 复习 20 词</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：文章流（RTL）-->
+            <section class="feed" aria-label="گزشتہ تحریریں">
+              <div class="feed__head">
+                <h2 class="feed__title">گزشتہ تحریریں</h2>
+                <div class="chips" lang="zh-CN">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="culture">文化</button>
+                  <button class="chip" type="button" data-filter="tech">科技</button>
+                  <button class="chip" type="button" data-filter="poem">诗歌</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="culture">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">لاہور کی رنگت اور موسم</span>
+                    <span class="feed-item__meta" lang="zh-CN">拉合尔的色彩与季节 · 昨天</span>
+                  </div>
+                  <em class="tag">ثقافت</em>
+                </li>
+                <li class="feed-item" data-kind="tech">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">موبائل بینکاری کا نیں دور</span>
+                    <span class="feed-item__meta" lang="zh-CN">移动银行的新时代 · 10-13</span>
+                  </div>
+                  <em class="tag tag--tech">ٹیکنالوجی</em>
+                </li>
+                <li class="feed-item" data-kind="poem">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">غزل: شام کا پہلا ستارہ</span>
+                    <span class="feed-item__meta" lang="zh-CN">加扎尔诗：黄昏第一颗星 · 10-12</span>
+                  </div>
+                  <em class="tag tag--poem">شاعری</em>
+                </li>
+                <li class="feed-item" data-kind="culture">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">کڑھائی کے نقشے</span>
+                    <span class="feed-item__meta" lang="zh-CN">刺绣纹样图鉴 · 10-11</span>
+                  </div>
+                  <em class="tag">ثقافت</em>
+                </li>
+                <li class="feed-item" data-kind="tech">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">چائے اور گفتگو</span>
+                    <span class="feed-item__meta" lang="zh-CN">茶与对话：播客笔记 · 10-09</span>
+                  </div>
+                  <em class="tag tag--tech">ٹیکنالوجی</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="تلاش">
+              <div class="chips chips--level" lang="zh-CN">
+                <button class="chip is-active" type="button">初级</button>
+                <button class="chip" type="button">中级</button>
+                <button class="chip" type="button">原生</button>
+              </div>
+              <input class="action__input" id="searchInput" type="text" dir="rtl" placeholder="تلاش کریں… · 搜索文章" />
+              <div class="action__row">
+                <button class="btn-green" type="button" data-toast="آواز سے سنئے · 已开启朗读">سنئے</button>
+                <button class="btn-ghost" type="button" data-toast="لغت کھلا · 双语词典已开启">لغت</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="مین نیویگیشن" lang="zh-CN">
+            <button class="tabbar__item is-active" type="button" data-tab="今天">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v15H4z"/><path d="M4 9h16"/></svg>
+              <span>今天</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="书房">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 8h6M9 12h4"/></svg>
+              <span>书房</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="朗读" aria-label="朗读">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>
+              <span>朗读</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="生词">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M9 7h7"/></svg>
+              <span>生词</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

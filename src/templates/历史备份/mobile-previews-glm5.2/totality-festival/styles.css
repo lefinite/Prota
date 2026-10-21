@@ -1,0 +1,667 @@
+/* =========================================================================
+ * mobile-previews/totality-festival — Totality Festival
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/totality-festival 的 :root token
+ * 页面：宇宙主题节日 · Glassmorphic 深色系统 + 琥珀日冕高光
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/totality-festival）—— */
+  --bg: #070711;
+  --surface: #111126;
+  --surface-warm: #1e1540;
+  --fg: #f8f7ff;
+  --fg-2: #d6ccff;
+  --muted: #9d8ad4;
+  --meta: #c084fc;
+  --border: #34265e;
+  --border-soft: #241c42;
+  --accent: #c084fc;
+  --accent-on: #13051f;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #39ff88;
+  --warn: #fff34d;
+  --danger: #ff4d8d;
+  --font-display: Inter, system-ui, sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 36px;
+  --text-3xl: 54px;
+  --text-4xl: 76px;
+  --leading-body: 1.52;
+  --leading-tight: 1.06;
+  --tracking-display: -0.025em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 68px;
+  --section-y-phone: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 24px 80px rgba(192, 132, 252, 0.22);
+  --focus-ring: 0 0 0 4px rgba(192, 132, 252, 0.32);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1180px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+
+  /* —— 手机外壳（与设计系统协调 - 宇宙深色主题）—— */
+  --page-backdrop-top: #1a1b21;
+  --page-backdrop-bottom: #0a0a12;
+  --phone-shell: #241c42;
+  --phone-shell-edge: #34265e;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.6);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+
+  /* —— Totality Festival 特色色 —— */
+  --totality-amber: #fff6df;
+  --totality-amber-glow: #ffd700;
+  --totality-cyan: #bdf4ff;
+  --totality-cyan-glow: #00e3fd;
+  --totality-lavender: #fcf3ff;
+  --totality-indigo: #e7d1ff;
+  --totality-obsidian: #121318;
+  --totality-surface: #1e1f25;
+  --totality-surface-high: #292a2f;
+  --totality-glass: rgba(52, 52, 58, 0.2);
+  --totality-glass-border: rgba(255, 255, 255, 0.1);
+  --totality-text-primary: #e3e1e9;
+  --totality-text-muted: #d0c6ab;
+  --totality-outline: #999077;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(26, 27, 33, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; cursor: pointer; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #000; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · Totality Festival ===== */
+
+/* 顶部品牌栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.topbar__brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-size: 20px;
+  color: var(--totality-amber-glow); background: var(--totality-surface);
+  border: 1px solid var(--totality-glass-border);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--fg);
+  text-transform: uppercase;
+}
+.brand-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.iconbtn {
+  position: relative; width: 38px; height: 38px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--fg);
+  border: 1px solid var(--totality-glass-border);
+  background: var(--totality-glass);
+  backdrop-filter: blur(20px);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 18px; height: 18px; }
+.iconbtn:hover {
+  border-color: var(--totality-cyan-glow);
+  box-shadow: 0 0 15px rgba(0, 227, 253, 0.3);
+}
+.iconbtn:active { background: color-mix(in oklab, var(--totality-cyan-glow), transparent 90%); }
+
+/* Hero Section - 宇宙渐变 */
+.hero-section {
+  position: relative;
+  margin-bottom: 24px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 220px;
+}
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, rgba(0, 227, 253, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(231, 209, 255, 0.08) 0%, transparent 40%),
+    var(--totality-obsidian);
+}
+.hero-content {
+  position: relative;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: var(--totality-glass);
+  border: 1px solid var(--totality-glass-border);
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(20px);
+  margin-bottom: 16px;
+}
+.hero-badge span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--totality-amber);
+}
+.hero-title {
+  margin: 0 0 24px;
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--totality-text-primary);
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  text-transform: uppercase;
+}
+.hero-countdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.countdown-value {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--totality-amber-glow);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  line-height: 1;
+}
+.countdown-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--totality-text-muted);
+  margin-top: 4px;
+}
+.countdown-sep {
+  font-size: 24px;
+  color: var(--totality-text-muted);
+  margin-top: -12px;
+}
+.btn-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--totality-amber-glow);
+  color: var(--totality-obsidian);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn-hero svg { width: 16px; height: 16px; }
+.btn-hero:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px rgba(255, 215, 0, 0.7);
+}
+.btn-hero:active {
+  transform: scale(0.98);
+}
+
+/* Schedule Section */
+.schedule-section {
+  margin-bottom: 24px;
+}
+.section-header {
+  margin-bottom: 16px;
+}
+.section-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--totality-amber);
+  margin-bottom: 6px;
+}
+.section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--totality-text-primary);
+  letter-spacing: 0.02em;
+}
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.schedule-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--totality-glass);
+  border: 1px solid var(--totality-glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.schedule-card:hover {
+  border-color: var(--totality-cyan);
+  background: color-mix(in oklab, var(--totality-glass), transparent 20%);
+}
+.schedule-card--active {
+  border-color: var(--totality-amber-glow);
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+.schedule-time {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+}
+.time-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--totality-text-primary);
+}
+.time-status {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--totality-amber-glow);
+  margin-top: 2px;
+}
+.schedule-info {
+  flex: 1;
+  min-width: 0;
+}
+.schedule-artist {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--totality-text-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.schedule-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--totality-text-muted);
+}
+.schedule-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ff4444;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+.schedule-indicator span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff4444;
+}
+.schedule-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--totality-text-muted);
+}
+
+/* Zones Section */
+.zones-section {
+  margin-bottom: 24px;
+}
+.zone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.zone-card {
+  position: relative;
+  padding: 16px 10px;
+  background: var(--totality-glass);
+  border: 1px solid var(--totality-glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.zone-card:hover {
+  transform: translateY(-2px);
+}
+.zone-card--amber:hover {
+  border-color: var(--totality-amber-glow);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.2);
+}
+.zone-card--cyan:hover {
+  border-color: var(--totality-cyan-glow);
+  box-shadow: 0 8px 20px rgba(0, 227, 253, 0.2);
+}
+.zone-card--lavender:hover {
+  border-color: var(--totality-indigo);
+  box-shadow: 0 8px 20px rgba(231, 209, 255, 0.2);
+}
+.zone-icon {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.zone-card--amber .zone-icon { color: var(--totality-amber-glow); }
+.zone-card--cyan .zone-icon { color: var(--totality-cyan-glow); }
+.zone-card--lavender .zone-icon { color: var(--totality-indigo); }
+.zone-name {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--totality-text-primary);
+  line-height: 1.2;
+}
+.zone-desc {
+  margin: 0 0 8px;
+  font-size: 9px;
+  color: var(--totality-text-muted);
+  line-height: 1.2;
+}
+.zone-status {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--success);
+  padding: 2px 8px;
+  background: rgba(57, 255, 136, 0.15);
+  border-radius: var(--radius-pill);
+}
+
+/* Interactive Section */
+.interactive-section {
+  margin-bottom: 24px;
+}
+.glass-card {
+  padding: 18px;
+  background: var(--totality-glass);
+  border: 1px solid var(--totality-glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+}
+.glass-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.glass-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--totality-cyan);
+  padding: 3px 8px;
+  background: rgba(0, 227, 253, 0.15);
+  border-radius: var(--radius-pill);
+}
+.glass-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--totality-text-primary);
+}
+.glass-desc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--totality-text-muted);
+}
+.btn-glass {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--totality-cyan);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--totality-cyan);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn-glass svg { width: 16px; height: 16px; }
+.btn-glass:hover {
+  background: rgba(0, 227, 253, 0.15);
+  box-shadow: 0 0 20px rgba(0, 227, 253, 0.3);
+}
+
+/* Action Bar */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.btn-primary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--totality-amber-glow);
+  color: var(--totality-obsidian);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn-primary svg { width: 20px; height: 20px; }
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+.btn-secondary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: var(--totality-glass);
+  border: 1px solid var(--totality-glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--totality-text-primary);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.btn-secondary svg { width: 20px; height: 20px; }
+.btn-secondary:hover {
+  border-color: var(--totality-cyan);
+  background: rgba(0, 227, 253, 0.1);
+}
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+  padding: 8px 10px 18px;
+  background: color-mix(in oklab, var(--surface), transparent 10%);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--totality-glass-border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px; font-weight: 500; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--totality-text-muted); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--totality-amber-glow); }
+.tab:active { transform: scale(0.95); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--totality-obsidian); color: var(--totality-amber);
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.05em;
+  padding: 10px 18px; border-radius: var(--radius-md);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+  border: 1px solid var(--totality-glass-border);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-section, .schedule-section, .zones-section, .interactive-section, .action-bar {
+  animation: rise 520ms var(--ease-standard) both;
+}
+.schedule-section { animation-delay: 70ms; }
+.zones-section { animation-delay: 140ms; }
+.interactive-section { animation-delay: 200ms; }
+.action-bar { animation-delay: 260ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

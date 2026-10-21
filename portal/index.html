@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prota</title>
+    <link rel="icon" type="image/svg+xml" href="/portal/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="modules/settings/settings.css?v=20261021">
+    <link rel="stylesheet" href="shell.css?v=20260909-roomy-page-selector">
+    <link rel="stylesheet" href="modules/prd/prd.css?v=20260827-narrow-header-fix-v1">
+</head>
+<body data-top-view="page">
+    <div class="shell-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <button id="agentSessionDrawerToggle" class="agent-icon-btn agent-history-btn" type="button" title="展开历史会话">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M3 6h18"></path>
+                        <path d="M3 12h18"></path>
+                        <path d="M3 18h18"></path>
+                    </svg>
+                </button>
+                <button id="agentWorkbenchToggle" class="agent-entry-btn" type="button" title="打开 Prota" aria-expanded="false">
+                    <div class="agent-entry-btn__tech-frame">
+                        <span class="tech-corner tech-corner--tl"></span>
+                        <span class="tech-corner tech-corner--tr"></span>
+                        <span class="tech-corner tech-corner--bl"></span>
+                        <span class="tech-corner tech-corner--br"></span>
+                        
+                        <div class="agent-entry-btn__left">
+                            <span class="agent-entry-btn__identity">
+                                <span class="agent-entry-btn__label">
+                                    <svg class="agent-entry-btn__wordmark" viewBox="0 0 174 48" role="img" aria-label="Prota">
+                                        <defs>
+                                            <clipPath id="protaCodeWordmarkClip">
+                                                <path d="M4 45V3h20c15 0 24 7 24 19.5S39 42 24 42h-8v3H4Z"></path>
+                                            </clipPath>
+                                            <linearGradient id="protaWordmarkP" x1="3" y1="3" x2="47" y2="46" gradientUnits="userSpaceOnUse">
+                                                <stop class="agent-entry-btn__p-stop-start" stop-color="#9287ff"></stop>
+                                                <stop class="agent-entry-btn__p-stop-end" offset="1" stop-color="#6357eb"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                        <path class="agent-entry-btn__wordmark-p" fill="url(#protaWordmarkP)" d="M4 45V3h20c15 0 24 7 24 19.5S39 42 24 42h-8v3H4Z"></path>
+                                        <foreignObject class="agent-entry-btn__code-wordmark" x="4" y="3" width="44" height="42" clip-path="url(#protaCodeWordmarkClip)">
+                                            <div class="agent-entry-btn__terminal" xmlns="http://www.w3.org/1999/xhtml">
+                                                <div class="agent-entry-btn__terminal-scroll" id="agentMiniTerminalScroll"></div>
+                                            </div>
+                                        </foreignObject>
+                                        <path class="agent-entry-btn__dog-face" d="m15 14 5-6 4 6a17 17 0 0 1 7 0l5-6 4 7c3 3 4 6 4 10 0 9-7 15-17 15S10 34 10 25c0-4 2-8 5-11Z"></path>
+                                        <g class="agent-entry-btn__dog-features">
+                                            <circle cx="22" cy="24" r="2"></circle>
+                                            <circle cx="33" cy="24" r="2"></circle>
+                                            <path d="M24 29c0-2 2-3 4-3s4 1 4 3-2 4-4 4-4-2-4-4Z"></path>
+                                        </g>
+                                        <path class="agent-entry-btn__wordmark-letters" d="M54 45V17h11v5c2-4 6-6 11-6v11c-7 0-11 3-11 10v8H54Zm40 1c-10 0-18-7-18-15s8-15 18-15 18 7 18 15-8 15-18 15Zm0-10c4 0 7-2 7-5s-3-5-7-5-7 2-7 5 3 5 7 5Zm28 9V26h-8v-9h8V8h11v9h9v9h-9v19h-11Zm34 1c-8 0-14-6-14-15s6-15 14-15c4 0 7 2 9 4v-3h9v28h-9v-3c-2 2-5 4-9 4Zm3-10c4 0 7-2 7-5s-3-5-7-5-7 2-7 5 3 5 7 5Z"></path>
+                                    </svg>
+                                </span>
+                                <span class="agent-entry-btn__pet-stage" id="agentPetStage" aria-hidden="true">
+                                    <img id="agentPetImage" class="agent-entry-btn__pet" alt="" src="assets/prota/pet/idle.webp">
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </button>
+                <div class="sidebar-agent-controls">
+                    <button id="agentNewSessionBtn" class="agent-icon-btn agent-session-sidebar__new agent-header-new-session" type="button" title="新增会话">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14"></path>
+                            <path d="M5 12h14"></path>
+                        </svg>
+                    </button>
+                    <div class="agent-workbench__header-actions">
+                        <button id="agentWorkbenchClose" class="agent-icon-btn" type="button" title="关闭 Prota">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M18 6L6 18"></path>
+                                <path d="M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="page-nav">
+                <!-- Projects Section -->
+                <div id="projectNavSection" class="nav-section">
+                    <div class="nav-title-row">
+                        <h3 class="nav-title">项目列表</h3>
+                        <button id="addProjectBtn" class="nav-action-btn" type="button" title="新增项目">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <ul id="projectList" class="nav-list">
+                        <!-- Projects injected by JS -->
+                    </ul>
+                </div>
+
+                <!-- Pages Section (hidden by default) -->
+                <div id="pageNavSection" class="nav-section" hidden>
+                    <div class="nav-title-row">
+                        <h3 class="nav-title">页面列表</h3>
+                        <div class="nav-title-actions">
+                            <button id="addFolderBtn" class="nav-action-btn" type="button" title="新建文件夹">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H9l2 2.5h7.5A2.5 2.5 0 0 1 21 9v8.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"></path>
+                                    <path d="M12 11v5"></path>
+                                    <path d="M9.5 13.5h5"></path>
+                                </svg>
+                            </button>
+                            <button id="addPageBtn" class="nav-action-btn" type="button" title="新增页面">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <ul id="pageList" class="nav-list">
+                        <!-- Pages will be injected here -->
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button id="trashToggleBtn" class="nav-trash-toggle" type="button" aria-expanded="false">
+                    <span class="nav-trash-toggle__label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18"></path>
+                            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                        </svg>
+                        <span>回收站</span>
+                    </span>
+                    <span id="trashCount" class="nav-trash-toggle__count">0</span>
+                </button>
+            </div>
+            <div id="agentResizeHandle" class="agent-resize-handle" role="separator" aria-orientation="vertical" title="拖动调整 Prota 宽度"></div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <nav class="top-tabs" id="topTabs" role="tablist" aria-label="主切换">
+                    <button type="button" class="top-tab is-active" data-top-view="projects" role="tab" aria-selected="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                        <span>项目</span>
+                    </button>
+                    <button type="button" class="top-tab" data-top-view="skills" role="tab" aria-selected="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>
+                        <span>Skill</span>
+                    </button>
+                    <button type="button" class="top-tab" data-top-view="templates" role="tab" aria-selected="false">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                        <span>模板</span>
+                    </button>
+                </nav>
+                <div class="header-left" id="headerLeftControls">
+                    <button id="backToProjectsBtn" class="header-back-btn" type="button" title="返回项目列表" aria-label="返回项目列表">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                    <div class="page-selector-wrapper">
+                        <button id="pageSelectorTrigger" class="page-selector-trigger" type="button" title="切换页面">
+                            <span id="currentPageName">Loading...</span>
+                            <svg class="page-selector-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div id="pageSelectorPanel" class="page-selector-panel">
+                            <div class="page-selector-panel__list" id="pageSelectorPanelList">
+                                <!-- Dynamic pages list -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="version-selector-wrap">
+                        <div class="version-panel-wrapper">
+                            <button id="versionTrigger" class="version-trigger" type="button">
+                                <span id="versionTriggerLabel">V1</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <div id="versionPanel" class="version-panel">
+                                <div class="version-panel__list" id="versionPanelList">
+                                    <!-- Version rows injected by JS -->
+                                </div>
+                                <div class="version-panel__footer">
+                                    <button id="panelForkBtn" class="version-panel__action version-panel__action--fork" type="button">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                                        <span>基于 V5 迭代</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="versionRefreshBtn" class="version-refresh-btn" type="button" title="刷新页面">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                                <path d="M21 3v5h-5"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button id="annotatorBtn" class="btn btn-ghost header-icon-action" type="button" title="标注" aria-label="标注" aria-pressed="false">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 7V5a1 1 0 0 1 1-1h2"></path>
+                            <path d="M17 4h2a1 1 0 0 1 1 1v2"></path>
+                            <path d="M20 17v2a1 1 0 0 1-1 1h-2"></path>
+                            <path d="M7 20H5a1 1 0 0 1-1-1v-2"></path>
+                            <circle cx="12" cy="12" r="3.2"></circle>
+                        </svg>
+                    </button>
+                    <button id="docVisibilityBtn" class="btn btn-ghost header-icon-action" type="button" title="显示或隐藏文档" aria-label="显示或隐藏文档">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </button>
+                    <div id="shareMenuWrapper" class="share-menu-wrapper">
+                        <button id="shareMenuTrigger" class="btn btn-ghost share-trigger header-icon-action" type="button" title="分享当前页面" aria-label="分享当前页面" aria-haspopup="menu" aria-expanded="false">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <path d="m8.7 10.7 6.6-3.4"></path>
+                                <path d="m8.7 13.3 6.6 3.4"></path>
+                            </svg>
+                        </button>
+                        <div id="shareMenu" class="share-menu" role="menu" hidden>
+                            <button id="openNewTabBtn" class="share-menu__item" type="button" role="menuitem">
+                                <span class="share-menu__icon" aria-hidden="true">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <path d="M15 3h6v6"></path>
+                                        <path d="M10 14 21 3"></path>
+                                    </svg>
+                                </span>
+                                <span>
+                                    <strong>外部打开 Demo</strong>
+                                    <small>仅打开底层 HTML</small>
+                                </span>
+                            </button>
+                            <div class="share-menu__divider"></div>
+                            <button class="share-menu__item" type="button" role="menuitem" data-share-type="static">
+                                <span class="share-menu__icon" aria-hidden="true" style="color: #10b981;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2v8M9 7l3 3 3-3"></path>
+                                        <path d="M20.38 8.57A9 9 0 1 0 4 18h16a4.5 4.5 0 0 0 .38-9.43z"></path>
+                                    </svg>
+                                </span>
+                                <span>
+                                    <strong>静态云分享</strong>
+                                    <small id="shareStaticSubtext">发布至 share.example.com</small>
+                                </span>
+                            </button>
+                            <div class="share-menu__divider"></div>
+                            <button id="shareSettingsBtn" class="share-menu__item" type="button" role="menuitem">
+                                <span class="share-menu__icon" aria-hidden="true" style="color: #64748b;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                    </svg>
+                                </span>
+                                <span>
+                                    <strong>分享配置</strong>
+                                    <small>配置域名与 Vercel 发布策略</small>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <section class="home-view" id="projectsHomeView" aria-label="项目工作台">
+                <div class="home-view__toolbar">
+                    <div class="home-view__actions home-view__actions--wide">
+                        <button type="button" class="home-action-btn home-action-btn--primary" id="homeNewProjectBtn">
+                            <span>新建项目</span>
+                        </button>
+                        <button type="button" class="home-action-btn home-trash-btn" id="homeTrashBtn" aria-expanded="false">
+                            <span>回收站</span>
+                            <span class="home-trash-btn__count" id="homeTrashCount">0</span>
+                        </button>
+                        <label class="home-search" for="projectSearchInput">
+                            <input id="projectSearchInput" type="search" placeholder="搜索项目">
+                        </label>
+                    </div>
+                </div>
+                <div class="home-view__body">
+                    <div class="project-grid" id="projectGrid"></div>
+                    <div class="home-empty-state" id="projectsEmptyState" hidden>
+                        <div class="home-empty-state__icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                        </div>
+                        <h3>还没有项目</h3>
+                        <p>点击右上角"新建项目"开始你的第一个原型。</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="home-view" id="templatesHomeView" aria-label="模板库" hidden>
+                <div class="home-view__toolbar">
+                    <div class="home-view__actions home-view__actions--wide">
+                        <div class="template-device-switch" id="templateDeviceFilter" role="tablist" aria-label="模板端类型">
+                            <button type="button" class="template-device-switch__tab is-active" data-template-device="mobile" role="tab" aria-selected="true">
+                                <span>移动端</span><small id="mobileTemplateCount">0</small>
+                            </button>
+                            <button type="button" class="template-device-switch__tab" data-template-device="web" role="tab" aria-selected="false">
+                                <span>Web 端</span><small id="webTemplateCount">0</small>
+                            </button>
+                        </div>
+                        <label class="home-search" for="templateSearchInput">
+                            <input id="templateSearchInput" type="search" placeholder="搜索模板名称">
+                        </label>
+                        <div class="home-filter" id="templateStatusFilter" role="group" aria-label="模板状态筛选">
+                            <button type="button" class="home-filter__chip" data-template-status-filter="all">全部</button>
+                            <button type="button" class="home-filter__chip is-active" data-template-status-filter="enabled">启用</button>
+                            <button type="button" class="home-filter__chip" data-template-status-filter="disabled">停用</button>
+                        </div>
+                        <div class="template-category-wrapper" id="templateCategoryWrapper">
+                            <button type="button" class="template-category-trigger" id="templateCategoryTrigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="templateCategoryLabel">全部分类</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <div class="template-category-popover" id="templateCategoryPopover" hidden>
+                                <div class="template-category-popover__search">
+                                    <input type="search" id="templateCategorySearch" placeholder="搜索分类..." autocomplete="off">
+                                </div>
+                                <div class="template-category-popover__list" id="templateCategoryList" role="listbox" aria-label="模板分类">
+                                    <!-- Categories injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="home-view__body">
+                    <div class="template-grid" id="templateGrid"></div>
+                    <div class="home-empty-state" id="templatesEmptyState" hidden>
+                        <div class="home-empty-state__icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                        </div>
+                        <h3>暂无匹配模板</h3>
+                        <p>尝试切换端类型、状态或清除搜索条件。</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="home-view" id="skillsHomeView" aria-label="Skill 管理" hidden>
+                <div class="home-view__toolbar">
+                    <div class="home-view__actions home-view__actions--wide">
+                        <button type="button" class="home-action-btn home-action-btn--primary" id="skillImportBtn">
+                            <span>导入 Skill</span>
+                        </button>
+                        <label class="home-search" for="skillSearchInput">
+                            <input id="skillSearchInput" type="search" placeholder="搜索 Skill">
+                        </label>
+                        <div class="home-filter" id="skillStatusFilter" role="group" aria-label="Skill 状态筛选">
+                            <button type="button" class="home-filter__chip" data-skill-status-filter="all">全部</button>
+                            <button type="button" class="home-filter__chip is-active" data-skill-status-filter="enabled">启用</button>
+                            <button type="button" class="home-filter__chip" data-skill-status-filter="disabled">停用</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="home-view__body">
+                    <div class="skill-grid" id="skillGrid"></div>
+                    <div class="home-empty-state" id="skillsEmptyState" hidden>
+                        <div class="home-empty-state__icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>
+                        </div>
+                        <h3>暂无可用 Skill</h3>
+                        <p>请确认 Agent Gateway 已启动，或导入一个包含 SKILL.md 的 Skill 文件夹。</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="viewport-container" id="pageViewportContainer">
+                <div class="viewport-stage">
+                    <iframe id="mainIframe" frameborder="0"></iframe>
+                    <div id="annotationMarkerLayer" class="annotation-marker-layer" aria-hidden="true"></div>
+                </div>
+                <aside id="annotationDrawer" class="annotation-drawer" aria-label="文档标注抽屉">
+                    <div id="prdDrawerResizeHandle" class="prd-drawer-resize-handle" role="separator" aria-orientation="vertical" title="拖动调整 PRD 宽度" aria-hidden="true"></div>
+                    <div class="annotation-drawer__header">
+                        <div class="annotation-drawer__topbar">
+                            <div class="annotation-drawer__heading">
+                                <div id="docDrawerEyebrow" class="annotation-drawer__eyebrow"></div>
+                                <h3 id="docDrawerTitle" class="annotation-drawer__title"></h3>
+                            </div>
+                        </div>
+                        <div class="doc-tabs" role="tablist" aria-label="文档类型">
+                            <button class="doc-tab is-active" type="button" role="tab" aria-selected="true" data-doc-tab="prd">需求文档</button>
+                            <button class="doc-tab" type="button" role="tab" aria-selected="false" data-doc-tab="annotations">交互标注</button>
+                        </div>
+                        <div class="annotation-drawer__meta-row">
+                            <div id="annotationDrawerMeta" class="annotation-drawer__meta"></div>
+                            <div class="doc-drawer-actions">
+                                <button id="prdAiBtn" class="doc-drawer-icon-btn" type="button" title="AI 助手问答 (整个文档)" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                                        <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5z"/>
+                                        <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/>
+                                    </svg>
+                                </button>
+                                <button id="prdEditBtn" class="doc-drawer-icon-btn" type="button" title="编辑 PRD" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                    </svg>
+                                </button>
+                                <button id="prdSaveBtn" class="doc-drawer-icon-btn doc-drawer-icon-btn--primary" type="button" title="保存 PRD" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path>
+                                        <path d="M17 21v-8H7v8"></path>
+                                        <path d="M7 3v5h8"></path>
+                                    </svg>
+                                </button>
+                                <button id="prdCancelEditBtn" class="doc-drawer-icon-btn" type="button" title="取消编辑" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 6 6 18"></path>
+                                        <path d="m6 6 12 12"></path>
+                                    </svg>
+                                </button>
+                                <button id="prdExpandBtn" class="doc-drawer-icon-btn" type="button" title="放大 PRD 阅读区" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 3h6v6"></path>
+                                        <path d="M9 21H3v-6"></path>
+                                        <path d="M21 3l-7 7"></path>
+                                        <path d="M3 21l7-7"></path>
+                                    </svg>
+                                </button>
+                                <button id="prdOpenNewTabBtn" class="doc-drawer-icon-btn" type="button" title="新窗口打开 PRD" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <path d="M15 3h6v6"></path>
+                                        <path d="M10 14 21 3"></path>
+                                    </svg>
+                                </button>
+                                <button id="prdDownloadBtn" class="doc-drawer-icon-btn" type="button" title="下载 PRD 及版本内容" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="annotationDrawerBody" class="annotation-drawer__body"></div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <aside id="agentWorkbench" class="agent-workbench" aria-label="Agent Workbench">
+        <div class="agent-workbench__surface">
+            <div class="agent-workbench__main">
+                <aside class="agent-session-sidebar">
+                    <div class="agent-session-sidebar__header" id="agentSessionSidebarHeader">
+                        <div class="agent-session-sidebar__title-wrap">
+                            <div class="agent-session-sidebar__title">历史对话</div>
+                        </div>
+                        <div class="agent-session-sidebar__search" id="agentSessionSearchWrap">
+                            <button id="agentSessionSearchToggle" class="agent-session-sidebar__search-toggle" type="button" title="搜索历史对话" aria-label="搜索历史对话" aria-expanded="false">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                            </button>
+                            <input id="agentSessionSearchInput" type="text" placeholder="搜索历史对话" autocomplete="off">
+                        </div>
+                    </div>
+                    <div id="agentSessionList" class="agent-session-list"></div>
+                </aside>
+
+                <section class="agent-workbench__panel">
+                    <header class="agent-workbench__panel-header">
+                        <div class="agent-workbench__panel-status">
+                            <span id="agentStatusPill" class="agent-status-pill" data-state="disconnected">未连接</span>
+                            <span id="agentStatusContext" class="agent-status-context">未限定页面范围</span>
+                        </div>
+                        <div class="agent-workbench__panel-actions">
+                            <span id="agentRunTimer" class="agent-run-timer" hidden>00:00</span>
+                            <button id="agentBindPageBtn" class="agent-bind-page-btn" type="button" title="选择页面范围">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px;">
+                                    <path d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                <span>选择范围</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="agent-workbench__body">
+                        <button id="agentJumpLatestBtn" class="agent-jump-latest" type="button" hidden>回到最新</button>
+                        <div id="agentTimeline" class="agent-timeline" aria-live="polite"></div>
+                    </div>
+
+                    <form id="agentComposer" class="agent-composer">
+                        <div id="agentActiveSkillBar" class="agent-composer__skillbar" hidden></div>
+                        <div id="agentFeedbackBar" class="agent-composer__feedbackbar" hidden></div>
+                        <div id="agentAttachmentBar" class="agent-attachment-bar" hidden></div>
+                        <div id="agentPrdContextBar" class="agent-composer__prd-context-bar" hidden></div>
+                        <div class="agent-composer__input-shell">
+                            <div class="agent-command-menu-anchor">
+                                <textarea id="agentInput" class="agent-composer__input" rows="4" placeholder="和 Prota 对话，输入 / 唤起命令。"></textarea>
+                                <div class="agent-composer__input-inner">
+                                    <div class="agent-composer__left-actions">
+                                        <button id="agentSkillMenuToggle" class="agent-skill-menu-toggle" type="button" title="选择命令 (/)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                                                <line x1="17" y1="4" x2="7" y2="20"></line>
+                                            </svg>
+                                        </button>
+                                        <button id="agentImageUploadBtn" class="agent-image-upload-btn" type="button" title="上传参考图片" aria-label="上传参考图片">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                                <circle cx="8.5" cy="10" r="1.5"></circle>
+                                                <path d="M21 15l-4.5-4.5L10 17l-2.5-2.5L3 19"></path>
+                                            </svg>
+                                        </button>
+                                        <div class="agent-model-selector-anchor">
+                                            <button id="agentModelToggle" class="agent-model-toggle" type="button" title="切换模型">
+                                                <span id="agentModelLabel" class="agent-model-toggle__label">--</span>
+                                            </button>
+                                            <div id="agentModelDropdown" class="agent-model-dropdown" hidden></div>
+                                        </div>
+                                        <button id="agentPlanModeToggle" class="agent-plan-mode-toggle" type="button" title="开启 Plan 模式后，Agent 必须先设计实施计划再执行修改">
+                                            <span>Plan 模式</span>
+                                        </button>
+                                        <div class="agent-permission-selector-anchor">
+                                            <button id="agentPermissionToggle" class="agent-permission-toggle" type="button" title="切换权限模式">
+                                                <span id="agentPermissionLabel" class="agent-permission-toggle__label">权限: --</span>
+                                            </button>
+                                            <div id="agentPermissionDropdown" class="agent-permission-dropdown" hidden></div>
+                                        </div>
+                                    </div>
+                                    <div id="agentSkillMenu" class="agent-skill-menu" hidden></div>
+                                    <button id="agentSendBtn" class="agent-send-btn" type="submit">
+                                        <svg class="agent-send-btn__icon-send" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 2L11 13"></path>
+                                            <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                                        </svg>
+                                        <svg class="agent-send-btn__icon-stop" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="agentCommandMenu" class="agent-command-menu" hidden></div>
+                                <div id="agentAutocompleteDropdown" class="agent-autocomplete-dropdown"></div>
+                            </div>
+                        </div>
+                        <input id="agentImageInput" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </aside>
+
+    <div id="agentImagePreviewModal" class="agent-image-preview-modal" hidden>
+        <div class="agent-image-preview-modal__scrim" data-agent-image-preview-close="true"></div>
+        <div class="agent-image-preview-modal__dialog" role="dialog" aria-modal="true" aria-label="图片预览">
+            <button id="agentImagePreviewClose" class="agent-image-preview-modal__close" type="button" aria-label="关闭图片预览" title="关闭">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M18 6 6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img id="agentImagePreviewImage" class="agent-image-preview-modal__image" alt="">
+            <div id="agentImagePreviewCaption" class="agent-image-preview-modal__caption"></div>
+        </div>
+    </div>
+
+    <div id="agentImageNoticeModal" class="confirm-modal agent-image-notice-modal" hidden>
+        <div class="confirm-modal__scrim" data-agent-image-notice-close="true"></div>
+        <div class="confirm-modal__dialog agent-image-notice-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="agentImageNoticeTitle" aria-describedby="agentImageNoticeMessage">
+            <header class="agent-image-notice-modal__header">
+                <div class="agent-image-notice-modal__icon" aria-hidden="true">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                        <circle cx="8.5" cy="10" r="1.5"></circle>
+                        <path d="m21 15-4.5-4.5L10 17l-2.5-2.5L3 19"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="agent-image-notice-modal__eyebrow">Image input</div>
+                    <h3 id="agentImageNoticeTitle" class="agent-image-notice-modal__title">上传前确认模型能力</h3>
+                </div>
+            </header>
+            <p id="agentImageNoticeMessage" class="agent-image-notice-modal__message">
+                当前将由 <strong id="agentImageNoticeProvider">当前供应商</strong>
+                <span id="agentImageNoticeModel" class="agent-image-notice-modal__model" hidden></span>
+                处理这张图片。
+            </p>
+            <div class="agent-image-notice-modal__tip">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 11v5"></path>
+                    <path d="M12 8h.01"></path>
+                </svg>
+                <div>
+                    <strong>请确认模型支持图片输入</strong>
+                    <p>模型需要具备图片识别或多模态能力，否则可能无法理解图片内容，生成效果也会受到影响。</p>
+                </div>
+            </div>
+            <label class="agent-image-notice-modal__remember" for="agentImageNoticeRemember">
+                <input type="checkbox" id="agentImageNoticeRemember" />
+                <span>不再提示（对所有供应商生效）</span>
+            </label>
+            <div class="agent-image-notice-modal__actions">
+                <button id="agentImageNoticeCancel" class="agent-image-notice-modal__button agent-image-notice-modal__button--secondary" type="button">暂不上传</button>
+                <button id="agentImageNoticeOk" class="agent-image-notice-modal__button agent-image-notice-modal__button--primary" type="button">继续上传</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="agentConfigModal" class="agent-config-modal" hidden>
+        <div class="agent-config-modal__scrim" data-agent-config-close="true"></div>
+        <div class="agent-config-modal__dialog agent-config-modal__dialog--wide" role="dialog" aria-modal="true" aria-labelledby="agentConfigTitle">
+            <header class="agent-config-modal__header">
+                <div>
+                    <div class="agent-config-modal__eyebrow">Model setup</div>
+                    <h3 id="agentConfigTitle" class="agent-config-modal__title">模型配置</h3>
+                </div>
+                <button id="agentConfigClose" class="agent-icon-btn" type="button" title="关闭配置弹窗">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M18 6L6 18"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </header>
+            <section class="agent-config-panel agent-config-panel--split">
+                <aside class="provider-list-panel" aria-label="模型服务商">
+                    <div class="provider-list-panel__header">
+                        <span class="provider-list-panel__section-title">服务商列表</span>
+                        <button id="addCustomProviderBtn" class="agent-secondary-btn provider-list-panel__add-btn" type="button" title="添加供应商">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="providerCustomList" class="provider-list-panel__list"></div>
+                </aside>
+                <div class="provider-detail-panel">
+                    <div id="providerFormEmpty" class="provider-detail-panel__empty" hidden>选择左侧模板即可开始配置</div>
+                    <div id="providerFormContent" class="provider-detail-panel__content" hidden>
+
+                        <div class="provider-steps" aria-label="模型配置步骤">
+                            <div class="provider-step">
+                                <span>1</span>
+                                <strong>选服务商</strong>
+                            </div>
+                            <div class="provider-step">
+                                <span>2</span>
+                                <strong>填 API Key</strong>
+                            </div>
+                            <div class="provider-step">
+                                <span>3</span>
+                                <strong>选模型</strong>
+                            </div>
+                        </div>
+
+                        <div class="provider-config-grid">
+                            <div class="agent-field provider-field--preset">
+                                <span>服务商模板</span>
+                                <div class="agent-custom-select" id="agentProviderPresetSelect">
+                                    <button class="agent-custom-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false" id="agentProviderPresetTrigger">
+                                        <span id="agentProviderPresetValue">-- 请选择服务商模板 --</span>
+                                        <svg class="agent-custom-select__trigger-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M1 1l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                    </button>
+                                    <div class="agent-custom-select__options" id="agentProviderPresetOptions" hidden>
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="agent-field provider-field--key">
+                                <div class="provider-key-label-row">
+                                    <span>API Key</span>
+                                    <button id="agentPresetDocsBtn" class="provider-docs-link-btn" type="button" hidden>获取 Key</button>
+                                </div>
+                                <div class="provider-key-row">
+                                    <input id="agentApiKeyInput" type="password" placeholder="只保存在本机浏览器和本地 gateway">
+                                    <button id="agentTestConnectionBtn" class="agent-secondary-btn" type="button">测试连接</button>
+                                    <button id="agentCheckBalanceBtn" class="agent-secondary-btn" type="button">查询余额</button>
+                                </div>
+                            </div>
+                            <label class="agent-field provider-field--endpoint">
+                                <span>接口地址</span>
+                                <input id="agentBaseUrlInput" type="text" list="agentEndpointOptions" placeholder="https://open.bigmodel.cn/api/anthropic">
+                                <datalist id="agentEndpointOptions"></datalist>
+                            </label>
+                            <div class="agent-field provider-model-field">
+                                <span>模型</span>
+                                <div class="provider-model-select-row">
+                                    <select id="agentModelInput" aria-label="选择模型"></select>
+                                    <button id="agentFetchModelsBtn" class="agent-secondary-btn" type="button">拉取模型</button>
+                                </div>
+                                <input id="agentCustomModelInput" class="provider-custom-model-input" type="text" placeholder="输入模型 ID，例如 glm-5.1" hidden>
+                                <div id="agentModelOptions" class="provider-model-options" aria-live="polite"></div>
+                            </div>
+                        </div>
+
+                        <details class="provider-advanced">
+                            <summary>
+                                <span>高级设置</span>
+                                <small>名称、接口协议、SDK Options</small>
+                            </summary>
+                            <div class="provider-advanced__body">
+                                <label class="agent-field">
+                                    <span>显示名称</span>
+                                    <input id="agentProviderNameInput" type="text" placeholder="例如：我的 DeepSeek">
+                                </label>
+                                <label class="agent-field">
+                                    <span>接口协议</span>
+                                    <input id="agentApiTypeInput" type="text" list="agentApiTypeOptions" placeholder="anthropic-messages">
+                                    <datalist id="agentApiTypeOptions">
+                                        <option value="anthropic-messages">Anthropic Messages</option>
+                                        <option value="openai-completions">OpenAI Compatible</option>
+                                    </datalist>
+                                </label>
+                                <label class="agent-field agent-field--sdk-options">
+                                    <span>SDK Options JSON</span>
+                                    <textarea id="agentSdkOptionsInput" rows="7" spellcheck="false" placeholder='{"permissionMode":"default","maxTurns":10,"tools":{"type":"preset","preset":"default"}}'></textarea>
+                                </label>
+                                <div class="agent-sdk-options-toolbar">
+                                    <button id="agentSdkOptionsFormatBtn" class="agent-secondary-btn" type="button">格式化</button>
+                                    <button id="agentSdkOptionsResetBtn" class="agent-secondary-btn" type="button">清空</button>
+                                    <button id="agentSdkOptionsPresetBtn" class="agent-secondary-btn" type="button">套用推荐</button>
+                                    <div id="agentSdkOptionsStatus" class="agent-config-panel__hint"></div>
+                                </div>
+                            </div>
+                        </details>
+
+                        <div class="agent-config-panel__actions">
+                            <button id="agentSaveProviderBtn" class="agent-secondary-btn" type="button">保存</button>
+                            <button id="agentDeleteProviderBtn" class="agent-secondary-btn" type="button">删除</button>
+                        </div>
+                        <div id="agentConnectionTestResult" class="agent-connection-result" hidden></div>
+                        <div id="agentBalanceResult" class="agent-balance-result" hidden></div>
+                        <div id="agentDebugTools" class="agent-debug-tools" hidden>
+                            <div class="agent-debug-tools__label">开发验证流</div>
+                            <div class="agent-debug-tools__actions">
+                                <button type="button" class="agent-secondary-btn" data-agent-dev-simulate="full_flow">模拟全流程</button>
+                                <button type="button" class="agent-secondary-btn" data-agent-dev-simulate="interruptible">模拟可中断</button>
+                                <button type="button" class="agent-secondary-btn" data-agent-dev-simulate="failure">模拟失败态</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="trashModal" class="trash-modal" hidden>
+        <div class="trash-modal__scrim" data-trash-close="true"></div>
+        <div class="trash-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="trashModalTitle">
+            <header class="trash-modal__header">
+                <div>
+                    <h3 id="trashModalTitle" class="trash-modal__title">回收站</h3>
+                </div>
+                <button id="trashModalClose" class="agent-icon-btn" type="button" title="关闭回收站">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M18 6L6 18"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </header>
+            <section class="trash-modal__body">
+                <div id="trashEmptyState" class="nav-trash-empty">暂无已删除页面</div>
+                <ul id="trashList" class="nav-trash-list"></ul>
+            </section>
+        </div>
+    </div>
+
+    <!-- Share Settings Modal -->
+    <div id="shareSettingsModal" class="settings-modal" hidden>
+        <div class="settings-modal__scrim" data-settings-close="true"></div>
+        <div class="settings-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+            <!-- Left Pane: Form -->
+            <div class="settings-modal__pane settings-modal__pane--form">
+                <header class="settings-modal__header">
+                    <h3 id="settingsModalTitle" class="settings-modal__title">分享配置</h3>
+                    <button id="settingsModalClose" class="agent-icon-btn" type="button" title="关闭配置">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M18 6L6 18"></path>
+                            <path d="M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </header>
+                <form id="shareSettingsForm" class="settings-modal__form-wrapper">
+                    <div class="settings-modal__body">
+                        <button type="button" id="vercelAutoConfigBtn" class="settings-form__auto-config-btn">
+                            <span class="settings-form__auto-config-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/>
+                                </svg>
+                            </span>
+                            <span class="settings-form__auto-config-text">
+                                <strong>让 Prota 帮我配置</strong>
+                                <small>不想手动配置？点这里，Prota 会一步步带着你完成</small>
+                            </span>
+                        </button>
+
+                        <div class="settings-form__help-banner">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex-shrink: 0;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span>需要了解如何配置吗？<button type="button" id="settingsHelpLinkBtn" class="settings-form__help-link-btn">点击展开配置指南 ↗</button></span>
+                        </div>
+                        
+                        <div class="settings-form__group">
+                            <label for="staticDomainInput" class="settings-form__label">静态云托管域名 (Static Domain)</label>
+                            <input type="text" id="staticDomainInput" class="settings-form__input" placeholder="share.example.com" required>
+                            <small class="settings-form__hint">用于“静态云分享”模式下的自定义域名（需在 Vercel 绑定该域名）</small>
+                        </div>
+
+                        <div class="settings-form__group settings-form__group--checkbox">
+                            <label class="settings-form__checkbox-label">
+                                <input type="checkbox" id="gitAutoPushCheckbox">
+                                <span class="checkbox-text">生成后自动部署到 Vercel</span>
+                            </label>
+                            <small class="settings-form__hint">关闭后只在本地生成分享文件，分享不会提交或推送 Git。</small>
+                        </div>
+                    </div>
+
+                    <div class="settings-modal__actions">
+                        <button type="button" id="settingsCancelBtn" class="confirm-modal__btn confirm-modal__btn--cancel">取消</button>
+                        <button type="submit" class="confirm-modal__btn btn-primary">保存配置</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Right Pane: Help Guide -->
+            <div id="settingsHelpPane" class="settings-modal__pane settings-modal__pane--help">
+                <header class="settings-modal__header">
+                    <h3 class="settings-modal__title">配置指南</h3>
+                </header>
+                <div class="settings-modal__help-content">
+                    <div class="settings-modal__help-section">
+                        <h4>什么是分享配置？</h4>
+                        <p>分享配置用于定制系统生成静态云分享页时的域名拼接规则。配置后，您可以在右上角的分享菜单中一键生成并拷贝对应的公网 URL 链接。</p>
+                        <div class="settings-modal__help-alert settings-modal__help-alert--info">
+                            <strong>💡 提示</strong>：配置域名后，您依然需要按照以下说明在 Vercel 上绑定相同的域名解析以实现真正的网络流转访问。
+                        </div>
+                    </div>
+
+                    <div class="settings-modal__help-section">
+                        <h4>手把手配置 Vercel 静态云分享</h4>
+                        <p>静态分享由本机直接部署到 Vercel。只有已生成的静态分享和必要资源进入发布包，公司项目索引、会话、附件和密钥不会随产品上传。</p>
+                        <ol>
+                            <li>在本机终端执行 <code>npx vercel login</code> 完成登录。</li>
+                            <li>绑定现有分享项目：<code>python3 scripts/configure-vercel.py --domain 你的分享域名</code>。配置保存在本机用户目录。</li>
+                            <li>点击静态云分享，程序生成独立发布包并直接部署，保留 <code>/shares/文件名.html</code> 及历史根目录链接。</li>
+                            <li>直接部署验证后，断开 Vercel 项目的旧 Git 集成，避免旧仓库部署覆盖分享。公司内容的托管和访问权限按公司要求配置。</li>
+                        </ol>
+                        <div class="settings-modal__help-alert settings-modal__help-alert--info">
+                            <strong>💡 不想自己动手？</strong>回到左侧顶部点「<strong>让 Prota 帮我配置</strong>」，Prota 会手把手带你走完上面 4 步，需要你操作的地方会停下来等你。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="confirm-modal" hidden>
+        <div class="confirm-modal__scrim"></div>
+        <div class="confirm-modal__dialog" role="alertdialog" aria-modal="true">
+            <div class="confirm-modal__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h3 id="confirmModalTitle" class="confirm-modal__title"></h3>
+            <p id="confirmModalMessage" class="confirm-modal__message"></p>
+            <div class="confirm-modal__actions">
+                <button id="confirmModalCancel" class="confirm-modal__btn confirm-modal__btn--cancel" type="button">取消</button>
+                <button id="confirmModalOk" class="confirm-modal__btn confirm-modal__btn--danger" type="button">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="renameModal" class="confirm-modal" hidden>
+        <div class="confirm-modal__scrim" data-rename-close="true"></div>
+        <div class="confirm-modal__dialog" role="dialog" aria-modal="true" style="text-align: left;">
+            <h3 id="renameModalTitle" class="confirm-modal__title" style="text-align: center; margin-bottom: 16px;">重命名页面</h3>
+            <div style="margin: 16px 0 24px;">
+                <input id="renameModalInput" type="text" class="settings-form__input" style="width: 100%; box-sizing: border-box;" placeholder="请输入页面新名称">
+            </div>
+            <div class="confirm-modal__actions" style="justify-content: flex-end;">
+                <button id="renameModalCancel" class="confirm-modal__btn confirm-modal__btn--cancel" type="button">取消</button>
+                <button id="renameModalOk" class="confirm-modal__btn btn-primary" type="button" style="background: var(--accent); color: #fff;">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="skillImportModal" class="confirm-modal" hidden>
+        <div class="confirm-modal__scrim" data-skill-import-close="true"></div>
+        <div class="confirm-modal__dialog skill-import-dialog" role="dialog" aria-modal="true" style="text-align: left; max-width: 520px;">
+            <h3 class="confirm-modal__title" style="text-align: center; margin-bottom: 14px;">导入 Skill</h3>
+            <div class="skill-import-segmented" role="tablist" aria-label="导入方式">
+                <button type="button" class="skill-import-segmented__tab is-active" data-skill-import-mode="url" role="tab" aria-selected="true">网址导入（Prota）</button>
+                <button type="button" class="skill-import-segmented__tab" data-skill-import-mode="folder" role="tab" aria-selected="false">本地文件夹</button>
+            </div>
+            <div id="skillImportFolderPanel" class="skill-import-panel" hidden>
+                <div id="skillImportDropZone" class="skill-import-dropzone" role="button" tabindex="0" aria-label="拖拽或点击选择 Skill 文件夹">
+                    <div class="skill-import-dropzone__icon" aria-hidden="true">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <path d="M12 11v6"/>
+                            <path d="m9 14 3 3 3-3"/>
+                        </svg>
+                    </div>
+                    <div class="skill-import-dropzone__text">
+                        <strong>拖入 Skill 文件夹完成安装</strong>
+                        <span>或点击此区域选择文件夹</span>
+                    </div>
+                    <div id="skillImportDropHint" class="skill-import-dropzone__hint" hidden></div>
+                </div>
+                <input id="skillImportFolderInput" type="file" webkitdirectory directory multiple hidden>
+            </div>
+            <div id="skillImportUrlPanel" class="skill-import-panel">
+                <input id="skillImportUrlInput" type="url" class="skill-import-url__input" placeholder="输入 Skill 网址" autocomplete="off">
+                <p class="skill-import-url__hint">Prota 会访问该网址并帮你完成导入。</p>
+            </div>
+            <div class="confirm-modal__actions skill-import-actions" style="justify-content: flex-end; margin-top: 18px;">
+                <div style="display: flex; gap: 8px;">
+                    <button id="skillImportCancel" class="confirm-modal__btn confirm-modal__btn--cancel" type="button">取消</button>
+                    <button id="skillImportSave" class="confirm-modal__btn btn-primary" type="button" style="background: var(--accent); color: #fff;" disabled>导入文件夹</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="templateDetailModal" class="confirm-modal" hidden>
+        <div class="confirm-modal__scrim" data-template-detail-close="true"></div>
+        <div class="confirm-modal__dialog" role="dialog" aria-modal="true" style="text-align: left; max-width: 720px; padding: 0;">
+            <div id="templateDetailBody" class="template-detail-host"></div>
+        </div>
+    </div>
+
+    <div id="projectCreateModal" class="confirm-modal" hidden>
+        <div class="confirm-modal__scrim" data-project-create-close="true"></div>
+        <form id="projectCreateForm" class="confirm-modal__dialog project-create-modal" role="dialog" aria-modal="true" aria-labelledby="projectCreateTitle">
+            <h3 id="projectCreateTitle" class="confirm-modal__title">创建新项目</h3>
+            <label class="project-create-modal__field">
+                <span>项目名称</span>
+                <input id="projectCreateName" type="text" class="settings-form__input" autocomplete="off" placeholder="例如：运营后台">
+            </label>
+            <div class="confirm-modal__actions project-create-modal__actions">
+                <button id="projectCreateCancel" class="confirm-modal__btn confirm-modal__btn--cancel" type="button">取消</button>
+                <button class="confirm-modal__btn btn-primary" type="submit">创建</button>
+            </div>
+        </form>
+    </div>
+
+
+
+    <div id="toast" class="toast"></div>
+    <script src="/workspace-data.js"></script>
+    <script src="agent/constants.js"></script>
+    <script src="agent/api.js"></script>
+    <script src="agent/events.js"></script>
+    <script src="agent/run-routes.js"></script>
+    <script src="agent/state.js"></script>
+    <script src="agent/provider-config.js?v=20260828-provider-instance-v2"></script>
+    <script src="agent/index.js"></script>
+    <script type="module" src="shell.js?v=20261013-auto-polish-v1"></script>
+</body>
+</html>

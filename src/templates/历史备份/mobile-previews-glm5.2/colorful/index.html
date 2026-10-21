@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Spark · Colorful</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9 9l-7 3 7 3 3 7 3-7 7-3-7-3z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">Spark</span>
+                  <span class="brand-sub">捕捉灵感</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="灵感流" data-toast="灵感流已同步">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </button>
+            </header>
+
+            <!-- 创意能量环（signature：发光的橙色能量环） -->
+            <section class="energy-ring-card" aria-label="本周创意能量">
+              <div class="energy-ring">
+                <svg class="energy-ring__svg" viewBox="0 0 120 120">
+                  <circle class="energy-ring__track" cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="6"/>
+                  <circle class="energy-ring__fill" cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="98.02" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="energy-ring__inner">
+                  <span class="energy-ring__value">73</span>
+                  <span class="energy-ring__unit">%</span>
+                </div>
+              </div>
+              <div class="energy-ring__info">
+                <p class="energy-ring__label">本周创意能量</p>
+                <p class="energy-ring__hint">已捕捉 <strong>12</strong> 个灵感，继续加油！</p>
+              </div>
+            </section>
+
+            <!-- 快速操作卡片 -->
+            <section class="action-grid">
+              <button class="action-card" data-toast="新建笔记">
+                <div class="action-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+                <span class="action-card__label">笔记</span>
+              </button>
+              <button class="action-card" data-toast="打开画板">
+                <div class="action-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="m14.31 8-5.74 9.94"/><path d="M9.69 8h5.74"/></svg>
+                </div>
+                <span class="action-card__label">画板</span>
+              </button>
+              <button class="action-card" data-toast="语音备忘">
+                <div class="action-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                </div>
+                <span class="action-card__label">录音</span>
+              </button>
+              <button class="action-card" data-toast="拍照记录">
+                <div class="action-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3L14.5 4z"/><circle cx="12" cy="13" r="3"/></svg>
+                </div>
+                <span class="action-card__label">拍照</span>
+              </button>
+            </section>
+
+            <!-- 灵感流列表 -->
+            <section class="inspiration-list" aria-label="灵感流">
+              <div class="list-header">
+                <h2>最近灵感</h2>
+                <div class="chips" id="categoryChips" role="tablist">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="idea" role="tab" aria-selected="false">想法</button>
+                  <button class="chip" data-filter="sketch" role="tab" aria-selected="false">草图</button>
+                </div>
+              </div>
+
+              <ul class="idea-list" id="ideaList">
+                <li class="idea" data-type="idea">
+                  <span class="idea__icon idea__icon--idea">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L9 9l-7 3 7 3 3 7 3-7 7-3-7-3z"/></svg>
+                  </span>
+                  <div class="idea__main">
+                    <span class="idea__title">产品 UI 改造方案</span>
+                    <span class="idea__sub">今天 10:24 · 想法</span>
+                  </div>
+                  <span class="idea__tag idea__tag--hot">火</span>
+                </li>
+                <li class="idea" data-type="sketch">
+                  <span class="idea__icon idea__icon--sketch">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                  </span>
+                  <div class="idea__main">
+                    <span class="idea__title">首页布局草图</span>
+                    <span class="idea__sub">昨天 15:30 · 草图</span>
+                  </div>
+                  <span class="idea__tag idea__tag--new">新</span>
+                </li>
+                <li class="idea" data-type="idea">
+                  <span class="idea__icon idea__icon--idea">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L9 9l-7 3 7 3 3 7 3-7 7-3-7-3z"/></svg>
+                  </span>
+                  <div class="idea__main">
+                    <span class="idea__title">动画交互思路</span>
+                    <span class="idea__sub">前天 09:15 · 想法</span>
+                  </div>
+                </li>
+                <li class="idea" data-type="sketch">
+                  <span class="idea__icon idea__icon--sketch">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                  </span>
+                  <div class="idea__main">
+                    <span class="idea__title">Logo 变体探索</span>
+                    <span class="idea__sub">2 天前 · 草图</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 统计卡片 -->
+            <section class="stats-row">
+              <div class="stat-card">
+                <span class="stat-card__icon">火</span>
+                <span class="stat-card__val">12</span>
+                <span class="stat-card__label">本周灵感</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-card__icon">联</span>
+                <span class="stat-card__val">8</span>
+                <span class="stat-card__label">已关联项目</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-card__icon">享</span>
+                <span class="stat-card__val">3</span>
+                <span class="stat-card__label">协作分享</span>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="stream">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L9 9l-7 3 7 3 3 7 3-7 7-3-7-3z"/></svg>
+              <span>灵感流</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="新建灵感">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+              <span>项目</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

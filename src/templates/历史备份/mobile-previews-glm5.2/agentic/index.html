@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AgentFlow 智能工作台 · Agentic</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="demo-stage">
+    <div class="phone-shell">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="status-bar" aria-label="设备状态栏">
+          <span class="status-bar__time" id="statusTime">9:41</span>
+          <div class="status-bar__island" aria-hidden="true"></div>
+          <div class="status-bar__right" aria-hidden="true">
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18" /></svg>
+            <span class="battery"></span>
+          </div>
+        </div>
+
+        <main class="app-content" id="appContent">
+          <!-- 顶部品牌栏 -->
+          <header class="topbar">
+            <div class="topbar__brand">
+              <div class="brand-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v6m0 6v6m5.3-14.3l-4.2 4.2m0 6l4.2 4.2M1 12h6m6 0h6M4.7 4.7l4.2 4.2m0 6l-4.2 4.2"/>
+                </svg>
+              </div>
+              <div class="brand-text">
+                <span class="brand-name">AgentFlow</span>
+                <span class="brand-sub">AI 工作台</span>
+              </div>
+            </div>
+            <button class="iconbtn" aria-label="运行中任务" data-toast="3 个代理正在运行">
+              <span class="run-dot"></span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </button>
+          </header>
+
+          <!-- Hero：任务执行状态（signature：蓝色 automation 信号 + 进度可视化） -->
+          <section class="execution-card" aria-label="当前执行">
+            <div class="execution-card__status">
+              <span class="status-pill status-pill--active">执行中</span>
+              <span class="execution-card__agent">ResearchAgent</span>
+            </div>
+            <p class="execution-card__task">收集 2024 年 AI Agent 技术趋势报告</p>
+            <div class="execution-card__meta">
+              <span class="meta-tag">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"/></svg>
+                已耗时 2m 34s
+              </span>
+              <span class="meta-tag">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l6 4.5v7L8 18l-6-4.5v-7L8 2z"/></svg>
+                步骤 3/8
+              </span>
+            </div>
+            <div class="execution-card__progress">
+              <span class="execution-card__progress-bar" style="--p: 37%"></span>
+            </div>
+            <div class="execution-card__steps">
+              <div class="step step--done">
+                <span class="step__icon">✓</span>
+                <span class="step__label">构建查询</span>
+              </div>
+              <div class="step step--done">
+                <span class="step__icon">✓</span>
+                <span class="step__label">检索来源</span>
+              </div>
+              <div class="step step--active">
+                <span class="step__icon">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+                </span>
+                <span class="step__label">分析内容</span>
+              </div>
+              <div class="step">
+                <span class="step__icon">4</span>
+                <span class="step__label">综合报告</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 能力卡片 -->
+          <section class="capability-grid" aria-label="可用代理">
+            <h2 class="section-title">可用代理</h2>
+            <div class="capability-cards">
+              <div class="capability-card capability-card--primary">
+                <div class="capability-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                </div>
+                <span class="capability-card__name">DataAnalyst</span>
+                <span class="capability-card__desc">数据分析与可视化</span>
+                <button class="capability-card__action" data-toast="启动 DataAnalyst">启动</button>
+              </div>
+              <div class="capability-card">
+                <div class="capability-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                </div>
+                <span class="capability-card__name">ReportWriter</span>
+                <span class="capability-card__desc">自动生成报告</span>
+                <button class="capability-card__action" data-toast="启动 ReportWriter">启动</button>
+              </div>
+              <div class="capability-card">
+                <div class="capability-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.4-4.4"/></svg>
+                </div>
+                <span class="capability-card__name">WebSurfer</span>
+                <span class="capability-card__desc">网页浏览与抓取</span>
+                <button class="capability-card__action" data-toast="启动 WebSurfer">启动</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 任务列表 -->
+          <section class="task-list" aria-label="最近任务">
+            <div class="list-header">
+              <h2>最近任务</h2>
+              <div class="chips" id="taskFilter" role="tablist">
+                <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                <button class="chip" data-filter="running" role="tab" aria-selected="false">运行中</button>
+                <button class="chip" data-filter="completed" role="tab" aria-selected="false">已完成</button>
+              </div>
+            </div>
+            <ul class="task-items" id="taskItems">
+              <li class="task-item" data-status="running">
+                <span class="task-item__icon task-item__icon--running">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="8" opacity="0.2"/><path d="M8 4v4l3 3"/></svg>
+                </span>
+                <div class="task-item__main">
+                  <span class="task-item__title">竞品分析：Claude vs GPT-4</span>
+                  <span class="task-item__sub">ResearchAgent · 2m 前</span>
+                </div>
+                <div class="task-item__right">
+                  <span class="status-badge status-badge--running">进行中</span>
+                </div>
+              </li>
+              <li class="task-item" data-status="completed">
+                <span class="task-item__icon task-item__icon--done">✓</span>
+                <div class="task-item__main">
+                  <span class="task-item__title">Q3 销售数据汇总</span>
+                  <span class="task-item__sub">DataAnalyst · 1h 前</span>
+                </div>
+                <div class="task-item__right">
+                  <span class="status-badge status-badge--success">已完成</span>
+                </div>
+              </li>
+              <li class="task-item" data-status="completed">
+                <span class="task-item__icon task-item__icon--done">✓</span>
+                <div class="task-item__main">
+                  <span class="task-item__title">客户反馈分类报告</span>
+                  <span class="task-item__sub">ReportWriter · 昨天</span>
+                </div>
+                <div class="task-item__right">
+                  <span class="status-badge status-badge--success">已完成</span>
+                </div>
+              </li>
+              <li class="task-item" data-status="running">
+                <span class="task-item__icon task-item__icon--running">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="8" opacity="0.2"/><path d="M8 4v4l3 3"/></svg>
+                </span>
+                <div class="task-item__main">
+                  <span class="task-item__title">行业新闻摘要</span>
+                  <span class="task-item__sub">NewsAgent · 5m 前</span>
+                </div>
+                <div class="task-item__right">
+                  <span class="status-badge status-badge--running">进行中</span>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 操作区 -->
+          <section class="action-area">
+            <button class="cta-btn" data-toast="创建新工作流">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4v12M4 10h12"/></svg>
+              新建工作流
+            </button>
+            <div class="secondary-actions">
+              <button class="secondary-btn" data-toast="浏览模板库">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 7h6M7 11h6M7 15h4"/></svg>
+                模板
+              </button>
+              <button class="secondary-btn" data-toast="查看历史记录">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/></svg>
+                历史
+              </button>
+            </div>
+          </section>
+
+          <div class="bottom-spacer" aria-hidden="true"></div>
+        </main>
+
+        <!-- 底部 Tab -->
+        <nav class="tabbar" aria-label="主导航">
+          <button class="tab is-active" data-tab="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <span>工作台</span>
+          </button>
+          <button class="tab" data-tab="agents">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.3-14.3l-4.2 4.2m0 6l4.2 4.2M1 12h6m6 0h6M4.7 4.7l4.2 4.2m0 6l-4.2 4.2"/></svg>
+            <span>代理</span>
+          </button>
+          <button class="tab tab--fab" data-tab="run" aria-label="运行">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="tab" data-tab="history">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>历史</span>
+          </button>
+          <button class="tab" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.2 4.2l4.3 4.3m0 6l-4.3 4.3M1 12h6m6 0h6M4.2 19.8l4.3-4.3m0-6l-4.3-4.3"/></svg>
+            <span>设置</span>
+          </button>
+        </nav>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

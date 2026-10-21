@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>IdeaBoard · Miro</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">💡</span>
+                <div class="brand-text">
+                  <span class="brand-name">IdeaBoard</span>
+                  <span class="brand-sub">创意协作画板</span>
+                </div>
+              </div>
+              <div class="topbar__actions">
+                <button class="iconbtn" aria-label="团队成员" data-toast="3 人在线">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M16 3.13a4 4 0 0 1 0 7.75M13 10H4a3 3 0 0 0-3 3v8M12 3.13a4 4 0 0 1 0 7.75M21 10h-7a3 3 0 0 0-3 3v8" /></svg>
+                  <span class="online-count">3</span>
+                </button>
+                <button class="iconbtn" aria-label="分享" data-toast="分享画板">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" /></svg>
+                </button>
+              </div>
+            </header>
+
+            <!-- Hero Canvas（signature：黄色画板 + 手绘便签） -->
+            <section class="canvas-card" aria-label="创意画板">
+              <div class="canvas-card__pattern" aria-hidden="true"></div>
+              <div class="canvas-card__header">
+                <h2 class="canvas-card__title">本周头脑风暴</h2>
+                <span class="canvas-card__count">12 个想法</span>
+              </div>
+
+              <div class="sticky-grid">
+                <div class="sticky-note sticky-note--yellow">
+                  <span class="sticky-note__dot"></span>
+                  <span class="sticky-note__text">用户反馈：响应速度需要优化</span>
+                </div>
+                <div class="sticky-note sticky-note--pink">
+                  <span class="sticky-note__dot"></span>
+                  <span class="sticky-note__text">新功能：暗色模式</span>
+                </div>
+                <div class="sticky-note sticky-note--blue">
+                  <span class="sticky-note__dot"></span>
+                  <span class="sticky-note__text">Q4 目标：提升 30% 转化率</span>
+                </div>
+              </div>
+
+              <div class="canvas-card__cursor" aria-hidden="true">
+                <span class="cursor__icon">👆</span>
+                <span class="cursor__name">Alex</span>
+              </div>
+            </section>
+
+            <!-- 快速操作 -->
+            <section class="quick-actions">
+              <button class="action-btn action-btn--primary" data-toast="创建新画板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                <span>新建画板</span>
+              </button>
+              <button class="action-btn" data-toast="打开模板库">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9" /></svg>
+                <span>模板</span>
+              </button>
+              <button class="action-btn" data-toast="查看最近使用">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" /></svg>
+                <span>最近</span>
+              </button>
+            </section>
+
+            <!-- 画板列表 -->
+            <section class="boards-block" aria-label="我的画板">
+              <h2 class="boards-block__title">最近画板</h2>
+
+              <ul class="board-list">
+                <li class="board">
+                  <div class="board__preview board__preview--gradient-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                  </div>
+                  <div class="board__main">
+                    <span class="board__title">产品路线图 2024</span>
+                    <span class="board__meta">2 小时前 · 4 人协作</span>
+                  </div>
+                  <div class="board__right">
+                    <div class="board__avatars">
+                      <span class="avatar avatar--1">A</span>
+                      <span class="avatar avatar--2">B</span>
+                      <span class="avatar avatar--3">+2</span>
+                    </div>
+                  </div>
+                </li>
+                <li class="board">
+                  <div class="board__preview board__preview--gradient-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                  </div>
+                  <div class="board__main">
+                    <span class="board__title">用户旅程地图</span>
+                    <span class="board__meta">昨天 · 设计团队</span>
+                  </div>
+                  <div class="board__right">
+                    <span class="board__status">已更新</span>
+                  </div>
+                </li>
+                <li class="board">
+                  <div class="board__preview board__preview--gradient-3">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" /></svg>
+                  </div>
+                  <div class="board__main">
+                    <span class="board__title">品牌视觉探索</span>
+                    <span class="board__meta">3 天前 · 6 个贴纸</span>
+                  </div>
+                  <div class="board__right">
+                    <span class="board__status">草稿</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 团队动态 -->
+            <section class="activity-card">
+              <div class="activity-card__head">
+                <span class="activity-card__title">团队动态</span>
+                <span class="activity-card__badge">新</span>
+              </div>
+              <div class="activity-list">
+                <div class="activity-item">
+                  <span class="activity-item__avatar" style="--color: #ffc6c6;">S</span>
+                  <div class="activity-item__content">
+                    <span class="activity-item__text"><strong>Sarah</strong> 在「产品路线图」添加了 3 个便签</span>
+                    <span class="activity-item__time">5 分钟前</span>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <span class="activity-item__avatar" style="--color: #c3faf5;">M</span>
+                  <div class="activity-item__content">
+                    <span class="activity-item__text"><strong>Mike</strong> 邀请你加入「品牌视觉」</span>
+                    <span class="activity-item__time">1 小时前</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab + FAB -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="boards">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              <span>画板</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="创建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="team">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M16 3.13a4 4 0 0 1 0 7.75M13 10H4a3 3 0 0 0-3 3v8M12 3.13a4 4 0 0 1 0 7.75M21 10h-7a3 3 0 0 0-3 3v8" /></svg>
+              <span>团队</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

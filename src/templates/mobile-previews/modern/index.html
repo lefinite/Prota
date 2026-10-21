@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>豆历 · Modern</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 9h11v6a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V9z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">豆历</span>
+                <span class="brand-bar__sub">第 42 期 · 10 月下旬 · 湿处理季</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="下一期 10 月 24 日发出" aria-label="订阅设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：本期主题豆（签名：期号大字 + 冲煮参数）-->
+            <section class="hero" aria-label="本期主题豆">
+              <div class="hero__head">
+                <span class="hero__issue">NO.42</span>
+                <span class="hero__origin mono">ETHIOPIA · GUJI</span>
+              </div>
+              <h1 class="hero__title">罕贝拉日晒<br />茉莉与浆果</h1>
+              <div class="hero__spec">
+                <div><span class="mono">处理法</span><b>日晒 Natural</b></div>
+                <div><span class="mono">海拔</span><b>2,150 m</b></div>
+                <div><span class="mono">烘焙度</span><b>浅中 Light+</b></div>
+              </div>
+              <div class="hero__tags">
+                <span class="tag">茉莉</span><span class="tag">蓝莓</span><span class="tag">红茶尾韵</span>
+              </div>
+              <div class="hero__cta">
+                <button class="btn-primary" type="button" id="brewBtn">开始冲煮</button>
+                <button class="btn-ghost" type="button" data-toast="已加入 11 月订阅清单">加入清单</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="冲煮方案">
+              <div class="duo__card">
+                <h2 class="duo__title">V60 手冲</h2>
+                <ul class="recipe mono">
+                  <li><span>粉量</span><b>15 g</b></li>
+                  <li><span>水温</span><b>92 ℃</b></li>
+                  <li><span>粉水比</span><b>1 : 16</b></li>
+                  <li><span>总时间</span><b>2:30</b></li>
+                </ul>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">本月喝掉</h2>
+                <p class="duo__num">7<span> 袋</span></p>
+                <div class="beans">
+                  <i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i></i><i></i>
+                </div>
+                <p class="duo__meta">订阅额度还剩 2 袋</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：风味笔记 -->
+            <section class="feed" aria-label="风味笔记">
+              <div class="feed__head">
+                <h2 class="feed__title">风味笔记</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="filter">滤泡</button>
+                  <button class="chip" type="button" data-filter="espresso">意式</button>
+                  <button class="chip" type="button" data-filter="cold">冷萃</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="filter">
+                  <span class="feed-item__glyph" aria-hidden="true">🌸</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">茉莉花香非常直接</span>
+                    <span class="feed-item__meta">V60 · 昨天 · 92℃ · 评分 4.8</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏笔记" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="espresso">
+                  <span class="feed-item__glyph" aria-hidden="true">🍫</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">浓缩偏酸，加奶后平衡</span>
+                    <span class="feed-item__meta">意式 · 10-12 · 18g → 38g</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏笔记" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="cold">
+                  <span class="feed-item__glyph" aria-hidden="true">🧊</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">冷萃 16 小时，莓果汽水感</span>
+                    <span class="feed-item__meta">冷萃 · 10-10 · 1:12</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏笔记" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="filter">
+                  <span class="feed-item__glyph" aria-hidden="true">🍋</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">降温后柠檬糖感明显</span>
+                    <span class="feed-item__meta">Kalita · 10-08 · 评分 4.6</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏笔记" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="filter">
+                  <span class="feed-item__glyph" aria-hidden="true">🍯</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">尾韵红茶感，回甘持久</span>
+                    <span class="feed-item__meta">V60 · 10-05 · 三段式</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏笔记" aria-pressed="false">☆</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="记录一杯">
+              <div class="chips chips--method">
+                <button class="chip is-active" type="button">V60</button>
+                <button class="chip" type="button">Kalita</button>
+                <button class="chip" type="button">爱乐压</button>
+                <button class="chip" type="button">意式</button>
+              </div>
+              <input class="action__input" id="noteInput" type="text" placeholder="这一杯的风味感受…" />
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="logBtn">记一杯</button>
+                <button class="btn-ghost" type="button" data-toast="冲煮计时器已就绪">计时器</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="本期">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v15H4z"/><path d="M4 9h16M9 9v11"/></svg>
+              <span>本期</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="笔记">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
+              <span>笔记</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="记一杯" aria-label="记一杯">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>记一杯</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="豆单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 9h11v6a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V9z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/></svg>
+              <span>豆单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

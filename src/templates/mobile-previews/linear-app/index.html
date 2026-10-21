@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Nova 冲刺 · Linear 风</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                  <path d="M5 7h9M5 12h14M5 17h11" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">Nova 工作区</span>
+                <span class="brand-bar__sub">Sprint 24 · 还剩 5 天</span>
+              </div>
+              <button class="brand-bar__icon" type="button" id="cmdBtn" aria-expanded="false" aria-controls="cmdBar" aria-label="打开命令面板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 命令条（Linear 签名交互） -->
+            <div class="cmd-bar" id="cmdBar" hidden>
+              <input class="cmd-bar__input" id="cmdInput" type="text" placeholder="输入命令或搜索 issue…" aria-label="命令面板输入" />
+              <div class="cmd-bar__hints">
+                <button class="cmd-hint" type="button" data-cmd="新建 issue">新建 issue</button>
+                <button class="cmd-hint" type="button" data-cmd="切换周期">切换周期</button>
+                <button class="cmd-hint" type="button" data-cmd="邀请成员">邀请成员</button>
+              </div>
+            </div>
+
+            <!-- 2. Hero 签名卡：Sprint 周期卡（压缩大字 + 亮度分层） -->
+            <section class="cycle-card" aria-label="当前冲刺">
+              <div class="cycle-card__head">
+                <h1 class="cycle-card__title">Sprint 24</h1>
+                <span class="cycle-card__date">08.11 – 08.25</span>
+              </div>
+              <div class="cycle-card__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="58" aria-label="冲刺完成度 58%">
+                <span class="cycle-card__fill" style="--w: 58%"></span>
+              </div>
+              <div class="cycle-card__stats">
+                <span><b>34</b> 已完成</span>
+                <span><b>16</b> 进行中</span>
+                <span><b>9</b> 待办</span>
+                <span class="cycle-card__rate">58%</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="今日安排与活跃度">
+              <div class="dark-card">
+                <h2 class="dark-card__title">今日安排</h2>
+                <div class="todo-row">
+                  <i class="todo-row__state" data-state="progress"></i>
+                  <span class="todo-row__name">通知中心改版评审</span>
+                  <em class="due-tag">14:00</em>
+                </div>
+                <div class="todo-row">
+                  <i class="todo-row__state" data-state="todo"></i>
+                  <span class="todo-row__name">整理 Sprint 25 需求池</span>
+                  <em class="due-tag due-tag--warn">今天</em>
+                </div>
+                <div class="todo-row">
+                  <i class="todo-row__state" data-state="done"></i>
+                  <span class="todo-row__name">周报同步给 Nova 全员</span>
+                  <em class="due-tag due-tag--done">已完成</em>
+                </div>
+              </div>
+              <div class="dark-card">
+                <h2 class="dark-card__title">本周活跃</h2>
+                <div class="pulse-bars" role="img" aria-label="周一到周日的 issue 活动量，今天最高">
+                  <i style="--h: 34%"></i>
+                  <i style="--h: 52%"></i>
+                  <i style="--h: 44%"></i>
+                  <i style="--h: 66%"></i>
+                  <i style="--h: 58%"></i>
+                  <i style="--h: 30%"></i>
+                  <i class="is-today" style="--h: 88%"></i>
+                </div>
+                <p class="dark-card__note">本周关闭 21 个 issue，较上周 +6</p>
+              </div>
+            </section>
+
+            <!-- 4. issue Feed -->
+            <section class="feed" aria-label="问题列表">
+              <div class="feed__head">
+                <h2 class="feed__title">Issues</h2>
+                <div class="chips" role="tablist" aria-label="筛选 issue">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="mine">我的</button>
+                  <button class="chip" type="button" data-filter="progress">进行中</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="issue" data-kind="mine progress">
+                  <button class="issue__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+                    </svg>
+                  </button>
+                  <div class="issue__body">
+                    <span class="issue__name">搜索结果缺少高亮命中词</span>
+                    <span class="issue__meta">NOVA-142 · 指派给我 · 2 小时前</span>
+                  </div>
+                  <i class="priority priority--p2" title="优先级：高" aria-label="优先级高"></i>
+                  <button class="issue__bell" type="button" aria-label="订阅更新" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="issue" data-kind="progress">
+                  <button class="issue__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+                    </svg>
+                  </button>
+                  <div class="issue__body">
+                    <span class="issue__name">移动端 WebView 白屏率 0.8%</span>
+                    <span class="issue__meta">NOVA-139 · 林一 · 今天 09:12</span>
+                  </div>
+                  <i class="priority priority--p1" title="优先级：紧急" aria-label="优先级紧急"></i>
+                  <button class="issue__bell" type="button" aria-label="订阅更新" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="issue" data-kind="mine">
+                  <button class="issue__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+                    </svg>
+                  </button>
+                  <div class="issue__body">
+                    <span class="issue__name">命令面板支持拼音首字母</span>
+                    <span class="issue__meta">NOVA-136 · 指派给我 · 昨天</span>
+                  </div>
+                  <i class="priority priority--p3" title="优先级：中" aria-label="优先级中"></i>
+                  <button class="issue__bell is-on" type="button" aria-label="订阅更新" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="issue" data-kind="done">
+                  <button class="issue__check is-on" type="button" aria-label="标记完成" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+                    </svg>
+                  </button>
+                  <div class="issue__body">
+                    <span class="issue__name issue__name--done">修复深色模式下的对比度回归</span>
+                    <span class="issue__meta">NOVA-131 · 周舟 · 昨天 16:40</span>
+                  </div>
+                  <i class="priority priority--p0" title="优先级：无" aria-label="无优先级"></i>
+                  <button class="issue__bell" type="button" aria-label="订阅更新" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="issue" data-kind="done">
+                  <button class="issue__check is-on" type="button" aria-label="标记完成" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+                    </svg>
+                  </button>
+                  <div class="issue__body">
+                    <span class="issue__name issue__name--done">清理废弃的 v1 图标资源</span>
+                    <span class="issue__meta">NOVA-127 · 阿凯 · 08.14</span>
+                  </div>
+                  <i class="priority priority--p0" title="优先级：无" aria-label="无优先级"></i>
+                  <button class="issue__bell" type="button" aria-label="订阅更新" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="issue" data-kind="progress">
+                  <button class="issue__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+                    </svg>
+                  </button>
+                  <div class="issue__body">
+                    <span class="issue__name">看板泳道拖拽在 Safari 偶发失灵</span>
+                    <span class="issue__meta">NOVA-124 · 林一 · 08.13</span>
+                  </div>
+                  <i class="priority priority--p2" title="优先级：高" aria-label="优先级高"></i>
+                  <button class="issue__bell" type="button" aria-label="订阅更新" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="issue 操作">
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="newIssueBtn">新建 issue</button>
+                <button class="btn-ghost" type="button" data-toast="已在看板视图打开 Sprint 24">打开看板</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="Issues">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="6" r="2.5" /><circle cx="6" cy="18" r="2.5" /><path d="M8.5 6H20M8.5 18H20" />
+              </svg>
+              <span>Issues</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="项目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" />
+              </svg>
+              <span>项目</span>
+            </button>
+            <button class="tabbar__item" type="button" id="fabNew" aria-label="新建 issue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="周期">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" />
+              </svg>
+              <span>周期</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.06-.4.1-.8.1-1.2z" />
+              </svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

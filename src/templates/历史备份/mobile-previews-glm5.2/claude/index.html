@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Claude · Reading Companion</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">C</span>
+                <div class="brand-text">
+                  <span class="brand-name">Claude</span>
+                  <span class="brand-sub">AI 阅读伴侣</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索阅读历史">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature：书籍封面（Terracotta 暖色焦点） -->
+            <section class="book-hero">
+              <div class="book-hero__cover">
+                <div class="book-spine"></div>
+                <div class="book-cover-content">
+                  <span class="book-genre">哲学 · 思考</span>
+                  <h1 class="book-title">人类简史</h1>
+                  <p class="book-author">尤瓦尔·赫拉利</p>
+                </div>
+              </div>
+              <div class="book-hero__meta">
+                <span class="reading-progress">阅读进度 67%</span>
+                <div class="reading-bar"><span class="reading-bar-fill" style="--p: 67%"></span></div>
+              </div>
+            </section>
+
+            <!-- AI 摘要卡片 -->
+            <section class="summary-card">
+              <div class="summary-card__header">
+                <svg class="summary-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <span class="summary-card__title">AI 摘要</span>
+              </div>
+              <p class="summary-card__text">
+                本书从认知革命、农业革命到科学革命，讲述了智人如何从一种不起眼的动物演化为地球的主宰。作者认为，人类统治世界的秘密在于大规模合作的能力，而这种能力建立在虚构故事的基础上。
+              </p>
+              <button class="summary-card__action" data-toast="展开完整摘要">
+                <span>继续阅读</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </button>
+            </section>
+
+            <!-- 笔记列表 -->
+            <section class="notes-section">
+              <div class="section-header">
+                <h2>我的笔记</h2>
+                <button class="iconbtn-sm" aria-label="新建笔记" data-toast="新建笔记"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg></button>
+              </div>
+              <ul class="notes-list" id="notesList">
+                <li class="note-item">
+                  <div class="note-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                  </div>
+                  <div class="note-item__main">
+                    <span class="note-item__title">关于虚构故事的力量</span>
+                    <span class="note-item__excerpt">"国家和宗教本质上都是人类共同想象的虚构故事..."</span>
+                    <span class="note-item__meta">第 3 章 · 2 小时前</span>
+                  </div>
+                  <button class="note-item__pin" aria-label="置顶" data-toast="已置顶">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22" /><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.24V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.24a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" /></svg>
+                  </button>
+                </li>
+                <li class="note-item">
+                  <div class="note-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                  </div>
+                  <div class="note-item__main">
+                    <span class="note-item__title">认知革命的定义</span>
+                    <span class="note-item__excerpt">"认知革命让智人能够谈论不存在的事物..."</span>
+                    <span class="note-item__meta">第 2 章 · 昨天</span>
+                  </div>
+                  <button class="note-item__pin" aria-label="置顶" data-toast="已置顶">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22" /><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.24V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.24a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" /></svg>
+                  </button>
+                </li>
+                <li class="note-item">
+                  <div class="note-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                  </div>
+                  <div class="note-item__main">
+                    <span class="note-item__title">农业革命的代价</span>
+                    <span class="note-item__excerpt">"农业革命虽然养活了更多人，但个体生活质量反而下降了..."</span>
+                    <span class="note-item__meta">第 5 章 · 3 天前</span>
+                  </div>
+                  <button class="note-item__pin" aria-label="置顶" data-toast="已置顶">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22" /><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.24V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.24a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" /></svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- AI 对话建议 -->
+            <section class="chat-suggestions">
+              <h3 class="chat-suggestions__title">与 Claude 继续讨论</h3>
+              <div class="suggestion-chips" id="suggestionChips">
+                <button class="suggestion-chip" data-suggestion="为什么农业革命被称为人类最大的骗局？">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                  农业革命的争议
+                </button>
+                <button class="suggestion-chip" data-suggestion="虚构故事如何促进人类合作？">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                  虚构故事的作用
+                </button>
+                <button class="suggestion-chip" data-suggestion="人类和动物的真正区别是什么？">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                  人与动物的区别
+                </button>
+              </div>
+            </section>
+
+            <!-- 阅读统计 -->
+            <section class="stats-card">
+              <h3 class="stats-card__title">本周阅读</h3>
+              <div class="stats-row">
+                <div class="stat-item">
+                  <span class="stat-item__value">4.2</span>
+                  <span class="stat-item__label">小时</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-item__value">12</span>
+                  <span class="stat-item__label">笔记</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-item__value">3</span>
+                  <span class="stat-item__label">本书</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+              <span>书架</span>
+            </button>
+            <button class="tab" data-tab="notes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+              <span>笔记</span>
+            </button>
+            <button class="tab" data-tab="chat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>对话</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

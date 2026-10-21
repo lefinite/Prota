@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>M PERFORMANCE · BMW M</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="m-stripe" aria-hidden="true">
+                  <span class="m-stripe__seg m-stripe--blue-light"></span>
+                  <span class="m-stripe__seg m-stripe--blue-dark"></span>
+                  <span class="m-stripe__seg m-stripe--red"></span>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">M PERFORMANCE</span>
+                  <span class="brand-sub">NÜRBURGRING</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置面板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              </button>
+            </header>
+
+            <!-- 圈速卡（signature：大数字 + M 三色条分割线） -->
+            <section class="lap-card" aria-label="当前圈速">
+              <div class="lap-card__head">
+                <span class="lap-card__label">CURRENT LAP</span>
+                <span class="lap-card__live">LIVE</span>
+              </div>
+              <p class="lap-card__time">7:42<span class="dec">.856</span></p>
+              <div class="m-stripe m-stripe--full" aria-hidden="true"></div>
+              <div class="lap-card__meta">
+                <span class="lap-card__stat">
+                  <span class="lap-card__val">+1.2</span>
+                  <span class="lap-card__sub">最佳差距</span>
+                </span>
+                <span class="lap-card__stat">
+                  <span class="lap-card__val">3.8G</span>
+                  <span class="lap-card__sub">最大G值</span>
+                </span>
+                <span class="lap-card__stat">
+                  <span class="lap-card__val">108°C</span>
+                  <span class="lap-card__sub">油温</span>
+                </span>
+              </div>
+              <div class="lap-card__actions">
+                <button class="m-btn m-btn--primary" data-toast="开始新圈">NEW LAP</button>
+                <button class="m-btn m-btn--outline" data-toast="保存数据">SAVE</button>
+              </div>
+            </section>
+
+            <!-- 遥测双卡 -->
+            <section class="telem-row" aria-label="实时遥测">
+              <div class="telem-card telem-card--g">
+                <span class="telem-card__cap">横向G值</span>
+                <span class="telem-card__val">1.42G</span>
+                <div class="telem-card__bar" aria-hidden="true">
+                  <span class="telem-card__bar-fill telem-card__bar-fill--left" style="--p: 71%"></span>
+                </div>
+                <span class="telem-card__foot">左弯持续中</span>
+              </div>
+              <div class="telem-card telem-card--speed">
+                <span class="telem-card__cap">当前速度</span>
+                <span class="telem-card__val">187<span class="unit">KM/H</span></span>
+                <div class="telem-card__bar" aria-hidden="true">
+                  <span class="telem-card__bar-fill" style="--p: 78%"></span>
+                </div>
+                <span class="telem-card__foot">Dottinger 直线</span>
+              </div>
+            </section>
+
+            <!-- 圈速列表 -->
+            <section class="lap-list" aria-label="历史圈速">
+              <div class="lap-list__head">
+                <h2>SESSION LAPS</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选圈速">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="fast" role="tab" aria-selected="false">最佳</button>
+                  <button class="chip" data-filter="sector" role="tab" aria-selected="false">分段</button>
+                </div>
+              </div>
+
+              <ul class="lap-list__items" id="lapList">
+                <li class="lap-item" data-type="fast">
+                  <span class="lap-item__num">01</span>
+                  <div class="lap-item__main">
+                    <span class="lap-item__title">7:41.642</span>
+                    <span class="lap-item__sub">最佳圈速 · 天气干燥</span>
+                  </div>
+                  <div class="lap-item__right">
+                    <span class="lap-item__badge lap-item__badge--best">PB</span>
+                  </div>
+                </li>
+                <li class="lap-item" data-type="fast">
+                  <span class="lap-item__num">02</span>
+                  <div class="lap-item__main">
+                    <span class="lap-item__title">7:43.128</span>
+                    <span class="lap-item__sub">交通影响 · T13 被阻挡</span>
+                  </div>
+                  <div class="lap-item__right">
+                    <span class="lap-item__badge">+1.486</span>
+                  </div>
+                </li>
+                <li class="lap-item" data-type="normal">
+                  <span class="lap-item__num">03</span>
+                  <div class="lap-item__main">
+                    <span class="lap-item__title">7:45.892</span>
+                    <span class="lap-item__sub">轮胎升温中 · 燃油模式</span>
+                  </div>
+                  <div class="lap-item__right">
+                    <span class="lap-item__badge">+4.250</span>
+                  </div>
+                </li>
+                <li class="lap-item" data-type="normal">
+                  <span class="lap-item__num">04</span>
+                  <div class="lap-item__main">
+                    <span class="lap-item__title">7:42.856</span>
+                    <span class="lap-item__sub">当前圈 · 进行中</span>
+                  </div>
+                  <div class="lap-item__right">
+                    <span class="lap-item__badge lap-item__badge--live">LIVE</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 分段对比 -->
+            <section class="sector-card" aria-label="分段对比">
+              <div class="sector-card__head">
+                <span class="sector-card__title">SECTOR TIMES</span>
+                <span class="sector-card__ref">基准: 7:41.642</span>
+              </div>
+              <div class="sector-card__sectors">
+                <div class="sector-row">
+                  <span class="sector-row__name">S1</span>
+                  <span class="sector-row__time">34.218</span>
+                  <span class="sector-row__diff sector-row__diff--green">-0.142</span>
+                </div>
+                <div class="sector-row">
+                  <span class="sector-row__name">S2</span>
+                  <span class="sector-row__time">51.890</span>
+                  <span class="sector-row__diff sector-row__diff--red">+0.856</span>
+                </div>
+                <div class="sector-row">
+                  <span class="sector-row__name">S3</span>
+                  <span class="sector-row__time">15.748</span>
+                  <span class="sector-row__diff sector-row__diff--green">-0.224</span>
+                </div>
+              </div>
+              <p class="sector-card__note">S2 弯心出弯损失 0.6s</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="telemetry">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+              <span>遥测</span>
+            </button>
+            <button class="tab" data-tab="laps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" /></svg>
+              <span>圈速</span>
+            </button>
+            <button class="tab tab--fab" data-tab="record" aria-label="开始记录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8" /></svg>
+            </button>
+            <button class="tab" data-tab="video">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21" /></svg>
+              <span>视频</span>
+            </button>
+            <button class="tab" data-tab="setup">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

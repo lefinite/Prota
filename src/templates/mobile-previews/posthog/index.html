@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>刺猬分析 · PostHog</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 24c-2-7 3-13 11-13 3 0 5 1 7 2" />
+                  <path d="M10 11.5L9 7l4 2.6M15 9.6l1-4.4 2.8 3.6M20 11l3.4-2.8-.8 4.4" />
+                  <path d="M24 13c2 2 2.6 4.4 2 7-1.6 1.6-4 2.4-7 2.4" />
+                  <path d="M9 20.4v.01M13.4 22v.01" />
+                  <path d="M6 24l4.6 1.4 5-1 4.8 1.2 4.6-1.6" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">刺猬分析</span>
+                <span class="brand-bar__sub mono">sunset-77.project · 实时</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="3 条新洞察：付费漏斗异常已恢复" aria-label="通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：转化漏斗 + 活跃趋势 -->
+            <section class="funnel-card" aria-label="注册转化漏斗">
+              <p class="eyebrow mono">FUNNEL · 注册转化</p>
+              <div class="funnel-card__top">
+                <p class="dau"><span class="dau__num">12,483</span><span class="dau__unit">今日活跃</span></p>
+                <span class="delta">环比 +8.4%</span>
+              </div>
+              <div class="funnel">
+                <div class="funnel__step" data-toast="访问落地页 · 12,483 人 · 100%">
+                  <div class="funnel__meta"><span>访问落地页</span><b class="mono">12,483</b></div>
+                  <span class="funnel__bar" style="--w: 100%"></span>
+                </div>
+                <p class="funnel__conv mono">33.7% ↓</p>
+                <div class="funnel__step" data-toast="完成注册 · 4,210 人 · 33.7%">
+                  <div class="funnel__meta"><span>完成注册</span><b class="mono">4,210</b></div>
+                  <span class="funnel__bar" style="--w: 62%"></span>
+                </div>
+                <p class="funnel__conv funnel__conv--drop mono">44.5% ↓ 最大流失</p>
+                <div class="funnel__step" data-toast="完成激活 · 1,873 人 · 15.0%">
+                  <div class="funnel__meta"><span>完成激活</span><b class="mono">1,873</b></div>
+                  <span class="funnel__bar" style="--w: 38%"></span>
+                </div>
+                <p class="funnel__conv mono">22.0% ↓</p>
+                <div class="funnel__step" data-toast="首次付费 · 412 人 · 3.3%">
+                  <div class="funnel__meta"><span>首次付费</span><b class="mono">412</b></div>
+                  <span class="funnel__bar funnel__bar--pay" style="--w: 14%"></span>
+                </div>
+              </div>
+              <div class="spark" aria-label="近 14 天活跃趋势折线图">
+                <svg viewBox="0 0 280 64" preserveAspectRatio="none">
+                  <path class="spark__area" d="M0 52 L20 46 L40 49 L60 38 L80 41 L100 30 L120 34 L140 26 L160 31 L180 20 L200 24 L220 15 L240 19 L260 8 L280 12 L280 64 L0 64 Z" />
+                  <polyline class="spark__line" id="sparkLine" points="0,52 20,46 40,49 60,38 80,41 100,30 120,34 140,26 160,31 180,20 200,24 220,15 240,19 260,8 280,12" />
+                </svg>
+                <div class="spark__foot mono"><span>14 天活跃</span><span>峰值 13.9k · 周二</span></div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 ×2：功能开关 + 事件吞吐 -->
+            <section class="duo-grid" aria-label="开关与吞吐">
+              <div class="panel">
+                <p class="eyebrow mono">FLAGS · 功能开关</p>
+                <div class="flag-row">
+                  <div class="flag-row__body">
+                    <span class="flag-row__name">新手引导</span>
+                    <span class="flag-row__key mono">beta-onboarding</span>
+                  </div>
+                  <button class="switch is-on" type="button" role="switch" aria-checked="true" aria-label="新手引导开关">
+                    <i class="switch__knob"></i>
+                  </button>
+                </div>
+                <div class="flag-row">
+                  <div class="flag-row__body">
+                    <span class="flag-row__name">内测入口</span>
+                    <span class="flag-row__key mono">labs-menu</span>
+                  </div>
+                  <button class="switch" type="button" role="switch" aria-checked="false" aria-label="内测入口开关">
+                    <i class="switch__knob"></i>
+                  </button>
+                </div>
+                <div class="flag-row">
+                  <div class="flag-row__body">
+                    <span class="flag-row__name">新版仪表盘</span>
+                    <span class="flag-row__key mono">dash-v2</span>
+                  </div>
+                  <button class="switch" type="button" role="switch" aria-checked="false" aria-label="新版仪表盘开关">
+                    <i class="switch__knob"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="panel">
+                <p class="eyebrow mono">EVENTS · 事件吞吐</p>
+                <p class="panel__big"><span class="mono">1,842</span><em>事件 / 分钟</em></p>
+                <div class="bars" role="img" aria-label="近 7 天每日事件量柱状图，周三最高">
+                  <i style="--h: 38%"></i><i style="--h: 52%"></i><i style="--h: 88%"></i>
+                  <i style="--h: 64%"></i><i style="--h: 71%"></i><i style="--h: 46%"></i>
+                  <i style="--h: 58%"></i>
+                </div>
+                <p class="panel__note mono">峰值 周三 · 2,610/min</p>
+              </div>
+            </section>
+
+            <!-- 4. 洞察动态 Feed -->
+            <section class="feed" aria-label="洞察动态">
+              <div class="feed__head">
+                <h2 class="feed__title">动态</h2>
+                <div class="chips" role="tablist" aria-label="筛选动态">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="on">启用中</button>
+                  <button class="chip" type="button" data-filter="rollout">灰度</button>
+                  <button class="chip" type="button" data-filter="error">异常</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="on">
+                  <span class="feed-item__glyph mono" aria-hidden="true">ƒ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">signup_completed</span>
+                    <span class="feed-item__meta">注册完成 · 4,210 次 · 10 分钟前 <em class="tag tag--on">启用中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="订阅事件" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="rollout">
+                  <span class="feed-item__glyph mono" aria-hidden="true">ƒ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">checkout_v3</span>
+                    <span class="feed-item__meta">新版结算 · 灰度 10% · 1 小时前 <em class="tag tag--roll">灰度</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="订阅事件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="error">
+                  <span class="feed-item__glyph mono" aria-hidden="true">!</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">pay_webhook_timeout</span>
+                    <span class="feed-item__meta">支付回调超时 · 已恢复 · 昨天 <em class="tag tag--err">异常</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="订阅事件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="on">
+                  <span class="feed-item__glyph mono" aria-hidden="true">ƒ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">invite_sent</span>
+                    <span class="feed-item__meta">邀请发送 · 1,102 次 · 昨天 <em class="tag tag--on">启用中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="订阅事件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="rollout">
+                  <span class="feed-item__glyph mono" aria-hidden="true">ƒ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">insight_autogen</span>
+                    <span class="feed-item__meta">洞察自动生成 · 每日 09:00 <em class="tag tag--roll">灰度</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="订阅事件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="on">
+                  <span class="feed-item__glyph mono" aria-hidden="true">ƒ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">docs_search</span>
+                    <span class="feed-item__meta">文档搜索 · 863 次 · 周一 <em class="tag tag--on">启用中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="订阅事件" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="新建洞察">
+              <input class="query-input mono" id="queryInput" type="text" placeholder="查询事件，如：signup_completed" />
+              <div class="action-row">
+                <button class="btn-dark" type="button" id="insightBtn">新建洞察</button>
+                <button class="btn-sage" type="button" data-toast="CSV 已导出 · 47 行 · 2 列">导出 CSV</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="概览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>概览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="洞察">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19h16M7 16V9M12 16V5M17 16v-5" />
+              </svg>
+              <span>洞察</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建洞察">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="事件">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h9M5 19h5" />
+              </svg>
+              <span>事件</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>橙集 · Vibrant</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__logo">橙集</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__sub">本周日 · 江湾市集 · 距离开市 2 天</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="4 家新摊主入驻今日" aria-label="动态">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 5h16v11H8l-4 3V5z"/><path d="M9 9h6"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：本周市集海报（签名：大字 + 橙色块）-->
+            <section class="hero" aria-label="本周市集">
+              <div class="hero__poster">
+                <p class="hero__kicker">SUN · OCT 18 · 11:00-19:00</p>
+                <h1 class="hero__title">江湾<br />秋日集</h1>
+                <div class="hero__tags">
+                  <span class="tag">🧶 手作</span>
+                  <span class="tag tag--violet"> Vintage</span>
+                  <span class="tag tag--peach">☕ 咖啡</span>
+                </div>
+                <p class="hero__loc">江湾体育场 · 东广场 · 免票入场</p>
+              </div>
+              <div class="hero__stats">
+                <div><b>86</b><span>摊位</span></div>
+                <div><b>1.2万</b><span>预约</span></div>
+                <div><b>3</b><span>舞台场次</span></div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-orange" type="button" id="rsvpBtn">预约入场</button>
+                <button class="btn-ghost" type="button" data-toast="已加入日历 + 开市前提醒">加日历</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="摊主">
+              <div class="duo__card">
+                <h2 class="duo__title">新摊主</h2>
+                <div class="stalls">
+                  <span class="stall" style="--c: #ff6b00">织</span>
+                  <span class="stall" style="--c: #7c61d4">啡</span>
+                  <span class="stall" style="--c: #2e9d57">陶</span>
+                  <span class="stall" style="--c: #eaae87">＋83</span>
+                </div>
+                <p class="duo__meta">本周新入驻 86 家 · 通过率 41%</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">集章卡</h2>
+                <p class="duo__num">7<span>/10 章</span></p>
+                <div class="stamps" aria-hidden="true">
+                  <i class="on">🧶</i><i class="on">☕</i><i class="on">🪴</i><i class="on">🎧</i><i class="on">🍞</i><i class="on">🪞</i><i class="on">🧁</i><i></i><i></i><i></i>
+                </div>
+                <p class="duo__meta">集满 10 章换帆布袋</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：摊位预告 -->
+            <section class="feed" aria-label="摊位预告">
+              <div class="feed__head">
+                <h2 class="feed__title">必逛摊位</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="craft">手作</button>
+                  <button class="chip" type="button" data-filter="food">吃喝</button>
+                  <button class="chip" type="button" data-filter="vintage">古着</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="craft">
+                  <span class="feed-item__glyph">🧶</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">「绕线星期天」手织挂毯</span>
+                    <span class="feed-item__meta">A12 摊 · 可现场体验 30 分钟</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="food">
+                  <span class="feed-item__glyph">🥐</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">「炉边」可颂与肉桂卷</span>
+                    <span class="feed-item__meta">C03 摊 · 开市首炉 11:30</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="vintage">
+                  <span class="feed-item__glyph">👕</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">「旧仓库」古着 & 胶片</span>
+                    <span class="feed-item__meta">B07 摊 · 上新 200+ 件</span>
+                  </div>
+                  <button class="star is-on" type="button" aria-label="收藏" aria-pressed="true">★</button>
+                </li>
+                <li class="feed-item" data-kind="craft">
+                  <span class="feed-item__glyph">🪴</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">「苔语」雨林缸 & 苔藓瓶</span>
+                    <span class="feed-item__meta">A01 摊 · 手作工作坊</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="food">
+                  <span class="feed-item__glyph">🍹</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">「番石榴」冷压果汁</span>
+                    <span class="feed-item__meta">C09 摊 · 自带杯减 5 元</span>
+                  </div>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false">☆</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="摆摊">
+              <div class="chips chips--cat">
+                <button class="chip is-active" type="button">手作</button>
+                <button class="chip" type="button">餐饮</button>
+                <button class="chip" type="button">古着</button>
+                <button class="chip" type="button">出版</button>
+              </div>
+              <input class="action__input" id="stallInput" type="text" placeholder="你的摊位名字…" />
+              <div class="action__row">
+                <button class="btn-orange" type="button" id="applyBtn">申请摊位</button>
+                <button class="btn-ghost" type="button" data-toast="摊主手册已发送到邮箱">摊主手册</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="市集">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10l1.5-6h13L20 10"/><path d="M4 10v9h16v-9"/><path d="M4 10h16"/></svg>
+              <span>市集</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="地图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <span>地图</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="集章" aria-label="集章">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.4 5.4 5.6.7-4.2 3.9 1.1 5.7L12 16l-4.9 2.7 1.1-5.7L4 9.1l5.6-.7L12 3z"/></svg>
+              <span>集章</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="收藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>
+              <span>收藏</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

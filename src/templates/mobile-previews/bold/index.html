@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>ONE REP 一练 · Bold-Inspired</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true"><span>1R</span></div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">ONE REP</span>
+                <span class="brand-bar__sub">推力日 A · 第 4 周 · 还剩 2 组</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="教练回复了你的深蹲视频：膝盖轨迹很好" aria-label="消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：今日主项的巨型重量 -->
+            <section class="hero-lift" aria-label="今日主项">
+              <div class="hero-lift__head">
+                <p class="hero-lift__eyebrow">TODAY · 深蹲 BACK SQUAT</p>
+                <span class="hero-lift__pr">PR +2.5</span>
+              </div>
+              <p class="hero-lift__weight">
+                <span id="targetWeight">102.5</span><em>KG</em>
+              </p>
+              <p class="hero-lift__note">5×5 · 上次 100 KG · 第 3 组进行中</p>
+              <ol class="hero-lift__steps" id="setSteps" aria-label="组次进度 3 / 5">
+                <li class="is-done"></li>
+                <li class="is-done"></li>
+                <li class="is-done"></li>
+                <li></li>
+                <li></li>
+              </ol>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="纪录与容量">
+              <div class="duo-card">
+                <h2 class="duo-card__title">三项纪录</h2>
+                <ul class="pr-list">
+                  <li><i>深蹲</i><b>145 KG</b></li>
+                  <li><i>卧推</i><b>110 KG</b></li>
+                  <li><i>硬拉</i><b>180 KG</b></li>
+                </ul>
+                <p class="duo-card__meta">硬拉纪录保持 3 周</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周容量</h2>
+                <p class="duo-card__num">12,480<span>KG</span></p>
+                <p class="duo-card__note">目标 15,000 KG · 还差 2,520</p>
+                <div class="vol-track">
+                  <span class="vol-fill" style="--w: 83%"></span>
+                </div>
+                <p class="duo-card__meta">已达成 <b>83%</b> · 比上周 +11%</p>
+              </div>
+            </section>
+
+            <!-- 4. 训练日志 Feed -->
+            <section class="feed" aria-label="训练日志">
+              <div class="feed__head">
+                <h2 class="feed__title">训练日志</h2>
+                <div class="chips" role="tablist" aria-label="筛选日志">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">完成</button>
+                  <button class="chip" type="button" data-filter="miss">失败</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 9v6M8 6v12M12 4v16M16 7v10M20 10v4" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">深蹲 5×5 · 102.5 KG</span>
+                    <span class="feed-item__meta">14:20 · 第 3 组 · RPE 8</span>
+                  </div>
+                  <b class="feed-item__state is-done">完成</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该动作" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 7h12M6 17h12M8 7v10M16 7v10" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">卧推 3×8 · 80 KG</span>
+                    <span class="feed-item__meta">13:46 · 组间歇 120s</span>
+                  </div>
+                  <b class="feed-item__state is-done">完成</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该动作" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="miss">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M7 12h10M5 6h14M9 18h6" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">划船 4×10 · 60 KG</span>
+                    <span class="feed-item__meta">13:05 · 第 4 组力竭 · RPE 10</span>
+                  </div>
+                  <b class="feed-item__state is-miss">失败</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该动作" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="10" width="16" height="4" /><path d="M6 14v4M18 14v4" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">平板支撑 3×60s</span>
+                    <span class="feed-item__meta">昨天 · 核心 · 最后 1 组 52s</span>
+                  </div>
+                  <b class="feed-item__state is-done">完成</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该动作" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="8" /><path d="M8.5 14a5 5 0 0 0 7 0" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">热身 · 动态拉伸 8 min</span>
+                    <span class="feed-item__meta">昨天 18:30 · 髋屈肌激活</span>
+                  </div>
+                  <b class="feed-item__state is-done">完成</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该动作" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="记录组次">
+              <input class="quick-input" id="weightInput" type="text" inputmode="decimal" placeholder="本组重量 KG，回车更新目标，如：105" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="setBtn">完成一组</button>
+                <button class="btn-ghost" type="button" data-toast="已跳过本组 · 下次训练补偿 +1 组">跳过</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="训练">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" />
+              </svg>
+              <span>训练</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="计划">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="5" width="16" height="15" rx="1" /><path d="M4 10h16M9 3v4M15 3v4" />
+              </svg>
+              <span>计划</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="加练" aria-label="快速加练一个动作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>加练</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="记录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h14M5 19h9" />
+              </svg>
+              <span>记录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

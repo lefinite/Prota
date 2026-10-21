@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Model Hub · Hugging Face</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-logo">🤗</div>
+                <div class="brand-text">
+                  <span class="brand-name">Hugging Face</span>
+                  <span class="brand-sub">Model Hub</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="Search" data-toast="Search models">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature: 模型统计仪表板 -->
+            <section class="hero-card" aria-label="Model Statistics">
+              <div class="hero-badge">
+                <span>🤗</span>
+                <span>NEW</span>
+              </div>
+              <h1 class="hero-title">Discover ML Models</h1>
+              <p class="hero-sub">300k+ models shared by the community</p>
+              <div class="hero-stats">
+                <div class="stat">
+                  <span class="stat-value">324K</span>
+                  <span class="stat-label">Models</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">89K</span>
+                  <span class="stat-label">Datasets</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">12K</span>
+                  <span class="stat-label">Spaces</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 模型分类筛选 -->
+            <section class="categories">
+              <h2 class="section-label">TASKS</h2>
+              <div class="category-chips" id="taskFilters" role="tablist">
+                <button class="cat-chip is-active" data-filter="all" role="tab" aria-selected="true">
+                  <span class="cat-emoji">📦</span>
+                  <span>All</span>
+                </button>
+                <button class="cat-chip cat-chip--nlp" data-filter="nlp" role="tab" aria-selected="false">
+                  <span class="cat-emoji">💬</span>
+                  <span>NLP</span>
+                </button>
+                <button class="cat-chip cat-chip--vision" data-filter="vision" role="tab" aria-selected="false">
+                  <span class="cat-emoji">🖼️</span>
+                  <span>Vision</span>
+                </button>
+                <button class="cat-chip cat-chip--audio" data-filter="audio" role="tab" aria-selected="false">
+                  <span class="cat-emoji">🎵</span>
+                  <span>Audio</span>
+                </button>
+                <button class="cat-chip cat-chip--multimodal" data-filter="multimodal" role="tab" aria-selected="false">
+                  <span class="cat-emoji">🎨</span>
+                  <span>Multimodal</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 模型列表 -->
+            <section class="models-section">
+              <div class="models-header">
+                <h2 class="section-label">TRENDING MODELS</h2>
+                <span class="models-count">24 models</span>
+              </div>
+              <ul class="model-list" id="modelList">
+                <li class="model-card" data-category="nlp">
+                  <div class="model-header">
+                    <span class="model-id">meta-llama/Llama-2-7b</span>
+                    <span class="model-badge model-badge--nlp">NLP</span>
+                  </div>
+                  <p class="model-desc">Pretrained on 2 trillion tokens and fine-tuned on dialogue data</p>
+                  <div class="model-meta">
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14A6 6 0 118 2a6 6 0 010 12z"/></svg>
+                      12.5M
+                    </span>
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4l4 4-4 4-1.5-1.5L5 9H2v2h3l1.5 1.5L8 12l-4-4 4-4z"/></svg>
+                      PyTorch
+                    </span>
+                  </div>
+                  <div class="model-actions">
+                    <button class="btn-use" data-toast="Loading Llama-2-7b...">Use</button>
+                    <button class="btn-like" data-toast="❤️ Liked!">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                      2.4k
+                    </button>
+                  </div>
+                </li>
+
+                <li class="model-card" data-category="vision">
+                  <div class="model-header">
+                    <span class="model-id">stabilityai/stable-diffusion-3</span>
+                    <span class="model-badge model-badge--vision">Vision</span>
+                  </div>
+                  <p class="model-desc">Text-to-image model with improved photorealism</p>
+                  <div class="model-meta">
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14A6 6 0 118 2a6 6 0 010 12z"/></svg>
+                      8.2M
+                    </span>
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4l4 4-4 4-1.5-1.5L5 9H2v2h3l1.5 1.5L8 12l-4-4 4-4z"/></svg>
+                      PyTorch
+                    </span>
+                  </div>
+                  <div class="model-actions">
+                    <button class="btn-use" data-toast="Loading SD-3...">Use</button>
+                    <button class="btn-like" data-toast="❤️ Liked!">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                      8.7k
+                    </button>
+                  </div>
+                </li>
+
+                <li class="model-card" data-category="audio">
+                  <div class="model-header">
+                    <span class="model-id">openai/whisper-large-v3</span>
+                    <span class="model-badge model-badge--audio">Audio</span>
+                  </div>
+                  <p class="model-desc">Robust speech recognition model with multilingual support</p>
+                  <div class="model-meta">
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14A6 6 0 118 2a6 6 0 010 12z"/></svg>
+                      18.1M
+                    </span>
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4l4 4-4 4-1.5-1.5L5 9H2v2h3l1.5 1.5L8 12l-4-4 4-4z"/></svg>
+                      PyTorch
+                    </span>
+                  </div>
+                  <div class="model-actions">
+                    <button class="btn-use" data-toast="Loading Whisper...">Use</button>
+                    <button class="btn-like" data-toast="❤️ Liked!">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                      5.2k
+                    </button>
+                  </div>
+                </li>
+
+                <li class="model-card" data-category="multimodal">
+                  <div class="model-header">
+                    <span class="model-id">openai/clip-vit-large-patch14</span>
+                    <span class="model-badge model-badge--multimodal">Multimodal</span>
+                  </div>
+                  <p class="model-desc">Contrastive language-image pre-training model</p>
+                  <div class="model-meta">
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14A6 6 0 118 2a6 6 0 010 12z"/></svg>
+                      6.8M
+                    </span>
+                    <span class="meta-item">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4l4 4-4 4-1.5-1.5L5 9H2v2h3l1.5 1.5L8 12l-4-4 4-4z"/></svg>
+                      PyTorch
+                    </span>
+                  </div>
+                  <div class="model-actions">
+                    <button class="btn-use" data-toast="Loading CLIP...">Use</button>
+                    <button class="btn-like" data-toast="❤️ Liked!">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                      3.1k
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="actions">
+              <button class="btn-primary" data-toast="Opening upload form...">
+                <span class="btn-icon">📤</span>
+                Upload Model
+              </button>
+            </section>
+
+            <div class="bottom-spacer"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="Main Navigation">
+            <button class="tab is-active" data-tab="models">
+              <span>📦</span>
+              <span>Models</span>
+            </button>
+            <button class="tab" data-tab="datasets">
+              <span>📊</span>
+              <span>Datasets</span>
+            </button>
+            <button class="tab" data-tab="spaces">
+              <span>🚀</span>
+              <span>Spaces</span>
+            </button>
+            <button class="tab" data-tab="discussions">
+              <span>💬</span>
+              <span>Discussions</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <span>👤</span>
+              <span>Profile</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

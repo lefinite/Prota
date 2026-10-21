@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>画板 · Figma 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏：纯黑白 chrome -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="6" fill="#f24e1e"/><circle cx="15" cy="9" r="6" fill="#ff7262" fill-opacity=".9"/><circle cx="9" cy="15" r="6" fill="#1abcfe" fill-opacity=".9"/><circle cx="15" cy="15" r="6" fill="#a259ff" fill-opacity=".9"/></svg>
+              </div>
+              <div class="brand-bar__avatars" aria-label="3 位协作者在线">
+                <i style="--c: #111"></i><i style="--c: #ffb84d"></i><i style="--c: #7ec8e3"></i>
+                <span class="brand-bar__live">3</span>
+              </div>
+              <button class="pill pill--dark" type="button" data-toast="分享链接已复制，权限：可查看">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+                分享
+              </button>
+            </header>
+
+            <!-- 2. Hero：白墙画廊上的彩色画布（签名）-->
+            <section class="hero" aria-label="当前画布">
+              <div class="hero__meta">
+                <span class="mono-label">File / 品牌重塑 · 主视觉</span>
+                <span class="mono-label hero__page">P3 / 12</span>
+              </div>
+              <div class="hero__canvas" role="img" aria-label="画布：多彩渐变主视觉稿，两个协作者光标在线">
+                <div class="hero__art"></div>
+                <div class="cursor cursor--a"><i></i>小茂</div>
+                <div class="cursor cursor--b"><i></i>岩井</div>
+                <div class="hero__tools">
+                  <button class="circle-btn" type="button" data-toast="缩放 100%" aria-label="缩小">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                  </button>
+                  <span class="hero__zoom mono-label">100%</span>
+                  <button class="circle-btn" type="button" data-toast="缩放 200%" aria-label="放大">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="hero__foot">
+                <div class="hero__tabs" role="tablist">
+                  <button class="hero-tab is-active" type="button" data-layer="设计">设计</button>
+                  <button class="hero-tab" type="button" data-layer="原型">原型</button>
+                  <button class="hero-tab" type="button" data-layer="代码">Dev Mode</button>
+                </div>
+                <span class="mono-label">Edited 2m ago</span>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="工作区">
+              <div class="duo__card">
+                <div class="duo__thumb duo__thumb--a" aria-hidden="true"></div>
+                <p class="duo__title">Design System v4</p>
+                <p class="duo__meta">组件 218 · 变量 46</p>
+              </div>
+              <div class="duo__card">
+                <div class="duo__thumb duo__thumb--b" aria-hidden="true"></div>
+                <p class="duo__title">社区精选集</p>
+                <p class="duo__meta">本周收藏 128 次</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：文件列表 -->
+            <section class="feed" aria-label="最近文件">
+              <div class="feed__head">
+                <h2 class="feed__title">最近文件</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="draft">草稿</button>
+                  <button class="chip" type="button" data-filter="review">评审中</button>
+                  <button class="chip" type="button" data-filter="done">已定稿</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="review">
+                  <div class="feed-item__thumb feed-item__thumb--1" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">App 改版 · 全流程</span>
+                    <span class="feed-item__meta mono-label">今天 14:02 · 5 人协作</span>
+                  </div>
+                  <em class="state state--review">评审中</em>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <div class="feed-item__thumb feed-item__thumb--2" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">品牌重塑 · 主视觉</span>
+                    <span class="feed-item__meta mono-label">2 分钟前 · 3 人在线</span>
+                  </div>
+                  <em class="state state--live">在线</em>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <div class="feed-item__thumb feed-item__thumb--3" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">官网 Landing</span>
+                    <span class="feed-item__meta mono-label">昨天 18:30 · 已交付开发</span>
+                  </div>
+                  <em class="state state--done">已定稿</em>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <div class="feed-item__thumb feed-item__thumb--4" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">图标库 · 线性风格</span>
+                    <span class="feed-item__meta mono-label">10-12 · 96 icons</span>
+                  </div>
+                  <em class="state">草稿</em>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/></svg></button>
+                </li>
+                <li class="feed-item" data-kind="review">
+                  <div class="feed-item__thumb feed-item__thumb--5" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">发布会 Keynote</span>
+                    <span class="feed-item__meta mono-label">10-10 · 24 pages</span>
+                  </div>
+                  <em class="state state--review">评审中</em>
+                  <button class="star" type="button" aria-label="收藏" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/></svg></button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新建与检索">
+              <input class="action__input" id="fileSearch" type="text" placeholder="搜索文件、组件或协作者…" />
+              <div class="chips chips--tools">
+                <button class="chip is-active" type="button" data-tool="Design">Design</button>
+                <button class="chip" type="button" data-tool="FigJam">FigJam</button>
+                <button class="chip" type="button" data-tool="Slides">Slides</button>
+                <button class="chip" type="button" data-tool="Dev">Dev</button>
+              </div>
+              <div class="action__row">
+                <button class="pill pill--dark pill--wide" type="button" data-toast="已创建空白设计文件">新建设计文件</button>
+                <button class="pill pill--glass pill--wide" type="button" data-toast="已导入 4 个 Sketch 文件">导入文件</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="文件">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M13 3H6v18h12V8l-5-5z"/><path d="M13 3v5h5"/></svg>
+              <span>文件</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="画板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              <span>画板</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="创建" aria-label="创建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>创建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="社区">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M15.5 14.6c2 .3 3.6 1.7 4.3 4"/></svg>
+              <span>社区</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

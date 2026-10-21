@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>丛簿 · MongoDB 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__leaf" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 9c0-4 2.5-6 6-6 0 4-2.5 6-6 6z"/><path d="M12 13c0-3.5-2.2-5-5.2-5 0 3.5 2.2 5 5.2 5z"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">丛簿 Atlas</span>
+                <span class="brand-bar__sub mono-label">CLUSTER PROD-CN-1 · M30</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="连接串已复制（有效期 24h）" aria-label="连接">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：集群健康（签名：副本集三节点 + 副本延迟）-->
+            <section class="hero" aria-label="集群健康">
+              <p class="mono-label hero__label">CLUSTER HEALTH</p>
+              <div class="hero__status">
+                <h1 class="hero__state">Healthy</h1>
+                <span class="hero__uptime mono">99.98% · 42d</span>
+              </div>
+              <ul class="hero__nodes" id="nodeList">
+                <li class="is-primary">
+                  <i></i>
+                  <div><b>node-01</b><span class="mono">PRIMARY</span></div>
+                  <em class="mono">2ms</em>
+                </li>
+                <li class="is-sec">
+                  <i></i>
+                  <div><b>node-02</b><span class="mono">SECONDARY</span></div>
+                  <em class="mono" id="lag2">0.8s</em>
+                </li>
+                <li class="is-sec">
+                  <i></i>
+                  <div><b>node-03</b><span class="mono">SECONDARY</span></div>
+                  <em class="mono" id="lag3">1.2s</em>
+                </li>
+              </ul>
+              <div class="hero__metric">
+                <div><span class="mono-label">OPS/SEC</span><b class="mono" id="opsNum">12,408</b></div>
+                <div><span class="mono-label">CONNECTIONS</span><b class="mono">382</b></div>
+                <div><span class="mono-label">STORAGE</span><b class="mono">412G</b></div>
+              </div>
+              <div class="hero__lag">
+                <span class="mono-label">REPLICATION LAG</span>
+                <div class="lag-track"><span style="--w: 24%" id="lagFill"></span></div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="数据库">
+              <div class="duo__card">
+                <h2 class="duo__title mono-label">COLLECTIONS</h2>
+                <p class="duo__num">86<span> 个</span></p>
+                <p class="duo__meta">orders · 2.1 亿文档 · TTL 90d</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono-label">INDEX HITS</h2>
+                <p class="duo__num">99.2<span>%</span></p>
+                <div class="gauge"><span style="--w: 99%"></span></div>
+                <p class="duo__meta">本周新增索引 3 · 命中提升 18%</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：慢查询与事件 -->
+            <section class="feed" aria-label="性能顾问">
+              <div class="feed__head">
+                <h2 class="feed__title">性能顾问</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="slow">慢查询</button>
+                  <button class="chip" type="button" data-filter="index">索引建议</button>
+                  <button class="chip" type="button" data-filter="event">事件</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="slow">
+                  <span class="feed-item__glyph" aria-hidden="true">🐢</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">orders.findByUser</span>
+                    <span class="feed-item__meta">1,842 ms · COLLSCAN · 调用 4.2k/日</span>
+                  </div>
+                  <em class="state state--warn">SLOW</em>
+                </li>
+                <li class="feed-item" data-kind="index">
+                  <span class="feed-item__glyph" aria-hidden="true">🧭</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">sessions.feed</span>
+                    <span class="feed-item__meta">建议复合索引 (user_id, ts DESC)</span>
+                  </div>
+                  <em class="state state--new">+18%</em>
+                </li>
+                <li class="feed-item" data-kind="event">
+                  <span class="feed-item__glyph" aria-hidden="true">🔄</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">node-02 主从切换演练</span>
+                    <span class="feed-item__meta">10-13 02:00 · 耗时 4.2s · 无影响</span>
+                  </div>
+                  <em class="state state--ok">DONE</em>
+                </li>
+                <li class="feed-item" data-kind="slow">
+                  <span class="feed-item__glyph" aria-hidden="true">🐢</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">carts.aggregate</span>
+                    <span class="feed-item__meta">640 ms · 内存排序 · 建议加 LIMIT</span>
+                  </div>
+                  <em class="state state--warn">SLOW</em>
+                </li>
+                <li class="feed-item" data-kind="event">
+                  <span class="feed-item__glyph" aria-hidden="true">💾</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">快照备份完成</span>
+                    <span class="feed-item__meta">今日 04:00 · 增量 1.8G · 保留 7 天</span>
+                  </div>
+                  <em class="state state--ok">OK</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="运维操作">
+              <div class="chips chips--db">
+                <button class="chip is-active" type="button">orders</button>
+                <button class="chip" type="button">sessions</button>
+                <button class="chip" type="button">carts</button>
+                <button class="chip" type="button">logs</button>
+              </div>
+              <input class="action__input mono" id="queryInput" type="text" placeholder='db.orders.find({ status: "paid" })' />
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="explainBtn">执行 EXPLAIN</button>
+                <button class="btn-outline" type="button" data-toast="已生成索引建议报告（PDF）">导出报告</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="集群">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/><path d="M4.5 11.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>
+              <span class="mono-label">集群</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="数据库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4h14v16H5z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+              <span class="mono-label">数据库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="查询" aria-label="查询">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span class="mono-label">查询</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="告警">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.6L1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/></svg>
+              <span class="mono-label">告警</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="备份">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3v11"/><path d="M8 10l4 4 4-4"/><path d="M4 17v3h16v-3"/></svg>
+              <span class="mono-label">备份</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

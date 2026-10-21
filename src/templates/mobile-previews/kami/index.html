@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>紙間 JOURNAL · kami</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">紙</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">紙間</span>
+                <span class="brand-bar__sub">JOURNAL · 双月刊 · 第 42 期</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已回到本期目录顶部" aria-label="本期目录">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 5h16M4 12h10M4 19h7" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：本期封面 -->
+            <section class="cover" aria-label="本期封面">
+              <div class="cover__head">
+                <p class="cover__eyebrow">ISSUE 42 · 午夜编辑室</p>
+                <span class="tag tag--brush">New · 新刊</span>
+              </div>
+              <h1 class="cover__title">午夜之前，<br />编辑室最后一盏灯</h1>
+              <p class="cover__lede">一期关于纸、地图与字体的双月刊。我们照旧把排版稿贴在墙上，直到天亮。</p>
+              <blockquote class="cover__quote">
+                我们把每一期，都当作最后一期来排。
+                <cite>—— 主编手记</cite>
+              </blockquote>
+              <div class="cover__metrics">
+                <div class="metric">
+                  <p class="metric__value">6</p>
+                  <p class="metric__label">篇长文</p>
+                </div>
+                <div class="metric">
+                  <p class="metric__value">96</p>
+                  <p class="metric__label">页</p>
+                </div>
+                <div class="metric">
+                  <p class="metric__value">48</p>
+                  <p class="metric__label">分钟读完</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="荐读与进度">
+              <div class="duo-card duo-card--featured">
+                <h2 class="duo-card__title">主编荐读</h2>
+                <ul class="dash">
+                  <li>纸的重量 —— 一家百年纸厂的自白</li>
+                  <li>旧地图上的三条虚线</li>
+                  <li>字体设计师的一天 · 九分钟小品</li>
+                </ul>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">阅读进度</h2>
+                <div class="progress-row">
+                  <div class="progress-row__head">
+                    <span>深夜编辑室</span><b id="pageNow">p.62/96</b>
+                  </div>
+                  <div class="progress-row__track">
+                    <span class="progress-row__fill" id="readFill" style="--w: 68%"></span>
+                  </div>
+                </div>
+                <div class="progress-row">
+                  <div class="progress-row__head"><span>纸的重量</span><b>p.11/88</b></div>
+                  <div class="progress-row__track"><span class="progress-row__fill" style="--w: 12%"></span></div>
+                </div>
+                <div class="progress-row">
+                  <div class="progress-row__head"><span>三条虚线</span><b>p.30/74</b></div>
+                  <div class="progress-row__track"><span class="progress-row__fill" style="--w: 41%"></span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 本期目录 Feed -->
+            <section class="toc" aria-label="本期目录">
+              <div class="toc__head">
+                <h2 class="toc__title">本期目录</h2>
+                <div class="chips" role="tablist" aria-label="筛选目录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="unread">未读</button>
+                  <button class="chip" type="button" data-filter="reading">在读</button>
+                  <button class="chip" type="button" data-filter="done">已读完</button>
+                </div>
+              </div>
+              <ul class="toc__list" id="tocList">
+                <li class="toc-item" data-kind="reading">
+                  <span class="toc-item__num">01</span>
+                  <div class="toc-item__body">
+                    <span class="toc-item__name">深夜编辑室，最后一盏灯</span>
+                    <span class="toc-item__meta">林书敏 · 18 分钟</span>
+                  </div>
+                  <em class="toc-item__tag">在读</em>
+                  <button class="toc-item__mark" type="button" aria-label="收藏本篇" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="toc-item" data-kind="unread">
+                  <span class="toc-item__num">02</span>
+                  <div class="toc-item__body">
+                    <span class="toc-item__name">纸的重量：一家百年纸厂的自白</span>
+                    <span class="toc-item__meta">顾之遥 · 14 分钟</span>
+                  </div>
+                  <em class="toc-item__tag toc-item__tag--muted">未读</em>
+                  <button class="toc-item__mark" type="button" aria-label="收藏本篇" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="toc-item" data-kind="done">
+                  <span class="toc-item__num">03</span>
+                  <div class="toc-item__body">
+                    <span class="toc-item__name">咖啡馆里的坐标系</span>
+                    <span class="toc-item__meta">阿澈 · 12 分钟</span>
+                  </div>
+                  <em class="toc-item__tag toc-item__tag--muted">已读完</em>
+                  <button class="toc-item__mark" type="button" aria-label="收藏本篇" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="toc-item" data-kind="unread">
+                  <span class="toc-item__num">04</span>
+                  <div class="toc-item__body">
+                    <span class="toc-item__name">旧地图上的三条虚线</span>
+                    <span class="toc-item__meta">郑南屿 · 16 分钟</span>
+                  </div>
+                  <em class="toc-item__tag toc-item__tag--muted">未读</em>
+                  <button class="toc-item__mark is-on" type="button" aria-label="收藏本篇" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="toc-item" data-kind="done">
+                  <span class="toc-item__num">05</span>
+                  <div class="toc-item__body">
+                    <span class="toc-item__name">字体设计师的一天</span>
+                    <span class="toc-item__meta">宋知白 · 9 分钟</span>
+                  </div>
+                  <em class="toc-item__tag toc-item__tag--muted">已读完</em>
+                  <button class="toc-item__mark" type="button" aria-label="收藏本篇" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="toc-item" data-kind="unread">
+                  <span class="toc-item__num">06</span>
+                  <div class="toc-item__body">
+                    <span class="toc-item__name">印刷机的余温（卷末）</span>
+                    <span class="toc-item__meta">编辑部 · 6 分钟</span>
+                  </div>
+                  <em class="toc-item__tag toc-item__tag--muted">未读</em>
+                  <button class="toc-item__mark" type="button" aria-label="收藏本篇" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="批注与阅读">
+              <input class="quick-input" id="noteInput" type="text" placeholder="写一句批注，贴在这一页……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="continueBtn">继续阅读 · 第一章</button>
+                <button class="btn-ghost" type="button" data-toast="排版稿已导出 · A4 · 14mm 页边距">导出 PDF</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="本期">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 6.5C10.5 5 8.5 4.5 6 4.5v13c2.5 0 4.5.5 6 2 1.5-1.5 3.5-2 6-2v-13c-2.5 0-4.5.5-6 2z" />
+                <path d="M12 6.5v13" />
+              </svg>
+              <span>本期</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="书架">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h5v16H4zM10.5 4h4v16h-4zM16.5 4.5l3.5 1-2.6 14.4-3.4-.9" />
+              </svg>
+              <span>书架</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="批注">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 4h14v10l-4 4H8l-3 3z" /><path d="M9 9h6M9 12h4" />
+              </svg>
+              <span>批注</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发现">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
+              </svg>
+              <span>发现</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

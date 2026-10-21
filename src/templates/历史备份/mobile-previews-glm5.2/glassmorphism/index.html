@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>CloudFlow · Glassmorphism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 背景装饰 -->
+            <div class="bg-decoration" aria-hidden="true">
+              <div class="bg-circle bg-circle--1"></div>
+              <div class="bg-circle bg-circle--2"></div>
+              <div class="bg-circle bg-circle--3"></div>
+            </div>
+
+            <!-- 顶部品牌栏 -->
+            <header class="topbar glass-panel">
+              <div class="topbar__brand">
+                <div class="brand-logo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19c0-1.7-1.3-3-3-3h-11c-1.7 0-3-1.3-3-3 0-1.3.8-2.4 2-2.8V9c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v1.2c1.2.4 2 1.5 2 2.8 0 1.7-1.3 3-3 3z" /><path d="M17 9v2" /><path d="M5 9v2" /></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">CloudFlow</span>
+                  <span class="brand-sub">云端协作</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 卡片：工作空间概览（signature：蓝色玻璃渐变） -->
+            <section class="hero-section glass-panel">
+              <div class="hero-header">
+                <h1 class="hero-title">工作空间</h1>
+                <span class="hero-badge">Pro</span>
+              </div>
+              <p class="hero-subtitle">5 个活跃项目 · 12 位在线成员</p>
+              <div class="hero-progress">
+                <div class="progress-item">
+                  <span class="progress-label">本周进度</span>
+                  <span class="progress-value">68%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="--p: 68%"></div>
+                </div>
+              </div>
+              <div class="hero-avatars">
+                <div class="avatar avatar--active" style="--color: #4f8cff">P</div>
+                <div class="avatar avatar--active" style="--color: #22c55e">A</div>
+                <div class="avatar" style="--color: #f59e0b">M</div>
+                <div class="avatar avatar--more">+9</div>
+              </div>
+            </section>
+
+            <!-- 快捷卡片 -->
+            <section class="quick-cards">
+              <div class="quick-card glass-panel" data-action="new" data-toast="新建项目">
+                <div class="quick-icon quick-icon--primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                </div>
+                <span class="quick-label">新建项目</span>
+                <span class="quick-count">3</span>
+              </div>
+              <div class="quick-card glass-panel" data-action="docs" data-toast="文档管理">
+                <div class="quick-icon quick-icon--success">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                </div>
+                <span class="quick-label">文档</span>
+                <span class="quick-count">28</span>
+              </div>
+              <div class="quick-card glass-panel" data-action="tasks" data-toast="任务列表">
+                <div class="quick-icon quick-icon--warn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                </div>
+                <span class="quick-label">任务</span>
+                <span class="quick-count">15</span>
+              </div>
+            </section>
+
+            <!-- 项目列表 -->
+            <section class="projects-section">
+              <div class="section-header">
+                <h2>最近项目</h2>
+                <button class="filter-btn" data-toast="筛选项目">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+                </button>
+              </div>
+              <div class="project-list" id="projectList">
+                <div class="project-card glass-panel" data-project="active">
+                  <div class="project-icon project-icon--blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" /></svg>
+                  </div>
+                  <div class="project-main">
+                    <span class="project-name">产品重构 2024</span>
+                    <span class="project-meta">3 小时前更新 · 8 位成员</span>
+                  </div>
+                  <div class="project-status project-status--active">进行中</div>
+                </div>
+                <div class="project-card glass-panel" data-project="review">
+                  <div class="project-icon project-icon--green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  </div>
+                  <div class="project-main">
+                    <span class="project-name">Q4 营销方案</span>
+                    <span class="project-meta">昨天 · 审核中</span>
+                  </div>
+                  <div class="project-status project-status--review">审核</div>
+                </div>
+                <div class="project-card glass-panel" data-project="done">
+                  <div class="project-icon project-icon--orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                  </div>
+                  <div class="project-main">
+                    <span class="project-name">移动端适配</span>
+                    <span class="project-meta">2 天前 · 已完成</span>
+                  </div>
+                  <div class="project-status project-status--done">完成</div>
+                </div>
+                <div class="project-card glass-panel" data-project="design">
+                  <div class="project-icon project-icon--purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="M2 2l7.586 7.586" /><circle cx="11" cy="11" r="2" /></svg>
+                  </div>
+                  <div class="project-main">
+                    <span class="project-name">设计系统 v2</span>
+                    <span class="project-meta">上周 · 设计阶段</span>
+                  </div>
+                  <div class="project-status project-status--design">设计</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="cta-btn glass-panel glass-panel--primary" data-toast="创建新项目">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                创建项目
+              </button>
+              <div class="action-chips">
+                <button class="action-chip glass-panel" data-toast="邀请成员">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>
+                  邀请
+                </button>
+                <button class="action-chip glass-panel" data-toast="团队设置">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                  团队
+                </button>
+                <button class="action-chip glass-panel" data-toast="数据统计">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                  统计
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar glass-panel" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>
+              <span>项目</span>
+            </button>
+            <button class="tab" data-tab="messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>消息</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

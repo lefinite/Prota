@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>电线杆 · The Verge 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <h1 class="brand-bar__wordmark">电线杆</h1>
+              <button class="brand-bar__icon" type="button" data-toast="已订阅 The Circuit 周刊" aria-label="订阅">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 3V5z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：头版（签名：满色块头条）-->
+            <section class="hero" aria-label="今日头条">
+              <article class="hero__tile hero__tile--magenta" data-toast="阅读：折叠屏的下一个十年不是「更薄」">
+                <span class="tile__kicker mono">FEATURE</span>
+                <h2 class="tile__head">折叠屏的下一个十年，不是「更薄」</h2>
+                <p class="tile__meta mono">10-15 09:00 · 14 分钟阅读</p>
+              </article>
+            </section>
+
+            <!-- 3. 内容卡：快讯色块 -->
+            <section class="duo" aria-label="快讯">
+              <article class="duo__tile duo__tile--mint" data-toast="阅读：欧盟统一换电接口新规通过">
+                <span class="mono">BRIEF</span>
+                <p>欧盟通过统一换电接口，2028 起强制</p>
+              </article>
+              <article class="duo__tile duo__tile--violet" data-toast="阅读：AI 电台主播上岗首月报告">
+                <span class="mono">BRIEF</span>
+                <p>AI 电台主播上岗满月：收听率反超人类</p>
+              </article>
+            </section>
+
+            <!-- 4. Feed：StoryStream（虚线轨道 + 时间戳）-->
+            <section class="feed" aria-label="时间线">
+              <div class="feed__head">
+                <h2 class="feed__title mono">STORYSTREAM</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="review">评测</button>
+                  <button class="chip" type="button" data-filter="news">快讯</button>
+                  <button class="chip" type="button" data-filter="video">视频</button>
+                </div>
+              </div>
+              <ol class="stream">
+                <li class="story" data-kind="news">
+                  <span class="story__time mono">10:42</span>
+                  <div class="story__tile">
+                    <h3>卫星互联网进客舱：首条跨洋航线实测</h3>
+                    <p class="mono">TECH · 2 分钟前</p>
+                  </div>
+                </li>
+                <li class="story" data-kind="review">
+                  <span class="story__time mono">09:58</span>
+                  <div class="story__tile story__tile--fill">
+                    <h3>评测：万元级静音机械键盘，值得吗？</h3>
+                    <p class="mono">REVIEW · 22 分钟阅读</p>
+                  </div>
+                </li>
+                <li class="story" data-kind="video">
+                  <span class="story__time mono">09:21</span>
+                  <div class="story__tile story__tile--outline">
+                    <h3>视频：我们把旧手机改成了家用服务器</h3>
+                    <p class="mono">VIDEO · 12:36</p>
+                  </div>
+                </li>
+                <li class="story" data-kind="news">
+                  <span class="story__time mono">08:47</span>
+                  <div class="story__tile">
+                    <h3>开源绘图引擎拿下年度设计工具奖</h3>
+                    <p class="mono">DESIGN · 4 分钟阅读</p>
+                  </div>
+                </li>
+                <li class="story" data-kind="review">
+                  <span class="story__time mono">08:02</span>
+                  <div class="story__tile story__tile--fill story__tile--slate">
+                    <h3>通勤耳机新档位：主动降噪的「半糖」模式</h3>
+                    <p class="mono">AUDIO · 9 分钟阅读</p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="关注流">
+              <div class="chips chips--topic">
+                <button class="chip is-active" type="button">AI</button>
+                <button class="chip" type="button">硬件</button>
+                <button class="chip" type="button">交通</button>
+                <button class="chip" type="button">创作者</button>
+              </div>
+              <input class="action__input" id="searchInput" type="text" placeholder="搜标题 / 作者 / 标签…" />
+              <div class="action__row">
+                <button class="btn-accent" type="button" id="followBtn">＋ 关注 AI 版面</button>
+                <button class="btn-ghost" type="button" data-toast="清晨简报已开启（07:30）">开简报</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4v-9z"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="时间线">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 9h12M6 15h12"/></svg>
+              <span>时间线</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="听新闻" aria-label="听新闻">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>
+              <span>听新闻</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="视频">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5l5 2.5-5 2.5v-5z"/></svg>
+              <span>视频</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>VoltAgent · AI 控制台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="voltagent-logo">
+                  <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M16 4L6 14v4h8v10h4V18h8v-4L16 4z" fill="#7cff6b" stroke="#7cff6b" stroke-width="1.5" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">VoltAgent</span>
+                  <span class="brand-sub">AI Agent 控制台</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="运行状态" data-toast="系统运行正常">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" /></svg>
+                <span class="status-dot"></span>
+              </button>
+            </header>
+
+            <!-- Hero：Agent 状态面板（signature - 绿色脉冲光晕） -->
+            <section class="agent-panel" aria-label="Agent 状态">
+              <div class="agent-panel__header">
+                <span class="agent-panel__label">ACTIVE AGENTS</span>
+                <span class="agent-panel__count">3</span>
+              </div>
+              <p class="agent-panel__tasks"><span class="number">12</span> 任务执行中</p>
+              <div class="agent-panel__grid">
+                <div class="agent-card agent-card--active">
+                  <span class="agent-card__name">DataProcessor</span>
+                  <span class="agent-card__status">RUNNING</span>
+                  <span class="agent-card__metric">8.2s</span>
+                </div>
+                <div class="agent-card agent-card--active">
+                  <span class="agent-card__name">APIScanner</span>
+                  <span class="agent-card__status">RUNNING</span>
+                  <span class="agent-card__metric">2.4s</span>
+                </div>
+                <div class="agent-card agent-card--idle">
+                  <span class="agent-card__name">LogAnalyzer</span>
+                  <span class="agent-card__status">IDLE</span>
+                  <span class="agent-card__metric">--</span>
+                </div>
+              </div>
+              <button class="btn btn--primary" data-toast="打开 Agent 管理器">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                管理 Agents
+              </button>
+            </section>
+
+            <!-- 代码命令行（signature - 终端风格） -->
+            <section class="command-block" aria-label="快速命令">
+              <div class="command-block__label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="code-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Quick Command
+              </div>
+              <div class="command-block__code">
+                <code>npm run agent:deploy --prod</code>
+                <button class="copy-btn" data-toast="命令已复制">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 任务执行日志 -->
+            <section class="log-section" aria-label="执行日志">
+              <h2 class="section-title">执行日志</h2>
+              <div class="log-list">
+                <div class="log-entry log-entry--success">
+                  <span class="log-entry__time">09:41:23</span>
+                  <div class="log-entry__content">
+                    <span class="log-entry__cmd">[DataProcessor] Processed 1,240 records</span>
+                    <span class="log-entry__meta">Duration: 8.2s</span>
+                  </div>
+                  <span class="log-entry__status">✓</span>
+                </div>
+                <div class="log-entry log-entry--success">
+                  <span class="log-entry__time">09:40:15</span>
+                  <div class="log-entry__content">
+                    <span class="log-entry__cmd">[APIScanner] Scan completed</span>
+                    <span class="log-entry__meta">42 endpoints</span>
+                  </div>
+                  <span class="log-entry__status">✓</span>
+                </div>
+                <div class="log-entry log-entry--running">
+                  <span class="log-entry__time">09:42:01</span>
+                  <div class="log-entry__content">
+                    <span class="log-entry__cmd">[LogAnalyzer] Analyzing system logs...</span>
+                    <span class="log-entry__meta">In progress</span>
+                  </div>
+                  <span class="log-entry__status log-entry__status--pulse">●</span>
+                </div>
+                <div class="log-entry log-entry--warn">
+                  <span class="log-entry__time">09:38:44</span>
+                  <div class="log-entry__content">
+                    <span class="log-entry__cmd">[RateLimiter] Threshold warning</span>
+                    <span class="log-entry__meta">95% capacity</span>
+                  </div>
+                  <span class="log-entry__status">!</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 性能指标 -->
+            <section class="metrics-section" aria-label="性能指标">
+              <h2 class="section-title">系统指标</h2>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <span class="metric-card__label">CPU Usage</span>
+                  <span class="metric-card__value">42<span class="metric-card__unit">%</span></span>
+                  <div class="metric-card__bar"><span class="metric-card__bar-fill" style="--p: 42%"></span></div>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-card__label">Memory</span>
+                  <span class="metric-card__value">1.8<span class="metric-card__unit">GB</span></span>
+                  <div class="metric-card__bar"><span class="metric-card__bar-fill" style="--p: 56%"></span></div>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-card__label">Requests</span>
+                  <span class="metric-card__value">2.4<span class="metric-card__unit">k/s</span></span>
+                  <div class="metric-card__bar"><span class="metric-card__bar-fill" style="--p: 78%"></span></div>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="dashboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>Dashboard</span>
+            </button>
+            <button class="tab" data-tab="agents">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <span>Agents</span>
+            </button>
+            <button class="tab" data-tab="logs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span>Logs</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              <span>Settings</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

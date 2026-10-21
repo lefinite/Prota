@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Create · Expressive</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏：活泼圆润 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">✦</span>
+                <div class="brand-text">
+                  <span class="brand-name">Create</span>
+                  <span class="brand-sub">Hi, 创作者</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="你有 3 条新互动">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Hero：signature —— 紫粉渐变卡片 + 大数字 -->
+            <section class="hero-card" aria-label="创作概览">
+              <div class="hero-card__gradient"></div>
+              <div class="hero-card__content">
+                <p class="hero-card__label">本周灵感</p>
+                <p class="hero-card__value">12</p>
+                <p class="hero-card__sub">较上周 +5 篇</p>
+              </div>
+              <div class="hero-card__deco" aria-hidden="true">
+                <span class="sparkle spark-1">✦</span>
+                <span class="sparkle spark-2">◆</span>
+                <span class="sparkle spark-3">●</span>
+              </div>
+            </section>
+
+            <!-- 创作工具快捷区 -->
+            <section class="tools-section" aria-label="创作工具">
+              <h2 class="section-title">开始创作</h2>
+              <div class="tools-grid">
+                <button class="tool-card tool-card--primary" data-toast="正在打开图文编辑器...">
+                  <span class="tool-card__icon">📝</span>
+                  <span class="tool-card__label">图文</span>
+                </button>
+                <button class="tool-card tool-card--pink" data-toast="正在打开短视频录制...">
+                  <span class="tool-card__icon">🎬</span>
+                  <span class="tool-card__label">短视频</span>
+                </button>
+                <button class="tool-card tool-card--violet" data-toast="正在打开音频录制...">
+                  <span class="tool-card__icon">🎙️</span>
+                  <span class="tool-card__label">音频</span>
+                </button>
+                <button class="tool-card tool-card--warm" data-toast="正在打开直播模式...">
+                  <span class="tool-card__icon">📡</span>
+                  <span class="tool-card__label">直播</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 内容列表 -->
+            <section class="content-section" aria-label="我的内容">
+              <div class="section-header">
+                <h2 class="section-title">我的内容</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选内容">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="published" role="tab" aria-selected="false">已发布</button>
+                  <button class="chip" data-filter="draft" role="tab" aria-selected="false">草稿</button>
+                </div>
+              </div>
+
+              <div class="content-list" id="contentList">
+                <!-- 内容卡片 1 -->
+                <article class="content-card" data-type="published">
+                  <div class="content-card__thumb">
+                    <span class="content-type content-type--article">图文</span>
+                  </div>
+                  <div class="content-card__main">
+                    <h3 class="content-card__title">2024 年度设计趋势观察</h3>
+                    <p class="content-card__preview">从极简主义到新野兽派，今年设计圈发生了什么...</p>
+                    <div class="content-card__meta">
+                      <span class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                        2.4k
+                      </span>
+                      <span class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                        186
+                      </span>
+                      <span class="meta-time">2 小时前</span>
+                    </div>
+                  </div>
+                  <button class="content-card__more" aria-label="更多">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                  </button>
+                </article>
+
+                <!-- 内容卡片 2 -->
+                <article class="content-card" data-type="published">
+                  <div class="content-card__thumb content-card__thumb--video">
+                    <span class="content-type content-type--video">视频</span>
+                  </div>
+                  <div class="content-card__main">
+                    <h3 class="content-card__title">我的桌面搭建过程 🖥️</h3>
+                    <p class="content-card__preview">分享一下最近重新布置的工作区，希望能给...</p>
+                    <div class="content-card__meta">
+                      <span class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                        8.7k
+                      </span>
+                      <span class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                        942
+                      </span>
+                      <span class="meta-time">昨天</span>
+                    </div>
+                  </div>
+                  <button class="content-card__more" aria-label="更多">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                  </button>
+                </article>
+
+                <!-- 内容卡片 3 - 草稿 -->
+                <article class="content-card content-card--draft" data-type="draft">
+                  <div class="content-card__thumb content-card__thumb--draft">
+                    <span class="content-type content-type--draft">草稿</span>
+                  </div>
+                  <div class="content-card__main">
+                    <h3 class="content-card__title">关于 AI 创作的几点思考</h3>
+                    <p class="content-card__preview">未完成的思考，记录一下最近的观察...</p>
+                    <div class="content-card__meta">
+                      <span class="meta-time">保存于 3 天前</span>
+                    </div>
+                  </div>
+                  <button class="content-card__more" aria-label="更多">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                  </button>
+                </article>
+              </div>
+            </section>
+
+            <!-- 灵感收藏 -->
+            <section class="inspiration-section" aria-label="灵感收藏">
+              <div class="section-header">
+                <h2 class="section-title">灵感收藏</h2>
+                <button class="btn-link" data-toast="查看全部收藏">查看全部</button>
+              </div>
+              <div class="inspiration-grid">
+                <div class="inspo-card inspo-card--1">
+                  <span class="inspo-tag">配色</span>
+                </div>
+                <div class="inspo-card inspo-card--2">
+                  <span class="inspo-tag">排版</span>
+                </div>
+                <div class="inspo-card inspo-card--3">
+                  <span class="inspo-tag">插画</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="discover">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab tab--create" data-tab="create" aria-label="创作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>消息</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

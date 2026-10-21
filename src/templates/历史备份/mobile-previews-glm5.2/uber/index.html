@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>City Go · Uber</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- Category Pill Navigation (Signature: 999px radius pills with inversion) -->
+            <nav class="category-nav" aria-label="Category Navigation">
+              <button class="category-pill is-active" data-category="ride">
+                <span>出行</span>
+              </button>
+              <button class="category-pill" data-category="package">
+                <span>快递</span>
+              </button>
+              <button class="category-pill" data-category="food">
+                <span>外卖</span>
+              </button>
+              <button class="category-pill" data-category="reserve">
+                <span>预约</span>
+              </button>
+            </nav>
+
+            <!-- Top Brand Bar -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">C</span>
+                <span class="brand-name">City Go</span>
+              </div>
+              <button class="iconbtn" aria-label="Menu" data-toast="菜单已打开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero with Location Input (Signature: Clean inputs with black CTA) -->
+            <section class="hero-section" aria-label="Location Input">
+              <div class="location-card">
+                <div class="location-input-group">
+                  <div class="location-dot location-dot--start"></div>
+                  <div class="location-inputs">
+                    <input type="text" class="location-input location-input--from" placeholder="从哪里出发？" value="当前位置" readonly />
+                    <input type="text" class="location-input location-input--to" placeholder="去哪里？" />
+                  </div>
+                </div>
+                <button class="cta-btn cta-btn--primary" data-toast="正在搜索附近的司机...">
+                  查看价格
+                </button>
+              </div>
+
+              <!-- Recent Destinations -->
+              <div class="recent-destinations">
+                <div class="recent-item" data-toast="已选择：中信广场">
+                  <svg class="recent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <div class="recent-info">
+                    <span class="recent-name">中信广场</span>
+                    <span class="recent-address">天河路 233 号</span>
+                  </div>
+                </div>
+                <div class="recent-item" data-toast="已选择：广州塔">
+                  <svg class="recent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <div class="recent-info">
+                    <span class="recent-name">广州塔</span>
+                    <span class="recent-address">阅江西路 222 号</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Ride Options (Signature: Card-based layout with shadow) -->
+            <section class="ride-options" aria-label="Ride Options">
+              <h2 class="section-title">选择车型</h2>
+
+              <div class="ride-card ride-card--selected" data-ride="uberx">
+                <div class="ride-card__main">
+                  <div class="ride-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H7M17 17h2"/></svg>
+                  </div>
+                  <div class="ride-info">
+                    <span class="ride-name">City Go</span>
+                    <span class="ride-desc">经济型 · 4座</span>
+                  </div>
+                  <div class="ride-price">¥18.50</div>
+                </div>
+                <div class="ride-meta">
+                  <span class="ride-time">3 分钟</span>
+                  <span class="promo-tag">优惠推荐</span>
+                </div>
+              </div>
+
+              <div class="ride-card" data-ride="comfort">
+                <div class="ride-card__main">
+                  <div class="ride-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                  </div>
+                  <div class="ride-info">
+                    <span class="ride-name">舒适型</span>
+                    <span class="ride-desc">更宽敞的车厢</span>
+                  </div>
+                  <div class="ride-price">¥25.80</div>
+                </div>
+                <div class="ride-meta">
+                  <span class="ride-time">5 分钟</span>
+                </div>
+              </div>
+
+              <div class="ride-card" data-ride="xl">
+                <div class="ride-card__main">
+                  <div class="ride-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M10 5l4 3-4 3"/></svg>
+                  </div>
+                  <div class="ride-info">
+                    <span class="ride-name">City Go XL</span>
+                    <span class="ride-desc">6座 · 适合团体</span>
+                  </div>
+                  <div class="ride-price">¥32.00</div>
+                </div>
+                <div class="ride-meta">
+                  <span class="ride-time">7 分钟</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Current Trip Info -->
+            <section class="trip-card" aria-label="Current Trip">
+              <div class="trip-card__header">
+                <span class="trip-status">进行中</span>
+                <span class="trip-time">预计 12:35 到达</span>
+              </div>
+              <div class="trip-route">
+                <div class="trip-point trip-point--start">
+                  <span class="trip-label">起点</span>
+                  <span class="trip-address">天河城</span>
+                </div>
+                <div class="trip-divider"></div>
+                <div class="trip-point trip-point--end">
+                  <span class="trip-label">终点</span>
+                  <span class="trip-address">中信广场</span>
+                </div>
+              </div>
+              <div class="trip-actions">
+                <button class="trip-btn trip-btn--outline" data-toast="正在联系司机...">
+                  联系司机
+                </button>
+                <button class="trip-btn trip-btn--outline" data-toast="行程详情">
+                  详情
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- Bottom Tab Navigation -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="activity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>活动</span>
+            </button>
+            <button class="tab tab--fab" data-tab="scan" aria-label="Scan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M12 8v8M8 12h8" /></svg>
+            </button>
+            <button class="tab" data-tab="account">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>账户</span>
+            </button>
+            <button class="tab" data-tab="more">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              <span>更多</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>方块道场 · Tetris</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">
+                <i class="b-cyan"></i><i class="b-yellow"></i><i class="b-purple"></i><i class="b-green"></i>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">方块道场</span>
+                <span class="brand-bar__sub">段位：S3 · 天梯 8,412 名</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="赛季剩 14 天，冲 S2 还差 260 分" aria-label="赛季">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.3 9.4l6.1-.8L12 3z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：正在进行的一局（签名：降落中的方块）-->
+            <section class="hero" aria-label="当前对局">
+              <div class="hero__board" id="board" role="img" aria-label="游戏盘面：S 形方块正在降落，堆叠高度 5 行"></div>
+              <div class="hero__side">
+                <div class="hero__box">
+                  <span class="pixel-label">NEXT</span>
+                  <div class="hero__next" aria-hidden="true"><i class="b-orange"></i><i class="b-orange"></i><i class="b-blue"></i><i class="b-blue"></i></div>
+                </div>
+                <div class="hero__box">
+                  <span class="pixel-label">LINES</span>
+                  <b class="pixel-num" id="lineNum">38</b>
+                </div>
+                <div class="hero__box">
+                  <span class="pixel-label">LEVEL</span>
+                  <b class="pixel-num">7</b>
+                </div>
+              </div>
+              <div class="hero__foot">
+                <button class="btn-start" type="button" id="dropBtn">DROP ↓</button>
+                <button class="btn-ghost" type="button" data-toast="已开启幽灵块与 4向 旋转">设置</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="战绩">
+              <div class="duo__card">
+                <h2 class="duo__title">本局得分</h2>
+                <p class="duo__num" id="scoreNum">42,800</p>
+                <p class="duo__meta">TETRIS × 2 · T-SPIN × 1</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">历史最高</h2>
+                <p class="duo__num">126,400</p>
+                <p class="duo__meta">10-09 · 连消 4 收官</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：战绩列表 -->
+            <section class="feed" aria-label="战绩">
+              <div class="feed__head">
+                <h2 class="feed__title">最近对局</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="win">胜</button>
+                  <button class="chip" type="button" data-filter="lose">负</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="win">
+                  <span class="feed-item__glyph b-cyan"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">排位 · vs 深海发电机</span>
+                    <span class="feed-item__meta">2:41 · 对手 top out · PPS 2.1</span>
+                  </div>
+                  <em class="feed-item__result is-win">WIN</em>
+                </li>
+                <li class="feed-item" data-kind="win">
+                  <span class="feed-item__glyph b-green"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">单人马拉松 · 40 行</span>
+                    <span class="feed-item__meta">1:12.4 · 个人纪录刷新</span>
+                  </div>
+                  <em class="feed-item__result is-win">PB</em>
+                </li>
+                <li class="feed-item" data-kind="lose">
+                  <span class="feed-item__glyph b-purple"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">排位 · vs T spins 大师</span>
+                    <span class="feed-item__meta">1:58 · 被 T-SPIN 双消带走</span>
+                  </div>
+                  <em class="feed-item__result">LOSE</em>
+                </li>
+                <li class="feed-item" data-kind="win">
+                  <span class="feed-item__glyph b-yellow"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">排位 · vs 一格一格来</span>
+                    <span class="feed-item__meta">3:05 · 险胜 · 差 2 行</span>
+                  </div>
+                  <em class="feed-item__result is-win">WIN</em>
+                </li>
+                <li class="feed-item" data-kind="lose">
+                  <span class="feed-item__glyph b-red"></span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">排位 · vs 零点二秒</span>
+                    <span class="feed-item__meta">1:04 · 速度差距过大</span>
+                  </div>
+                  <em class="feed-item__result">LOSE</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="开一局">
+              <div class="chips chips--mode">
+                <button class="chip is-active" type="button">排位 1v1</button>
+                <button class="chip" type="button">40 行冲刺</button>
+                <button class="chip" type="button">无尽</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-start btn-start--wide" type="button" id="startBtn">START ▶</button>
+                <button class="btn-ghost" type="button" data-toast="已邀请 @深海发电机 到房间">邀请好友</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="对战">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="8" height="8"/><rect x="13" y="4" width="8" height="8"/><rect x="3" y="12" width="8" height="8"/><rect x="13" y="12" width="8" height="8"/></svg>
+              <span>对战</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="天梯">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg>
+              <span>天梯</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="开始" aria-label="开始">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 4l13 8-13 8V4z"/></svg>
+              <span>开始</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="残局">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/></svg>
+              <span>残局</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

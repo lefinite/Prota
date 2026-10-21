@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>ForestMind · 森系自然</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">森</span>
+                <div class="brand-text">
+                  <span class="brand-name">ForestMind</span>
+                  <span class="brand-sub">早安，愿你此刻宁静</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="打开设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero：正念呼吸引导（signature：温柔自然氛围） -->
+            <section class="breath-card" aria-label="正念时刻">
+              <div class="breath-circle">
+                <div class="breath-circle__inner" id="breathCircle"></div>
+                <span class="breath-label" id="breathLabel">吸气</span>
+              </div>
+              <p class="breath-text">跟随节奏，缓缓呼吸</p>
+              <p class="breath-sub">今日已冥想 12 分钟</p>
+            </section>
+
+            <!-- 自然声音卡 -->
+            <section class="sounds-section" aria-label="自然之声">
+              <div class="section-header">
+                <h2>自然之声</h2>
+                <span class="section-sub">选择陪伴你的声音</span>
+              </div>
+              <div class="sounds-grid">
+                <button class="sound-card sound-card--active" data-sound="rain" data-toast="播放雨声">
+                  <div class="sound-icon">雨</div>
+                  <span class="sound-name">细雨</span>
+                  <div class="sound-wave">
+                    <span></span><span></span><span></span>
+                  </div>
+                </button>
+                <button class="sound-card" data-sound="forest" data-toast="播放森林">
+                  <div class="sound-icon">林</div>
+                  <span class="sound-name">森林</span>
+                  <div class="sound-wave">
+                    <span></span><span></span><span></span>
+                  </div>
+                </button>
+                <button class="sound-card" data-sound="ocean" data-toast="播放海浪">
+                  <div class="sound-icon">海</div>
+                  <span class="sound-name">海浪</span>
+                  <div class="sound-wave">
+                    <span></span><span></span><span></span>
+                  </div>
+                </button>
+                <button class="sound-card" data-sound="wind" data-toast="播放风声">
+                  <div class="sound-icon">风</div>
+                  <span class="sound-name">微风</span>
+                  <div class="sound-wave">
+                    <span></span><span></span><span></span>
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            <!-- 冥想旅程 -->
+            <section class="journey-section" aria-label="冥想旅程">
+              <div class="section-header">
+                <h2>今日旅程</h2>
+                <span class="section-sub">继续你的练习</span>
+              </div>
+              <ul class="journey-list">
+                <li class="journey-item">
+                  <span class="journey-icon journey-icon--complete">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M16.7 5.3 8 14l-4.7-4.7L2 10.6l6 6 10-10-1.3-1.3z"/></svg>
+                  </span>
+                  <div class="journey-content">
+                    <span class="journey-title">晨间冥想 · 唤醒身心</span>
+                    <span class="journey-meta">已完成 · 8 分钟</span>
+                  </div>
+                  <span class="journey-badge">+25</span>
+                </li>
+                <li class="journey-item journey-item--current">
+                  <span class="journey-icon journey-icon--current">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 0a10 10 0 1 0 10 10A10 10 0 0 0 10 0zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm1-11h-2v4l3.5 2.2.8-1.3-2.3-1.4V7z"/></svg>
+                  </span>
+                  <div class="journey-content">
+                    <span class="journey-title">午间休息 · 重获平静</span>
+                    <span class="journey-meta">进行中 · 建议休息 10 分钟</span>
+                  </div>
+                  <button class="journey-start" data-toast="开始冥想">开始</button>
+                </li>
+                <li class="journey-item">
+                  <span class="journey-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 0a10 10 0 1 0 10 10A10 10 0 0 0 10 0zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm1-13h-2v6h6v-2h-4V5z"/></svg>
+                  </span>
+                  <div class="journey-content">
+                    <span class="journey-title">睡前引导 · 安然入梦</span>
+                    <span class="journey-meta">计划 · 20 分钟</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="sounds">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span>声音</span>
+            </button>
+            <button class="tab" data-tab="meditate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>冥想</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

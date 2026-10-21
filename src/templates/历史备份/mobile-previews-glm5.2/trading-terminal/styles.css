@@ -1,0 +1,351 @@
+/* =========================================================================
+ * mobile-previews/trading-terminal — Crypto Pro Trading Terminal
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/trading-terminal 的 :root token
+ * 页面：加密货币交易终端 · Dark-only, data-dense, sharp edges
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/trading-terminal）—— */
+  --bg: #0D0D0D;
+  --surface: #141414;
+  --surface-warm: #1A1A1A;
+  --fg: #FFFFFF;
+  --fg-2: #AAAAAA;
+  --muted: #828282;
+  --meta: #808086;
+  --border: #2A2A2A;
+  --border-soft: #1A1A1A;
+  --accent: #00D4AA;
+  --accent-on: #0D0D0D;
+  --accent-hover: #00C49A;
+  --accent-active: #00B08A;
+  --success: #00D4AA;
+  --warn: #FFB800;
+  --danger: #FF4757;
+  --gain: #00D4AA;
+  --loss: #FF4757;
+  --font-display: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-body: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 28px;
+  --text-3xl: 40px;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-pill: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: none;
+  --focus-ring: 0 0 0 2px var(--accent);
+  --motion-fast: 100ms;
+  --motion-base: 150ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* —— 手机外壳（与暗色终端协调）—— */
+  --page-backdrop-top: #0a0a0a;
+  --page-backdrop-bottom: #1a1a1a;
+  --phone-shell: #1a1a1a;
+  --phone-shell-edge: #2a2a2a;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.45);
+  --text-primary: var(--fg);
+  --text-secondary: var(--fg-2);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(0, 212, 170, 0.03), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 16px 104px; }
+
+/* ===== Page content · Crypto Pro Trading Terminal ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.topbar__brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 32px; height: 32px;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  color: var(--accent-on); background: var(--accent);
+  letter-spacing: 0;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-base); font-weight: 600; letter-spacing: 0.05em; }
+.brand-sub { font-size: 10px; color: var(--fg-2); margin-top: 2px; }
+
+.iconbtn {
+  position: relative; width: 36px; height: 36px;
+  display: grid; place-items: center; color: var(--fg);
+  border: 1px solid var(--border);
+  transition: border-color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 18px; height: 18px; }
+.iconbtn:active { background: var(--surface-warm); }
+.iconbtn__dot { position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; background: var(--warn); }
+
+/* Market Ticker (Signature) */
+.ticker-bar {
+  display: flex; gap: var(--space-6);
+  overflow-x: auto;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-3);
+  scrollbar-width: none;
+}
+.ticker-bar::-webkit-scrollbar { display: none; }
+.ticker-item {
+  display: flex; align-items: center; gap: var(--space-2);
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.ticker-symbol { font-size: 11px; font-weight: 600; color: var(--fg-2); letter-spacing: 0.1em; }
+.ticker-price { font-size: var(--text-sm); font-weight: 600; }
+.ticker-change { font-size: 10px; font-weight: 500; }
+.price-up { color: var(--gain); }
+.price-down { color: var(--loss); }
+.change-up { color: var(--gain); }
+.change-down { color: var(--loss); }
+
+/* Flash Animation for Price Updates */
+@keyframes flash-gain {
+  0% { background: var(--gain); color: var(--accent-on); }
+  100% { background: var(--surface); color: var(--gain); }
+}
+@keyframes flash-loss {
+  0% { background: var(--loss); color: var(--accent-on); }
+  100% { background: var(--surface); color: var(--loss); }
+}
+
+/* Price Card (Hero Signature) */
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.price-card__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
+.price-card__label { font-size: var(--text-sm); font-weight: 600; letter-spacing: 0.05em; }
+.price-card__tag { font-size: 10px; padding: 2px 6px; background: var(--surface-warm); color: var(--fg-2); }
+.price-card__value {
+  margin: var(--space-1) 0; font-family: var(--font-display);
+  font-size: var(--text-3xl); font-weight: 600; line-height: 1.0;
+  letter-spacing: -0.02em;
+}
+.price-sign { font-size: var(--text-xl); color: var(--fg-2); margin-right: 4px; }
+.price-decimal { font-size: var(--text-xl); color: var(--fg-2); }
+.price-card__change { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-base); font-weight: 600; }
+.price-card__change.positive { color: var(--gain); }
+.price-card__change.negative { color: var(--loss); }
+.price-card__change svg { width: 16px; height: 16px; }
+.change-amount { color: var(--fg-2); font-size: var(--text-sm); }
+
+/* Mini Chart */
+.mini-chart { margin-top: var(--space-3); height: 40px; }
+.chart-line { width: 100%; height: 100%; }
+.chart-line polyline { vector-effect: non-scaling-stroke; }
+
+.price-card__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.stat-item { display: flex; flex-direction: column; gap: 2px; }
+.stat-label { font-size: 10px; color: var(--fg-2); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-value { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; }
+
+/* Action Grid */
+.action-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.action-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: var(--space-3) var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+  transition: border-color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.action-btn svg { width: 18px; height: 18px; }
+.action-btn:active { background: var(--surface-warm); }
+.action-btn--buy { border-color: var(--gain); }
+.action-btn--buy svg { color: var(--gain); }
+.action-btn--sell { border-color: var(--loss); }
+.action-btn--sell svg { color: var(--loss); }
+.action-btn--swap svg, .action-btn--limit svg { color: var(--accent); }
+
+/* Order Book (Tabular Data Layout) */
+.order-book { margin-bottom: var(--space-4); }
+.order-book__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+.order-book__header h2 { margin: 0; font-size: var(--text-base); font-weight: 600; }
+.chips { display: inline-flex; gap: 2px; }
+.chip {
+  padding: 4px 10px; font-size: 10px; color: var(--fg-2); background: var(--surface);
+  border: 1px solid var(--border);
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); border-color: var(--accent); }
+
+.order-book__table { background: var(--surface); border: 1px solid var(--border); }
+.order-book__section { padding: var(--space-1) 0; }
+.order-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+}
+.order-row:last-child { border-bottom: 0; }
+.order-size { font-size: var(--text-sm); color: var(--fg-2); }
+.order-price { font-size: var(--text-sm); font-weight: 600; text-align: right; }
+.order-total { font-size: var(--text-sm); color: var(--fg-2); text-align: right; }
+.order-row--ask .order-price { color: var(--loss); }
+.order-row--bid .order-price { color: var(--gain); }
+
+.spread-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.spread-label { font-size: 10px; color: var(--fg-2); text-transform: uppercase; letter-spacing: 0.05em; }
+.spread-value { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; color: var(--accent); }
+
+/* Portfolio Card */
+.portfolio-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.portfolio-card__header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
+.portfolio-card__title { font-size: var(--text-sm); color: var(--fg-2); }
+.portfolio-card__value { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; }
+.portfolio-card__change { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-sm); font-weight: 600; }
+.portfolio-card__change.positive { color: var(--gain); }
+.change-icon { font-size: 12px; }
+.change-label { color: var(--fg-2); font-weight: 500; }
+
+.portfolio-card__list { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.portfolio-item {
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  font-family: var(--font-display);
+}
+.portfolio-symbol { font-size: var(--text-sm); font-weight: 600; }
+.portfolio-amount { font-size: var(--text-sm); color: var(--fg-2); }
+.portfolio-value { font-size: var(--text-sm); font-weight: 600; }
+
+.bottom-spacer { height: 12px; }
+
+/* Tab Navigation */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+  padding: 8px 8px 18px; background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--fg-2); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+.tab--fab {
+  justify-self: center; position: relative; top: -12px;
+  width: 48px; height: 48px;
+  background: var(--accent); color: var(--accent-on);
+  display: grid; place-items: center;
+  border: 1px solid var(--accent);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.tab--fab svg { width: 20px; height: 20px; }
+.tab--fab:active { background: var(--accent-active); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs); padding: 8px 14px;
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Animations */
+.price-card, .action-grid, .order-book, .portfolio-card { animation: fade-in 400ms var(--ease-standard) both; }
+.action-grid { animation-delay: 80ms; }
+.order-book { animation-delay: 160ms; }
+.portfolio-card { animation-delay: 240ms; }
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

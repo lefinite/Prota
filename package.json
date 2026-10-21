@@ -1,0 +1,26 @@
+{
+  "name": "readifyapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "agent:start": "node --env-file-if-exists=.env server/agent-server.mjs",
+    "agent:check": "node --check server/agent-server.mjs",
+    "drawio:theme-check": "node tools/drawio/audit-theme.mjs",
+    "mindmap:bundle": "esbuild portal/modules/mindmap/bundle-entry.js --bundle --format=esm --minify --outfile=portal/modules/mindmap/vendor/mindmap-react.bundle.mjs --log-level=warning",
+    "public": "bash scripts/start-public.sh",
+    "playwright:install": "npx playwright install chromium",
+    "release:prepare": "python3 tools/public-release.py"
+  },
+  "dependencies": {
+    "@codeany/open-agent-sdk": "^0.2.1",
+    "playwright": "^1.60.0"
+  },
+  "devDependencies": {
+    "@xiangfa/mindmap": "^0.6.5",
+    "esbuild": "^0.28.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "scheduler": "^0.27.0"
+  }
+}

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>幕间 · Dramatic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18V6l10-2v12" /><circle cx="7" cy="18" r="2.4" /><circle cx="17" cy="16" r="2.4" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">幕间</span>
+                <span class="brand-bar__sub">INTERMISSION · 今晚 2 场</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="电子票已放入「我的票夹」" aria-label="我的票夹">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 0 0 4 2 2 0 0 1-2 2H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 0 0-4z" /><path d="M13 7v2M13 12v2M13 17v2" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：聚光灯 · 今晚上演 -->
+            <section class="spotlight-card" aria-label="今晚上演">
+              <div class="spotlight-card__cone" aria-hidden="true"></div>
+              <div class="spotlight-card__floor" aria-hidden="true"></div>
+              <div class="spotlight-card__inner">
+                <span class="spotlight-card__eyebrow">今晚上演 · NOW SHOWING</span>
+                <h1 class="spotlight-card__title">哈姆雷特<br />机器</h1>
+                <p class="spotlight-card__sub">实验剧场 B 厅 · 110 分钟 · 无中场</p>
+                <div class="spotlight-card__countdown">
+                  <span class="spotlight-card__countdown-label">开演倒计时</span>
+                  <span class="spotlight-card__clock" id="showClock">02:14:36</span>
+                </div>
+                <div class="spotlight-card__actions">
+                  <button class="btn-spotlight" type="button" id="buyBtn">立即购票</button>
+                  <button class="btn-outline" type="button" id="waitBtn" aria-pressed="false">加入候补</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="票档与本周口碑">
+              <div class="duo-card">
+                <h2 class="duo-card__title">余票</h2>
+                <div class="seat-row" role="button" tabindex="0" data-seat="一楼池座" data-price="480" aria-pressed="false">
+                  <span class="seat-row__name">一楼池座</span>
+                  <b class="seat-row__price">¥480</b>
+                  <em class="seat-row__left">剩 12</em>
+                </div>
+                <div class="seat-row" role="button" tabindex="0" data-seat="二楼侧翼" data-price="280" aria-pressed="false">
+                  <span class="seat-row__name">二楼侧翼</span>
+                  <b class="seat-row__price">¥280</b>
+                  <em class="seat-row__left">剩 4</em>
+                </div>
+                <div class="seat-row" role="button" tabindex="0" data-seat="站席" data-price="80" aria-pressed="false">
+                  <span class="seat-row__name">站席</span>
+                  <b class="seat-row__price">¥80</b>
+                  <em class="seat-row__left">剩 26</em>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周口碑</h2>
+                <p class="duo-card__num">4.8<span> 分</span></p>
+                <div class="duo-card__meter" role="img" aria-label="口碑 4.8 分，满分 5">
+                  <span class="duo-card__meter-fill" style="--w: 96%"></span>
+                </div>
+                <p class="duo-card__note">2,316 人评价 ·「灯光是第三位演员」</p>
+              </div>
+            </section>
+
+            <!-- 4. 演出 Feed -->
+            <section class="feed" aria-label="演出列表">
+              <div class="feed__head">
+                <h2 class="feed__title">近期演出</h2>
+                <div class="chips" role="tablist" aria-label="筛选演出类型">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="play">话剧</button>
+                  <button class="chip" type="button" data-filter="musical">音乐剧</button>
+                  <button class="chip" type="button" data-filter="solo">独角戏</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="play">
+                  <span class="feed-item__poster" aria-hidden="true">海</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">海边的伽利略</span>
+                    <span class="feed-item__meta">8 月 22 日 · 先锋剧场 · 95 分钟 <em class="feed-item__chip" data-level="hot">热卖</em></span>
+                  </div>
+                  <b class="feed-item__price">¥180 起</b>
+                  <button class="feed-item__heart" type="button" aria-label="想看" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="musical">
+                  <span class="feed-item__poster" aria-hidden="true">夜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">夜半歌声 2026 巡演</span>
+                    <span class="feed-item__meta">8 月 24 日 · 大剧院 · 140 分钟 <em class="feed-item__chip" data-level="open">开票</em></span>
+                  </div>
+                  <b class="feed-item__price">¥280 起</b>
+                  <button class="feed-item__heart" type="button" aria-label="想看" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="solo">
+                  <span class="feed-item__poster" aria-hidden="true">我</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">我和我的房间</span>
+                    <span class="feed-item__meta">8 月 25 日 · 黑匣子 · 70 分钟 <em class="feed-item__chip" data-level="soon">即将</em></span>
+                  </div>
+                  <b class="feed-item__price">¥120 起</b>
+                  <button class="feed-item__heart is-on" type="button" aria-label="想看" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="play">
+                  <span class="feed-item__poster" aria-hidden="true">雪</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">雪，覆盖下的真相</span>
+                    <span class="feed-item__meta">8 月 29 日 · 先锋剧场 · 120 分钟 <em class="feed-item__chip" data-level="out">售罄</em></span>
+                  </div>
+                  <b class="feed-item__price feed-item__price--out">¥180 起</b>
+                  <button class="feed-item__heart" type="button" aria-label="想看" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="musical">
+                  <span class="feed-item__poster" aria-hidden="true">灯</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">灯塔情人</span>
+                    <span class="feed-item__meta">9 月 2 日 · 大剧院 · 130 分钟 <em class="feed-item__chip" data-level="open">开票</em></span>
+                  </div>
+                  <b class="feed-item__price">¥380 起</b>
+                  <button class="feed-item__heart" type="button" aria-label="想看" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.7-9.5-9C1 8.5 3 5 6.5 5c2 0 3.4 1 4.4 2.4h2.2C14.1 6 15.5 5 17.5 5 21 5 23 8.5 21.5 12c-2 4.3-9.5 9-9.5 9Z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="搜索与锁票">
+              <input class="search-input" id="searchInput" type="text" placeholder="搜索剧目、剧团、剧场……" />
+              <div class="action-row">
+                <button class="btn-spotlight" type="button" id="lockBtn">锁定今晚的票</button>
+                <button class="btn-outline" type="button" data-toast="候补名单共 87 人，有余票会第一时间通知">候补 87 人</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="剧目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9.5h18M8 3v4M16 3v4" />
+              </svg>
+              <span>剧目</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="购票">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 0 0 4 2 2 0 0 1-2 2H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 0 0-4z" /><path d="M13 7v2M13 12v2M13 17v2" />
+              </svg>
+              <span>购票</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="灯光" aria-label="灯光提醒">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.8.6 1.5 1.6 1.5 2.6h4c0-1 .7-2 1.5-2.6A6 6 0 0 0 12 3z" />
+              </svg>
+              <span>灯光</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="场刊">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4z" /><path d="M5 4v13a3 3 0 0 0 3 3" /><path d="M9 9h6M9 13h4" />
+              </svg>
+              <span>场刊</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

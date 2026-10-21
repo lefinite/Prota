@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>星轨 · Futuristic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="2.2" />
+                  <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-24 12 12)" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">星轨</span>
+                <span class="brand-bar__sub">08-15 · 夜间观测 · 天台</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已锁定当前位置 · 39.9°N 116.4°E" aria-label="重新定位">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                  <circle cx="12" cy="12" r="8" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：雷达扫描 -->
+            <section class="radar-card" aria-label="下次过境">
+              <div class="radar" role="img" aria-label="雷达扫描，下一次过境 19 点 42 分，国际空间站从西南向东北方向">
+                <span class="radar__sweep" aria-hidden="true"></span>
+                <span class="radar__axis radar__axis--h" aria-hidden="true"></span>
+                <span class="radar__axis radar__axis--v" aria-hidden="true"></span>
+                <i class="radar__blip" style="--x: 30%; --y: 34%" aria-hidden="true"></i>
+                <i class="radar__blip" style="--x: 68%; --y: 58%; --d: 1.4s" aria-hidden="true"></i>
+                <i class="radar__blip" style="--x: 44%; --y: 72%; --d: 2.6s" aria-hidden="true"></i>
+                <b class="radar__readout">19:42</b>
+              </div>
+              <div class="radar-card__rows">
+                <div class="radar-card__row"><span>目标</span><b>ISS 国际空间站</b></div>
+                <div class="radar-card__row"><span>方位</span><b>西南 → 东北 · 仰角 64°</b></div>
+                <div class="radar-card__row"><span>可见时长</span><b>5 分 12 秒 · 亮度 -3.2 等</b></div>
+              </div>
+              <button class="radar-card__track" type="button" id="trackBtn" aria-pressed="false">追踪此目标</button>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="观测条件与在轨目标">
+              <div class="duo-card">
+                <h2 class="duo-card__title">观测条件</h2>
+                <div class="cond-row">
+                  <div class="cond-row__head"><span>云量</span><b>12%</b></div>
+                  <div class="cond-row__track"><span class="cond-row__fill" style="--w: 12%"></span></div>
+                </div>
+                <div class="cond-row">
+                  <div class="cond-row__head"><span>视宁度</span><b>II 级 · 良好</b></div>
+                </div>
+                <div class="cond-row">
+                  <div class="cond-row__head"><span>月相</span><b>残月 22%</b></div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">在轨目标</h2>
+                <div class="stat-row">
+                  <div class="stat"><b>3</b><span>跟踪中</span></div>
+                  <div class="stat"><b>14</b><span>今晚过境</span></div>
+                </div>
+                <p class="duo-card__note">信号链路良好 · 上次同步 09:41</p>
+              </div>
+            </section>
+
+            <!-- 4. 过境预报 Feed -->
+            <section class="feed" aria-label="过境预报">
+              <div class="feed__head">
+                <h2 class="feed__title">过境预报</h2>
+                <div class="chips" role="tablist" aria-label="筛选过境">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="vis">肉眼可见</button>
+                  <button class="chip" type="button" data-filter="hard">需双筒</button>
+                  <button class="chip" type="button" data-filter="low">太低</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="vis">
+                  <span class="feed-item__id" aria-hidden="true">25544</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">ISS 国际空间站</span>
+                    <span class="feed-item__meta">19:42 · 西南 → 东北 · -3.2 等</span>
+                  </div>
+                  <em class="feed-item__chip">可见</em>
+                  <button class="feed-item__track" type="button" aria-label="追踪此目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="vis">
+                  <span class="feed-item__id" aria-hidden="true">48274</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">CSS 天宫空间站</span>
+                    <span class="feed-item__meta">20:31 · 南 → 东 · -1.8 等</span>
+                  </div>
+                  <em class="feed-item__chip">可见</em>
+                  <button class="feed-item__track" type="button" aria-label="追踪此目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="hard">
+                  <span class="feed-item__id" aria-hidden="true">20580</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">HST 哈勃望远镜</span>
+                    <span class="feed-item__meta">21:15 · 西 → 北 · +1.2 等</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="hard">需双筒</em>
+                  <button class="feed-item__track" type="button" aria-label="追踪此目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="low">
+                  <span class="feed-item__id" aria-hidden="true">52-3042</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">STARLINK 3042</span>
+                    <span class="feed-item__meta">21:58 · 西北 · 仰角 11°</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="low">太低</em>
+                  <button class="feed-item__track" type="button" aria-label="追踪此目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="hard">
+                  <span class="feed-item__id" aria-hidden="true">33591</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">NOAA 19 气象星</span>
+                    <span class="feed-item__meta">22:40 · 南 → 东南 · +2.1 等</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="hard">需双筒</em>
+                  <button class="feed-item__track" type="button" aria-label="追踪此目标" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="目标检索">
+              <input class="quick-input" id="noradInput" type="text" placeholder="输入 NORAD 编号，如 25544…" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="issBtn">追踪 ISS</button>
+                <button class="btn-ghost" type="button" data-toast="罗盘已校准 · 指向真北 ±2°">校准罗盘</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="天空">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 0 0 4.3 12 3.5 3.5 0 0 0 6 19z" />
+                <path d="M8 22h4M6 22h1M13 22h1" />
+              </svg>
+              <span>天空</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="目标">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="7" />
+                <circle cx="12" cy="12" r="2.5" />
+                <path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21" />
+              </svg>
+              <span>目标</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="扫描" aria-label="扫描天空">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M4 12a8 8 0 0 1 16 0" />
+                <path d="M8 12a4 4 0 0 1 8 0" />
+                <path d="M12 12h.01" />
+              </svg>
+              <span>扫描</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="星图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 17l5-5 4 3 4-6 5 4" />
+                <path d="M8 12V8M12 15v-4" />
+              </svg>
+              <span>星图</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

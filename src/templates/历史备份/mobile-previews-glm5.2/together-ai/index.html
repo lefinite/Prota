@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Together AI · AI Infrastructure</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">together</span>
+                <div class="brand-text">
+                  <span class="brand-name">Together AI</span>
+                  <span class="brand-sub">Open-Source AI Infrastructure</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置 · 即将开放">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 区域 - pastel gradient background -->
+            <section class="hero-section" aria-label="平台概览">
+              <div class="hero-gradient"></div>
+              <div class="hero-content">
+                <p class="hero-label">RESEARCH PAPERS</p>
+h1 class="hero-title">The Future of AI Infrastructure</h1>
+                <p class="hero-desc">Building the foundation for open-source AI at scale. Faster inference, lower costs, complete control.</p>
+                <button class="btn-hero" data-toast="开始构建 · 即将跳转">
+                  <span>Get Started</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 性能统计条 -->
+            <section class="stats-bar" aria-label="性能指标">
+              <div class="stat-item">
+                <span class="stat-value">2x</span>
+                <span class="stat-label">Faster Inference</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">60%</span>
+                <span class="stat-label">Cost Reduction</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">90%</span>
+                <span class="stat-label">Open Models</span>
+              </div>
+            </section>
+
+            <!-- 研究论文卡片 - Dark section -->
+            <section class="research-section" aria-label="研究论文">
+              <div class="section-header">
+                <span class="section-label">LATEST RESEARCH</span>
+                <h2 class="section-title">Recent Papers</h2>
+              </div>
+
+              <div class="paper-list">
+                <article class="paper-card">
+                  <span class="paper-badge">NEW</span>
+                  <h3 class="paper-title">Red Teaming Visual Language Models</h3>
+                  <p class="paper-authors">Together Research Team · August 2024</p>
+                  <div class="paper-meta">
+                    <span class="paper-tag">Safety</span>
+                    <span class="paper-tag">Multimodal</span>
+                  </div>
+                </article>
+
+                <article class="paper-card">
+                  <h3 class="paper-title">Optimizing LLM Inference at Scale</h3>
+                  <p class="paper-authors">Chen et al. · July 2024</p>
+                  <div class="paper-meta">
+                    <span class="paper-tag">Performance</span>
+                    <span class="paper-tag">Infrastructure</span>
+                  </div>
+                </article>
+
+                <article class="paper-card">
+                  <h3 class="paper-title">The Case for Open Source LLMs</h3>
+                  <p class="paper-authors">Together AI · June 2024</p>
+                  <div class="paper-meta">
+                    <span class="paper-tag">Open Source</span>
+                    <span class="paper-tag">Industry</span>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <!-- 模型列表 -->
+            <section class="models-section" aria-label="可用模型">
+              <div class="section-header-light">
+                <span class="section-label-light">AVAILABLE MODELS</span>
+                <h2 class="section-title-light">Open Models</h2>
+              </div>
+
+              <div class="model-list">
+                <div class="model-card" data-model="llama">
+                  <div class="model-header">
+                    <span class="model-name">Llama 3.1 405B</span>
+                    <span class="model-tag">Popular</span>
+                  </div>
+                  <p class="model-desc">The largest open model ever released. Optimized for Together.</p>
+                  <button class="btn-model" data-toast="启动 Llama 3.1">Launch</button>
+                </div>
+
+                <div class="model-card" data-model="mixtral">
+                  <div class="model-header">
+                    <span class="model-name">Mixtral 8x7B</span>
+                    <span class="model-tag">Fast</span>
+                  </div>
+                  <p class="model-desc">Mixture of Experts architecture with exceptional efficiency.</p>
+                  <button class="btn-model" data-toast="启动 Mixtral">Launch</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-area">
+              <button class="btn-primary" data-toast="查看完整文档">
+                <span>View Documentation</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>Home</span>
+            </button>
+            <button class="tab" data-tab="models">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+              <span>Models</span>
+            </button>
+            <button class="tab" data-tab="research">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+              <span>Research</span>
+            </button>
+            <button class="tab" data-tab="pricing">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+              <span>Pricing</span>
+            </button>
+            <button class="tab" data-tab="account">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <span>Account</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

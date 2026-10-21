@@ -1,0 +1,517 @@
+/* ============================================================
+ * 生活簿 · 小红书 — mobile preview
+ * token 来源：design-systems/xiaohongshu/tokens.css
+ * 双列错落瀑布流 · 唯一品牌红 · 大圆角无阴影 · 半透明中性色
+ * ============================================================ */
+
+:root {
+  /* ─── Xiaohongshu tokens ────────────────────────────── */
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-warm: #fafafa;
+  --fg: rgba(0, 0, 0, 0.8);
+  --fg-2: rgba(0, 0, 0, 0.62);
+  --muted: rgba(0, 0, 0, 0.45);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-soft: rgba(0, 0, 0, 0.05);
+  --accent: #ff2442;
+  --accent-on: #ffffff;
+  --accent-hover: #ff2e4d;
+  --accent-active: #e6203a;
+  --success: #02b940;
+  --warn: #ff9500;
+  --danger: #ff2442;
+  --font-display: "PingFang SC", -apple-system, "Hiragino Sans GB", sans-serif;
+  --font-body: "PingFang SC", -apple-system, "Hiragino Sans GB", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --radius: 14px;
+  --focus-ring: 0 0 0 3px rgba(255, 36, 66, 0.25);
+  --motion-fast: 140ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ─── 手机壳 ───────────────────────────────────────── */
+  --page-backdrop-top: #ececec;
+  --page-backdrop-bottom: #d8d8d8;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e9e9e9;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.16);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background: linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* ===== Shared mobile frame ===== */
+.demo-stage {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.phone-shell {
+  position: relative;
+  width: 382px;
+  height: 826px;
+  padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--screen-radius);
+  background: var(--phone-screen);
+}
+
+.status-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 0;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.status-bar__time {
+  min-width: 54px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.status-bar__island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  border-radius: 999px;
+  background: #111217;
+  transform: translateX(-50%);
+}
+
+.status-bar__right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 74px;
+}
+
+.status-bar__icon {
+  width: 15px;
+  height: 15px;
+}
+
+.battery {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border: 1.8px solid currentColor;
+  border-radius: 4px;
+}
+
+.battery::before {
+  content: "";
+  position: absolute;
+  inset: 2px 6px 2px 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.battery::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -4px;
+  width: 2px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: auto;
+  padding: 64px 12px 120px;
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage {
+    padding: 0;
+  }
+
+  .phone-shell {
+    width: min(100vw, 382px);
+    height: min(100vh, 826px);
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--phone-screen);
+  }
+
+  .phone-screen {
+    border-radius: 0;
+  }
+}
+
+/* ===== 1. 顶栏 ===== */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 2px 4px 10px;
+}
+
+.topbar__tab {
+  font-size: var(--text-base);
+  color: var(--muted);
+  font-weight: 500;
+  position: relative;
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+.topbar__tab.is-active {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.topbar__tab.is-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -4px;
+  width: 20px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.topbar__search {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(48, 48, 52, 0.06);
+  display: grid;
+  place-items: center;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+
+.topbar__search svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ===== 分类 chips ===== */
+.chips {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+}
+
+.chip {
+  padding: 6px 15px;
+  border-radius: 999px;
+  background: rgba(48, 48, 52, 0.05);
+  color: var(--fg-2);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+
+.chip.is-active {
+  background: var(--fg);
+  color: #fff;
+}
+
+/* ===== 3+4. 瀑布流 ===== */
+.falls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.note {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.note:active {
+  transform: scale(0.98);
+}
+
+/* 图高错落 —— 瀑布流签名 */
+.note__img {
+  width: 100%;
+  display: block;
+}
+
+.m1 { height: 172px; background: linear-gradient(160deg, #f6dfa5, #d9a75b 60%, #8f6b3a); }
+.m2 { height: 208px; background: linear-gradient(160deg, #d8c3b2, #a4876f 65%, #6b5648); }
+.m3 { height: 140px; background: linear-gradient(160deg, #e8e2d5, #b9b0a0 60%, #7d766a); }
+.m4 { height: 186px; background: linear-gradient(160deg, #f4c7b6, #d98a72 55%, #8f4a3a); }
+.m5 { height: 152px; background: linear-gradient(160deg, #bcd9e8, #7fa8c4 60%, #4a6b85); }
+.m6 { height: 196px; background: linear-gradient(160deg, #e5d5c0, #c2a98d 55%, #84705c); }
+
+.note__title {
+  margin: 0;
+  padding: 9px 11px 6px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--fg);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 11px 10px;
+}
+
+.note__user {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.note__user i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.u1 { background: #e8b04b; }
+.u2 { background: #8d6cab; }
+.u3 { background: #6f9c6b; }
+.u4 { background: #d98a72; }
+.u5 { background: #7fa8c4; }
+.u6 { background: #c2a98d; }
+
+.like {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  cursor: pointer;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.like svg {
+  width: 15px;
+  height: 15px;
+}
+
+.like.is-on {
+  color: var(--accent);
+}
+
+.like.is-on svg {
+  fill: currentColor;
+  animation: heart 320ms var(--ease-standard);
+}
+
+@keyframes heart {
+  40% {
+    transform: scale(1.3);
+  }
+}
+
+/* ===== 5. 操作区 ===== */
+.action {
+  margin-top: 12px;
+}
+
+.action__row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 10px;
+}
+
+.pill {
+  padding: 13px 16px;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-red {
+  background: var(--accent);
+  color: var(--accent-on);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.btn-red:active {
+  background: var(--accent-active);
+}
+
+.btn-light {
+  background: rgba(48, 48, 52, 0.05);
+  color: var(--fg-2);
+}
+
+/* ===== 6. 底部 Tab ===== */
+.tabbar {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  height: 78px;
+  padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0));
+  background: var(--surface-warm);
+  border-top: 1px solid var(--border);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tabbar__item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tabbar__item.is-active {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* ===== toast ===== */
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 30;
+  max-width: 82%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== 无障碍与动效降级 ===== */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 隐藏滚动条（真机 App 观感）===== */
+* {
+  scrollbar-width: none !important;
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}

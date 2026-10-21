@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>FlowSync · Composio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">⚡</span>
+                <div class="brand-text">
+                  <span class="brand-name">FlowSync</span>
+                  <span class="brand-sub">v2.4.0</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </button>
+            </header>
+
+            <!-- 终端状态卡片（signature：发光的集成状态监控） -->
+            <section class="terminal-card" aria-label="集成状态监控">
+              <div class="terminal-header">
+                <span class="terminal-title">集成状态</span>
+                <span class="terminal-badge">在线</span>
+              </div>
+              <div class="terminal-body">
+                <div class="terminal-line">
+                  <span class="terminal-prompt">$</span>
+                  <span class="terminal-cmd">flowsync status --monitor</span>
+                </div>
+                <div class="terminal-output">
+                  <span class="output-success">✓</span> GitHub: 已连接
+                  <span class="pulse-dot pulse-dot--green"></span>
+                </div>
+                <div class="terminal-output">
+                  <span class="output-success">✓</span> Slack: 运行中
+                  <span class="pulse-dot pulse-dot--green"></span>
+                </div>
+                <div class="terminal-output">
+                  <span class="output-warn">⚠</span> Jira: 待授权
+                  <span class="pulse-dot pulse-dot--amber"></span>
+                </div>
+                <div class="terminal-stats">
+                  <span class="stat-item">
+                    <span class="stat-num">24</span>
+                    <span class="stat-label">活跃工作流</span>
+                  </span>
+                  <span class="stat-item">
+                    <span class="stat-num">1.2k</span>
+                    <span class="stat-label">今日执行</span>
+                  </span>
+                  <span class="stat-item">
+                    <span class="stat-num">99.9%</span>
+                    <span class="stat-label">成功率</span>
+                  </span>
+                </div>
+              </div>
+              <div class="terminal-footer">
+                <span class="terminal-time">上次检查: 2秒前</span>
+                <button class="terminal-btn" data-toast="正在刷新状态...">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 工作流卡片 -->
+            <section class="workflow-grid">
+              <div class="workflow-card">
+                <div class="workflow-header">
+                  <span class="workflow-icon workflow-icon--deploy">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+                  </span>
+                  <span class="workflow-name">自动部署</span>
+                </div>
+                <div class="workflow-meta">
+                  <code class="mono-tag">prod</code>
+                  <span class="workflow-count">142 次运行</span>
+                </div>
+                <div class="workflow-status">
+                  <span class="status-dot status-dot--active"></span>
+                  <span>运行中</span>
+                </div>
+              </div>
+
+              <div class="workflow-card">
+                <div class="workflow-header">
+                  <span class="workflow-icon workflow-icon--notif">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  </span>
+                  <span class="workflow-name">PR 通知</span>
+                </div>
+                <div class="workflow-meta">
+                  <code class="mono-tag">slack</code>
+                  <span class="workflow-count">89 次运行</span>
+                </div>
+                <div class="workflow-status">
+                  <span class="status-dot status-dot--active"></span>
+                  <span>运行中</span>
+                </div>
+              </div>
+
+              <div class="workflow-card">
+                <div class="workflow-header">
+                  <span class="workflow-icon workflow-icon--sync">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                  </span>
+                  <span class="workflow-name">数据同步</span>
+                </div>
+                <div class="workflow-meta">
+                  <code class="mono-tag">airtable</code>
+                  <span class="workflow-count">56 次运行</span>
+                </div>
+                <div class="workflow-status">
+                  <span class="status-dot status-dot--idle"></span>
+                  <span>空闲</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 执行记录列表 -->
+            <section class="execution-list" aria-label="执行记录">
+              <div class="list-header">
+                <h2>最近执行</h2>
+                <div class="chips" id="execChips" role="tablist">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="success" role="tab" aria-selected="false">成功</button>
+                  <button class="chip" data-filter="error" role="tab" aria-selected="false">失败</button>
+                </div>
+              </div>
+
+              <ul class="exec-list" id="execList">
+                <li class="exec" data-type="success">
+                  <span class="exec-icon exec-icon--success">✓</span>
+                  <div class="exec-main">
+                    <span class="exec-title">deploy-production</span>
+                    <span class="exec-sub">今天 10:32 · GitHub → Slack</span>
+                  </div>
+                  <span class="exec-time">2.3s</span>
+                </li>
+                <li class="exec" data-type="success">
+                  <span class="exec-icon exec-icon--success">✓</span>
+                  <div class="exec-main">
+                    <span class="exec-title">notify-pr-merged</span>
+                    <span class="exec-sub">今天 09:15 · GitHub Actions</span>
+                  </div>
+                  <span class="exec-time">0.8s</span>
+                </li>
+                <li class="exec" data-type="error">
+                  <span class="exec-icon exec-icon--error">✕</span>
+                  <div class="exec-main">
+                    <span class="exec-title">sync-jira-tickets</span>
+                    <span class="exec-sub">今天 08:47 · Jira API</span>
+                  </div>
+                  <span class="exec-time">超时</span>
+                </li>
+                <li class="exec" data-type="success">
+                  <span class="exec-icon exec-icon--success">✓</span>
+                  <div class="exec-main">
+                    <span class="exec-title">backup-database</span>
+                    <span class="exec-sub">昨天 23:00 · 定时任务</span>
+                  </div>
+                  <span class="exec-time">45s</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="btn-primary" data-toast="创建工作流向导已打开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+                新建工作流
+              </button>
+              <button class="btn-secondary" data-toast="工作流模板库">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                模板库
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="dashboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              <span>仪表盘</span>
+            </button>
+            <button class="tab" data-tab="flows">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              <span>工作流</span>
+            </button>
+            <button class="tab tab--fab" data-tab="run" aria-label="运行工作流">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+            </button>
+            <button class="tab" data-tab="logs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+              <span>日志</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

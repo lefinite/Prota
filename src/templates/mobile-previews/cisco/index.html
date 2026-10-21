@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>网枢 NOC · Cisco</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__bars"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">网枢 NOC</span>
+                <span class="brand-bar__sub">GLOBAL BACKBONE · 42 边缘节点</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="数据已刷新 · 延迟 11.2ms" aria-label="刷新数据">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                  <path d="M21 4v5h-5" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：全网健康遥测 -->
+            <section class="tele-card" aria-label="全网健康度">
+              <div class="tele-card__head">
+                <span class="tele-card__eyebrow">NETWORK HEALTH · LAST 24H</span>
+                <span class="tele-card__delta" data-kind="up">▲ 0.014</span>
+              </div>
+              <p class="tele-card__metric"><span class="tele-card__num">99.982</span><span class="tele-card__unit">%</span></p>
+              <svg class="tele-card__spark" viewBox="0 0 320 60" preserveAspectRatio="none" role="img" aria-label="24 小时可用率曲线，稳定在 99.9% 以上，当前 99.982%">
+                <polygon class="spark-area" points="0,52 0,38 26,34 52,37 78,30 104,32 130,26 156,29 182,22 208,25 234,19 260,23 286,17 314,19 314,52" />
+                <polyline class="spark-line" pathLength="100" points="0,38 26,34 52,37 78,30 104,32 130,26 156,29 182,22 208,25 234,19 260,23 286,17 314,19" />
+                <circle class="spark-dot" cx="314" cy="19" r="3.5" />
+              </svg>
+              <div class="tele-card__foot">
+                <span>P95 延迟 <b>11.2ms</b></span>
+                <span>丢包 <b>0.01%</b></span>
+                <span>抖动 <b>0.8ms</b></span>
+              </div>
+            </section>
+
+            <!-- 3. 双内容卡：活动告警 / 骨干吞吐 -->
+            <section class="duo-grid" aria-label="告警与吞吐">
+              <div class="panel">
+                <h2 class="panel__title">活动告警</h2>
+                <div class="alert-row">
+                  <i class="alert-dot" data-level="warn"></i>
+                  <div class="alert-row__body">
+                    <span class="alert-row__name">SJC-02 · BGP 抖动</span>
+                    <span class="alert-row__meta">04:47 · 已切备路</span>
+                  </div>
+                </div>
+                <div class="alert-row">
+                  <i class="alert-dot" data-level="info"></i>
+                  <div class="alert-row__body">
+                    <span class="alert-row__name">FRA-05 · 链路延迟 +18%</span>
+                    <span class="alert-row__meta">昨夜 23:05 · 观察中</span>
+                  </div>
+                </div>
+                <p class="panel__foot">过去 1 小时新增 2 · 自动抑制开启</p>
+              </div>
+              <div class="panel">
+                <h2 class="panel__title">骨干吞吐</h2>
+                <p class="panel__big">84<span> Gbps</span></p>
+                <div class="cap-bars" role="img" aria-label="近 7 个采样点吞吐，最新一点高亮">
+                  <i style="--h: 46%"></i>
+                  <i style="--h: 58%"></i>
+                  <i style="--h: 52%"></i>
+                  <i style="--h: 70%"></i>
+                  <i style="--h: 62%"></i>
+                  <i style="--h: 84%"></i>
+                  <i class="is-now" style="--h: 100%"></i>
+                </div>
+                <p class="panel__foot">峰值 91 Gbps · 03:00</p>
+              </div>
+            </section>
+
+            <!-- 4. 事件流 Feed -->
+            <section class="feed" aria-label="事件流">
+              <div class="feed__head">
+                <h2 class="feed__title">事件流</h2>
+                <div class="chips" role="tablist" aria-label="筛选事件">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="ok">正常</button>
+                  <button class="chip" type="button" data-filter="watch">观察</button>
+                  <button class="chip" type="button" data-filter="maint">维护</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="ok">
+                  <span class="feed-item__node" aria-hidden="true">LAX-01</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">固件 17.6 灰度推送完成</span>
+                    <span class="feed-item__meta">03:12 · 自动滚动 <em class="feed-item__chip" data-kind="ok">正常</em></span>
+                  </div>
+                  <b class="feed-item__value">99.99%</b>
+                  <button class="feed-item__claim" type="button" aria-pressed="false">认领</button>
+                </li>
+                <li class="feed-item" data-kind="watch">
+                  <span class="feed-item__node" aria-hidden="true">SJC-02</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">BGP 会话抖动，已切换备路</span>
+                    <span class="feed-item__meta">04:47 · 3 次震荡 <em class="feed-item__chip" data-kind="watch">观察</em></span>
+                  </div>
+                  <b class="feed-item__value">11.2ms</b>
+                  <button class="feed-item__claim" type="button" aria-pressed="false">认领</button>
+                </li>
+                <li class="feed-item" data-kind="watch">
+                  <span class="feed-item__node" aria-hidden="true">FRA-05</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">跨大西洋链路延迟升高</span>
+                    <span class="feed-item__meta">昨夜 23:05 · 4 条线路 <em class="feed-item__chip" data-kind="watch">观察</em></span>
+                  </div>
+                  <b class="feed-item__value">14.8ms</b>
+                  <button class="feed-item__claim" type="button" aria-pressed="false">认领</button>
+                </li>
+                <li class="feed-item" data-kind="ok">
+                  <span class="feed-item__node" aria-hidden="true">SIN-03</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">新节点上线，纳管完成</span>
+                    <span class="feed-item__meta">昨天 18:30 · 自动发现 <em class="feed-item__chip" data-kind="ok">正常</em></span>
+                  </div>
+                  <b class="feed-item__value">8.4ms</b>
+                  <button class="feed-item__claim" type="button" aria-pressed="false">认领</button>
+                </li>
+                <li class="feed-item" data-kind="maint">
+                  <span class="feed-item__node" aria-hidden="true">NYC-04</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">计划维护窗口</span>
+                    <span class="feed-item__meta">明天 02:00–04:00 · 变更 #4168 <em class="feed-item__chip" data-kind="maint">维护</em></span>
+                  </div>
+                  <b class="feed-item__value">—</b>
+                  <button class="feed-item__claim" type="button" aria-pressed="false">认领</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="运维操作">
+              <input class="search-input" id="searchInput" type="text" placeholder="搜索节点、IP 或事件编号……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="deployBtn">部署变更</button>
+                <button class="btn-outline" type="button" data-toast="巡检报告生成中 · 完成后推送至邮箱">巡检报告</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="总览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+                <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+              </svg>
+              <span>总览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="拓扑">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="5" r="2.2" /><circle cx="5" cy="18" r="2.2" /><circle cx="19" cy="18" r="2.2" />
+                <path d="M12 7.2v4.3M10.5 13l-4 3.2M13.5 13l4 3.2" />
+              </svg>
+              <span>拓扑</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="告警">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6z" />
+                <path d="M10.5 20a1.8 1.8 0 0 0 3 0" />
+              </svg>
+              <span>告警</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>晨光阅读 · Modern</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">晨光阅读</span>
+                  <span class="brand-sub">早安，Ping</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索 · 即将打开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero 卡（signature：紫色主色 + serif 编辑风格） -->
+            <section class="hero-card" aria-label="今日推荐">
+              <p class="hero-card__eyebrow">TODAY'S PICK</p>
+              <h1 class="hero-card__title">设计原则：少即是多</h1>
+              <p class="hero-card__desc">探索极简主义设计背后的哲学，如何在复杂世界中找到本质之美</p>
+              <div class="hero-card__meta">
+                <span class="author">
+                  <span class="author__avatar">JD</span>
+                  John Doe · 8 min read
+                </span>
+                <button class="bookmark-btn" aria-label="收藏" data-toast="已收藏">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                </button>
+              </div>
+              <div class="hero-card__decor">
+                <span class="decor-dot"></span>
+                <span class="decor-line"></span>
+                <span class="decor-dot"></span>
+              </div>
+            </section>
+
+            <!-- 分类卡片 -->
+            <section class="category-row">
+              <button class="category-card" data-filter="tech">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span>科技</span>
+              </button>
+              <button class="category-card" data-filter="design">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                <span>设计</span>
+              </button>
+              <button class="category-card" data-filter="business">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>商业</span>
+              </button>
+              <button class="category-card" data-filter="culture">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>文化</span>
+              </button>
+            </section>
+
+            <!-- 文章列表 -->
+            <section class="article-block" aria-label="精选文章">
+              <div class="article-block__head">
+                <h2>精选文章</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选文章">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="unread" role="tab" aria-selected="false">未读</button>
+                  <button class="chip" data-filter="saved" role="tab" aria-selected="false">收藏</button>
+                </div>
+              </div>
+
+              <ul class="article-list" id="articleList">
+                <li class="article" data-type="unread">
+                  <div class="article__cover">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                  </div>
+                  <div class="article__main">
+                    <span class="article__category">科技</span>
+                    <span class="article__title">AI 时代的代码重构指南</span>
+                    <span class="article__sub">Tech Review · 12 min read</span>
+                  </div>
+                  <div class="article__right">
+                    <button class="save-btn" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="article" data-type="saved">
+                  <div class="article__cover">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  </div>
+                  <div class="article__main">
+                    <span class="article__category">设计</span>
+                    <span class="article__title">色彩心理学在产品设计中的应用</span>
+                    <span class="article__sub">Design Weekly · 8 min read</span>
+                  </div>
+                  <div class="article__right">
+                    <button class="save-btn is-saved" aria-label="取消收藏" data-toast="已取消收藏">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="article" data-type="unread">
+                  <div class="article__cover">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                  <div class="article__main">
+                    <span class="article__category">商业</span>
+                    <span class="article__title">2024 创业趋势分析</span>
+                    <span class="article__sub">Business Insider · 15 min read</span>
+                  </div>
+                  <div class="article__right">
+                    <button class="save-btn" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="article" data-type="saved">
+                  <div class="article__cover">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  </div>
+                  <div class="article__main">
+                    <span class="article__category">文化</span>
+                    <span class="article__title">传统工艺与现代设计的融合</span>
+                    <span class="article__sub">Culture · 10 min read</span>
+                  </div>
+                  <div class="article__right">
+                    <button class="save-btn is-saved" aria-label="取消收藏" data-toast="已取消收藏">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+                <li class="article" data-type="unread">
+                  <div class="article__cover">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  </div>
+                  <div class="article__main">
+                    <span class="article__category">科技</span>
+                    <span class="article__title">远程协作的最佳实践</span>
+                    <span class="article__sub">Productivity · 6 min read</span>
+                  </div>
+                  <div class="article__right">
+                    <button class="save-btn" aria-label="收藏" data-toast="已收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 阅读进度 -->
+            <section class="progress-card" aria-label="本周阅读">
+              <div class="progress-card__head">
+                <span class="progress-card__title">本周阅读</span>
+                <span class="progress-card__num">3.5 <span class="muted">小时</span></span>
+              </div>
+              <div class="progress-card__bar" aria-hidden="true">
+                <span class="progress-card__bar-fill" style="--p: 58%"></span>
+              </div>
+              <p class="progress-card__note">目标 6 小时，继续保持！</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="新建笔记">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>书架</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

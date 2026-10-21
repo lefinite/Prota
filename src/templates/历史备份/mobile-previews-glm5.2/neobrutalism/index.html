@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>CRAFTER · Neobrutalism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 - 粗犷风 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">★</span>
+                <div class="brand-text">
+                  <span class="brand-name">CRAFTER</span>
+                  <span class="brand-sub">创作工坊</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="消息" data-toast="3 条新消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__badge">3</span>
+              </button>
+            </header>
+
+            <!-- Hero signature：大胆的创作者卡片 -->
+            <section class="creator-card" aria-label="创作概览">
+              <div class="creator-header">
+                <span class="creator-title">本周创作</span>
+                <span class="creator-tag">PRO</span>
+              </div>
+              <div class="creator-display">
+                <div class="creator-stat">
+                  <span class="creator-num">12</span>
+                  <span class="creator-label">作品</span>
+                </div>
+                <div class="creator-divider"></div>
+                <div class="creator-stat">
+                  <span class="creator-num">2.4k</span>
+                  <span class="creator-label">点赞</span>
+                </div>
+                <div class="creator-divider"></div>
+                <div class="creator-stat">
+                  <span class="creator-num">89</span>
+                  <span class="creator-label">粉丝</span>
+                </div>
+              </div>
+              <div class="creator-actions">
+                <button class="action-btn action-btn--primary" data-toast="开始创作！">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" /></svg>
+                  创作
+                </button>
+                <button class="action-btn" data-toast="草稿箱">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>
+                  草稿
+                </button>
+                <button class="action-btn" data-toast="分享中心">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  分享
+                </button>
+              </div>
+            </section>
+
+            <!-- 双卡统计 -->
+            <section class="stat-row" aria-label="数据统计">
+              <div class="stat-card stat-card--orange">
+                <span class="stat-card__cap">浏览量</span>
+                <span class="stat-card__val">8,291</span>
+                <span class="stat-card__foot">
+                  <span class="trend trend--up">↑ 124%</span>
+                </span>
+              </div>
+              <div class="stat-card stat-card--red">
+                <span class="stat-card__cap">收藏</span>
+                <span class="stat-card__val">487</span>
+                <span class="stat-card__foot">
+                  <span class="trend trend--up">↑ 32%</span>
+                </span>
+              </div>
+            </section>
+
+            <!-- 作品列表 -->
+            <section class="list-block" aria-label="最近作品">
+              <div class="list-block__head">
+                <h2>最近作品</h2>
+                <div class="chips" id="filterChips" role="tablist">
+                  <button class="chip is-active" data-filter="all" role="tab">全部</button>
+                  <button class="chip" data-filter="draft" role="tab">草稿</button>
+                  <button class="chip" data-filter="pub" role="tab">已发布</button>
+                </div>
+              </div>
+
+              <ul class="work-list" id="workList">
+                <li class="work-item" data-type="pub">
+                  <div class="work-thumb work-thumb--1"></div>
+                  <div class="work-main">
+                    <span class="work-title">几何构成练习</span>
+                    <span class="work-sub">2小时前 · 插画</span>
+                  </div>
+                  <div class="work-right">
+                    <span class="work-stats">♥ 128</span>
+                    <span class="badge badge--pub">已发布</span>
+                  </div>
+                </li>
+                <li class="work-item" data-type="draft">
+                  <div class="work-thumb work-thumb--2"></div>
+                  <div class="work-main">
+                    <span class="work-title">抽象色彩研究</span>
+                    <span class="work-sub">昨天 · 油画</span>
+                  </div>
+                  <div class="work-right">
+                    <span class="work-stats">--</span>
+                    <span class="badge badge--draft">草稿</span>
+                  </div>
+                </li>
+                <li class="work-item" data-type="pub">
+                  <div class="work-thumb work-thumb--3"></div>
+                  <div class="work-main">
+                    <span class="work-title">人物速写集 #3</span>
+                    <span class="work-sub">3天前 · 素描</span>
+                  </div>
+                  <div class="work-right">
+                    <span class="work-stats">♥ 342</span>
+                    <span class="badge badge--pub">已发布</span>
+                  </div>
+                </li>
+                <li class="work-item" data-type="draft">
+                  <div class="work-thumb work-thumb--4"></div>
+                  <div class="work-main">
+                    <span class="work-title">城市印象</span>
+                    <span class="work-sub">5天前 · 水彩</span>
+                  </div>
+                  <div class="work-right">
+                    <span class="work-stats">--</span>
+                    <span class="badge badge--draft">草稿</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 活跃度进度 -->
+            <section class="progress-card" aria-label="创作活跃度">
+              <div class="progress-header">
+                <span class="progress-title">本周目标</span>
+                <span class="progress-num">4 <span class="muted">/ 5</span></span>
+              </div>
+              <div class="progress-bar" aria-hidden="true">
+                <span class="progress-fill" style="--p: 80%"></span>
+              </div>
+              <p class="progress-note">再完成 1 个作品即可达成目标！</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>主页</span>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="开始创作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>消息</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

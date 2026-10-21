@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>格致 · Shadcn 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l6-16M20 20l-6-16"/><path d="M9 15h6"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">格致 · Sprint 24</span>
+                <span class="brand-bar__sub">10 月迭代 · 剩 6 天</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="⌘K 命令面板：搜索任务 / 成员 / 视图" aria-label="命令面板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：Sprint 卡（签名：shadcn 式 Tabs + 表格行勾选）-->
+            <section class="hero" aria-label="迭代概览">
+              <div class="hero__tabs" role="tablist">
+                <button class="hero-tab is-active" type="button" data-tab="task">任务</button>
+                <button class="hero-tab" type="button" data-tab="burn">燃尽</button>
+                <button class="hero-tab" type="button" data-tab="member">成员</button>
+              </div>
+              <div class="hero__panel" id="panel-task">
+                <div class="hero__stats">
+                  <div class="stat"><b>18</b><span>进行中</span></div>
+                  <div class="stat"><b>24</b><span>已完成</span></div>
+                  <div class="stat"><b>5</b><span>待评审</span></div>
+                </div>
+                <div class="hero__progress">
+                  <div class="track"><span style="--w: 70%" id="burnFill"></span></div>
+                  <div class="labels"><span>完成度 70%</span><span>理想线 64%</span></div>
+                </div>
+              </div>
+              <div class="hero__panel" id="panel-burn" hidden>
+                <svg viewBox="0 0 300 90" class="burn-chart" preserveAspectRatio="none" aria-label="燃尽曲线">
+                  <polyline points="0,10 42,18 84,22 126,30 168,44 210,52 252,66 300,72" fill="none" stroke="var(--accent)" stroke-width="2"/>
+                  <polyline points="0,10 300,80" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                </svg>
+                <p class="panel-note">实际曲线略优于理想线 · 预计提前 0.5 天收尾</p>
+              </div>
+              <div class="hero__panel" id="panel-member" hidden>
+                <ul class="members">
+                  <li><i class="avatar" style="--c:#0ea5e9">茂</i><span>小茂</span><b>9 项</b></li>
+                  <li><i class="avatar" style="--c:#f97316">满</i><span>小满</span><b>7 项</b></li>
+                  <li><i class="avatar" style="--c:#8b5cf6">岩</i><span>岩井</span><b>11 项</b></li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="提醒">
+              <div class="duo__card">
+                <div class="duo__head">
+                  <h2 class="duo__title">评审排期</h2>
+                  <span class="badge badge--secondary">Today</span>
+                </div>
+                <p class="duo__meta">16:00 · 结算页改版 · 会议室 B</p>
+                <p class="duo__meta">18:30 · API 破坏性变更对齐</p>
+              </div>
+              <div class="duo__card">
+                <div class="duo__head">
+                  <h2 class="duo__title">阻塞项</h2>
+                  <span class="badge badge--destructive">1</span>
+                </div>
+                <p class="duo__meta">登录依赖的 SSO 沙箱未就绪，已 @平台组</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：任务表（可勾选）-->
+            <section class="feed" aria-label="任务">
+              <div class="feed__head">
+                <h2 class="feed__title">任务</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="todo">待办</button>
+                  <button class="chip" type="button" data-filter="doing">进行</button>
+                  <button class="chip" type="button" data-filter="done">完成</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="taskTable">
+                <li class="task" data-kind="doing">
+                  <label><input type="checkbox"><i></i></label>
+                  <div class="task__body">
+                    <span class="task__name">结算页骨架屏优化</span>
+                    <span class="task__meta">SHOP-482 · 小茂 · 3 点</span>
+                  </div>
+                  <span class="badge">进行中</span>
+                </li>
+                <li class="task" data-kind="todo">
+                  <label><input type="checkbox"><i></i></label>
+                  <div class="task__body">
+                    <span class="task__name">登录错误码统一</span>
+                    <span class="task__meta">AUTH-96 · 岩井 · 2 点</span>
+                  </div>
+                  <span class="badge badge--outline">待办</span>
+                </li>
+                <li class="task" data-kind="done">
+                  <label><input type="checkbox" checked disabled><i></i></label>
+                  <div class="task__body">
+                    <span class="task__name is-done">汇率组件抽公共库</span>
+                    <span class="task__meta">LIB-31 · 小满 · 5 点</span>
+                  </div>
+                  <span class="badge badge--secondary">完成</span>
+                </li>
+                <li class="task" data-kind="todo">
+                  <label><input type="checkbox"><i></i></label>
+                  <div class="task__body">
+                    <span class="task__name">订阅续费失败重试</span>
+                    <span class="task__meta">PAY-140 · 岩井 · 3 点</span>
+                  </div>
+                  <span class="badge badge--outline">待办</span>
+                </li>
+                <li class="task" data-kind="doing">
+                  <label><input type="checkbox"><i></i></label>
+                  <div class="task__body">
+                    <span class="task__name">暗色模式色板走查</span>
+                    <span class="task__meta">DS-77 · 小满 · 2 点</span>
+                  </div>
+                  <span class="badge">进行中</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新建任务">
+              <input class="action__input" id="taskInput" type="text" placeholder="新任务标题，回车创建…" />
+              <div class="chips chips--point">
+                <button class="chip" type="button">1 点</button>
+                <button class="chip is-active" type="button">2 点</button>
+                <button class="chip" type="button">3 点</button>
+                <button class="chip" type="button">5 点</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="createBtn">创建任务</button>
+                <button class="btn-secondary" type="button" data-toast="已导出 Sprint 报告（Markdown）">导出</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="看板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="10" rx="1"/></svg>
+              <span>看板</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="列表">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+              <span>列表</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="文档">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h4"/></svg>
+              <span>文档</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

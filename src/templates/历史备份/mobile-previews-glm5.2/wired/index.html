@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>WIRED 快讯 · WIRED Design</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 黑色头条栏（signature：WIRED 黑色 ribbon） -->
+            <header class="top-ribbon">
+              <span class="ribbon-label">WIRED</span>
+              <button class="iconbtn-round" aria-label="搜索" data-toast="搜索文章">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 头条（signature：超粗字 + 无圆角） -->
+            <section class="hero-story" aria-label="头条新闻">
+              <span class="kicker">BREAKING</span>
+              <h1 class="headline">OpenAI 发布 GPT-5：推理能力提升300%</h1>
+              <p class="deck">新模型在数学基准测试中达到了前所未有的准确率，引发了关于 AGI 时间表的激烈争论。</p>
+              <div class="meta-line">
+                <span class="byline">BY <span class="author">Catherine Wu</span></span>
+                <span class="timestamp">2 HOURS AGO</span>
+              </div>
+              <div class="hero-actions">
+                <button class="btn-primary" data-toast="已订阅">SUBSCRIBE</button>
+                <button class="btn-link" data-toast="已分享">SHARE</button>
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 热门列表（signature：等宽数字编号 + 发丝线分隔） -->
+            <section class="popular-section" aria-label="热门文章">
+              <div class="section-ribbon">
+                <span class="section-ribbon__label">MOST POPULAR</span>
+              </div>
+
+              <ul class="popular-list">
+                <li class="popular-item">
+                  <span class="popular-num">01</span>
+                  <div class="popular-content">
+                    <span class="popular-kicker">CULTURE</span>
+                    <h3 class="popular-headline">TikTok 算法如何重塑我们的注意力</h3>
+                    <span class="popular-meta">5 HOURS AGO</span>
+                  </div>
+                </li>
+
+                <li class="popular-item">
+                  <span class="popular-num">02</span>
+                  <div class="popular-content">
+                    <span class="popular-kicker">BUSINESS</span>
+                    <h3 class="popular-headline">英伟达市值突破 4 万亿美元</h3>
+                    <span class="popular-meta">8 HOURS AGO</span>
+                  </div>
+                </li>
+
+                <li class="popular-item">
+                  <span class="popular-num">03</span>
+                  <div class="popular-content">
+                    <span class="popular-kicker">SCIENCE</span>
+                    <h3 class="popular-headline">NASA 宣布新火星任务时间表</h3>
+                    <span class="popular-meta">12 HOURS AGO</span>
+                  </div>
+                </li>
+
+                <li class="popular-item">
+                  <span class="popular-num">04</span>
+                  <div class="popular-content">
+                    <span class="popular-kicker">GEAR</span>
+                    <h3 class="popular-headline">Apple Vision Pro 深度评测</h3>
+                    <span class="popular-meta">1 DAY AGO</span>
+                  </div>
+                </li>
+
+                <li class="popular-item">
+                  <span class="popular-num">05</span>
+                  <div class="popular-content">
+                    <span class="popular-kicker">SECURITY</span>
+                    <h3 class="popular-headline">量子计算威胁下的加密未来</h3>
+                    <span class="popular-meta">1 DAY AGO</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 分类板块 -->
+            <section class="category-section" aria-label="科技板块">
+              <div class="section-header">
+                <span class="section-label">LATEST STORIES</span>
+                <div class="filter-chips" id="filterChips" role="tablist">
+                  <button class="filter-chip is-active" data-filter="all" role="tab" aria-selected="true">ALL</button>
+                  <button class="filter-chip" data-filter="ai" role="tab" aria-selected="false">AI</button>
+                  <button class="filter-chip" data-filter="tech" role="tab" aria-selected="false">TECH</button>
+                </div>
+              </div>
+
+              <ul class="story-list" id="storyList">
+                <li class="story-item" data-type="ai">
+                  <span class="story-kicker">ARTIFICIAL INTELLIGENCE</span>
+                  <h4 class="story-title">DeepMind 新模型击败围棋世界冠军</h4>
+                  <span class="story-meta">3 HOURS AGO</span>
+                </li>
+                <li class="story-item" data-type="tech">
+                  <span class="story-kicker">HARDWARE</span>
+                  <h4 class="story-title">AMD 发布新一代 EPYC 处理器</h4>
+                  <span class="story-meta">6 HOURS AGO</span>
+                </li>
+                <li class="story-item" data-type="ai">
+                  <span class="story-kicker">ARTIFICIAL INTELLIGENCE</span>
+                  <h4 class="story-title">Claude 4 发布：上下文窗口突破 100 万 tokens</h4>
+                  <span class="story-meta">9 HOURS AGO</span>
+                </li>
+                <li class="story-item" data-type="tech">
+                  <span class="story-kicker">SPACE</span>
+                  <h4 class="story-title">SpaceX 星舰第四次试飞成功</h4>
+                  <span class="story-meta">12 HOURS AGO</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Newsletter 订阅 -->
+            <section class="newsletter-card" aria-label="订阅简报">
+              <span class="newsletter-label">DAILY BRIEF</span>
+              <p class="newsletter-text">每天早晨，最重要的科技新闻直接收件箱。</p>
+              <div class="newsletter-form">
+                <input type="email" placeholder="YOUR EMAIL" class="newsletter-input" aria-label="邮箱地址" />
+                <button class="newsletter-btn" data-toast="订阅成功">SIGN UP</button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+              <span>Feed</span>
+            </button>
+            <button class="tab" data-tab="latest">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+              <span>Business</span>
+            </button>
+            <button class="tab" data-tab="culture">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              <span>Culture</span>
+            </button>
+            <button class="tab" data-tab="gear">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <span>Gear</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

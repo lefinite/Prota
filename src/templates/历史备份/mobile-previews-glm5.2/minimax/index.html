@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>海螺 AI · MiniMax</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-logo">
+                  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="16" cy="16" r="14" fill="url(#gradient1)"/>
+                    <path d="M16 8v16M10 14l6-6 6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                      <linearGradient id="gradient1" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#1456f0"/>
+                        <stop offset="1" stop-color="#ea5ec1"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">海螺 AI</span>
+                  <span class="brand-sub">MiniMax Assistant</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="菜单" data-toast="菜单">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
+            </header>
+
+            <!-- AI Models Showcase (Signature: Colorful product cards) -->
+            <section class="models-showcase" aria-label="AI 模型">
+              <h2 class="section-title">选择 AI 模型</h2>
+              <div class="models-grid">
+                <div class="model-card model-card--featured" data-model="abab">
+                  <div class="model-card__gradient model-card__gradient--blue"></div>
+                  <div class="model-card__content">
+                    <span class="model-card__badge">HOT</span>
+                    <h3 class="model-card__name">abab6.5</h3>
+                    <p class="model-card__desc">最新一代对话模型</p>
+                  </div>
+                  <div class="model-card__glow"></div>
+                </div>
+                <div class="model-card" data-model="video">
+                  <div class="model-card__gradient model-card__gradient--purple"></div>
+                  <div class="model-card__content">
+                    <h3 class="model-card__name">视频生成</h3>
+                    <p class="model-card__desc">海螺视频 AI</p>
+                  </div>
+                </div>
+                <div class="model-card" data-model="image">
+                  <div class="model-card__gradient model-card__gradient--orange"></div>
+                  <div class="model-card__content">
+                    <h3 class="model-card__name">图像生成</h3>
+                    <p class="model-card__desc">灵感创作助手</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Chat Preview -->
+            <section class="chat-preview" aria-label="对话预览">
+              <div class="chat-header">
+                <h2 class="chat-title">最近对话</h2>
+                <div class="chat-tabs" id="chatTabs" role="tablist">
+                  <button class="chat-tab is-active" data-tab="recent" role="tab" aria-selected="true">最近</button>
+                  <button class="chat-tab" data-tab="starred" role="tab" aria-selected="false">收藏</button>
+                </div>
+              </div>
+              <div class="chat-messages" id="chatMessages">
+                <div class="message message--user">
+                  <div class="message-content">
+                    <p>帮我写一段产品介绍的文案，要简洁有力</p>
+                  </div>
+                </div>
+                <div class="message message--ai">
+                  <div class="message-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" fill="url(#msgGrad)"/>
+                      <path d="M8 12h8M12 8v8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                      <defs><linearGradient id="msgGrad" x1="2" y1="2" x2="22" y2="22"><stop stop-color="#1456f0"/><stop offset="1" stop-color="#ea5ec1"/></linearGradient></defs>
+                    </svg>
+                  </div>
+                  <div class="message-content">
+                    <p>好的，这是一段简洁有力的产品介绍：</p>
+                    <div class="message-card">
+                      <p>「海螺 AI，让创意无限。用最先进的人工智能技术，将您的想法转化为现实。」</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions" aria-label="快捷操作">
+              <h2 class="section-title">快捷操作</h2>
+              <div class="actions-grid">
+                <button class="action-btn" data-toast="开始新对话">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <span>新建对话</span>
+                </button>
+                <button class="action-btn" data-toast="历史记录">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>历史</span>
+                </button>
+                <button class="action-btn" data-toast="提示词库">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <span>提示词库</span>
+                </button>
+                <button class="action-btn" data-toast="API 文档">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                  <span>API</span>
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="chat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>对话</span>
+            </button>
+            <button class="tab" data-tab="create">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>创作</span>
+            </button>
+            <button class="tab tab--fab" data-tab="new" aria-label="新对话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tab" data-tab="discover">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

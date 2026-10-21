@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>长夜 · Editorial Serif</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">长夜</span>
+                <span class="brand-bar__sub">LONGREAD · 晚间刊 · NO.86</span>
+              </div>
+              <button class="brand-bar__icon" type="button" id="fontToggle" aria-label="切换字号">
+                <span aria-hidden="true">Aa</span>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：继续阅读 -->
+            <section class="resume-card" aria-label="继续阅读">
+              <p class="kicker">Essay · 连载中</p>
+              <h1 class="resume-card__title">关于慢的辩护</h1>
+              <blockquote class="resume-card__quote">「我们不是没有时间，<br />而是把所有时间都过成了同一段时间。」</blockquote>
+              <p class="resume-card__meta">文 · 陈序　|　预计还需 22 分钟　|　已读 64%</p>
+              <div class="resume-card__track"><span class="resume-card__fill" style="--w: 64%"></span></div>
+              <button class="resume-card__link" type="button" data-toast="已定位到第 4 节「午后」">从上次停下的地方继续 →</button>
+            </section>
+
+            <!-- 3. 内容卡 ×2 -->
+            <section class="content-grid" aria-label="今日推荐与阅读节奏">
+              <article class="quiet-card">
+                <p class="kicker">今日一篇</p>
+                <h2 class="quiet-card__title">夜班公交上的城市</h2>
+                <p class="quiet-card__excerpt">末班车之后，车厢里只剩下代驾司机、护士和刚下晚自习的学生。</p>
+                <p class="quiet-card__meta">文 · 苏禾　|　12 分钟</p>
+              </article>
+              <article class="quiet-card quiet-card--metrics">
+                <p class="kicker">本周节奏</p>
+                <p class="metrics-num">186<span> 分钟</span></p>
+                <div class="week-bars" role="img" aria-label="近 7 天每日阅读分钟数">
+                  <span style="--h: 30%"></span>
+                  <span style="--h: 52%"></span>
+                  <span style="--h: 36%"></span>
+                  <span style="--h: 68%"></span>
+                  <span style="--h: 24%"></span>
+                  <span style="--h: 84%"></span>
+                  <span style="--h: 58%"></span>
+                </div>
+                <p class="quiet-card__meta">比上周多读了 41 分钟</p>
+              </article>
+            </section>
+
+            <!-- 4. 订阅源 Feed -->
+            <section class="feed" aria-label="我的订阅源">
+              <div class="feed__head">
+                <p class="kicker">订阅源</p>
+                <div class="chips" role="tablist" aria-label="筛选订阅源">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="new">有更新</button>
+                  <button class="chip" type="button" data-filter="done">已读完</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__avatar" aria-hidden="true">陈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">陈序 · 城市观察</span>
+                    <span class="feed-item__meta">2 小时前更新 <em class="feed-item__chip" data-tone="new">新篇</em></span>
+                  </div>
+                  <button class="feed-item__follow is-on" type="button" aria-pressed="true">已关注</button>
+                </li>
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__avatar" aria-hidden="true">深</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">深夜书房</span>
+                    <span class="feed-item__meta">昨天 23:40 更新 <em class="feed-item__chip" data-tone="new">新篇</em></span>
+                  </div>
+                  <button class="feed-item__follow" type="button" aria-pressed="false">关注</button>
+                </li>
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__avatar" aria-hidden="true">译</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">译者手记</span>
+                    <span class="feed-item__meta">周二更新 <em class="feed-item__chip">连载中</em></span>
+                  </div>
+                  <button class="feed-item__follow is-on" type="button" aria-pressed="true">已关注</button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__avatar" aria-hidden="true">苏</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">苏禾 · 夜行记</span>
+                    <span class="feed-item__meta">已读完全部 34 篇 <em class="feed-item__chip" data-tone="done">已读完</em></span>
+                  </div>
+                  <button class="feed-item__follow is-on" type="button" aria-pressed="true">已关注</button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__avatar" aria-hidden="true">旧</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">旧物志</span>
+                    <span class="feed-item__meta">已读完全部 12 篇 <em class="feed-item__chip" data-tone="done">已读完</em></span>
+                  </div>
+                  <button class="feed-item__follow" type="button" aria-pressed="false">关注</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="读书笔记">
+              <input class="note-input" id="noteInput" type="text" placeholder="写下今天的读书笔记……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="resumeBtn">续读本章</button>
+                <button class="btn-ghost" type="button" data-toast="《关于慢的辩护》已加入书房">加入书房</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="书房">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19V5a2 2 0 0 1 2-2h13v14H6a2 2 0 0 0-2 2zm0 0a2 2 0 0 0 2 2h13" />
+              </svg>
+              <span>书房</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="长读">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6h16M4 12h16M4 18h10" />
+              </svg>
+              <span>长读</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="订阅">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 11a8 8 0 0 1 16 0" /><rect x="2" y="11" width="4" height="7" rx="1" /><rect x="18" y="11" width="4" height="7" rx="1" />
+              </svg>
+              <span>订阅</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

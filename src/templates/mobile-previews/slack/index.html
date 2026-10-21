@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>青鸟工作区 · Slack</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                  <path d="M10 4a2.5 2.5 0 0 0-5 0v3.5H4A2.5 2.5 0 1 0 6.5 10H10V4zM20 10a2.5 2.5 0 0 0-5 0v3.5h-1.5A2.5 2.5 0 1 0 16 16h4v-6zM4 14a2.5 2.5 0 0 0 5 0v-3.5h1.5A2.5 2.5 0 1 0 8 8H4v6zM14 20a2.5 2.5 0 0 0 5 0v-3.5h1.5A2.5 2.5 0 1 0 18 14h-4v6z" transform="scale(0.82) translate(2.6,2.6)" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">青鸟科技</span>
+                <button class="brand-bar__sub" type="button" data-toast="工作区：青鸟科技 · 3 个空间可切换" aria-label="切换工作区">
+                  产品小组
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5" /></svg>
+                </button>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="搜索频道、成员和文件……" aria-label="搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.8-4.8" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：茄紫色频道头 -->
+            <section class="channel-head" aria-label="频道信息">
+              <div class="channel-head__row">
+                <span class="channel-head__hash" aria-hidden="true">#</span>
+                <div class="channel-head__title">
+                  <h1 class="channel-head__name">产品设计评审</h1>
+                  <p class="channel-head__meta">128 名成员 · 12 条未读</p>
+                </div>
+                <button class="huddle-pill" type="button" id="huddleBtn" aria-pressed="false">
+                  <i aria-hidden="true"></i>语音房
+                </button>
+              </div>
+              <p class="channel-head__topic">本周主题：首页改版 v12 · 周四评审前收口</p>
+              <div class="channel-head__members" aria-label="在场成员">
+                <span class="avatar avatar--xs">林</span>
+                <span class="avatar avatar--xs">陈</span>
+                <span class="avatar avatar--xs is-online">苏</span>
+                <span class="avatar avatar--xs">你</span>
+                <b class="channel-head__more">+124</b>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="今日提要与待回复">
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日提要</h2>
+                <button class="digest-row" type="button" data-toast="提到你的 2 条消息都在这个频道">
+                  <span class="digest-row__glyph digest-row__glyph--mention" aria-hidden="true">@</span>
+                  <span class="digest-row__label">提到你</span>
+                  <b class="badge">2</b>
+                </button>
+                <button class="digest-row" type="button" data-toast="12 条未读已全部展开">
+                  <span class="digest-row__glyph digest-row__glyph--unread" aria-hidden="true">●</span>
+                  <span class="digest-row__label">未读消息</span>
+                  <b class="badge badge--plain">12</b>
+                </button>
+                <button class="digest-row" type="button" data-toast="最近文件：首页_v12.fig、评审清单.pdf">
+                  <span class="digest-row__glyph digest-row__glyph--file" aria-hidden="true">≡</span>
+                  <span class="digest-row__label">新文件</span>
+                  <b class="badge badge--plain">3</b>
+                </button>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">等你回复</h2>
+                <button class="thread-row" type="button" data-toast="已打开话题：B 版插画风格">
+                  <div class="thread-row__body">
+                    <span class="thread-row__name">B 版插画风格</span>
+                    <span class="thread-row__meta">5 条回复 · 林然 最后发言</span>
+                  </div>
+                  <em class="thread-row__chip">去回复</em>
+                </button>
+                <button class="thread-row" type="button" data-toast="已打开话题：可用性测试纪要">
+                  <div class="thread-row__body">
+                    <span class="thread-row__name">可用性测试纪要</span>
+                    <span class="thread-row__meta">3 条回复 · 苏芮 最后发言</span>
+                  </div>
+                  <em class="thread-row__chip">去回复</em>
+                </button>
+              </div>
+            </section>
+
+            <!-- 4. 消息 Feed（扁平行，无气泡） -->
+            <section class="feed" aria-label="频道消息">
+              <div class="feed__head">
+                <h2 class="feed__title">今天</h2>
+                <div class="chips" role="tablist" aria-label="筛选消息">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="unread">未读</button>
+                  <button class="chip" type="button" data-filter="mention">提及</button>
+                  <button class="chip" type="button" data-filter="file">文件</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="msg is-unread" data-kind="unread">
+                  <span class="avatar">林</span>
+                  <div class="msg__body">
+                    <div class="msg__head">
+                      <b class="msg__name">林然</b>
+                      <span class="msg__time">09:41</span>
+                    </div>
+                    <p class="msg__text">B 版首页的插画换成了手绘风，想听听大家的直觉，两版都放进 Figma 了。</p>
+                    <div class="msg__reactions">
+                      <button class="reaction" type="button" aria-pressed="false">👀 <b>2</b></button>
+                      <button class="reaction" type="button" aria-pressed="false">🎨 <b>1</b></button>
+                    </div>
+                  </div>
+                </li>
+                <li class="msg" data-kind="mention">
+                  <span class="avatar">陈</span>
+                  <div class="msg__body">
+                    <div class="msg__head">
+                      <b class="msg__name">陈默</b>
+                      <span class="msg__time">09:58</span>
+                    </div>
+                    <p class="msg__text"><em class="msg__mention">@你</em> 麻烦把 8pt 栅格标注补进 Figma，周四评审要用，拜托拜托。</p>
+                    <div class="msg__reactions">
+                      <button class="reaction" type="button" aria-pressed="false">🙏 <b>1</b></button>
+                    </div>
+                  </div>
+                </li>
+                <li class="msg" data-kind="file">
+                  <span class="avatar">苏</span>
+                  <div class="msg__body">
+                    <div class="msg__head">
+                      <b class="msg__name">苏芮</b>
+                      <span class="msg__time">10:12</span>
+                    </div>
+                    <div class="msg__attachment">
+                      <div class="msg__file-glyph" aria-hidden="true">FIG</div>
+                      <div class="msg__file-body">
+                        <span class="msg__file-name">首页_v12.fig</span>
+                        <span class="msg__file-meta">2.4 MB · 32 个画板</span>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="msg" data-kind="unread">
+                  <span class="avatar is-online">林</span>
+                  <div class="msg__body">
+                    <div class="msg__head">
+                      <b class="msg__name">林然</b>
+                      <span class="msg__time">10:20</span>
+                    </div>
+                    <p class="msg__text">语音房小结：导航收窄到 5 项，首页保留大图，文案周四前过一遍。</p>
+                    <div class="msg__reactions">
+                      <button class="reaction is-active" type="button" aria-pressed="true">✅ <b>3</b></button>
+                    </div>
+                  </div>
+                </li>
+                <li class="msg" data-kind="unread">
+                  <span class="avatar avatar--bot">蓝</span>
+                  <div class="msg__body">
+                    <div class="msg__head">
+                      <b class="msg__name">小蓝 <i class="msg__bot-tag">机器人</i></b>
+                      <span class="msg__time">10:30</span>
+                    </div>
+                    <p class="msg__text">提醒：周报今天 18:00 截止，还没填的同学抓紧啦。</p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：消息编写器 -->
+            <section class="action-area" aria-label="发送消息">
+              <input class="quick-input" id="msgInput" type="text" placeholder="发消息到 # 产品设计评审" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="sendBtn">发送消息</button>
+                <button class="btn-ghost" type="button" data-toast="已设提醒：今晚 20:00 回来看这个频道">稍后提醒</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="主页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 11l8-7 8 7" /><path d="M6 9.8V20h12V9.8" />
+              </svg>
+              <span>主页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="私信" data-badge="3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a8.5 8.5 0 0 1-12.3 7.6L4 21l1.5-4.4A8.5 8.5 0 1 1 21 12z" />
+              </svg>
+              <span>私信</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="动态">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+              </svg>
+              <span>动态</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="你">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>你</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

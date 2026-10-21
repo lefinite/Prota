@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Vercel Deploy · 部署监控</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="vercel-logo" viewBox="0 0 76 65" fill="currentColor" aria-hidden="true">
+                  <path d="M37.527.9L75.544 64.38H0L37.527.9z"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">vercel</span>
+                  <span class="brand-sub">Deploy Dashboard</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+            </header>
+
+            <!-- 工作流管道（signature：Develop → Preview → Ship） -->
+            <section class="workflow-pipeline" aria-label="部署工作流">
+              <div class="pipeline-step pipeline-step--active">
+                <span class="step-label">Develop</span>
+                <span class="step-status" style="color: var(--develop-text)">进行中</span>
+                <div class="step-indicator step-indicator--develop"></div>
+              </div>
+              <div class="pipeline-connector"></div>
+              <div class="pipeline-step">
+                <span class="step-label">Preview</span>
+                <span class="step-status" style="color: var(--preview-text)">待构建</span>
+                <div class="step-indicator step-indicator--preview"></div>
+              </div>
+              <div class="pipeline-connector"></div>
+              <div class="pipeline-step">
+                <span class="step-label">Ship</span>
+                <span class="step-status" style="color: var(--ship-text)">待部署</span>
+                <div class="step-indicator step-indicator--ship"></div>
+              </div>
+            </section>
+
+            <!-- 当前项目卡片 -->
+            <section class="project-card">
+              <div class="project-header">
+                <span class="project-name">readify-app</span>
+                <span class="badge badge--blue">Production</span>
+              </div>
+              <p class="project-desc">Next.js · SSR · Edge Runtime</p>
+
+              <div class="build-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Build Time</span>
+                  <span class="stat-value">2.4s</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Deploys</span>
+                  <span class="stat-value">847</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Uptime</span>
+                  <span class="stat-value">99.9%</span>
+                </div>
+              </div>
+
+              <div class="project-actions">
+                <button class="btn btn--primary" data-toast="正在触发部署...">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                  Deploy
+                </button>
+                <button class="btn btn--ghost" data-toast="打开 Git 日志">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 最近部署 -->
+            <section class="deploys-section">
+              <h2>Recent Deploys</h2>
+
+              <ul class="deploy-list">
+                <li class="deploy-item">
+                  <span class="deploy-status deploy-status--success"></span>
+                  <div class="deploy-main">
+                    <span class="deploy-commit">feat: add reader v16</span>
+                    <span class="deploy-meta">
+                      <code class="deploy-hash">a3f8c2d</code>
+                      · 2小时前
+                    </span>
+                  </div>
+                  <span class="deploy-env">Production</span>
+                </li>
+                <li class="deploy-item">
+                  <span class="deploy-status deploy-status--preview"></span>
+                  <div class="deploy-main">
+                    <span class="deploy-commit">fix: dark mode contrast</span>
+                    <span class="deploy-meta">
+                      <code class="deploy-hash">b7e4f1a</code>
+                      · 5小时前
+                    </span>
+                  </div>
+                  <span class="deploy-env deploy-env--preview">Preview</span>
+                </li>
+                <li class="deploy-item">
+                  <span class="deploy-status deploy-status--success"></span>
+                  <div class="deploy-main">
+                    <span class="deploy-commit">chore: update deps</span>
+                    <span class="deploy-meta">
+                      <code class="deploy-hash">c9d2e8b</code>
+                      · 昨天
+                    </span>
+                  </div>
+                  <span class="deploy-env">Production</span>
+                </li>
+                <li class="deploy-item">
+                  <span class="deploy-status deploy-status--failed"></span>
+                  <div class="deploy-main">
+                    <span class="deploy-commit">broken: invalid config</span>
+                    <span class="deploy-meta">
+                      <code class="deploy-hash">d1a7f3c</code>
+                      · 2天前
+                    </span>
+                  </div>
+                  <span class="deploy-env">Production</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 环境筛选 -->
+            <section class="env-filter">
+              <span class="filter-label">Filter by Environment</span>
+              <div class="filter-chips">
+                <button class="filter-chip is-active">All</button>
+                <button class="filter-chip">Production</button>
+                <button class="filter-chip">Preview</button>
+                <button class="filter-chip">Develop</button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="overview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>Overview</span>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+              <span>Projects</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+              <span>Settings</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

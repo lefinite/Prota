@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>炭火 · Warp 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__mark" aria-hidden="true">❯</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">炭火 · ~/work/api</span>
+                <span class="brand-bar__sub mono">zsh · 3 tabs · ssh: 1</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="AI 命令补全：已开启（本地模型）" aria-label="AI">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9L18 15z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：命令块（签名：块状 UI + 暖 prompt）-->
+            <section class="hero" aria-label="会话">
+              <div class="block">
+                <div class="block__cmd mono"><span class="ps1">❯</span> pnpm test --filter orders</div>
+                <div class="block__out mono">
+                  <p class="ok">✓ orders · 42 passed · 1.8s</p>
+                  <p class="mut">coverage +0.4% → 88.2%</p>
+                </div>
+              </div>
+              <div class="block">
+                <div class="block__cmd mono"><span class="ps1">❯</span> git push origin main</div>
+                <div class="block__out mono">
+                  <p class="mut">→ deploy hook 触发（build #482）</p>
+                  <p class="ok">✓ 远端已接收 · 412 KiB</p>
+                </div>
+              </div>
+              <div class="block is-active">
+                <div class="block__cmd mono">
+                  <span class="ps1">❯</span>
+                  <span class="type-target" id="typeTarget"></span><span class="caret">▍</span>
+                </div>
+                <div class="block__hints mono">
+                  <button type="button" data-hint="docker compose up -d api">docker compose up -d api</button>
+                  <button type="button" data-hint="just db-migrate">just db-migrate</button>
+                </div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-parch" type="button" id="runBtn">运行 ⏎</button>
+                <button class="btn-ghost" type="button" data-toast="已用自然语言生成命令：查最大响应时间">AI 命令</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="会话">
+              <div class="duo__card">
+                <h2 class="duo__title mono">WORKFLOWS</h2>
+                <p class="duo__num">8</p>
+                <p class="duo__meta">build · deploy · db · lint 各就各位</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">HISTORY</h2>
+                <p class="duo__num">1,246</p>
+                <p class="duo__meta">可搜索 · 按目录共享给团队</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：最近命令 -->
+            <section class="feed" aria-label="最近">
+              <div class="feed__head">
+                <h2 class="feed__title mono">RECENT</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="git">git</button>
+                  <button class="chip" type="button" data-filter="db">db</button>
+                  <button class="chip" type="button" data-filter="docker">docker</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="cmd" data-kind="git">
+                  <span class="cmd__star" role="button" aria-label="收藏" aria-pressed="true">★</span>
+                  <div class="cmd__body">
+                    <b class="mono">git rebase -i HEAD~3</b>
+                    <span class="mono">2 小时前 · 用过 14 次</span>
+                  </div>
+                </li>
+                <li class="cmd" data-kind="db">
+                  <span class="cmd__star" role="button" aria-label="收藏" aria-pressed="false">☆</span>
+                  <div class="cmd__body">
+                    <b class="mono">just db-migrate --dry-run</b>
+                    <span class="mono">昨天 · 用过 6 次</span>
+                  </div>
+                </li>
+                <li class="cmd" data-kind="docker">
+                  <span class="cmd__star" role="button" aria-label="收藏" aria-pressed="false">☆</span>
+                  <div class="cmd__body">
+                    <b class="mono">docker compose logs api --tail 50</b>
+                    <span class="mono">昨天 · 用过 22 次</span>
+                  </div>
+                </li>
+                <li class="cmd" data-kind="git">
+                  <span class="cmd__star" role="button" aria-label="收藏" aria-pressed="false">☆</span>
+                  <div class="cmd__body">
+                    <b class="mono">git bisect start</b>
+                    <span class="mono">10-12 · 用过 2 次</span>
+                  </div>
+                </li>
+                <li class="cmd" data-kind="db">
+                  <span class="cmd__star" role="button" aria-label="收藏" aria-pressed="true">★</span>
+                  <div class="cmd__body">
+                    <b class="mono">psql $DB_URL -c '\timing'</b>
+                    <span class="mono">10-11 · 用过 9 次</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="输入">
+              <div class="chips chips--ai">
+                <button class="chip" type="button">解释上一次报错</button>
+                <button class="chip" type="button">写个部署脚本</button>
+                <button class="chip" type="button">找大文件</button>
+              </div>
+              <input class="action__input mono" id="cmdInput" type="text" placeholder="❯ 输入命令，或按自然语言描述…" />
+              <div class="action__row">
+                <button class="btn-parch" type="button" id="execBtn">执行</button>
+                <button class="btn-ghost" type="button" data-toast="会话已保存为 workflow「晨检」">存为 Workflow</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="终端">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8l4 4-4 4M12 16h7"/></svg>
+              <span>终端</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="Notebook">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 4v16"/></svg>
+              <span>Notebook</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="AI" aria-label="AI">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/></svg>
+              <span>AI</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="历史">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+              <span>历史</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

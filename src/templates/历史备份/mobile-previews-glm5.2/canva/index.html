@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Canva · Creative Studio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="brand-logo" viewBox="0 0 100 32" fill="none">
+                  <circle cx="16" cy="16" r="14" fill="url(#brandGrad)" />
+                  <text x="36" y="22" fill="currentColor" font-size="18" font-weight="800" font-family="Canva Sans, sans-serif">Canva</text>
+                  <defs>
+                    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#7d2ae8" />
+                      <stop offset="100%" stop-color="#00c4cc" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <div class="topbar__actions">
+                <button class="iconbtn" aria-label="搜索" data-toast="搜索模板"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+                <button class="iconbtn" aria-label="Pro" data-toast="升级 Canva Pro">
+                  <span class="pro-badge">PRO</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                </button>
+              </div>
+            </header>
+
+            <!-- Hero Signature：渐变主 CTA -->
+            <section class="hero-card">
+              <p class="hero-card__label">本周精选</p>
+              <h1 class="hero-card__title">设计你的<br>创意世界</h1>
+              <p class="hero-card__desc">10,000+ 免费模板等你探索</p>
+              <button class="cta-gradient" data-toast="开始创作 →">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                开始创作
+              </button>
+            </section>
+
+            <!-- 分类芯片行 -->
+            <section class="category-row" role="tablist" aria-label="模板分类">
+              <button class="cat-chip is-active" data-cat="all" role="tab" aria-selected="true">全部</button>
+              <button class="cat-chip cat-chip--social" data-cat="social" role="tab" aria-selected="false">社媒</button>
+              <button class="cat-chip cat-chip--marketing" data-cat="marketing" role="tab" aria-selected="false">营销</button>
+              <button class="cat-chip cat-chip--edu" data-cat="edu" role="tab" aria-selected="false">教育</button>
+              <button class="cat-chip cat-chip--business" data-cat="business" role="tab" aria-selected="false">商务</button>
+            </section>
+
+            <!-- 模板网格 -->
+            <section class="templates-section">
+              <div class="section-header">
+                <h2>热门模板</h2>
+                <button class="text-link" data-toast="查看更多">查看全部</button>
+              </div>
+              <div class="template-grid" id="templateGrid">
+                <article class="template-card" data-type="social">
+                  <div class="template-card__thumb" style="background: linear-gradient(135deg, #ff7059 0%, #ff9633 100%);">
+                    <span class="template-card__cat">社媒</span>
+                  </div>
+                  <h3 class="template-card__title">Instagram Story</h3>
+                  <p class="template-card__meta">1.2k 使用</p>
+                  <button class="template-card__like" aria-label="收藏" data-toast="已收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  </button>
+                </article>
+                <article class="template-card" data-type="marketing">
+                  <div class="template-card__thumb" style="background: linear-gradient(135deg, #48c997 0%, #3ea6ff 100%);">
+                    <span class="template-card__cat">营销</span>
+                  </div>
+                  <h3 class="template-card__title">产品海报</h3>
+                  <p class="template-card__meta">856 使用</p>
+                  <button class="template-card__like" aria-label="收藏" data-toast="已收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  </button>
+                </article>
+                <article class="template-card" data-type="edu">
+                  <div class="template-card__thumb" style="background: linear-gradient(135deg, #9b87f5 0%, #7d2ae8 100%);">
+                    <span class="template-card__cat">教育</span>
+                    <span class="pro-mini">PRO</span>
+                  </div>
+                  <h3 class="template-card__title">课程幻灯片</h3>
+                  <p class="template-card__meta">2.1k 使用</p>
+                  <button class="template-card__like" aria-label="收藏" data-toast="已收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  </button>
+                </article>
+              </div>
+            </section>
+
+            <!-- 最近项目列表 -->
+            <section class="recent-section">
+              <div class="section-header">
+                <h2>最近项目</h2>
+              </div>
+              <ul class="project-list" id="projectList">
+                <li class="project-item">
+                  <div class="project-item__icon" style="background: linear-gradient(135deg, #7d2ae8, #00c4cc);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21" /></svg>
+                  </div>
+                  <div class="project-item__main">
+                    <span class="project-item__title">夏季活动海报</span>
+                    <span class="project-item__meta">编辑于 2 小时前</span>
+                  </div>
+                  <span class="status-dot status-dot--sync" aria-label="已同步"></span>
+                </li>
+                <li class="project-item">
+                  <div class="project-item__icon" style="background: linear-gradient(135deg, #ff5757, #ff7059);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  </div>
+                  <div class="project-item__main">
+                    <span class="project-item__title">季度报告 PPT</span>
+                    <span class="project-item__meta">编辑于 昨天</span>
+                  </div>
+                  <span class="status-dot status-dot--sync" aria-label="已同步"></span>
+                </li>
+                <li class="project-item">
+                  <div class="project-item__icon" style="background: linear-gradient(135deg, #48c997, #3ea6ff);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+                  </div>
+                  <div class="project-item__main">
+                    <span class="project-item__title">品牌 Logo 设计</span>
+                    <span class="project-item__meta">编辑于 3 天前</span>
+                  </div>
+                  <span class="status-dot status-dot--sync" aria-label="已同步"></span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 存储状态卡片 -->
+            <section class="storage-card">
+              <div class="storage-card__head">
+                <span class="storage-card__title">云存储空间</span>
+                <span class="storage-card__num">2.4 <span class="muted">/ 5 GB</span></span>
+              </div>
+              <div class="storage-card__bar">
+                <span class="storage-card__bar-fill" style="--p: 48%"></span>
+              </div>
+              <p class="storage-card__note">已用 48%，升级 Pro 获取无限空间</p>
+              <button class="storage-card__cta" data-toast="查看 Pro 方案">升级存储空间</button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L4 9v12h5v-7h6v7h5V9l-8-6z" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="templates">
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" /></svg>
+              <span>模板</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="新建项目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4V4zm0 9h7v7H4v-7zm9-9h7v7h-7V4zm0 9h7v7h-7v-7z" /></svg>
+              <span>项目</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

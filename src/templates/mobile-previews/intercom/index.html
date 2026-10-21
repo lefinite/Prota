@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Fin 帮助台 · Intercom</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__dot"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">Fin 帮助台</span>
+                <span class="brand-bar__sub">客服收件箱 · 周二 10:24</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="新会话提醒已开启" aria-label="通知设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：Fin 自动解决率漏斗 -->
+            <section class="hero" aria-label="Fin 自动解决率">
+              <div class="hero__top">
+                <span class="hero__eyebrow">AI RESOLUTION · LAST 24H</span>
+                <span class="hero__chip">
+                  <i class="hero__pulse" aria-hidden="true"></i>Fin 在线
+                </span>
+              </div>
+              <p class="hero__number" id="heroPct">83<span>%</span></p>
+              <p class="hero__sub">的会话由 Fin 全自动解决，平均用时 41 秒</p>
+              <div class="hero__bar" id="heroBar" role="img" aria-label="Fin 解决 83%，待人工 11%，升级 6%">
+                <span class="hero__seg hero__seg--fin" id="segFin" style="--w: 83%"></span>
+                <span class="hero__seg hero__seg--human" id="segHuman" style="--w: 11%"></span>
+                <span class="hero__seg hero__seg--esc" style="--w: 6%"></span>
+              </div>
+              <ul class="hero__legend">
+                <li><i class="hero__swatch hero__swatch--fin"></i>Fin 解决 <b id="finCount">1,208</b></li>
+                <li><i class="hero__swatch hero__swatch--human"></i>待人工 <b id="humanCount">160</b></li>
+                <li><i class="hero__swatch hero__swatch--esc"></i>升级 <b>87</b></li>
+              </ul>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="今日队列与 Fin 表现">
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日队列</h2>
+                <div class="queue-row">
+                  <div class="queue-row__head"><span>首次响应</span><b>1m 24s</b></div>
+                  <div class="queue-row__track"><span class="queue-row__fill" style="--w: 76%"></span></div>
+                </div>
+                <div class="queue-row">
+                  <div class="queue-row__head"><span>等待中会话</span><b>18</b></div>
+                  <div class="queue-row__track"><span class="queue-row__fill" style="--w: 30%" data-level="warn"></span></div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">Fin 表现</h2>
+                <p class="duo-card__num">4.8<span>/5</span></p>
+                <p class="duo-card__note">会话满意度 · 快于人工 6.2×</p>
+                <div class="steps">
+                  <i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i></i>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 会话 Feed -->
+            <section class="feed" aria-label="今日会话">
+              <div class="feed__head">
+                <h2 class="feed__title">会话</h2>
+                <div class="chips" role="tablist" aria-label="筛选会话">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="pending">待人工</button>
+                  <button class="chip" type="button" data-filter="fin">Fin 已回</button>
+                  <button class="chip" type="button" data-filter="solved">已解决</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__avatar" aria-hidden="true">林</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">林晚舟</span>
+                    <span class="feed-item__meta">10:11 · 订单什么时候发货？</span>
+                  </div>
+                  <em class="feed-item__chip" data-state="pending">待人工</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该会话" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="fin">
+                  <span class="feed-item__avatar feed-item__avatar--b" aria-hidden="true">陈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">陈默</span>
+                    <span class="feed-item__meta">10:02 · 已发送退款链接，24h 内到账</span>
+                  </div>
+                  <em class="feed-item__chip" data-state="fin">Fin 已回</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该会话" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="fin">
+                  <span class="feed-item__avatar feed-item__avatar--g" aria-hidden="true">高</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">高桥绘里</span>
+                    <span class="feed-item__meta">09:47 · 会员可以开发票吗？</span>
+                  </div>
+                  <em class="feed-item__chip" data-state="fin">Fin 已回</em>
+                  <button class="feed-item__star is-on" type="button" aria-label="关注该会话" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="solved">
+                  <span class="feed-item__avatar feed-item__avatar--p" aria-hidden="true">周</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">周予安</span>
+                    <span class="feed-item__meta">09:30 · 已解决，评分 5 星</span>
+                  </div>
+                  <em class="feed-item__chip" data-state="solved">已解决</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该会话" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__avatar feed-item__avatar--r" aria-hidden="true">M</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Marco Ruiz</span>
+                    <span class="feed-item__meta">09:12 · 计费争议，要求人工介入</span>
+                  </div>
+                  <em class="feed-item__chip" data-state="esc">已升级</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该会话" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快捷回复">
+              <input class="quick-input" id="replyInput" type="text" placeholder="回复客户，或让 Fin 先行草拟……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="sendBtn">发送回复</button>
+                <button class="btn-accent" type="button" id="finBtn">让 Fin 接管</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="收件箱">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5h16v11a2 2 0 0 1-2 2H8l-4 3V5z" />
+                <path d="M8 9h8M8 13h5" />
+              </svg>
+              <span>收件箱</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="自动化">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
+              </svg>
+              <span>自动化</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新会话" aria-label="新建会话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新会话</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="报表">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+              </svg>
+              <span>报表</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

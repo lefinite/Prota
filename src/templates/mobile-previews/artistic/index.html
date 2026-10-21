@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>一隅画廊 · Artistic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">隅</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">一隅画廊</span>
+                <span class="brand-bar__sub">常设展 · 观展第 3 日</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="邀请链接已复制，发给同行的朋友" aria-label="分享展览">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="6" cy="12" r="2.6" /><circle cx="17.5" cy="5.5" r="2.6" /><circle cx="17.5" cy="18.5" r="2.6" /><path d="M8.3 10.8l6.9-4M8.3 13.2l6.9 4" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：当期特展 + 语音导览 -->
+            <section class="hero-card" aria-label="当期特展">
+              <span class="hero-card__eyebrow">三号厅 · 常设展</span>
+              <h1 class="hero-card__title">窑变，<em>火</em>与<em>土</em>的私语</h1>
+              <figure class="plate" aria-label="作品《无题·拱》，陶瓷">
+                <span class="plate__arch" aria-hidden="true"></span>
+                <span class="plate__moon" aria-hidden="true"></span>
+                <i class="plate__corner plate__corner--tl" aria-hidden="true"></i>
+                <i class="plate__corner plate__corner--tr" aria-hidden="true"></i>
+                <i class="plate__corner plate__corner--bl" aria-hidden="true"></i>
+                <i class="plate__corner plate__corner--br" aria-hidden="true"></i>
+                <figcaption class="plate__caption">图版 Nº 07 · 《无题·拱》</figcaption>
+              </figure>
+              <div class="guide">
+                <button class="guide__btn" id="guideBtn" type="button" aria-label="播放语音导览" aria-pressed="false">
+                  <svg class="guide__icon guide__icon--play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5.5v13l11-6.5-11-6.5z" />
+                  </svg>
+                  <svg class="guide__icon guide__icon--pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" />
+                  </svg>
+                </button>
+                <div class="guide__body">
+                  <span class="guide__title">语音导览 04 · 二号窑的两次失败</span>
+                  <div class="guide__track"><span class="guide__fill" id="guideFill"></span></div>
+                  <span class="guide__time"><b id="guideNow">2:31</b> / 8:00</span>
+                </div>
+              </div>
+              <div class="hero-card__foot">
+                <span>沈窑 · 2026 · 釉下彩</span>
+                <span>展期至 10 月 30 日</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="展厅与今日一作">
+              <div class="duo-card">
+                <h2 class="duo-card__title">展厅导览</h2>
+                <div class="room-row">
+                  <span class="room-row__num">壹</span>
+                  <div class="room-row__body"><span>陶瓷的骨</span><em>一号厅 · 12 件</em></div>
+                </div>
+                <div class="room-row">
+                  <span class="room-row__num">贰</span>
+                  <div class="room-row__body"><span>窑变</span><em>二号厅 · 9 件 · 当前</em></div>
+                </div>
+                <div class="room-row">
+                  <span class="room-row__num">叁</span>
+                  <div class="room-row__body"><span>器与食</span><em>三号厅 · 7 件</em></div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日一作</h2>
+                <p class="daily-work">《驼铃，或一段空白的釉》</p>
+                <p class="daily-work__meta">陈青禾 · 陶与铜丝 · 图版 Nº 12</p>
+                <button class="wish-btn" id="wishBtn" type="button" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20s-7.5-4.5-9.3-9.2C1.4 7.3 3.6 4.5 6.8 4.5c2 0 3.6 1.1 4.4 2.7.8-1.6 2.4-2.7 4.4-2.7 3.2 0 5.4 2.8 4.1 6.3C19.5 15.5 12 20 12 20z" />
+                  </svg>
+                  <span>加入心愿单</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 4. 观展足迹 Feed -->
+            <section class="feed" aria-label="观展足迹">
+              <div class="feed__head">
+                <h2 class="feed__title">观展足迹</h2>
+                <div class="chips" role="tablist" aria-label="筛选足迹">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="seen">已看</button>
+                  <button class="chip" type="button" data-filter="wish">想看</button>
+                  <button class="chip" type="button" data-filter="current">在展</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="seen">
+                  <span class="feed-item__glyph" aria-hidden="true">釉</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">《雨过天青》</span>
+                    <span class="feed-item__meta">沈窑 · 陶瓷 · 11:02</span>
+                  </div>
+                  <em class="visit-chip" data-kind="seen">已看</em>
+                  <button class="feed-item__heart" type="button" aria-label="喜欢" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20s-7.5-4.5-9.3-9.2C1.4 7.3 3.6 4.5 6.8 4.5c2 0 3.6 1.1 4.4 2.7.8-1.6 2.4-2.7 4.4-2.7 3.2 0 5.4 2.8 4.1 6.3C19.5 15.5 12 20 12 20z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="seen">
+                  <span class="feed-item__glyph" aria-hidden="true">骨</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">《素坯十二式》</span>
+                    <span class="feed-item__meta">老周 · 陶瓷 · 10:47</span>
+                  </div>
+                  <em class="visit-chip" data-kind="seen">已看</em>
+                  <button class="feed-item__heart" type="button" aria-label="喜欢" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20s-7.5-4.5-9.3-9.2C1.4 7.3 3.6 4.5 6.8 4.5c2 0 3.6 1.1 4.4 2.7.8-1.6 2.4-2.7 4.4-2.7 3.2 0 5.4 2.8 4.1 6.3C19.5 15.5 12 20 12 20z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="current">
+                  <span class="feed-item__glyph" aria-hidden="true">窑</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">《无题·拱》</span>
+                    <span class="feed-item__meta">沈窑 · 陶瓷 · 正在收听导览</span>
+                  </div>
+                  <em class="visit-chip" data-kind="current">在展</em>
+                  <button class="feed-item__heart is-on" type="button" aria-label="喜欢" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20s-7.5-4.5-9.3-9.2C1.4 7.3 3.6 4.5 6.8 4.5c2 0 3.6 1.1 4.4 2.7.8-1.6 2.4-2.7 4.4-2.7 3.2 0 5.4 2.8 4.1 6.3C19.5 15.5 12 20 12 20z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="wish">
+                  <span class="feed-item__glyph" aria-hidden="true">驼</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">《驼铃，或一段空白的釉》</span>
+                    <span class="feed-item__meta">陈青禾 · 陶与铜丝 · 明日开箱</span>
+                  </div>
+                  <em class="visit-chip" data-kind="wish">想看</em>
+                  <button class="feed-item__heart" type="button" aria-label="喜欢" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20s-7.5-4.5-9.3-9.2C1.4 7.3 3.6 4.5 6.8 4.5c2 0 3.6 1.1 4.4 2.7.8-1.6 2.4-2.7 4.4-2.7 3.2 0 5.4 2.8 4.1 6.3C19.5 15.5 12 20 12 20z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="wish">
+                  <span class="feed-item__glyph" aria-hidden="true">食</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">《宴器·四时》</span>
+                    <span class="feed-item__meta">林见鹿 · 器与食 · 三号厅</span>
+                  </div>
+                  <em class="visit-chip" data-kind="wish">想看</em>
+                  <button class="feed-item__heart" type="button" aria-label="喜欢" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20s-7.5-4.5-9.3-9.2C1.4 7.3 3.6 4.5 6.8 4.5c2 0 3.6 1.1 4.4 2.7.8-1.6 2.4-2.7 4.4-2.7 3.2 0 5.4 2.8 4.1 6.3C19.5 15.5 12 20 12 20z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="检索与购票">
+              <input class="quick-input" id="searchInput" type="text" placeholder="搜索馆藏、艺术家或图版号……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="guideCta">继续语音导览</button>
+                <button class="btn-ghost" type="button" data-toast="单人票 ¥45 · 已加入订单，展期通用">购票</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="展览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20V9l8-5 8 5v11" /><path d="M9 20v-6h6v6" />
+              </svg>
+              <span>展览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="馆藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+              </svg>
+              <span>馆藏</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="路线">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="19" r="2" /><circle cx="18" cy="5" r="2" /><path d="M8 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7" />
+              </svg>
+              <span>路线</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

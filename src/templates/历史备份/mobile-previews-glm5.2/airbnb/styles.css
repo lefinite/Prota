@@ -1,0 +1,368 @@
+/* =========================================================================
+ * mobile-previews/airbnb — Wanderlust 旅程
+ * 暖色旅游杂志风，Rausch 珊瑚粉强调色，摄影优先
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/airbnb）—— */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-warm: #f7f7f7;
+  --fg: #222222;
+  --fg-2: #3f3f3f;
+  --muted: #6a6a6a;
+  --meta: #929292;
+  --border: #dddddd;
+  --border-soft: #ebebeb;
+  --accent: #ff385c;
+  --accent-on: #ffffff;
+  --accent-hover: #e31c5f;
+  --accent-active: #e00b41;
+  --success: #008a05;
+  --warn: #c47700;
+  --danger: #c13515;
+  --font-display: "Airbnb Cereal VF", "Airbnb Cereal App", Circular, -apple-system, system-ui, "Helvetica Neue", Roboto, sans-serif;
+  --font-body: "Airbnb Cereal VF", "Airbnb Cereal App", Circular, -apple-system, system-ui, "Helvetica Neue", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 44px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: rgba(0, 0, 0, 0.02) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 6px 0, rgba(0, 0, 0, 0.1) 0 4px 8px 0;
+  --focus-ring: 0 0 0 2px var(--fg);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* —— 手机外壳（暖色协调）—— */
+  --page-backdrop-top: #faf5f5;
+  --page-backdrop-bottom: #f0ebe8;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #f5f0eb;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(34, 34, 34, 0.15);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 56, 92, 0.08), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #000; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: var(--accent); }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 100px; }
+
+/* ===== Page content · Wanderlust ===== */
+.topbar { margin-bottom: 16px; }
+.topbar__brand { display: flex; flex-direction: column; }
+.brand-logo {
+  font-size: var(--text-2xl); font-weight: 700;
+  color: var(--accent); line-height: 1.1;
+}
+.brand-sub {
+  font-size: var(--text-sm); color: var(--muted);
+  margin-top: 4px; font-weight: 500;
+}
+
+.iconbtn {
+  position: absolute; top: 66px; right: 18px;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--fg);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: #f2f2f2; }
+
+/* 搜索栏 */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px;
+}
+.search-bar__input {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: var(--radius-pill);
+  background: var(--surface-warm);
+  border: 1px solid var(--border);
+  box-shadow: rgba(0, 0, 0, 0.04) 0 2px 6px 0;
+}
+.search-bar__icon { width: 18px; height: 18px; color: var(--muted); }
+.search-bar__input input {
+  flex: 1; border: 0; background: none;
+  font-size: var(--text-base); font-weight: 500;
+  color: var(--fg);
+}
+.search-bar__input input::placeholder { color: var(--muted); }
+.search-bar__submit {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-on);
+  flex-shrink: 0;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.search-bar__submit:active { transform: scale(0.92); }
+.search-bar__submit svg { width: 20px; height: 20px; }
+
+/* 分类标签 */
+.category-tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.category-tabs::-webkit-scrollbar { display: none; }
+.category-tab {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 8px 12px; border-radius: var(--radius-md);
+  position: relative;
+}
+.category-tab svg { width: 28px; height: 28px; color: var(--fg); }
+.category-tab span { font-size: var(--text-xs); font-weight: 500; color: var(--fg); }
+.category-tab.is-active { background: rgba(0, 0, 0, 0.04); }
+.category-tab.is-active::after {
+  content: ""; position: absolute; bottom: 0; left: 50%;
+  width: 20px; height: 2px;
+  background: var(--fg);
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+.new-badge {
+  position: absolute; top: 4px; right: 8px;
+  padding: 2px 6px; border-radius: 4px;
+  background: var(--fg); color: white;
+  font-size: 9px; font-weight: 700;
+}
+
+/* 精选卡：signature —— 全出血图片 + Rausch 粉心形 */
+.featured-section { margin-bottom: 24px; }
+.section-title {
+  margin: 0 0 12px; font-size: var(--text-lg);
+  font-weight: 700; color: var(--fg);
+}
+.featured-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.featured-card__image {
+  position: relative;
+  aspect-ratio: 4/3;
+}
+.image-placeholder {
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+}
+.image-placeholder svg {
+  width: 48px; height: 48px;
+  opacity: 0.3;
+}
+.favorite-btn {
+  position: absolute; top: 12px; right: 12px;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.favorite-btn:active { transform: scale(0.92); }
+.favorite-btn__icon { width: 20px; height: 20px; color: var(--fg); }
+.favorite-btn:is(.is-favorite) .favorite-btn__icon {
+  fill: var(--accent); stroke: var(--accent);
+}
+.guest-favorite {
+  position: absolute; bottom: 12px; left: 12px;
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 8px; border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.guest-favorite svg { width: 14px; height: 14px; color: var(--accent); }
+.guest-favorite span { font-size: var(--text-xs); font-weight: 700; color: var(--fg); }
+
+.featured-card__content { padding: 12px; }
+.location-tag {
+  font-size: var(--text-xs); color: var(--muted);
+  display: block; margin-bottom: 2px;
+}
+.listing-title {
+  margin: 0 0 4px; font-size: var(--text-base);
+  font-weight: 600; color: var(--fg);
+}
+.listing-desc {
+  margin: 0 0 8px; font-size: var(--text-sm);
+  color: var(--muted); font-weight: 500;
+}
+.listing-price { display: flex; align-items: baseline; gap: 4px; }
+.price-amount {
+  font-size: var(--text-lg); font-weight: 700; color: var(--fg);
+}
+.price-unit { font-size: var(--text-sm); color: var(--muted); }
+
+/* 房源列表 */
+.listings-section { margin-bottom: 24px; }
+.listing-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.listing-item {
+  display: flex; gap: 12px;
+}
+.listing-item__image {
+  position: relative;
+  width: 120px; flex-shrink: 0;
+  aspect-ratio: 4/3; border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.listing-item__image .image-placeholder { border-radius: var(--radius-md); }
+.listing-item__image .favorite-btn {
+  width: 32px; height: 32px; top: 8px; right: 8px;
+}
+.listing-item__image .favorite-btn__icon { width: 18px; height: 18px; }
+.listing-badge {
+  position: absolute; bottom: 8px; left: 8px;
+  padding: 3px 8px; border-radius: var(--radius-pill);
+  background: rgba(34, 34, 34, 0.8); color: white;
+  font-size: 10px; font-weight: 600;
+}
+.listing-badge--plus {
+  background: #92174d;
+}
+.listing-item__content {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: space-between; padding: 2px 0;
+}
+.listing-item__location {
+  font-size: var(--text-xs); color: var(--muted);
+  font-weight: 500;
+}
+.listing-item__title {
+  margin: 2px 0; font-size: var(--text-sm);
+  font-weight: 600; color: var(--fg);
+}
+.listing-item__desc {
+  margin: 0; font-size: var(--text-xs);
+  color: var(--muted); font-weight: 500;
+}
+.listing-item__price {
+  font-size: var(--text-base); font-weight: 700; color: var(--fg);
+}
+.listing-item__price span { color: var(--accent); }
+
+/* 操作区 */
+.action-area { display: flex; flex-direction: column; gap: 10px; }
+.reserve-btn {
+  width: 100%; padding: 14px; border-radius: var(--radius-sm);
+  background: var(--accent); color: var(--accent-on);
+  font-size: var(--text-base); font-weight: 600;
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.reserve-btn:active { transform: scale(0.92); }
+.secondary-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border);
+  font-size: var(--text-sm); font-weight: 600;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.secondary-btn svg { width: 18px; height: 18px; }
+.secondary-btn:active { background: #f2f2f2; }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  padding: 8px 10px 18px; background: var(--surface);
+  box-shadow: 0 -1px 0 var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--muted); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 24px; height: 24px; fill: currentColor; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--surface);
+  font-size: var(--text-xs); padding: 9px 16px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.search-bar, .category-tabs, .featured-section, .listings-section, .action-area {
+  animation: rise 520ms var(--ease-standard) both;
+}
+.category-tabs { animation-delay: 50ms; }
+.featured-section { animation-delay: 100ms; }
+.listings-section { animation-delay: 150ms; }
+.action-area { animation-delay: 200ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

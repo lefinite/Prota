@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>旧声 · Vintage</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__badge" aria-hidden="true">旧声</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__sub">EST. 1978 · 城南黑胶行 · 今日营业至 21:00</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="店里猫「芝麻」今日在岗" aria-label="店内">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h4l2-4 3 8 2-4h5"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：正在播放（签名：旋转唱片 + 指针刻度）-->
+            <section class="hero" aria-label="正在试听">
+              <div class="hero__deck">
+                <div class="hero__vinyl" id="vinyl" aria-hidden="true">
+                  <i class="hero__label"></i>
+                </div>
+                <div class="hero__tonearm" aria-hidden="true"></div>
+                <div class="hero__info">
+                  <p class="hero__mono">NOW SPINNING · B-SIDE</p>
+                  <h1 class="hero__title">夜半歌谣集</h1>
+                  <p class="hero__artist">三味线与雨 · 1974 / MONO 再版</p>
+                </div>
+              </div>
+              <div class="hero__controls">
+                <button class="ctrl" type="button" data-toast="上一张：晨光圆舞曲" aria-label="上一张">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 5v14L8 12l10-7zM6 5v14"/></svg>
+                </button>
+                <button class="ctrl ctrl--play" type="button" id="playBtn" aria-label="播放/暂停">
+                  <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+                  <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z"/></svg>
+                </button>
+                <button class="ctrl" type="button" data-toast="下一张：港口小夜曲" aria-label="下一张">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 5v14l10-7L6 5zM18 5v14"/></svg>
+                </button>
+                <div class="hero__dial" aria-hidden="true">
+                  <i class="needle" style="--r: 40deg"></i>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="店内">
+              <div class="duo__card">
+                <h2 class="duo__title">新到货</h2>
+                <p class="duo__num">42<span> 张</span></p>
+                <p class="duo__meta">民国戏曲 · 80 年代城市民谣 · 爵士</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">会员卡</h2>
+                <p class="duo__num">NO.0847</p>
+                <p class="duo__meta">本季已购 12 张 · 打九折</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：唱片架 -->
+            <section class="feed" aria-label="唱片架">
+              <div class="feed__head">
+                <h2 class="feed__title">本周上架</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="folk">民谣</button>
+                  <button class="chip" type="button" data-filter="opera">戏曲</button>
+                  <button class="chip" type="button" data-filter="jazz">爵士</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="folk">
+                  <div class="sleeve s1" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">晨光圆舞曲（1962）</span>
+                    <span class="feed-item__meta">78 RPM · 壳有轻微划痕 · ¥240</span>
+                  </div>
+                  <button class="star" type="button" aria-label="想要" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="opera">
+                  <div class="sleeve s2" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">贵妃醉酒 · 名段精选</span>
+                    <span class="feed-item__meta">33⅓ RPM · 近全新 · ¥180</span>
+                  </div>
+                  <button class="star" type="button" aria-label="想要" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="jazz">
+                  <div class="sleeve s3" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">港口小夜曲 · 爵士四重奏</span>
+                    <span class="feed-item__meta">复刻 180g · 透明胶 · ¥320</span>
+                  </div>
+                  <button class="star is-on" type="button" aria-label="想要" aria-pressed="true">★</button>
+                </li>
+                <li class="feed-item" data-kind="folk">
+                  <div class="sleeve s4" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">城南旧事 原声</span>
+                    <span class="feed-item__meta">首版 · 附歌本 · ¥560</span>
+                  </div>
+                  <button class="star" type="button" aria-label="想要" aria-pressed="false">☆</button>
+                </li>
+                <li class="feed-item" data-kind="jazz">
+                  <div class="sleeve s5" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">雨夜蓝调集</span>
+                    <span class="feed-item__meta">合辑 · 双碟 · ¥150</span>
+                  </div>
+                  <button class="star" type="button" aria-label="想要" aria-pressed="false">☆</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="找碟">
+              <input class="action__input" id="findInput" type="text" placeholder="报上曲名 / 艺人 / 年代…" />
+              <div class="chips chips--era">
+                <button class="chip is-active" type="button">50s-60s</button>
+                <button class="chip" type="button">70s-80s</button>
+                <button class="chip" type="button">复刻</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-teal" type="button" id="holdBtn">到店留碟</button>
+                <button class="btn-ghost" type="button" data-toast="已致电老板娘确认库存">电话询价</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="唱片架">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6"/></svg>
+              <span>唱片架</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="唱机">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1"/><circle cx="8" cy="12" r="2.4"/><path d="M15 9.5v5"/></svg>
+              <span>唱机</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="扫碟" aria-label="扫碟">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/></svg>
+              <span>扫碟</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="故事">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h11v16H5z"/><path d="M16 8h3v12h-3"/></svg>
+              <span>故事</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

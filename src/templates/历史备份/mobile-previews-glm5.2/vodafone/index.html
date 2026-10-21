@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Vodafone · 全球通</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- Vodafone 红色品牌带（signature） -->
+            <div class="brand-band" aria-hidden="true"></div>
+
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="vodafone-logo">
+                  <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                    <circle cx="20" cy="20" r="18" fill="#e60000"/>
+                    <path d="M14 14c0-3.5 2.5-6 6-6s6 2.5 6 6v12c0 3.5-2.5 6-6 6s-6-2.5-6-6v-8c0-1.5 1-2.5 2.5-2.5s2.5 1 2.5 2.5v8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">VODAFONE</span>
+                  <span class="brand-sub">全球通服务</span>
+                </div>
+              </div>
+              <button class="iconbtn iconbtn--circle" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero：话费余额卡（signature - 大数字展示） -->
+            <section class="balance-card" aria-label="账户余额">
+              <p class="balance-card__label">本月剩余话费</p>
+              <p class="balance-card__amount">¥ <span class="number">486</span><span class="decimal">.50</span></p>
+              <div class="balance-card__meta">
+                <span class="trend trend--success">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                  充值成功
+                </span>
+                <span class="balance-card__hint">账单日：25日</span>
+              </div>
+              <button class="btn btn--pill btn--primary" data-toast="跳转充值页面">
+                立即充值
+              </button>
+            </section>
+
+            <!-- 流量与通话双卡 -->
+            <section class="stat-row" aria-label="套餐使用">
+              <div class="stat-card stat-card--data">
+                <span class="stat-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 7H7M17 12H7M17 17H7" /></svg>
+                </span>
+                <span class="stat-card__cap">本月流量</span>
+                <span class="stat-card__val">24.8 <small>GB</small></span>
+                <span class="stat-card__foot">剩余 12.5 GB</span>
+              </div>
+              <div class="stat-card stat-card--call">
+                <span class="stat-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                </span>
+                <span class="stat-card__cap">国内通话</span>
+                <span class="stat-card__val">186 <small>分钟</small></span>
+                <span class="stat-card__foot">剩余 314 分钟</span>
+              </div>
+            </section>
+
+            <!-- 全球服务列表 -->
+            <section class="service-list" aria-label="全球服务">
+              <h2 class="section-title">全球服务</h2>
+              <ul class="service-list__items">
+                <li class="service-item">
+                  <div class="service-item__icon service-item__icon--roaming">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                  </div>
+                  <div class="service-item__main">
+                    <span class="service-item__title">国际漫游</span>
+                    <span class="service-item__sub">已覆盖 185 个国家</span>
+                  </div>
+                  <span class="badge badge--active">已开通</span>
+                </li>
+                <li class="service-item">
+                  <div class="service-item__icon service-item__icon--esim">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01" /></svg>
+                  </div>
+                  <div class="service-item__main">
+                    <span class="service-item__title">eSIM 快捷开通</span>
+                    <span class="service-item__sub">支持 300+ 运营商</span>
+                  </div>
+                  <button class="btn btn--small" data-toast="eSIM 管理页面">管理</button>
+                </li>
+                <li class="service-item">
+                  <div class="service-item__icon service-item__icon--wifi">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" /></svg>
+                  </div>
+                  <div class="service-item__main">
+                    <span class="service-item__title">Vodafone WiFi</span>
+                    <span class="service-item__sub">全球热点一键连接</span>
+                  </div>
+                  <span class="badge badge--muted">需开通</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 近期账单 -->
+            <section class="bill-section" aria-label="近期账单">
+              <div class="bill-section__head">
+                <h2 class="section-title">近期账单</h2>
+                <div class="chips" role="tablist" aria-label="筛选账单">
+                  <button class="chip chip--active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="unpaid" role="tab" aria-selected="false">未付</button>
+                </div>
+              </div>
+              <ul class="bill-list">
+                <li class="bill-item bill-item--paid" data-status="paid">
+                  <span class="bill-item__date">7月账单</span>
+                  <div class="bill-item__main">
+                    <span class="bill-item__title">套餐费 + 通话费</span>
+                    <span class="bill-item__amount">¥ 128.00</span>
+                  </div>
+                  <span class="badge badge--success">已支付</span>
+                </li>
+                <li class="bill-item bill-item--paid" data-status="paid">
+                  <span class="bill-item__date">6月账单</span>
+                  <div class="bill-item__main">
+                    <span class="bill-item__title">套餐费 + 流量费</span>
+                    <span class="bill-item__amount">¥ 145.50</span>
+                  </div>
+                  <span class="badge badge--success">已支付</span>
+                </li>
+                <li class="bill-item bill-item--unpaid" data-status="unpaid">
+                  <span class="bill-item__date">8月账单</span>
+                  <div class="bill-item__main">
+                    <span class="bill-item__title">套餐费 + 国际漫游</span>
+                    <span class="bill-item__amount">¥ 286.00</span>
+                  </div>
+                  <button class="btn btn--small btn--primary" data-toast="跳转支付页面">支付</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 推广横幅 -->
+            <section class="promo-banner" aria-label="优惠活动">
+              <div class="promo-banner__content">
+                <span class="promo-banner__tag">限时优惠</span>
+                <h3 class="promo-banner__title">国际漫游包 5 折</h3>
+                <p class="promo-banner__desc">欧洲、北美、日韩热门目的地</p>
+                <button class="btn btn--ghost" data-toast="查看详情">查看详情</button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="plans">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v6M8 2v6" /></svg>
+              <span>套餐</span>
+            </button>
+            <button class="tab tab--center" data-tab="services" aria-label="全球服务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+            </button>
+            <button class="tab" data-tab="bills">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>账单</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Creative Hub · 创作者平台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">✦</span>
+                <div class="brand-text">
+                  <span class="brand-name">Creative Hub</span>
+                  <span class="brand-sub">嗨，创作者</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 创作统计 Hero（signature：大号活泼数字 + 饱和橙） -->
+            <section class="hero-stats">
+              <div class="hero-badge">
+                <span class="hero-badge__text">本周高光</span>
+              </div>
+              <h2 class="hero-title">你的创意正在<span class="highlight">闪耀</span></h2>
+              <div class="hero-grid">
+                <div class="hero-stat">
+                  <span class="hero-stat__val">2.4K</span>
+                  <span class="hero-stat__label">新增粉丝</span>
+                </div>
+                <div class="hero-stat">
+                  <span class="hero-stat__val">89%</span>
+                  <span class="hero-stat__label">完成率</span>
+                </div>
+                <div class="hero-stat">
+                  <span class="hero-stat__val">12</span>
+                  <span class="hero-stat__label">作品发布</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 进行中的创作 -->
+            <section class="works-section">
+              <div class="section-header">
+                <h3>进行中</h3>
+                <button class="see-all">查看全部</button>
+              </div>
+
+              <div class="works-grid">
+                <div class="work-card work-card--featured">
+                  <div class="work-card__image" style="background: linear-gradient(135deg, #ff6b00, #ff9e00)">
+                    <span class="work-card__icon">🎨</span>
+                  </div>
+                  <div class="work-card__content">
+                    <span class="work-card__tag">插画</span>
+                    <h4 class="work-card__title">城市印象系列</h4>
+                    <div class="work-card__meta">
+                      <div class="progress-bar">
+                        <span class="progress-bar__fill" style="width: 75%"></span>
+                      </div>
+                      <span class="work-card__status">75%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="work-card">
+                  <div class="work-card__image" style="background: linear-gradient(135deg, #7c61d4, #a78bfa)">
+                    <span class="work-card__icon">📝</span>
+                  </div>
+                  <div class="work-card__content">
+                    <span class="work-card__tag">文章</span>
+                    <h4 class="work-card__title">创作方法论</h4>
+                    <div class="work-card__meta">
+                      <span class="work-card__status">草稿</span>
+                      <span class="work-card__date">2天前编辑</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 灵感收集 -->
+            <section class="ideas-section">
+              <div class="section-header">
+                <h3>灵感收集</h3>
+                <button class="add-btn" aria-label="添加灵感" data-toast="打开灵感编辑器">+</button>
+              </div>
+
+              <ul class="ideas-list">
+                <li class="idea-item">
+                  <span class="idea-icon">💡</span>
+                  <div class="idea-main">
+                    <span class="idea-title">黄昏色彩研究</span>
+                    <span class="idea-meta">色彩 · 今天</span>
+                  </div>
+                  <button class="idea-action" aria-label="收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </button>
+                </li>
+                <li class="idea-item">
+                  <span class="idea-icon">🎵</span>
+                  <div class="idea-main">
+                    <span class="idea-title">爵士乐专辑封面</span>
+                    <span class="idea-meta">视觉 · 昨天</span>
+                  </div>
+                  <button class="idea-action idea-action--active" aria-label="已收藏">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </button>
+                </li>
+                <li class="idea-item">
+                  <span class="idea-icon">🌿</span>
+                  <div class="idea-main">
+                    <span class="idea-title">自然纹理素材库</span>
+                    <span class="idea-meta">素材 · 3天前</span>
+                  </div>
+                  <button class="idea-action" aria-label="收藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 创作日历 -->
+            <section class="calendar-card">
+              <div class="calendar-header">
+                <span class="calendar-title">创作日历</span>
+                <span class="calendar-streak">连续 7 天 🔥</span>
+              </div>
+              <div class="calendar-grid">
+                <span class="calendar-day calendar-day--active">一</span>
+                <span class="calendar-day calendar-day--active">二</span>
+                <span class="calendar-day calendar-day--active">三</span>
+                <span class="calendar-day calendar-day--active">四</span>
+                <span class="calendar-day calendar-day--active">五</span>
+                <span class="calendar-day">六</span>
+                <span class="calendar-day calendar-day--today">日</span>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>创作</span>
+            </button>
+            <button class="tab" data-tab="discover">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <span>探索</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="开始创作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="messages">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>消息</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

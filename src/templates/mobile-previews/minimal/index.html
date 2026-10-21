@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>此刻 · Minimal</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true"></div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">此刻</span>
+                <span class="brand-bar__sub">周四 · 已完成 2 个专注块</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="勿扰模式开启中 · 通知已静音至 12:00" aria-label="设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：巨型专注计时 -->
+            <section class="hero-card" aria-label="专注计时">
+              <p class="hero-card__label">正在专注 · 写作第三章</p>
+              <p class="hero-card__timer" id="timerDisplay" role="timer" aria-live="off">24:37</p>
+              <div class="hero-card__track" role="img" aria-label="本专注块进度 62%">
+                <span class="hero-card__fill" id="timerFill" style="--w: 62%"></span>
+              </div>
+              <div class="hero-card__row">
+                <span class="hero-card__state" id="timerState">进行中 · 第 2 个番茄</span>
+                <div class="hero-card__ctrl">
+                  <button class="ctrl-btn" type="button" id="timerBtn" aria-label="暂停专注">
+                    <svg id="timerIcon" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="6" y="5" width="4" height="14" rx="1" />
+                      <rect x="14" y="5" width="4" height="14" rx="1" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="今日统计">
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日专注</h2>
+                <p class="duo-card__num">2<em>小时</em>05<em>分</em></p>
+                <div class="mini-track"><span style="--w: 52%"></span></div>
+                <p class="duo-card__note">目标 4 小时 · 完成 52%</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">连续专注</h2>
+                <p class="duo-card__num">6<em>天</em></p>
+                <div class="streak" aria-label="近 7 天连续专注 6 天">
+                  <i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i>
+                </div>
+                <p class="duo-card__note">本周只差今天</p>
+              </div>
+            </section>
+
+            <!-- 4. 今日任务 Feed -->
+            <section class="feed" aria-label="今日任务">
+              <div class="feed__head">
+                <h2 class="feed__title">今日任务</h2>
+                <div class="chips" role="tablist" aria-label="筛选任务">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="open">未完成</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item is-done" data-kind="done">
+                  <button class="check" type="button" aria-pressed="true" aria-label="勾选：回复邮件"><i></i></button>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">回复合作邮件</span>
+                    <span class="feed-item__meta">09:00 · 事务</span>
+                  </div>
+                  <b class="feed-item__time">15m</b>
+                </li>
+                <li class="feed-item is-done" data-kind="done">
+                  <button class="check" type="button" aria-pressed="true" aria-label="勾选：晨间日记"><i></i></button>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">晨间日记</span>
+                    <span class="feed-item__meta">08:30 · 习惯</span>
+                  </div>
+                  <b class="feed-item__time">10m</b>
+                </li>
+                <li class="feed-item" data-kind="open">
+                  <button class="check" type="button" aria-pressed="false" aria-label="勾选：写作第三章"><i></i></button>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">写作第三章</span>
+                    <span class="feed-item__meta">进行中 · 深度<em class="state-chip is-live">当前</em></span>
+                  </div>
+                  <b class="feed-item__time">50m</b>
+                </li>
+                <li class="feed-item" data-kind="open">
+                  <button class="check" type="button" aria-pressed="false" aria-label="勾选：阅读《设计心理学》"><i></i></button>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阅读《设计心理学》</span>
+                    <span class="feed-item__meta">14:00 · 输入</span>
+                  </div>
+                  <b class="feed-item__time">30m</b>
+                </li>
+                <li class="feed-item" data-kind="open">
+                  <button class="check" type="button" aria-pressed="false" aria-label="勾选：整理灵感卡片"><i></i></button>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">整理灵感卡片</span>
+                    <span class="feed-item__meta">16:30 · 收尾</span>
+                  </div>
+                  <b class="feed-item__time">20m</b>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="新建专注">
+              <div class="duration-chips" role="group" aria-label="专注时长">
+                <button class="chip chip--dur is-active" type="button" data-min="25">25 分钟</button>
+                <button class="chip chip--dur" type="button" data-min="45">45 分钟</button>
+                <button class="chip chip--dur" type="button" data-min="15">15 分钟</button>
+              </div>
+              <input class="quick-input" id="taskInput" type="text" placeholder="添加一个任务，如：改稿第二遍" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="startBtn">开始专注</button>
+                <button class="btn-ghost" type="button" data-toast="已提醒：15:00 回到专注">稍后提醒</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="专注">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M9 2.5h6" />
+              </svg>
+              <span>专注</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.5l4 4 10-10" />
+              </svg>
+              <span>任务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="统计">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 20V10M12 20V4M19 20v-6" />
+              </svg>
+              <span>统计</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

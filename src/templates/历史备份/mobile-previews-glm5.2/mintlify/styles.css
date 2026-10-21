@@ -1,0 +1,289 @@
+/* =========================================================================
+ * mobile-previews/mintlify — DevReader
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/mintlify 的 :root token
+ * 页面：Page content（开发者阅读器 DevReader）
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/mintlify）—— */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-warm: #fafafa;
+  --fg: #0d0d0d;
+  --fg-2: #333333;
+  --muted: #666666;
+  --meta: #888888;
+  --border: rgba(0, 0, 0, 0.05);
+  --border-soft: rgba(0, 0, 0, 0.05);
+  --accent: #18E299;
+  --accent-on: #0d0d0d;
+  --accent-hover: #0fa76e;
+  --accent-active: color-mix(in oklab, var(--accent-hover), black 12%);
+  --success: #16a34a;
+  --warn: #c37d0d;
+  --danger: #d45656;
+  --font-display: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-body: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 40px;
+  --text-4xl: 64px;
+  --leading-body: 1.5;
+  --leading-tight: 1.15;
+  --tracking-display: -0.02em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 64px;
+  --section-y-phone: 48px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 2px 4px rgba(0, 0, 0, 0.03);
+  --focus-ring: 0 0 0 2px var(--accent);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1200px;
+  --container-gutter-desktop: 32px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 24px;
+
+  /* —— 手机外壳（与亮色设计系统协调）—— */
+  --page-backdrop-top: #f5f5f5;
+  --page-backdrop-bottom: #e8e8e8;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #f0f0f0;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.12);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(24, 226, 153, 0.06), transparent 40%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · DevReader ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 40px; height: 40px; border-radius: var(--radius-pill);
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  color: var(--accent-on); background: var(--accent);
+  letter-spacing: -0.5px;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-base); font-weight: 600; letter-spacing: -0.3px; }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.iconbtn {
+  width: 40px; height: 40px; border-radius: var(--radius-pill);
+  display: grid; place-items: center; color: var(--fg);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: var(--surface-warm); }
+
+/* Hero Card：signature —— 薄荷绿 atmospheric wash */
+.hero-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.hero-card__wash {
+  position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at 50% 30%, rgba(24, 226, 153, 0.15), transparent 50%);
+  pointer-events: none;
+}
+.hero-card__content { position: relative; }
+.hero-card__label { margin: 0; font-size: var(--text-sm); color: var(--muted); }
+.hero-card__value {
+  margin: 8px 0 0; font-size: var(--text-3xl); font-weight: 600;
+  letter-spacing: var(--tracking-display); line-height: var(--leading-tight);
+}
+.hero-card__unit { font-size: var(--text-sm); color: var(--muted); font-weight: 500; }
+.hero-card__meta {
+  display: flex; align-items: center; gap: 12px; margin-top: 12px;
+}
+.hero-card__trend {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--text-xs); font-weight: 500; color: var(--success);
+}
+.hero-card__trend svg { width: 14px; height: 14px; }
+.hero-card__streak { font-size: var(--text-xs); color: var(--muted); }
+
+/* 筛选 Chip —— Mintlify signature 全 Pill */
+.filter-section { margin-bottom: 16px; }
+.chips { display: inline-flex; background: var(--surface-warm); border-radius: var(--radius-pill); padding: 4px; }
+.chip {
+  padding: 6px 14px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 500; color: var(--muted);
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); }
+
+/* 文档列表 */
+.docs-block { margin-top: 8px; }
+.docs-block__title {
+  margin: 0 0 12px; font-size: var(--text-lg); font-weight: 600;
+  letter-spacing: -0.24px;
+}
+
+.doc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.doc {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 4px; border-bottom: 1px solid var(--border);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.doc:last-child { border-bottom: 0; }
+.doc.is-hidden { display: none; }
+.doc__icon {
+  flex: none; width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; font-size: 20px; background: var(--surface-warm);
+}
+.doc__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.doc__title { font-size: var(--text-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc__sub { font-size: var(--text-xs); color: var(--muted); font-family: var(--font-mono); }
+.doc__right { display: flex; flex-direction: column; align-items: flex-end; }
+.doc__progress { font-size: var(--text-xs); font-weight: 600; color: var(--accent); }
+.doc__status { font-size: var(--text-xs); color: var(--muted); }
+
+/* 收藏夹卡片 */
+.bookmarks-card {
+  margin-top: 20px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px;
+}
+.bookmarks-card__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.bookmarks-card__title { font-size: var(--text-base); font-weight: 600; letter-spacing: -0.2px; }
+.bookmarks-card__count { font-size: var(--text-xs); color: var(--muted); }
+
+.bookmark-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.bookmark-item {
+  background: var(--surface-warm); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.bookmark-item__tag { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+.bookmark-item__title { font-size: var(--text-sm); font-weight: 500; line-height: 1.4; }
+
+.bookmarks-card__btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-pill);
+  font-size: var(--text-sm); font-weight: 500; transition: all var(--motion-fast) var(--ease-standard);
+}
+.bookmarks-card__btn svg { width: 16px; height: 16px; }
+.bookmarks-card__btn:active { background: var(--surface-warm); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab —— Mintlify 无 FAB，标准导航 */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+  padding: 8px 12px 16px; background: color-mix(in oklab, var(--surface), transparent 2%);
+  backdrop-filter: blur(8px); border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 500; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast —— Mintlify 风格，细边框 */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--surface); color: var(--fg);
+  font-size: var(--text-xs); font-weight: 500; padding: 10px 18px; border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-card, .filter-section, .docs-block, .bookmarks-card { animation: rise 520ms var(--ease-standard) both; }
+.filter-section { animation-delay: 70ms; }
+.docs-block { animation-delay: 140ms; }
+.bookmarks-card { animation-delay: 200ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

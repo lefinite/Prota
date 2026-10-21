@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>拾光 · Contemporary</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">◐</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">拾光</span>
+                <span class="brand-bar__sub">专注 · 连续 6 天 · 第 32 周</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="每日 21:00 会推送专注复盘" aria-label="通知设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：圆环专注计时器 -->
+            <section class="hero-focus" aria-label="专注计时器">
+              <div class="hero-focus__ring" role="img" aria-label="本次专注剩余 24 分 58 秒，进度 0%">
+                <svg viewBox="0 0 140 140">
+                  <circle class="ring-track" cx="70" cy="70" r="60" />
+                  <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="60" />
+                </svg>
+                <div class="hero-focus__ring-center">
+                  <b id="timerText">24:58</b>
+                  <span>剩余时长</span>
+                </div>
+              </div>
+              <div class="hero-focus__side">
+                <span class="hero-focus__label">深度工作 · 写方案</span>
+                <div class="hero-focus__chips" role="tablist" aria-label="专注时长">
+                  <button class="mini-chip" type="button" data-min="15">15 分钟</button>
+                  <button class="mini-chip is-active" type="button" data-min="25">25 分钟</button>
+                  <button class="mini-chip" type="button" data-min="45">45 分钟</button>
+                </div>
+                <button class="hero-focus__start" type="button" id="timerBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="timerIcon">
+                    <path d="M7 5l12 7-12 7V5z" />
+                  </svg>
+                  <span id="timerBtnText">开始专注</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 3. 三格 Bento 内容卡 -->
+            <section class="bento-grid" aria-label="本周概览">
+              <div class="bento-tile">
+                <h2 class="bento-tile__title">本周专注</h2>
+                <p class="bento-tile__num">14.5<span>h</span></p>
+                <div class="week-bars" role="img" aria-label="周一到周日专注时长柱状图">
+                  <i style="--h: 44%"></i><i style="--h: 70%"></i><i style="--h: 30%"></i><i style="--h: 85%"></i><i style="--h: 58%"></i><i class="is-today" style="--h: 92%"></i><i style="--h: 0%"></i>
+                </div>
+              </div>
+              <div class="bento-tile">
+                <h2 class="bento-tile__title">习惯打卡</h2>
+                <p class="bento-tile__num">3<span>/4</span></p>
+                <ul class="habit-list">
+                  <li class="is-done">晨间阅读</li>
+                  <li class="is-done">运动 30 分钟</li>
+                  <li class="is-done">复盘日记</li>
+                  <li>23:00 前入睡</li>
+                </ul>
+              </div>
+              <div class="bento-tile bento-tile--wide">
+                <h2 class="bento-tile__title">今日番茄</h2>
+                <p class="bento-tile__num">12<span> 个 · 目标 16</span></p>
+                <div class="pomo-track"><span class="pomo-fill" style="--w: 75%"></span></div>
+              </div>
+            </section>
+
+            <!-- 4. 今日任务 Feed -->
+            <section class="feed" aria-label="今日任务">
+              <div class="feed__head">
+                <h2 class="feed__title">今日任务</h2>
+                <div class="chips" role="tablist" aria-label="筛选任务状态">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="doing">进行中</button>
+                  <button class="chip" type="button" data-filter="todo">待办</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="late">延期</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="doing">
+                  <span class="feed-item__glyph" aria-hidden="true">✍️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">写 Q3 产品方案初稿</span>
+                    <span class="feed-item__meta">10:00 · 工作 · 高优先 <em class="feed-item__chip" data-level="run">进行中</em></span>
+                  </div>
+                  <b class="feed-item__eta">52%</b>
+                  <button class="feed-item__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12.5l5 5 10-11" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="doing">
+                  <span class="feed-item__glyph" aria-hidden="true">📊</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">整理用户访谈记录</span>
+                    <span class="feed-item__meta">11:30 · 研究 · 中优先 <em class="feed-item__chip" data-level="run">进行中</em></span>
+                  </div>
+                  <b class="feed-item__eta">28%</b>
+                  <button class="feed-item__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12.5l5 5 10-11" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="todo">
+                  <span class="feed-item__glyph" aria-hidden="true">📞</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">与设计同步评审意见</span>
+                    <span class="feed-item__meta">14:00 · 协作 <em class="feed-item__chip">待办</em></span>
+                  </div>
+                  <b class="feed-item__eta">—</b>
+                  <button class="feed-item__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12.5l5 5 10-11" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">📧</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">回复供应商邮件</span>
+                    <span class="feed-item__meta">09:15 · 已完成 <em class="feed-item__chip" data-level="ok">已完成</em></span>
+                  </div>
+                  <b class="feed-item__eta">100%</b>
+                  <button class="feed-item__check is-on" type="button" aria-label="标记完成" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12.5l5 5 10-11" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="todo">
+                  <span class="feed-item__glyph" aria-hidden="true">📖</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阅读《设计中的设计》第 4 章</span>
+                    <span class="feed-item__meta">20:30 · 学习 <em class="feed-item__chip">待办</em></span>
+                  </div>
+                  <b class="feed-item__eta">—</b>
+                  <button class="feed-item__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12.5l5 5 10-11" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="late">
+                  <span class="feed-item__glyph" aria-hidden="true">🧹</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">整理素材库命名规范</span>
+                    <span class="feed-item__meta">昨日 · 顺延 <em class="feed-item__chip" data-level="late">延期</em></span>
+                  </div>
+                  <b class="feed-item__eta">15%</b>
+                  <button class="feed-item__check" type="button" aria-label="标记完成" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.5 12.5l5 5 10-11" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="添加任务">
+              <input class="task-input" id="taskInput" type="text" placeholder="添加任务，如：整理竞品截图 30 分钟" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="focusBtn">开始专注</button>
+                <button class="btn-ghost" type="button" data-toast="本周报告：专注时长超过 87% 的用户">查看报告</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="今日">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M8 3v3M16 3v3" />
+              </svg>
+              <span>今日</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="统计">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 19V11M12 19V5M19 19v-6" />
+              </svg>
+              <span>统计</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="专注" aria-label="开始专注">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M9 2h6" />
+              </svg>
+              <span>专注</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="习惯">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z" />
+              </svg>
+              <span>习惯</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

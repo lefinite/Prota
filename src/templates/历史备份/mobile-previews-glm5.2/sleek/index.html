@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>PulseFit · Sleek</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">PulseFit</span>
+                  <span class="brand-sub">Good Morning, Alex</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="No new notifications">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Hero signature：环形进度 + 发光主色 -->
+            <section class="hero-ring" aria-label="今日活动目标">
+              <div class="hero-ring__chart">
+                <svg class="ring-chart" viewBox="0 0 120 120">
+                  <circle class="ring-chart__bg" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>
+                  <circle class="ring-chart__fill" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-dasharray="326.73" stroke-dashoffset="65.35" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="hero-ring__center">
+                  <span class="hero-ring__value">78%</span>
+                  <span class="hero-ring__label">Daily Goal</span>
+                </div>
+              </div>
+              <div class="hero-ring__stats">
+                <div class="stat">
+                  <span class="stat__val">2,847</span>
+                  <span class="stat__lbl">Steps</span>
+                </div>
+                <div class="stat">
+                  <span class="stat__val">312</span>
+                  <span class="stat__lbl">kcal</span>
+                </div>
+                <div class="stat">
+                  <span class="stat__val">4.2</span>
+                  <span class="stat__lbl">km</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快速操作卡片 -->
+            <section class="quick-actions" aria-label="快速开始">
+              <button class="action-card" data-toast="Starting outdoor run...">
+                <div class="action-card__icon action-card__icon--primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2c-5.621 0-10.212 4.439-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z"/></svg>
+                </div>
+                <span class="action-card__label">Outdoor Run</span>
+              </button>
+              <button class="action-card" data-toast="Starting cycling...">
+                <div class="action-card__icon action-card__icon--secondary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>
+                </div>
+                <span class="action-card__label">Cycling</span>
+              </button>
+              <button class="action-card" data-toast="Starting HIIT workout...">
+                <div class="action-card__icon action-card__icon--accent">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <span class="action-card__label">HIIT</span>
+              </button>
+            </section>
+
+            <!-- 心率区卡片 -->
+            <section class="zone-card" aria-label="心率区间">
+              <div class="zone-card__head">
+                <h2 class="zone-card__title">Heart Rate Zones</h2>
+                <span class="zone-card__badge">Live</span>
+              </div>
+              <div class="zone-card__current">
+                <span class="zone-card__bpm">142</span>
+                <span class="zone-card__bpm-label">BPM</span>
+              </div>
+              <div class="zone-bar">
+                <div class="zone-bar__seg zone-bar__seg--rest" style="--w: 25%"></div>
+                <div class="zone-bar__seg zone-bar__seg--fat" style="--w: 30%"></div>
+                <div class="zone-bar__seg zone-bar__seg--cardio is-active" style="--w: 28%"></div>
+                <div class="zone-bar__seg zone-bar__seg--peak" style="--w: 17%"></div>
+              </div>
+              <div class="zone-labels">
+                <span class="zone-label">Rest</span>
+                <span class="zone-label">Fat Burn</span>
+                <span class="zone-label zone-label--active">Cardio</span>
+                <span class="zone-label">Peak</span>
+              </div>
+            </section>
+
+            <!-- 最近活动列表 -->
+            <section class="activity-list" aria-label="最近活动">
+              <div class="list-header">
+                <h2>Recent Activities</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选活动">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+                  <button class="chip" data-filter="run" role="tab" aria-selected="false">Run</button>
+                  <button class="chip" data-filter="cycle" role="tab" aria-selected="false">Cycle</button>
+                </div>
+              </div>
+
+              <ul class="activity-items" id="activityList">
+                <li class="activity-item" data-type="run">
+                  <div class="activity-item__icon activity-item__icon--run">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2c-5.621 0-10.212 4.439-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z"/></svg>
+                  </div>
+                  <div class="activity-item__main">
+                    <span class="activity-item__title">Morning Run</span>
+                    <span class="activity-item__sub">Today, 6:30 AM · 5.2 km</span>
+                  </div>
+                  <div class="activity-item__right">
+                    <span class="activity-item__val">32:18</span>
+                    <span class="activity-item__meta">386 kcal</span>
+                  </div>
+                </li>
+                <li class="activity-item" data-type="cycle">
+                  <div class="activity-item__icon activity-item__icon--cycle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>
+                  </div>
+                  <div class="activity-item__main">
+                    <span class="activity-item__title">Evening Cycle</span>
+                    <span class="activity-item__sub">Yesterday · 12.8 km</span>
+                  </div>
+                  <div class="activity-item__right">
+                    <span class="activity-item__val">45:42</span>
+                    <span class="activity-item__meta">412 kcal</span>
+                  </div>
+                </li>
+                <li class="activity-item" data-type="run">
+                  <div class="activity-item__icon activity-item__icon--run">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2c-5.621 0-10.212 4.439-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z"/></svg>
+                  </div>
+                  <div class="activity-item__main">
+                    <span class="activity-item__title">Trail Run</span>
+                    <span class="activity-item__sub">Aug 12 · 8.1 km</span>
+                  </div>
+                  <div class="activity-item__right">
+                    <span class="activity-item__val">52:05</span>
+                    <span class="activity-item__meta">621 kcal</span>
+                  </div>
+                </li>
+                <li class="activity-item" data-type="cycle">
+                  <div class="activity-item__icon activity-item__icon--cycle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>
+                  </div>
+                  <div class="activity-item__main">
+                    <span class="activity-item__title">Spin Class</span>
+                    <span class="activity-item__sub">Aug 11 · Indoor</span>
+                  </div>
+                  <div class="activity-item__right">
+                    <span class="activity-item__val">48:00</span>
+                    <span class="activity-item__meta">545 kcal</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 周目标进度 -->
+            <section class="week-goal" aria-label="周目标">
+              <div class="week-goal__header">
+                <span class="week-goal__title">Weekly Goal</span>
+                <span class="week-goal__progress">4.5 / 5 days</span>
+              </div>
+              <div class="week-days">
+                <div class="day done">
+                  <span class="day__lbl">M</span>
+                  <span class="day__dot"></span>
+                </div>
+                <div class="day done">
+                  <span class="day__lbl">T</span>
+                  <span class="day__dot"></span>
+                </div>
+                <div class="day done">
+                  <span class="day__lbl">W</span>
+                  <span class="day__dot"></span>
+                </div>
+                <div class="day done">
+                  <span class="day__lbl">T</span>
+                  <span class="day__dot"></span>
+                </div>
+                <div class="day active">
+                  <span class="day__lbl">F</span>
+                  <span class="day__pulse"></span>
+                </div>
+                <div class="day">
+                  <span class="day__lbl">S</span>
+                  <span class="day__dot"></span>
+                </div>
+                <div class="day">
+                  <span class="day__lbl">S</span>
+                  <span class="day__dot"></span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>Home</span>
+            </button>
+            <button class="tab" data-tab="workout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>Workout</span>
+            </button>
+            <button class="tab tab--fab" data-tab="plus" aria-label="开始锻炼">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg>
+              <span>Stats</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>Profile</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

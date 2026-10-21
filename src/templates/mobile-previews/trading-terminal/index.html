@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>盘房 · Trading Terminal</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__mark">盘房</span>
+              <span class="brand-bar__clock mono" id="clockLine">2026-10-15 09:41:22 CST</span>
+              <span class="brand-bar__conn mono">● 行情 12ms</span>
+            </header>
+
+            <!-- 2. Hero：主力合约（签名：大报价 + 迷你 K 线）-->
+            <section class="hero" aria-label="主力合约">
+              <div class="hero__head">
+                <span class="hero__sym">BTC-USDT <i class="mono">PERP</i></span>
+                <span class="hero__mark mono">BINANCE</span>
+              </div>
+              <div class="hero__price-row">
+                <b class="hero__price up" id="bigPrice">67,418.5</b>
+                <span class="hero__chg up mono" id="bigChg">+2.41%</span>
+              </div>
+              <div class="hero__mini" role="img" aria-label="迷你K线图，最近三十根">
+                <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true">
+                  <g stroke-width="1.4">
+                    <line x1="10" y1="52" x2="10" y2="62" stroke="#38bdf8"/><rect x="8" y="54" width="4" height="6" fill="#38bdf8"/>
+                    <line x1="30" y1="48" x2="30" y2="66" stroke="#38bdf8"/><rect x="28" y="50" width="4" height="12" fill="#38bdf8"/>
+                    <line x1="50" y1="40" x2="50" y2="58" stroke="#38bdf8"/><rect x="48" y="44" width="4" height="10" fill="#38bdf8"/>
+                    <line x1="70" y1="44" x2="70" y2="60" stroke="#ff4757"/><rect x="68" y="46" width="4" height="8" fill="#ff4757"/>
+                    <line x1="90" y1="36" x2="90" y2="52" stroke="#38bdf8"/><rect x="88" y="38" width="4" height="10" fill="#38bdf8"/>
+                    <line x1="110" y1="30" x2="110" y2="48" stroke="#38bdf8"/><rect x="108" y="32" width="4" height="12" fill="#38bdf8"/>
+                    <line x1="130" y1="34" x2="130" y2="50" stroke="#ff4757"/><rect x="128" y="36" width="4" height="9" fill="#ff4757"/>
+                    <line x1="150" y1="26" x2="150" y2="44" stroke="#38bdf8"/><rect x="148" y="28" width="4" height="12" fill="#38bdf8"/>
+                    <line x1="170" y1="18" x2="170" y2="36" stroke="#38bdf8"/><rect x="168" y="20" width="4" height="13" fill="#38bdf8"/>
+                    <line x1="190" y1="22" x2="190" y2="34" stroke="#ff4757"/><rect x="188" y="24" width="4" height="8" fill="#ff4757"/>
+                    <line x1="210" y1="14" x2="210" y2="30" stroke="#38bdf8"/><rect x="208" y="16" width="4" height="11" fill="#38bdf8"/>
+                    <line x1="230" y1="10" x2="230" y2="26" stroke="#38bdf8"/><rect x="228" y="12" width="4" height="11" fill="#38bdf8"/>
+                    <line x1="250" y1="8" x2="250" y2="20" stroke="#38bdf8"/><rect x="248" y="10" width="4" height="8" fill="#38bdf8"/>
+                    <line x1="270" y1="4" x2="270" y2="16" stroke="#ff4757"/><rect x="268" y="6" width="4" height="6" fill="#ff4757"/>
+                    <line x1="290" y1="6" x2="290" y2="18" stroke="#38bdf8"/><rect x="288" y="8" width="4" height="8" fill="#38bdf8"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="hero__book" aria-label="盘口五档">
+                <div class="hero__side hero__side--ask">
+                  <span class="mono">67,424.0</span><span class="mono">1.204</span><i style="--w: 62%"></i>
+                </div>
+                <div class="hero__side hero__side--ask">
+                  <span class="mono">67,422.5</span><span class="mono">0.812</span><i style="--w: 41%"></i>
+                </div>
+                <div class="hero__side hero__side--ask">
+                  <span class="mono">67,420.0</span><span class="mono">2.480</span><i style="--w: 88%"></i>
+                </div>
+                <div class="hero__mid mono">价差 1.5 · 标记 67,418.5 · 资金费 +0.012%</div>
+                <div class="hero__side hero__side--bid">
+                  <span class="mono">67,418.5</span><span class="mono">0.960</span><i style="--w: 52%"></i>
+                </div>
+                <div class="hero__side hero__side--bid">
+                  <span class="mono">67,417.0</span><span class="mono">3.104</span><i style="--w: 96%"></i>
+                </div>
+                <div class="hero__side hero__side--bid">
+                  <span class="mono">67,415.5</span><span class="mono">1.488</span><i style="--w: 71%"></i>
+                </div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-buy" type="button" data-toast="买单已提交：67,418.5 × 0.05 限价">买入/做多</button>
+                <button class="btn-sell" type="button" data-toast="卖单已提交：67,418.5 × 0.05 限价">卖出/做空</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡：持仓与信号 -->
+            <section class="duo" aria-label="持仓">
+              <div class="duo__card">
+                <h2 class="duo__title mono">POSITION</h2>
+                <p class="duo__num up">+1,284.5</p>
+                <p class="duo__meta mono">BTC 多 0.25 · 开 66,102 · 强平 61,880</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">SIGNAL</h2>
+                <p class="duo__num">RSI 58</p>
+                <div class="sig-bars" aria-hidden="true">
+                  <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i>
+                </div>
+                <p class="duo__meta mono">趋势：多头排列 · 波动率 2.4%</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：自选列表 -->
+            <section class="feed" aria-label="自选">
+              <div class="feed__head">
+                <h2 class="feed__title mono">WATCHLIST</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="up">涨</button>
+                  <button class="chip" type="button" data-filter="down">跌</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="row" data-kind="up">
+                  <span class="row__sym">ETH<b class="mono">/USDT</b></span>
+                  <span class="mono row__mark">OKX</span>
+                  <b class="row__price up">3,284.1</b>
+                  <em class="mono up">+1.82%</em>
+                </li>
+                <li class="row" data-kind="down">
+                  <span class="row__sym">SOL<b class="mono">/USDT</b></span>
+                  <span class="mono row__mark">BIN</span>
+                  <b class="row__price down">172.44</b>
+                  <em class="mono down">-0.94%</em>
+                </li>
+                <li class="row" data-kind="up">
+                  <span class="row__sym">BNB<b class="mono">/USDT</b></span>
+                  <span class="mono row__mark">BIN</span>
+                  <b class="row__price up">612.9</b>
+                  <em class="mono up">+0.66%</em>
+                </li>
+                <li class="row" data-kind="down">
+                  <span class="row__sym">DOGE<b class="mono">/USDT</b></span>
+                  <span class="mono row__mark">OKX</span>
+                  <b class="row__price down">0.14827</b>
+                  <em class="mono down">-2.18%</em>
+                </li>
+                <li class="row" data-kind="up">
+                  <span class="row__sym">ARB<b class="mono">/USDT</b></span>
+                  <span class="mono row__mark">BIN</span>
+                  <b class="row__price up">0.8412</b>
+                  <em class="mono up">+4.02%</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="下单">
+              <div class="chips chips--size">
+                <button class="chip" type="button">25%</button>
+                <button class="chip is-active" type="button">50%</button>
+                <button class="chip" type="button">75%</button>
+                <button class="chip" type="button">MAX</button>
+              </div>
+              <input class="action__input mono" id="priceInput" type="text" value="67,418.5" aria-label="价格" />
+              <div class="action__row">
+                <button class="btn-buy btn-buy--wide" type="button" id="buyBtn">BUY 0.05</button>
+                <button class="btn-sell btn-sell--wide" type="button" id="sellBtn">SELL 0.05</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="行情">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-7M21 19H3"/></svg>
+              <span>行情</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="持仓">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+              <span>持仓</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="下单" aria-label="下单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 5l12 7-12 7V5z"/></svg>
+              <span>下单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="信号">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+              <span>信号</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="账户">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+              <span>账户</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

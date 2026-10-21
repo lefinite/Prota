@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440"
+     role="img" aria-labelledby="wf-title wf-desc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+  <title id="wf-title">Readify 工作流与运行架构</title>
+  <desc id="wf-desc">从需求到可分享原型的四阶段流程：需求输入、Prota 工作台（Python Bridge 与 Node Agent）、设计系统与版本管理、一键分享。</desc>
+
+  <defs>
+    <linearGradient id="wfbg" x1="0" y1="0" x2="1200" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1026"/>
+      <stop offset="1" stop-color="#0A0F23"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="440" rx="24" fill="url(#wfbg)"/>
+
+  <!-- header -->
+  <g transform="translate(52 52)">
+    <text font-size="14" letter-spacing="2.6" fill="#00F5D4" font-family="ui-monospace, 'SF Mono', Menlo, monospace">SYSTEM MAP</text>
+    <text y="34" font-size="26" font-weight="700" fill="#F4F6FF">从需求到一键分享，一条流水线</text>
+    <text y="60" font-size="15" fill="#8A93B5">浏览器门户 + Python Bridge + Node Agent Gateway 三件套，本地跑、本地存。</text>
+  </g>
+
+  <!-- ===== Stage cards ===== -->
+  <!-- shared card width 244, height 252, y 150 -->
+  <g font-size="14" fill="#C8CEEC">
+
+    <!-- Card 1: 输入 -->
+    <g transform="translate(52 150)">
+      <rect width="244" height="252" rx="18" fill="#111A36" stroke="#2447FF" stroke-opacity="0.28"/>
+      <circle cx="30" cy="30" r="15" fill="#2447FF" fill-opacity="0.18" stroke="#2447FF" stroke-opacity="0.6"/>
+      <text x="30" y="35" font-size="15" font-weight="700" fill="#BFFFF8" text-anchor="middle">1</text>
+      <text x="58" y="29" font-size="12" fill="#7E8AB5" font-family="ui-monospace, 'SF Mono', Menlo, monospace">INPUT</text>
+      <text x="58" y="46" font-size="19" font-weight="700" fill="#F4F6FF">需求输入</text>
+      <line x1="20" y1="66" x2="224" y2="66" stroke="#2447FF" stroke-opacity="0.18"/>
+      <g font-size="14">
+        <circle cx="26" cy="92" r="3" fill="#00F5D4"/><text x="40" y="96">自然语言 Prompt</text>
+        <circle cx="26" cy="124" r="3" fill="#00F5D4"/><text x="40" y="128">PRD 文档（Markdown）</text>
+        <circle cx="26" cy="156" r="3" fill="#00F5D4"/><text x="40" y="160">XMind 思维导图</text>
+        <circle cx="26" cy="188" r="3" fill="#00F5D4"/><text x="40" y="192">draw.io 流程图</text>
+        <circle cx="26" cy="220" r="3" fill="#00F5D4"/><text x="40" y="224">参考截图 / 设计稿</text>
+      </g>
+    </g>
+
+    <!-- arrow 1->2 -->
+    <path d="M296 276 l34 0 m-8 -7 l8 7 l-8 7" fill="none" stroke="#2447FF" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Card 2: Prota 工作台 (emphasized) -->
+    <g transform="translate(336 150)">
+      <rect width="244" height="252" rx="18" fill="#142048" stroke="#00F5D4" stroke-opacity="0.55"/>
+      <circle cx="30" cy="30" r="15" fill="#00F5D4" fill-opacity="0.18" stroke="#00F5D4" stroke-opacity="0.7"/>
+      <text x="30" y="35" font-size="15" font-weight="700" fill="#0B1026" text-anchor="middle">2</text>
+      <text x="58" y="29" font-size="12" fill="#7E8AB5" font-family="ui-monospace, 'SF Mono', Menlo, monospace">BUILD</text>
+      <text x="58" y="46" font-size="19" font-weight="700" fill="#F4F6FF">Prota 工作台</text>
+      <line x1="20" y1="66" x2="224" y2="66" stroke="#00F5D4" stroke-opacity="0.22"/>
+      <g font-size="14">
+        <rect x="22" y="82" width="200" height="26" rx="7" fill="#0B1538" stroke="#2447FF" stroke-opacity="0.4"/>
+        <text x="32" y="99" fill="#C8CEEC">Python Bridge</text>
+        <text x="208" y="99" font-size="11" fill="#7E8AB5" text-anchor="end" font-family="ui-monospace, 'SF Mono', Menlo, monospace">:8080</text>
+
+        <rect x="22" y="116" width="200" height="26" rx="7" fill="#0B1538" stroke="#2447FF" stroke-opacity="0.4"/>
+        <text x="32" y="133" fill="#C8CEEC">Node Agent</text>
+        <text x="208" y="133" font-size="11" fill="#7E8AB5" text-anchor="end" font-family="ui-monospace, 'SF Mono', Menlo, monospace">:8081</text>
+
+        <text x="26" y="166" fill="#8A93B5">Agent 技能 70+</text>
+        <text x="26" y="188" fill="#8A93B5">SSE 流式生成 / 审批</text>
+        <text x="26" y="210" fill="#8A93B5">文件操作 · 模板管理</text>
+        <text x="26" y="232" fill="#00F5D4" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="13">→ LLM providers</text>
+      </g>
+    </g>
+
+    <!-- arrow 2->3 -->
+    <path d="M580 276 l34 0 m-8 -7 l8 7 l-8 7" fill="none" stroke="#2447FF" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Card 3: 设计系统 × 版本 -->
+    <g transform="translate(620 150)">
+      <rect width="244" height="252" rx="18" fill="#111A36" stroke="#2447FF" stroke-opacity="0.28"/>
+      <circle cx="30" cy="30" r="15" fill="#2447FF" fill-opacity="0.18" stroke="#2447FF" stroke-opacity="0.6"/>
+      <text x="30" y="35" font-size="15" font-weight="700" fill="#BFFFF8" text-anchor="middle">3</text>
+      <text x="58" y="29" font-size="12" fill="#7E8AB5" font-family="ui-monospace, 'SF Mono', Menlo, monospace">ARTIFACT</text>
+      <text x="58" y="46" font-size="19" font-weight="700" fill="#F4F6FF">设计系统 × 版本</text>
+      <line x1="20" y1="66" x2="224" y2="66" stroke="#2447FF" stroke-opacity="0.18"/>
+      <g font-size="14">
+        <text x="26" y="92" fill="#C8CEEC">160 套设计系统</text>
+        <text x="26" y="112" font-size="12" fill="#8A93B5">Apple · Stripe · Linear · Vercel · 暗夜终端 …</text>
+        <!-- version chips -->
+        <g transform="translate(26 128)" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="12">
+          <rect x="0" y="0" width="40" height="24" rx="7" fill="#2447FF" fill-opacity="0.2" stroke="#2447FF" stroke-opacity="0.5"/><text x="20" y="16" fill="#C8CEEC" text-anchor="middle">v1</text>
+          <rect x="48" y="0" width="40" height="24" rx="7" fill="#2447FF" fill-opacity="0.2" stroke="#2447FF" stroke-opacity="0.5"/><text x="68" y="16" fill="#C8CEEC" text-anchor="middle">v2</text>
+          <rect x="96" y="0" width="40" height="24" rx="7" fill="#00F5D4" fill-opacity="0.2" stroke="#00F5D4" stroke-opacity="0.6"/><text x="116" y="16" fill="#BFFFF8" text-anchor="middle">v3</text>
+          <text x="148" y="16" fill="#7E8AB5">→</text>
+        </g>
+        <text x="26" y="178" fill="#8A93B5">mobile 手机端 · web B 端</text>
+        <text x="26" y="202" fill="#8A93B5">页面级批注 / 截图取证</text>
+        <text x="26" y="226" fill="#8A93B5">每版自包含（html/css/js）</text>
+      </g>
+    </g>
+
+    <!-- arrow 3->4 -->
+    <path d="M864 276 l34 0 m-8 -7 l8 7 l-8 7" fill="none" stroke="#2447FF" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Card 4: 分享 -->
+    <g transform="translate(904 150)">
+      <rect width="244" height="252" rx="18" fill="#111A36" stroke="#2447FF" stroke-opacity="0.28"/>
+      <circle cx="30" cy="30" r="15" fill="#2447FF" fill-opacity="0.18" stroke="#2447FF" stroke-opacity="0.6"/>
+      <text x="30" y="35" font-size="15" font-weight="700" fill="#BFFFF8" text-anchor="middle">4</text>
+      <text x="58" y="29" font-size="12" fill="#7E8AB5" font-family="ui-monospace, 'SF Mono', Menlo, monospace">SHARE</text>
+      <text x="58" y="46" font-size="19" font-weight="700" fill="#F4F6FF">一键分享</text>
+      <line x1="20" y1="66" x2="224" y2="66" stroke="#2447FF" stroke-opacity="0.18"/>
+      <g font-size="14">
+        <rect x="22" y="82" width="200" height="26" rx="7" fill="#0B1538" stroke="#2447FF" stroke-opacity="0.4"/>
+        <text x="32" y="99" fill="#C8CEEC">Cloudflare 隧道</text>
+        <text x="26" y="128" fill="#8A93B5" font-size="12">公网临时分享 · 映射本地 8080</text>
+
+        <rect x="22" y="142" width="200" height="26" rx="7" fill="#0B1538" stroke="#2447FF" stroke-opacity="0.4"/>
+        <text x="32" y="159" fill="#C8CEEC">静态云分享</text>
+        <text x="26" y="188" fill="#8A93B5" font-size="12">Git push → Vercel / Netlify</text>
+
+        <text x="26" y="218" fill="#8A93B5" font-size="12">自包含静态 HTML，离线可看</text>
+        <text x="26" y="238" fill="#8A93B5" font-size="12">链接可直接发给同事评审</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- footer note -->
+  <text x="600" y="425" font-size="12.5" fill="#7E8AB5" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, monospace">Prota Portal (browser)  ⇄  Python Bridge :8080  ⇄  Node Agent Gateway :8081</text>
+</svg>

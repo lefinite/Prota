@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>清简清单 · Clean</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__left">
+                <div class="brand-mark">━</div>
+                <div>
+                  <span class="brand-name">清简清单</span>
+                  <span class="brand-date" id="brandDate">2024.08.14</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置面板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              </button>
+            </header>
+
+            <!-- 任务统计（signature：高对比黑白网格） -->
+            <section class="stats-section" aria-label="任务统计">
+              <div class="stat-box stat-box--primary">
+                <span class="stat-box__label">待完成</span>
+                <span class="stat-box__value">8</span>
+              </div>
+              <div class="stat-box stat-box--secondary">
+                <span class="stat-box__label">已完成</span>
+                <span class="stat-box__value">12</span>
+              </div>
+              <div class="stat-box stat-box--muted">
+                <span class="stat-box__label">完成率</span>
+                <span class="stat-box__value">60%</span>
+              </div>
+            </section>
+
+            <!-- 快速添加 -->
+            <section class="quick-add" aria-label="快速添加任务">
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  id="taskInput"
+                  placeholder="添加新任务..."
+                  aria-label="新任务内容"
+                />
+                <button class="add-btn" data-toast="已添加到任务列表" aria-label="添加任务">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 任务列表 -->
+            <section class="tasks-section" aria-label="任务列表">
+              <div class="section-header">
+                <h2>今日任务</h2>
+                <div class="filter-tabs" id="filterTabs" role="tablist" aria-label="筛选任务">
+                  <button class="filter-tab is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="filter-tab" data-filter="pending" role="tab" aria-selected="false">待办</button>
+                  <button class="filter-tab" data-filter="done" role="tab" aria-selected="false">完成</button>
+                </div>
+              </div>
+
+              <ul class="task-list" id="taskList">
+                <li class="task-item" data-status="pending">
+                  <label class="task-checkbox">
+                    <input type="checkbox" aria-label="标记为完成" />
+                    <span class="checkbox-mark"></span>
+                  </label>
+                  <span class="task-text">晨间阅读 30 分钟</span>
+                  <span class="task-tag task-tag--high">高</span>
+                </li>
+                <li class="task-item" data-status="pending">
+                  <label class="task-checkbox">
+                    <input type="checkbox" aria-label="标记为完成" />
+                    <span class="checkbox-mark"></span>
+                  </label>
+                  <span class="task-text">回复重要邮件</span>
+                  <span class="task-tag task-tag--medium">中</span>
+                </li>
+                <li class="task-item task-item--done" data-status="done">
+                  <label class="task-checkbox">
+                    <input type="checkbox" checked aria-label="标记为未完成" />
+                    <span class="checkbox-mark"></span>
+                  </label>
+                  <span class="task-text">整理工作区</span>
+                  <span class="task-tag task-tag--low">低</span>
+                </li>
+                <li class="task-item" data-status="pending">
+                  <label class="task-checkbox">
+                    <input type="checkbox" aria-label="标记为完成" />
+                    <span class="checkbox-mark"></span>
+                  </label>
+                  <span class="task-text">团队周会准备</span>
+                  <span class="task-tag task-tag--high">高</span>
+                </li>
+                <li class="task-item task-item--done" data-status="done">
+                  <label class="task-checkbox">
+                    <input type="checkbox" checked aria-label="标记为未完成" />
+                    <span class="checkbox-mark"></span>
+                  </label>
+                  <span class="task-text">健身锻炼</span>
+                  <span class="task-tag task-tag--medium">中</span>
+                </li>
+                <li class="task-item" data-status="pending">
+                  <label class="task-checkbox">
+                    <input type="checkbox" aria-label="标记为完成" />
+                    <span class="checkbox-mark"></span>
+                  </label>
+                  <span class="task-text">产品文档审阅</span>
+                  <span class="task-tag task-tag--high">高</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 分类概览 -->
+            <section class="categories-section" aria-label="任务分类">
+              <h2>分类概览</h2>
+              <div class="category-grid">
+                <div class="category-item">
+                  <span class="category-icon">▪</span>
+                  <div class="category-info">
+                    <span class="category-name">工作</span>
+                    <span class="category-count">5 项</span>
+                  </div>
+                </div>
+                <div class="category-item">
+                  <span class="category-icon">▪</span>
+                  <div class="category-info">
+                    <span class="category-name">个人</span>
+                    <span class="category-count">3 项</span>
+                  </div>
+                </div>
+                <div class="category-item">
+                  <span class="category-icon">▪</span>
+                  <div class="category-info">
+                    <span class="category-name">学习</span>
+                    <span class="category-count">2 项</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="today">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              <span>今天</span>
+            </button>
+            <button class="tab" data-tab="week">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              <span>本周</span>
+            </button>
+            <button class="tab" data-tab="calendar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              <span>日历</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>灵感画板 · Pinterest</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="pinterest-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" fill="#e60023"/>
+                  <path d="M12 7c-2.76 0-5 2.24-5 5 0 2.76 2.24 5 5 5s5-2.24 5-5c0-2.76-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" fill="white"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">灵感画板</span>
+                  <span class="brand-sub">发现你的创意</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Hero Pin 卡（signature：图像优先 + 暖色聚焦） -->
+            <section class="hero-pin" aria-label="今日精选">
+              <div class="hero-pin__image">
+                <div class="hero-pin__overlay">
+                  <span class="hero-pin__tag">精选</span>
+                  <svg class="hero-pin__save" viewBox="0 0 24 24" fill="currentColor" data-toast="已保存到收藏"><path d="M5 5v14l7-7 7 7V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1z"/></svg>
+                </div>
+              </div>
+              <div class="hero-pin__content">
+                <h2 class="hero-pin__title">北欧极简客厅灵感</h2>
+                <p class="hero-pin__desc">温暖的空间配色 · 巧妙的收纳设计</p>
+                <div class="hero-pin__meta">
+                  <div class="avatar-group">
+                    <span class="avatar" style="background: #e5a3b3;">L</span>
+                    <span class="avatar" style="background: #9dd4c5;">M</span>
+                    <span class="avatar" style="background: #f4d77a;">+286</span>
+                  </div>
+                  <button class="textbtn" data-toast="查看更多">查看更多 →</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 探索分类卡 -->
+            <section class="explore-grid" aria-label="探索分类">
+              <div class="explore-card explore-card--food" data-toast="探索美食灵感">
+                <span class="explore-card__icon">🍳</span>
+                <span class="explore-card__label">美食</span>
+              </div>
+              <div class="explore-card explore-card--home" data-toast="探索家居灵感">
+                <span class="explore-card__icon">🏠</span>
+                <span class="explore-card__label">家居</span>
+              </div>
+              <div class="explore-card explore-card--fashion" data-toast="探索时尚灵感">
+                <span class="explore-card__icon">👗</span>
+                <span class="explore-card__label">时尚</span>
+              </div>
+              <div class="explore-card explore-card--art" data-toast="探索艺术灵感">
+                <span class="explore-card__icon">🎨</span>
+                <span class="explore-card__label">艺术</span>
+              </div>
+            </section>
+
+            <!-- 灵感列表 -->
+            <section class="list-block" aria-label="热门灵感">
+              <div class="list-block__head">
+                <h2>热门灵感</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选灵感">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="home" role="tab" aria-selected="false">家居</button>
+                  <button class="chip" data-filter="food" role="tab" aria-selected="false">美食</button>
+                </div>
+              </div>
+
+              <ul class="pin-list" id="pinList">
+                <li class="pin" data-type="home">
+                  <div class="pin__image" style="background: linear-gradient(135deg, #f4d77a 0%, #e5a3b3 100%);">
+                    <svg class="pin__save" viewBox="0 0 24 24" fill="currentColor" data-toast="已保存"><path d="M5 5v14l7-7 7 7V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1z"/></svg>
+                  </div>
+                  <div class="pin__main">
+                    <span class="pin__title">原木风卧室改造</span>
+                    <span class="pin__sub">2.3k 保存 · 小红屋工作室</span>
+                  </div>
+                  <span class="badge badge--hot">热门</span>
+                </li>
+                <li class="pin" data-type="food">
+                  <div class="pin__image" style="background: linear-gradient(135deg, #9dd4c5 0%, #7bc9a6 100%);">
+                    <svg class="pin__save" viewBox="0 0 24 24" fill="currentColor" data-toast="已保存"><path d="M5 5v14l7-7 7 7V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1z"/></svg>
+                  </div>
+                  <div class="pin__main">
+                    <span class="pin__title">春日野餐便当</span>
+                    <span class="pin__sub">1.8k 保存 · 日食记</span>
+                  </div>
+                </li>
+                <li class="pin" data-type="home">
+                  <div class="pin__image" style="background: linear-gradient(135deg, #e5e5e0 0%, #d9c9b8 100%);">
+                    <svg class="pin__save" viewBox="0 0 24 24" fill="currentColor" data-toast="已保存"><path d="M5 5v14l7-7 7 7V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1z"/></svg>
+                  </div>
+                  <div class="pin__main">
+                    <span class="pin__title">手工陶器收藏</span>
+                    <span class="pin__sub">956 保存 · 手作时光</span>
+                  </div>
+                </li>
+                <li class="pin" data-type="food">
+                  <div class="pin__image" style="background: linear-gradient(135deg, #f4a88a 0%, #e57a73 100%);">
+                    <svg class="pin__save" viewBox="0 0 24 24" fill="currentColor" data-toast="已保存"><path d="M5 5v14l7-7 7 7V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1z"/></svg>
+                  </div>
+                  <div class="pin__main">
+                    <span class="pin__title">手工面包教程</span>
+                    <span class="pin__sub">1.2k 保存 · 烘焙日记</span>
+                  </div>
+                  <span class="badge badge--new">新</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-zone" aria-label="快速操作">
+              <button class="cta-primary" data-toast="创建新画板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                创建画板
+              </button>
+              <div class="action-row">
+                <button class="cta-secondary" data-toast="搜索灵感">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                  搜索
+                </button>
+                <button class="cta-secondary" data-toast="我的收藏">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5v14l7-7 7 7V5a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1z"/></svg>
+                  收藏
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <span>搜索</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="添加">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="notifications">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              <span>通知</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

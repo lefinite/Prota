@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>任务控制 · Mission Control</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__dot"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">任务控制</span>
+                <span class="brand-bar__sub">FLIGHT-07 · 联合补给任务</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已接入通话回路 · LOOP-2" aria-label="通话回路">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4.5 10.5 3 9l3-3 1.5 1.5L9 6V3h6v3l1.5 1.5L18 6l3 3-1.5 1.5" />
+                  <circle cx="12" cy="14" r="4.5" /><path d="M12 18.5V21" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：飞控主时钟（T 倒计时） -->
+            <section class="panel hero-panel" aria-label="飞控主时钟">
+              <div class="panel__header">
+                <h2 class="panel__title">飞控主时钟 · MASTER CLOCK</h2>
+                <span class="panel__meta mono">UTC+8 09:41:00</span>
+              </div>
+              <p class="countdown mono" id="countdown" aria-live="off">T-00:14:32</p>
+              <p class="countdown-label" id="phaseLabel">二级点火准备 · PHASE 3 / 6</p>
+              <div class="phase-track"><span class="phase-fill" style="--w: 50%"></span></div>
+              <div class="telemetry-strip" role="list" aria-label="关键遥测">
+                <div class="data-tile" role="listitem">
+                  <span class="data-tile__label">速度 VEL</span>
+                  <span class="data-tile__value mono" id="telVel">7.66<span class="data-tile__unit">km/s</span></span>
+                </div>
+                <div class="data-tile" role="listitem">
+                  <span class="data-tile__label">高度 ALT</span>
+                  <span class="data-tile__value mono" id="telAlt">214.3<span class="data-tile__unit">km</span></span>
+                </div>
+                <div class="data-tile" role="listitem">
+                  <span class="data-tile__label">燃料 PROP</span>
+                  <span class="data-tile__value mono" id="telFuel">68<span class="data-tile__unit">%</span></span>
+                </div>
+                <div class="data-tile" role="listitem">
+                  <span class="data-tile__label">下行链路</span>
+                  <span class="signal-bars" aria-label="信号强度 3/4" aria-hidden="true">
+                    <i class="signal-bar is-active is-strong" style="--h: 5px"></i>
+                    <i class="signal-bar is-active is-strong" style="--h: 8px"></i>
+                    <i class="signal-bar is-active is-strong" style="--h: 12px"></i>
+                    <i class="signal-bar" style="--h: 16px"></i>
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 告警横幅 -->
+            <div class="alert-banner" id="alertBanner" role="alert">
+              <svg class="alert-banner__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3 2.5 20h19L12 3z" /><path d="M12 9.5v4.5" /><path d="M12 17.2v.01" />
+              </svg>
+              <div class="alert-banner__body">
+                <p class="alert-banner__text">S3 温度传感器读数漂移 +2.4°C，需人工确认</p>
+              </div>
+              <span class="alert-banner__time mono">09:38:12</span>
+              <button class="alert-banner__ack" id="ackBtn" type="button">确认</button>
+            </div>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="电源与轨道">
+              <div class="panel">
+                <div class="panel__header">
+                  <h2 class="panel__title">电源系统</h2>
+                  <span class="panel__meta mono">28V BUS</span>
+                </div>
+                <div class="battery-row">
+                  <div class="battery-row__head"><span>BUS-A</span><b class="mono">28.1V</b></div>
+                  <div class="phase-track"><span class="phase-fill phase-fill--ok" style="--w: 94%"></span></div>
+                </div>
+                <div class="battery-row">
+                  <div class="battery-row__head"><span>BUS-B</span><b class="mono">27.6V</b></div>
+                  <div class="phase-track"><span class="phase-fill phase-fill--ok" style="--w: 82%"></span></div>
+                </div>
+                <div class="battery-row">
+                  <div class="battery-row__head"><span>BUS-C</span><b class="mono">24.9V</b></div>
+                  <div class="phase-track"><span class="phase-fill phase-fill--warn" style="--w: 58%"></span></div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel__header">
+                  <h2 class="panel__title">轨道参数</h2>
+                  <span class="panel__meta mono">LVLH</span>
+                </div>
+                <div class="coord">
+                  <span class="coord__label">倾角 INC</span>
+                  <span class="coordinate mono">51.64°</span>
+                </div>
+                <div class="coord">
+                  <span class="coord__label">近地点 PE</span>
+                  <span class="coordinate mono">208.4 km</span>
+                </div>
+                <div class="coord">
+                  <span class="coord__label">远地点 AP</span>
+                  <span class="coordinate mono">412.7 km</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 子系统状态 Feed -->
+            <section class="feed" aria-label="子系统状态">
+              <div class="feed__head">
+                <h2 class="feed__title">子系统状态</h2>
+                <div class="chips" role="tablist" aria-label="筛选状态">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="nominal">正常</button>
+                  <button class="chip" type="button" data-filter="caution">警告</button>
+                  <button class="chip" type="button" data-filter="critical">危急</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="nominal">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">电源 BUS-A</span>
+                    <span class="feed-item__meta mono">09:40:52 · 28.1V</span>
+                  </div>
+                  <em class="badge badge--nominal">NOMINAL</em>
+                </li>
+                <li class="feed-item" data-kind="caution">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" /><path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">姿态控制 · 陀螺 2</span>
+                    <span class="feed-item__meta mono">09:39:41 · 漂移 0.4°/h</span>
+                  </div>
+                  <em class="badge badge--caution">CAUTION</em>
+                </li>
+                <li class="feed-item" data-kind="critical">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 4h6l1 7a4 4 0 1 1-8 0l1-7z" /><path d="M10 18h4" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">热控 S3 传感器</span>
+                    <span class="feed-item__meta mono">09:38:12 · +2.4°C 漂移</span>
+                  </div>
+                  <em class="badge badge--critical">CRITICAL</em>
+                </li>
+                <li class="feed-item" data-kind="nominal">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 12a8 8 0 0 1 16 0" /><path d="M2 12a10 10 0 0 1 20 0" /><circle cx="12" cy="14" r="2" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">通信 DSN 锁定</span>
+                    <span class="feed-item__meta mono">09:36:00 · 2.1 KB/S</span>
+                  </div>
+                  <em class="badge badge--nominal">NOMINAL</em>
+                </li>
+                <li class="feed-item" data-kind="nominal">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2c3 3.5 5 6.2 5 9a5 5 0 0 1-10 0c0-2.8 2-5.5 5-9z" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">推进 · 剩余燃料</span>
+                    <span class="feed-item__meta mono">09:30:00 · 68%</span>
+                  </div>
+                  <em class="badge badge--nominal">NOMINAL</em>
+                </li>
+                <li class="feed-item" data-kind="nominal">
+                  <span class="feed-item__glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="6" width="13" height="12" rx="2" /><path d="M16 10.5 21 8v8l-5-2.5" />
+                    </svg>
+                  </span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">载荷 · 相机阵列</span>
+                    <span class="feed-item__meta mono">09:20:00 · 待开机</span>
+                  </div>
+                  <em class="badge badge--standby">STANDBY</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：指令台 -->
+            <section class="action-area" aria-label="指令台">
+              <input class="quick-input mono" id="cmdInput" type="text" placeholder="输入指令码，如 CMD-04 ARM…" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="armBtn">批准点火序列</button>
+                <button class="btn-ghost" type="button" data-toast="指令日志已同步到地面站">同步日志</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="概览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="7" height="7" /><rect x="13.5" y="3.5" width="7" height="7" />
+                <rect x="3.5" y="13.5" width="7" height="7" /><rect x="13.5" y="13.5" width="7" height="7" />
+              </svg>
+              <span>概览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="遥测">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 14l4-6 4 8 4-10 3 5" /><path d="M2 20h20" />
+              </svg>
+              <span>遥测</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="指令" aria-label="发送指令">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+              </svg>
+              <span>指令</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 4h14v16H5z" /><path d="M9 9h6M9 13h6M9 17h3" />
+              </svg>
+              <span>日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="系统">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" />
+              </svg>
+              <span>系统</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

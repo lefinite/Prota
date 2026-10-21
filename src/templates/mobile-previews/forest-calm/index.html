@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>森息 · 森系自然</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21c0-6 3-10 8-12-1 7-4 10-8 12z" />
+                  <path d="M12 21c0-5-2.5-8.5-7-10 .8 6 3.3 8.6 7 10z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">森息</span>
+                <span class="brand-bar__sub">十月 · 林间清晨</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="夜间模式已加入明晚的睡眠计划" aria-label="夜间模式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：呼吸圆环 -->
+            <section class="breath-card" id="breathCard" aria-label="呼吸练习">
+              <div class="breath-card__orb" aria-hidden="true">
+                <span class="breath-card__halo"></span>
+                <span class="breath-card__core"></span>
+                <span class="breath-card__word" id="breathWord">吸气</span>
+              </div>
+              <p class="breath-card__lead">跟随圆环，吸气四秒，呼气四秒</p>
+              <button class="breath-card__toggle" type="button" id="breathToggle" aria-pressed="true">暂停练习</button>
+              <div class="breath-card__stats">
+                <span>连续 <b>12</b> 天</span>
+                <i aria-hidden="true"></i>
+                <span>本周 <b>86</b> 分钟</span>
+                <i aria-hidden="true"></i>
+                <span>今晚 <b>10</b> 分钟</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="今日清单与本周节奏">
+              <div class="duo-card">
+                <h2 class="duo-card__title">今日清单</h2>
+                <ul class="todo-list">
+                  <li class="is-done"><span>晨间苏醒 · 5 分钟</span><i>已完成</i></li>
+                  <li class="is-done"><span>午间小栖 · 3 分钟</span><i>已完成</i></li>
+                  <li class="is-done"><span>林间漫步 · 12 分钟</span><i>已完成</i></li>
+                  <li><span>睡前呼吸 · 10 分钟</span><i>21:30</i></li>
+                </ul>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周节奏</h2>
+                <div class="week-bars" role="img" aria-label="本周七天练习时长，周六最多 24 分钟">
+                  <div class="week-bars__col"><i style="--h: 40%"></i><span>一</span></div>
+                  <div class="week-bars__col"><i style="--h: 66%"></i><span>二</span></div>
+                  <div class="week-bars__col"><i style="--h: 52%"></i><span>三</span></div>
+                  <div class="week-bars__col"><i style="--h: 88%"></i><span>四</span></div>
+                  <div class="week-bars__col"><i style="--h: 30%"></i><span>五</span></div>
+                  <div class="week-bars__col"><i class="is-today" style="--h: 72%"></i><span>六</span></div>
+                  <div class="week-bars__col"><i style="--h: 12%"></i><span>日</span></div>
+                </div>
+                <p class="duo-card__note">比上周多 18 分钟，节奏刚好</p>
+              </div>
+            </section>
+
+            <!-- 4. 练习记录 Feed -->
+            <section class="feed" aria-label="练习记录">
+              <div class="feed__head">
+                <h2 class="feed__title">练习记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选记录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="doing">进行中</button>
+                  <button class="chip" type="button" data-filter="todo">待开始</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">🌿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">晨间苏醒</span>
+                    <span class="feed-item__meta">今晨 07:20 · 5 分钟</span>
+                  </div>
+                  <em class="feed-item__chip">已完成</em>
+                  <button class="feed-item__mark" type="button" aria-label="收入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.6-9.4-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.4 12c-1.9 4.4-9.4 9-9.4 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">🍃</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">午间小栖</span>
+                    <span class="feed-item__meta">今日 13:05 · 3 分钟</span>
+                  </div>
+                  <em class="feed-item__chip">已完成</em>
+                  <button class="feed-item__mark" type="button" aria-label="收入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.6-9.4-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.4 12c-1.9 4.4-9.4 9-9.4 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="doing">
+                  <span class="feed-item__glyph" aria-hidden="true">🌲</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">林间漫步</span>
+                    <span class="feed-item__meta">进行中 · 松涛音景</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="doing">进行中</em>
+                  <button class="feed-item__mark" type="button" aria-label="收入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.6-9.4-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.4 12c-1.9 4.4-9.4 9-9.4 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">🌙</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">昨晚 · 睡前呼吸</span>
+                    <span class="feed-item__meta">昨天 22:40 · 10 分钟</span>
+                  </div>
+                  <em class="feed-item__chip">已完成</em>
+                  <button class="feed-item__mark" type="button" aria-label="收入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.6-9.4-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.4 12c-1.9 4.4-9.4 9-9.4 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="todo">
+                  <span class="feed-item__glyph" aria-hidden="true">✨</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">今晚 · 睡前呼吸</span>
+                    <span class="feed-item__meta">21:30 · 雨打芭蕉音景</span>
+                  </div>
+                  <em class="feed-item__chip" data-level="todo">待开始</em>
+                  <button class="feed-item__mark" type="button" aria-label="收入最爱" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 21s-7.5-4.6-9.4-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.4 12c-1.9 4.4-9.4 9-9.4 9z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="睡前练习">
+              <input class="quick-input" id="nightInput" type="text" placeholder="今晚想带着什么入睡？…" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" data-toast="已开始 · 跟随圆环呼吸 10 分钟">开始 10 分钟呼吸</button>
+                <button class="btn-ghost" type="button" data-toast="已切换到「溪流过石」音景">换一片森林</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="今日">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8" />
+              </svg>
+              <span>今日</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="森林">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 20v-2.5L8 13l3 4.5V20" />
+                <path d="M13 20v-4l4-6 3 6v4" />
+              </svg>
+              <span>森林</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="练习" aria-label="开始练习">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 5.5v13l10-6.5z" />
+              </svg>
+              <span>练习</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="音景">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14v-4M8 17V7M12 20V4M16 17V7M20 14v-4" />
+              </svg>
+              <span>音景</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

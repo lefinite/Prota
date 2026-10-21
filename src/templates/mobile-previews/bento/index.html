@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>便当 · Bento</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <i></i><i></i><i></i><i></i>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">便当</span>
+                <span class="brand-bar__sub">8 月 15 日 周六 · 阴转晴</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已进入编辑模式，长按格子可调大小" aria-label="编辑布局">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 8h16M4 16h16" /><circle cx="9" cy="8" r="1.6" fill="currentColor" stroke="none" /><circle cx="15" cy="16" r="1.6" fill="currentColor" stroke="none" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：便当格盘 -->
+            <section class="bento-grid" aria-label="今日便当格盘">
+              <article class="tile tile--weather">
+                <div class="tile__head"><span>杭州 · 现在</span><b>26°</b></div>
+                <svg class="tile__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+                </svg>
+                <div class="tile__foot"><span>31° / 22°</span><span>东南风 2 级</span></div>
+              </article>
+
+              <article class="tile tile--steps">
+                <svg class="ring" viewBox="0 0 64 64" role="img" aria-label="今日步数 6432 步，达成 80%">
+                  <circle class="ring__bg" cx="32" cy="32" r="26" />
+                  <circle class="ring__fg" id="stepsRing" cx="32" cy="32" r="26" />
+                </svg>
+                <div class="tile__metric"><b>6,432</b><span>/ 8,000 步</span></div>
+              </article>
+
+              <button class="tile tile--water" type="button" id="waterTile" aria-label="记一杯水，点击加一">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 3s6 6.6 6 10.5a6 6 0 1 1-12 0C6 9.6 12 3 12 3z" />
+                </svg>
+                <b id="waterCount">5</b><span>/ 8 杯 · 点一下</span>
+                <div class="water-dots" id="waterDots" aria-hidden="true">
+                  <i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i class="is-full"></i><i></i><i></i><i></i>
+                </div>
+              </button>
+
+              <article class="tile tile--music">
+                <button class="tile__play" id="musicBtn" type="button" aria-label="播放" aria-pressed="false">
+                  <svg class="tile__play-icon tile__play-icon--play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5z" /></svg>
+                  <svg class="tile__play-icon tile__play-icon--pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" /></svg>
+                </button>
+                <div class="tile__music-body">
+                  <span class="tile__music-name">夏日晚风（钢琴版）</span>
+                  <div class="tile__music-track"><span id="musicFill"></span></div>
+                  <span class="tile__music-time"><b id="musicNow">1:12</b> / 3:45</span>
+                </div>
+              </article>
+
+              <article class="tile tile--schedule">
+                <span class="tile__label">下一场</span>
+                <b>14:00 设计评审</b>
+                <span class="tile__sub">线上 · 30 分钟 · 3 人参加</span>
+              </article>
+
+              <article class="tile tile--focus">
+                <span class="tile__label">今日专注</span>
+                <b>1h 45m</b>
+                <div class="tile__bar"><span style="--w: 72%"></span></div>
+              </article>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="订阅与本周概览">
+              <div class="duo-card">
+                <h2 class="duo-card__title">订阅与账单</h2>
+                <div class="sub-row">
+                  <div class="sub-row__body"><span>云盘 2T</span><em>09-02 到期</em></div>
+                  <b class="money">¥21/月</b>
+                </div>
+                <div class="sub-row">
+                  <div class="sub-row__body"><span>视频会员</span><em>自动续费中</em></div>
+                  <b class="money">¥25/月</b>
+                </div>
+                <div class="sub-row">
+                  <div class="sub-row__body"><span>音乐 · 学生价</span><em>次年恢复原价</em></div>
+                  <b class="money">¥11/月</b>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周概览</h2>
+                <div class="week-row"><span>睡眠均值</span><b>7.2 h</b></div>
+                <div class="week-row"><span>步数均值</span><b>6,890</b></div>
+                <div class="week-row"><span>读完</span><b>3 本</b></div>
+              </div>
+            </section>
+
+            <!-- 4. 今日待办 Feed -->
+            <section class="feed" aria-label="今日待办">
+              <div class="feed__head">
+                <h2 class="feed__title">今日待办 <b id="todoCount">2 / 7</b></h2>
+                <div class="chips" role="tablist" aria-label="筛选待办">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="work">工作</button>
+                  <button class="chip" type="button" data-filter="life">生活</button>
+                  <button class="chip" type="button" data-filter="health">健康</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="todo is-done" data-kind="work">
+                  <button class="todo__check is-on" type="button" aria-label="完成状态" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">发周报给组长</span>
+                    <span class="todo__meta">工作 · 已完成</span>
+                  </div>
+                  <em class="time-chip">09:30</em>
+                </li>
+                <li class="todo is-done" data-kind="work">
+                  <button class="todo__check is-on" type="button" aria-label="完成状态" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">确认下周会议室</span>
+                    <span class="todo__meta">工作 · 已完成</span>
+                  </div>
+                  <em class="time-chip">10:05</em>
+                </li>
+                <li class="todo" data-kind="work">
+                  <button class="todo__check" type="button" aria-label="完成状态" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">交《空间手册》初稿</span>
+                    <span class="todo__meta">写作 · 优先</span>
+                  </div>
+                  <em class="time-chip is-urgent">16:00</em>
+                </li>
+                <li class="todo" data-kind="work">
+                  <button class="todo__check" type="button" aria-label="完成状态" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">和阿禾对排期</span>
+                    <span class="todo__meta">工作 · 评审前</span>
+                  </div>
+                  <em class="time-chip">14:00</em>
+                </li>
+                <li class="todo" data-kind="life">
+                  <button class="todo__check" type="button" aria-label="完成状态" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">采购周末露营食材</span>
+                    <span class="todo__meta">生活 · 两人份</span>
+                  </div>
+                  <em class="time-chip">18:30</em>
+                </li>
+                <li class="todo" data-kind="health">
+                  <button class="todo__check" type="button" aria-label="完成状态" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">慢跑 5 公里</span>
+                    <span class="todo__meta">健康 · 雨后停了就去</span>
+                  </div>
+                  <em class="time-chip">19:30</em>
+                </li>
+                <li class="todo" data-kind="life">
+                  <button class="todo__check" type="button" aria-label="完成状态" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </button>
+                  <div class="todo__body">
+                    <span class="todo__name">给妈妈回电话</span>
+                    <span class="todo__meta">家庭 · 随时</span>
+                  </div>
+                  <em class="time-chip">晚上</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="添加待办">
+              <input class="quick-input" id="todoInput" type="text" placeholder="添加待办，回车就放进今天的格子……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="addTodoBtn">加入便当</button>
+                <button class="btn-ghost" type="button" data-toast="布局已整理 · 2 个格子合并到「生活」">整理布局</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2" /><rect x="13" y="3.5" width="7.5" height="7.5" rx="2" /><rect x="3.5" y="13" width="7.5" height="7.5" rx="2" /><rect x="13" y="13" width="7.5" height="7.5" rx="2" />
+              </svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="格盘">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="17" height="7" rx="2" /><rect x="3.5" y="13.5" width="7.5" height="7" rx="2" /><rect x="13" y="13.5" width="7.5" height="7" rx="2" />
+              </svg>
+              <span>格盘</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="添加" aria-label="添加待办">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>添加</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="动态">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12a8 8 0 1 1 2.3 5.6" /><path d="M4 20v-4.5H8.5" /><circle cx="12" cy="12" r="2.6" />
+              </svg>
+              <span>动态</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

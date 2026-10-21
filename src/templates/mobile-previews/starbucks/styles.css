@@ -1,0 +1,907 @@
+/* ============================================================
+ * 咖啡驿站 · Starbucks — mobile preview
+ * token 来源：design-systems/starbucks/tokens.css（:root 整块注入）
+ * 主题：点单 + 会员。奶油画布、四层绿映射到各自角色、金色只
+ * 出现在星礼仪式；按钮全是 50px 药丸 + scale(0.95) 按压。
+ * ============================================================ */
+
+:root {
+  /* ─── Surface ───────────────────────────────────────────── */
+  --bg: #f2f0eb;                /* Neutral Warm — primary page canvas */
+  --surface: #ffffff;           /* White — content card / modal surface */
+  --surface-warm: #edebe9;      /* Ceramic — zone separator, warmer tier */
+
+  /* ─── Foreground ────────────────────────────────────────── */
+  --fg: rgba(0, 0, 0, 0.87);    /* Text Black — primary heading + body */
+  --fg-2: #33433d;              /* Rewards Green — dustier reading tier */
+  --muted: rgba(0, 0, 0, 0.58); /* Text Black Soft — secondary / metadata */
+  --meta: var(--muted);         /* alias — single secondary text tier */
+
+  /* ─── Border ────────────────────────────────────────────── */
+  --border: #d6dbde;            /* Input Border — outlined rectangle edge */
+  --border-soft: #e7e7e7;       /* Nutrition-table row hairline */
+
+  /* ─── Accent ────────────────────────────────────────────── */
+  --accent: #00754A;            /* Green Accent — primary CTA / Frap fill */
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+
+  /* ─── Semantic ──────────────────────────────────────────── */
+  --success: #16a34a;
+  --warn: #fbbc05;              /* Yellow — DESIGN.md warning state */
+  --danger: #c82014;            /* Red — DESIGN.md error / destructive */
+
+  /* ─── Typography — fonts ────────────────────────────────── */
+  --font-display: SoDoSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: SoDoSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* ─── Typography — type scale ───────────────────────────── */
+  --text-xs: 13px;              /* Micro / text-1 — caption */
+  --text-sm: 14px;              /* Small / text-2 — button, label */
+  --text-base: 16px;            /* Body / text-3 — default body */
+  --text-lg: 19px;              /* Body Large — hero intro copy */
+  --text-xl: 24px;              /* H1 / H2 — shared by weight, not size */
+  --text-2xl: 32px;             /* sub-heading bridge to hero */
+  --text-3xl: 45px;             /* Hero Large / text-8 */
+  --text-4xl: 58px;             /* Jumbo / text-9 — display ceiling */
+
+  /* ─── Typography — leading & tracking ───────────────────── */
+  --leading-body: 1.5;
+  --leading-tight: 1.2;
+  --tracking-display: -0.01em;  /* universal — DESIGN.md letterSpacingNormal */
+
+  /* ─── Spacing ───────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;              /* universal rhythm — gutter, card pad, body */
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --section-y-desktop: 64px;
+  --section-y-tablet: 48px;
+  --section-y-phone: 32px;
+
+  /* ─── Radius ────────────────────────────────────────────── */
+  --radius-sm: 4px;             /* outlined-rectangle inputs */
+  --radius-md: 12px;            /* cards, modals — --cardBorderRadius */
+  --radius-lg: 16px;            /* larger containers */
+  --radius-pill: 9999px;        /* full pill — universal button radius */
+
+  /* ─── Elevation ─────────────────────────────────────────── */
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 0 0.5px 0 rgba(0, 0, 0, 0.14), 0 1px 1px 0 rgba(0, 0, 0, 0.24);
+
+  /* ─── Focus ring ────────────────────────────────────────── */
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+
+  /* ─── Motion ────────────────────────────────────────────── */
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* ─── Layout ────────────────────────────────────────────── */
+  --container-max: 1440px;
+  --container-gutter-desktop: 40px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+
+  /* ─── 品牌分层（DESIGN.md 四层绿 + 金，仅本系统角色使用）── */
+  --green-brand: #006241;       /* Starbucks Green — 标题层 */
+  --green-house: #1e3932;       /* House Green — 深绿横幅/星礼面板 */
+  --green-light: #d4e9e2;       /* Green Light — 浅薄荷洗色 */
+  --gold: #cba258;              /* Gold — 仅星礼仪式 */
+
+  /* ─── 手机壳（与设计系统协调）──────────────────────────── */
+  --page-backdrop-top: #f8f6f1;
+  --page-backdrop-bottom: #e2ddd3;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e9e4db;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(30, 57, 50, 0.2);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  letter-spacing: var(--tracking-display); /* SoDo 全局 -0.01em */
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.9), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* ===== Shared mobile frame ===== */
+.demo-stage {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.phone-shell {
+  position: relative;
+  width: 382px;
+  height: 826px;
+  padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--screen-radius);
+  background: var(--phone-screen);
+}
+
+.status-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 0;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.status-bar__time {
+  min-width: 54px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.status-bar__island {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  border-radius: 999px;
+  background: #111217;
+  transform: translateX(-50%);
+}
+
+.status-bar__right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 74px;
+}
+
+.status-bar__icon {
+  width: 15px;
+  height: 15px;
+}
+
+.battery {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border: 1.8px solid currentColor;
+  border-radius: 4px;
+}
+
+.battery::before {
+  content: "";
+  position: absolute;
+  inset: 2px 6px 2px 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.battery::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -4px;
+  width: 2px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow: auto;
+  padding: 66px 22px 116px;
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage {
+    padding: 0;
+  }
+
+  .phone-shell {
+    width: min(100vw, 382px);
+    height: min(100vh, 826px);
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--phone-screen);
+  }
+
+  .phone-screen {
+    border-radius: 0;
+  }
+}
+
+/* ===== 1. 顶部品牌栏 ===== */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.brand-bar__mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.brand-bar__mark svg {
+  width: 20px;
+  height: 20px;
+}
+
+.brand-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-right: auto;
+}
+
+.brand-bar__name {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--green-brand); /* 标题层：Starbucks Green */
+}
+
+.brand-bar__sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.brand-bar__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--fg-2);
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.brand-bar__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.brand-bar__icon:hover {
+  border-color: var(--accent);
+}
+
+/* ===== 2. Hero / 签名卡：星星进度（深绿面板 + 金色仪式） ===== */
+.stars-card {
+  background: var(--green-house); /* House Green 深绿面板 */
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--elev-raised);
+}
+
+.stars-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.stars-card__tier {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stars-card__count {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--gold); /* 金色只属于星礼 */
+}
+
+.stars-card__count i {
+  font-style: normal;
+  font-size: var(--text-lg);
+  margin-left: 2px;
+}
+
+.stars-card__goal {
+  margin: var(--space-2) 0 var(--space-3);
+  font-size: var(--text-base);
+  color: #ffffff;
+}
+
+.stars-card__track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+.stars-card__fill {
+  display: block;
+  height: 100%;
+  width: 80%;
+  border-radius: inherit;
+  background: var(--gold);
+  transform-origin: left;
+  animation: star-grow 900ms var(--ease-standard) 150ms backwards;
+}
+
+@keyframes star-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.stars-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+}
+
+.pill-gold {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.stars-card__hint {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== 3. 两张内容卡 ===== */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--elev-raised); /* 轻语式双层阴影 */
+}
+
+.card__title {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--fg);
+}
+
+.card__title--brand {
+  color: var(--green-brand);
+  font-weight: 600;
+}
+
+.card__note {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  line-height: var(--leading-body);
+}
+
+.card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+}
+
+.card__chip {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--green-light);
+  color: var(--green-brand);
+  font-size: var(--text-xs);
+}
+
+.link-btn {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.steps {
+  display: flex;
+  gap: 5px;
+  margin: var(--space-3) 0 var(--space-2);
+}
+
+.steps i {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-warm);
+}
+
+.steps i.is-done {
+  background: var(--accent);
+}
+
+.card__meta {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* ===== 4. 常点单 Feed ===== */
+.feed__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.feed__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  gap: var(--space-1);
+  overflow: auto;
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--motion-base) ease,
+    border-color var(--motion-base) ease;
+}
+
+.chip:hover {
+  color: var(--fg);
+}
+
+.chip.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.feed__list {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-2);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elev-raised);
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+}
+
+.feed-item + .feed-item {
+  border-top: 1px solid var(--border-soft);
+}
+
+.feed-item[hidden] {
+  display: none;
+}
+
+.feed-item__thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--green-light);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  flex: none;
+}
+
+.feed-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.feed-item__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-item__meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-item__chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: 1px;
+  background: var(--surface-warm);
+  color: var(--muted);
+}
+
+.feed-item__chip--gold {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+
+.feed-item__chip--warn {
+  background: color-mix(in oklab, var(--warn), transparent 82%);
+  color: color-mix(in oklab, var(--warn), black 42%);
+}
+
+.feed-item__price {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.feed-item__add {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    background var(--motion-base) ease,
+    color var(--motion-base) ease;
+}
+
+.feed-item__add svg {
+  width: 15px;
+  height: 15px;
+}
+
+.feed-item__add:hover {
+  background: var(--green-light);
+}
+
+.feed-item__add:active {
+  transform: scale(0.95); /* 品牌按压反馈 */
+}
+
+.feed-item__add.is-added {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+/* ===== 5. 操作区 ===== */
+.action-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.size-row__label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.sizes {
+  display: flex;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.size {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: var(--text-xs);
+  color: var(--fg-2);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-base) ease,
+    background var(--motion-base) ease,
+    color var(--motion-base) ease;
+}
+
+.size.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-on);
+  font-weight: 600;
+}
+
+.size:active {
+  transform: scale(0.95);
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-2);
+}
+
+.btn-primary {
+  padding: 12px 16px;
+  border-radius: var(--radius-pill); /* 全药丸 */
+  background: var(--accent); /* Green Accent CTA */
+  color: var(--accent-on);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--motion-base) ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active {
+  background: var(--accent-active);
+  transform: scale(0.95); /* 品牌按压反馈 */
+}
+
+.btn-ghost {
+  padding: 12px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--motion-base) ease;
+}
+
+.btn-ghost:hover {
+  background: var(--green-light);
+}
+
+.btn-ghost:active {
+  transform: scale(0.95);
+}
+
+/* ===== 6. 底部 Tab + Frap 圆钮 ===== */
+.tabbar {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  height: 78px;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0));
+  background: var(--surface);
+  border-top: 1px solid var(--border-soft);
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-base) ease;
+}
+
+.tabbar__item svg {
+  width: 21px;
+  height: 21px;
+}
+
+.tabbar__item:hover {
+  color: var(--fg);
+}
+
+.tabbar__item.is-active {
+  color: var(--green-brand);
+  font-weight: 600;
+}
+
+.tabbar__frap {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.tabbar__frap svg {
+  position: absolute;
+  top: -30px;
+  width: 56px;
+  height: 56px;
+  padding: 14px;
+  border-radius: 50%;
+  background: var(--accent); /* Frap：Green Accent 圆钮 */
+  color: var(--accent-on);
+  box-shadow:
+    0 0 6px rgba(0, 0, 0, 0.24),
+    0 8px 12px rgba(0, 0, 0, 0.14); /* Frap 双层阴影栈 */
+  transition: all var(--motion-base) ease;
+}
+
+.tabbar__frap:active svg {
+  transform: scale(0.95);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.24);
+}
+
+.tabbar__badge {
+  position: absolute;
+  top: -34px;
+  left: calc(50% + 10px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--gold); /* 计数徽标也是星礼仪式 */
+  color: var(--green-house);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  display: grid;
+  place-items: center;
+}
+
+/* ===== toast ===== */
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 30;
+  max-width: 82%;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--green-house);
+  color: #ffffff;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== 无障碍与动效降级 ===== */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 隐藏滚动条（真机 App 观感）===== */
+* {
+  scrollbar-width: none !important;
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}

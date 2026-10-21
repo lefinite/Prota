@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>果拾 · Apple Store 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar status-bar--dark" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <button class="brand-bar__menu" type="button" data-toast="已打开全部分类" aria-label="菜单">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+              </button>
+              <span class="brand-bar__logo">果拾</span>
+              <button class="brand-bar__bag" type="button" data-toast="购物袋中已有 2 件商品" aria-label="购物袋">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+                <i class="brand-bar__bag-count" id="bagCount">2</i>
+              </button>
+            </header>
+
+            <!-- 2. Hero：黑场电影章节（签名）-->
+            <section class="hero" aria-label="iPhone 17 Pro">
+              <p class="hero__eyebrow">新品登场</p>
+              <h1 class="hero__title">iPhone 17 Pro</h1>
+              <p class="hero__grad">钛金属，强悍内芯。</p>
+              <div class="hero__device" aria-hidden="true"></div>
+              <div class="hero__links">
+                <button class="pill" type="button" id="buyBtn">立即购买</button>
+                <button class="link" type="button" data-toast="了解更多：A19 Pro 芯片与钛金属边框">进一步了解 ›</button>
+              </div>
+              <p class="hero__price">RMB 8,999 起，或 RMB 749/月，分期 12 期</p>
+            </section>
+
+            <!-- 3. 内容卡（pale 场）-->
+            <section class="duo" aria-label="服务">
+              <div class="duo__card">
+                <svg class="duo__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 11.7 4 7.8 9.5 7 12 3z"/></svg>
+                <h2 class="duo__title">以旧换新</h2>
+                <p class="duo__meta">旧机最高抵扣 <b>RMB 4,200</b></p>
+                <p class="duo__link" data-toast="预估你的 iPhone 13 可抵 3,100 元">估价换购 ›</p>
+              </div>
+              <div class="duo__card">
+                <svg class="duo__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/><path d="M9.5 12l1.8 1.8 3.2-3.6"/></svg>
+                <h2 class="duo__title">AppleCare+</h2>
+                <p class="duo__meta">碎屏与电池保障，两年期</p>
+                <p class="duo__link" data-toast="AppleCare+ 已加入对比清单">了解保障 ›</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：配件列表 -->
+            <section class="feed" aria-label="为你推荐">
+              <div class="feed__head">
+                <h2 class="feed__title">为你推荐</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="wear">穿戴</button>
+                  <button class="chip" type="button" data-filter="audio">音频</button>
+                  <button class="chip" type="button" data-filter="power">配件</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="audio">
+                  <div class="feed-item__photo feed-item__photo--1" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">AirPods Pro 3</span>
+                    <span class="feed-item__meta">自适应降噪 · USB-C</span>
+                    <b class="feed-item__price">RMB 1,899</b>
+                  </div>
+                  <button class="feed-item__add" type="button">加入购物袋</button>
+                </li>
+                <li class="feed-item" data-kind="wear">
+                  <div class="feed-item__photo feed-item__photo--2" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Apple Watch Series 11</span>
+                    <span class="feed-item__meta">钛金属 · 46 毫米</span>
+                    <b class="feed-item__price">RMB 5,999</b>
+                  </div>
+                  <button class="feed-item__add" type="button">加入购物袋</button>
+                </li>
+                <li class="feed-item" data-kind="power">
+                  <div class="feed-item__photo feed-item__photo--3" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">MagSafe 磁吸充电器</span>
+                    <span class="feed-item__meta">30W 快充 · 编织线</span>
+                    <b class="feed-item__price">RMB 399</b>
+                  </div>
+                  <button class="feed-item__add" type="button">加入购物袋</button>
+                </li>
+                <li class="feed-item" data-kind="audio">
+                  <div class="feed-item__photo feed-item__photo--4" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">AirPods Max（午夜色）</span>
+                    <span class="feed-item__meta">头戴式 · 计算音频</span>
+                    <b class="feed-item__price">RMB 3,999</b>
+                  </div>
+                  <button class="feed-item__add" type="button">加入购物袋</button>
+                </li>
+                <li class="feed-item" data-kind="wear">
+                  <div class="feed-item__photo feed-item__photo--5" aria-hidden="true"></div>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Apple Watch Ultra 3</span>
+                    <span class="feed-item__meta">钛壳 · 双频 GPS</span>
+                    <b class="feed-item__price">RMB 6,499</b>
+                  </div>
+                  <button class="feed-item__add" type="button">加入购物袋</button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：配置器 -->
+            <section class="action" aria-label="选择机型">
+              <div class="action__row-label">机型</div>
+              <div class="chips">
+                <button class="chip is-active" type="button" data-price="8999">17 Pro · 256G</button>
+                <button class="chip" type="button" data-price="9999">17 Pro · 512G</button>
+                <button class="chip" type="button" data-price="10999">17 Pro Max</button>
+              </div>
+              <div class="action__row-label">外观</div>
+              <div class="swatches">
+                <button class="swatch is-active" type="button" style="--c: #3c4353" aria-label="深空钛" data-toast="已选：深空钛"></button>
+                <button class="swatch" type="button" style="--c: #c8c3bd" aria-label="自然钛" data-toast="已选：自然钛"></button>
+                <button class="swatch" type="button" style="--c: #d8bfa4" aria-label="沙漠钛" data-toast="已选：沙漠钛"></button>
+                <button class="swatch" type="button" style="--c: #1f2937" aria-label="曜石黑" data-toast="已选：曜石黑"></button>
+              </div>
+              <div class="action__row">
+                <button class="pill pill--wide" type="button" id="addBagBtn">加入购物袋</button>
+                <button class="pill pill--ghost" type="button" data-toast="已预约周六 14:00 · 环球港店">预约到店</button>
+              </div>
+              <p class="action__sum" id="sumLine">合计 RMB 8,999 · 或月付 RMB 749 × 12 期</p>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4v-9z"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="商店">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7h16l-1.2 13H5.2L4 7z"/><path d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"/></svg>
+              <span>商店</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="搜索">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <span>搜索</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="购物袋">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 8h12l1 12H5L6 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+              <span>购物袋</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

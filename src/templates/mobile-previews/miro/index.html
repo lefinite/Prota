@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>便签白板 · Miro</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 5l7 6 7-6M5 12l7 6 7-6" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">便签白板</span>
+                <span class="brand-bar__sub">Q3 产品脑暴 · 6 人协作中</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="邀请链接已复制 · 7 天内有效" aria-label="邀请协作">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" /><path d="M18.5 8v6M15.5 11h6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：阳光画板 + 手贴便签 -->
+            <section class="board-card" aria-label="画板预览">
+              <div class="board-card__head">
+                <div>
+                  <h1 class="board-card__title">Q3 产品脑暴</h1>
+                  <p class="board-card__sub">12 张便签 · 3 个分区 · 刚刚同步</p>
+                </div>
+                <div class="board-card__avatars" aria-label="在线协作">
+                  <i class="avatar avatar--a">柯</i>
+                  <i class="avatar avatar--b">哲</i>
+                  <i class="avatar avatar--c">娅</i>
+                  <i class="avatar avatar--more">+3</i>
+                </div>
+              </div>
+              <div class="sticky-grid" id="stickyGrid">
+                <div class="sticky sticky--yellow" style="--tilt: -1.6deg">离线模式优先</div>
+                <div class="sticky sticky--pink" style="--tilt: 1.2deg">命名投票：胶带 vs 图钉</div>
+                <div class="sticky sticky--yellow" style="--tilt: 0.9deg">访客只读链接</div>
+                <div class="sticky sticky--teal" style="--tilt: -0.8deg">导出为 PNG</div>
+              </div>
+              <p class="board-card__live"><span class="board-card__live-dot" aria-hidden="true"></span>阿哲 正在拖动便签到「技术方案」</p>
+              <div class="board-card__foot">
+                <span class="board-card__foot-label">整理进度</span>
+                <div class="board-track"><span class="board-fill" style="--w: 60%"></span></div>
+                <b class="board-card__foot-num">60%</b>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="分区与高票便签">
+              <div class="miro-card">
+                <h2 class="miro-card__title">分区进度</h2>
+                <div class="frame-row">
+                  <div class="frame-row__head"><span>需求池</span><b>80%</b></div>
+                  <div class="board-track"><span class="board-fill" style="--w: 80%"></span></div>
+                </div>
+                <div class="frame-row">
+                  <div class="frame-row__head"><span>技术方案</span><b>45%</b></div>
+                  <div class="board-track"><span class="board-fill" style="--w: 45%"></span></div>
+                </div>
+                <div class="frame-row">
+                  <div class="frame-row__head"><span>命名投票</span><b>30%</b></div>
+                  <div class="board-track"><span class="board-fill" style="--w: 30%"></span></div>
+                </div>
+              </div>
+              <div class="miro-card">
+                <h2 class="miro-card__title">今日高票</h2>
+                <button class="vote-row" type="button" aria-pressed="false" data-votes="8">
+                  <span class="vote-row__text">离线模式优先</span>
+                  <span class="vote-row__num"><i aria-hidden="true">▲</i> 8</span>
+                </button>
+                <button class="vote-row" type="button" aria-pressed="false" data-votes="5">
+                  <span class="vote-row__text">访客只读链接</span>
+                  <span class="vote-row__num"><i aria-hidden="true">▲</i> 5</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 4. 画板动态 Feed -->
+            <section class="feed" aria-label="画板动态">
+              <div class="feed__head">
+                <h2 class="feed__title">画板动态</h2>
+                <div class="chips" role="tablist" aria-label="筛选动态">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="doing">进行中</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="archived">已归档</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="doing">
+                  <i class="feed-item__avatar avatar avatar--a" aria-hidden="true">柯</i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">小柯 添加便签「离线模式」</span>
+                    <span class="feed-item__meta">09:24 · 需求池</span>
+                  </div>
+                  <em class="state-chip state-chip--doing">进行中</em>
+                  <button class="feed-item__heart" type="button" aria-label="赞" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 9.3 5.3c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <i class="feed-item__avatar avatar avatar--b" aria-hidden="true">哲</i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阿哲 移动 3 张便签到技术方案</span>
+                    <span class="feed-item__meta">09:10 · 技术方案</span>
+                  </div>
+                  <em class="state-chip state-chip--done">已完成</em>
+                  <button class="feed-item__heart" type="button" aria-label="赞" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 9.3 5.3c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <i class="feed-item__avatar avatar avatar--c" aria-hidden="true">娅</i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">米娅 创建分区「命名投票」</span>
+                    <span class="feed-item__meta">昨天 21:36 · 命名投票</span>
+                  </div>
+                  <em class="state-chip state-chip--done">已完成</em>
+                  <button class="feed-item__heart" type="button" aria-label="赞" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 9.3 5.3c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <i class="feed-item__avatar avatar avatar--a" aria-hidden="true">柯</i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">小柯 投票「访客只读链接」</span>
+                    <span class="feed-item__meta">昨天 20:02 · 命名投票</span>
+                  </div>
+                  <em class="state-chip state-chip--done">已完成</em>
+                  <button class="feed-item__heart" type="button" aria-label="赞" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 9.3 5.3c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <i class="feed-item__avatar avatar avatar--c" aria-hidden="true">娅</i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">米娅 归档 6 月旧便签 ×6</span>
+                    <span class="feed-item__meta">10 月 12 日 · 需求池</span>
+                  </div>
+                  <em class="state-chip state-chip--archived">已归档</em>
+                  <button class="feed-item__heart" type="button" aria-label="赞" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 9.3 5.3c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="doing">
+                  <i class="feed-item__avatar avatar avatar--b" aria-hidden="true">哲</i>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阿哲 上传草图 sketch-07</span>
+                    <span class="feed-item__meta">10 月 11 日 · 技术方案</span>
+                  </div>
+                  <em class="state-chip state-chip--doing">进行中</em>
+                  <button class="feed-item__heart" type="button" aria-label="赞" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 9.3 5.3c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：便签速记 -->
+            <section class="action-area" aria-label="便签速记">
+              <div class="color-picker" role="group" aria-label="选择便签颜色">
+                <button class="color-dot color-dot--yellow is-active" type="button" data-color="yellow" aria-label="黄色便签" aria-pressed="true"></button>
+                <button class="color-dot color-dot--pink" type="button" data-color="pink" aria-label="粉色便签" aria-pressed="false"></button>
+                <button class="color-dot color-dot--teal" type="button" data-color="teal" aria-label="青色便签" aria-pressed="false"></button>
+                <span class="action-area__hint">便签颜色</span>
+              </div>
+              <input class="quick-input" id="quickInput" type="text" placeholder="写下你的便签，如：支持手写批注…" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="stickBtn">贴上白板</button>
+                <button class="btn-ghost" type="button" data-toast="白板已导出为 PNG · 2.4MB">导出画板</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="白板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="17" height="17" rx="3" /><path d="M7 15l3.5-4.5L14 15l3.5-5" />
+              </svg>
+              <span>白板</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="动态">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" />
+              </svg>
+              <span>动态</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="便签" aria-label="新建便签">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>便签</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="分区">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2" /><rect x="13" y="3.5" width="7.5" height="7.5" rx="2" />
+                <rect x="3.5" y="13" width="7.5" height="7.5" rx="2" /><rect x="13" y="13" width="7.5" height="7.5" rx="2" />
+              </svg>
+              <span>分区</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

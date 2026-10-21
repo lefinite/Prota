@@ -1,0 +1,524 @@
+/* =========================================================================
+ * mobile-previews/slack — Slack Design System
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/slack 的 :root token
+ * 页面：Page content（Connect · 团队消息 App）
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/slack）—— */
+  --bg: #ffffff;
+  --surface: #f8f8f8;
+  --surface-warm: var(--surface);
+  --fg: #1d1c1d;
+  --fg-2: #1d1c1d;
+  --muted: #616061;
+  --meta: #616061;
+  --border: #dddddd;
+  --border-soft: #f1f1f1;
+  --accent: #4a154b;
+  --accent-on: #ffffff;
+  --accent-hover: #611f69;
+  --accent-active: #350d36;
+  --success: #2eb67d;
+  --warn: #ecb22e;
+  --danger: #e01e5a;
+  --font-display: "Larsseit", "Helvetica Neue", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Monaco", "Menlo", "Courier New", Courier, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 16px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 48px;
+  --leading-body: 1.5;
+  --leading-tight: 1.10;
+  --tracking-display: -0.021em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 80px;
+  --section-y-tablet: 48px;
+  --section-y-phone: 32px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --focus-ring: 0 0 0 2px rgba(18, 100, 163, 0.25);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1200px;
+  --container-gutter-desktop: 24px;
+  --container-gutter-tablet: 16px;
+  --container-gutter-phone: 16px;
+
+  /* —— 手机外壳（与 Slack 协调 —— 简洁专业）—— */
+  --page-backdrop-top: #f5f5f5;
+  --page-backdrop-bottom: #e8e8e8;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #eeeeee;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.12);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+
+  /* Slack 特定颜色 */
+  --color-aubergine: #4A154B;
+  --color-aubergine-dark: #350d36;
+  --color-aubergine-light: #611f69;
+  --color-blue: #36C5F0;
+  --color-green: #2EB67D;
+  --color-yellow: #ECB22E;
+  --color-red: #E01E5A;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); display: flex; }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+
+/* ===== Page content · Connect (Slack 风格) ===== */
+
+/* Aubergine Sidebar (signature: Slack's most iconic UI element) */
+.sidebar {
+  width: 72px;
+  height: 100%;
+  background: var(--color-aubergine);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-top: 56px;
+  overflow-y: auto;
+}
+
+.sidebar__header {
+  padding: 0 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workspace-icon {
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--color-blue), var(--color-green));
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+}
+
+.workspace-name {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-btn {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.sidebar-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.sidebar-btn svg { width: 16px; height: 16px; }
+
+.sidebar-nav { padding: 12px 6px; display: flex; flex-direction: column; gap: 2px; }
+
+.sidebar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 6px;
+  position: relative;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.sidebar-item:hover { background: rgba(255, 255, 255, 0.1); }
+.sidebar-item--active { background: rgba(255, 255, 255, 0.2); }
+
+.sidebar-item__icon {
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+.sidebar-item--active .sidebar-item__icon { color: #ffffff; }
+.sidebar-item__icon--dm {
+  background: linear-gradient(135deg, var(--color-yellow), var(--color-red));
+  color: white;
+}
+
+.sidebar-item__text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.unread-badge {
+  position: absolute; top: 4px; right: 4px;
+  min-width: 16px; height: 16px;
+  border-radius: 8px;
+  background: var(--color-red);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+}
+
+.unread-dot {
+  position: absolute; top: 6px; right: 8px;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: var(--color-blue);
+  border: 2px solid var(--color-aubergine);
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 8px 4px;
+}
+
+/* Main Content Area */
+.app-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  padding-top: 56px;
+  padding-bottom: 60px;
+}
+
+/* Channel Header */
+.channel-header {
+  position: sticky;
+  top: 56px;
+  z-index: 5;
+  height: 48px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.channel-header__icon {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-aubergine-light);
+}
+
+.channel-header__name {
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--fg);
+}
+
+.channel-header__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.channel-header__members {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.header-btn {
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.header-btn:hover { background: var(--surface); color: var(--fg); }
+.header-btn svg { width: 16px; height: 16px; }
+
+/* Messages */
+.messages { padding: 12px; }
+
+.message {
+  display: flex;
+  gap: 8px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  transition: background var(--motion-fast) var(--ease-standard);
+  cursor: pointer;
+}
+.message:hover { background: var(--surface); }
+.message--highlight { background: rgba(18, 100, 163, 0.04); }
+
+.message-avatar {
+  width: 36px; height: 36px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.message-main { flex: 1; min-width: 0; }
+
+.message-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.message-author {
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--fg);
+}
+
+.message-time {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.message:hover .message-time { opacity: 1; }
+
+.message-text {
+  margin: 0 0 4px;
+  font-size: var(--text-base);
+  line-height: 1.46667;
+  color: var(--fg);
+  word-wrap: break-word;
+}
+
+/* Message Attachment (Slack style: border-left) */
+.message-attachment {
+  margin-top: 6px;
+  position: relative;
+  padding-left: 12px;
+}
+.attachment-border {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--border);
+  border-radius: 0 4px 4px 0;
+}
+.attachment-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+/* Reactions (Slack style: pill with border) */
+.message-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.reaction {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  padding: 2px 8px;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.reaction:hover { background: var(--border-soft); }
+.reaction.is-active {
+  background: rgba(18, 100, 163, 0.1);
+  border-color: #1264A3;
+}
+
+.bottom-spacer { height: 12px; }
+
+/* Composer (Slack style: pinned bottom, rounded input) */
+.composer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  height: 60px;
+  padding: 8px 12px 12px 84px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composer-btn {
+  width: 32px; height: 32px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.composer-btn:hover { background: var(--surface); color: var(--fg); }
+.composer-btn svg { width: 18px; height: 18px; }
+
+.composer-input {
+  flex: 1;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: var(--text-base);
+  color: var(--fg);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.composer-input:focus {
+  border-color: #1264A3;
+  box-shadow: 0 0 0 2px rgba(18, 100, 163, 0.25);
+  outline: none;
+}
+.composer-input::placeholder { color: var(--muted); }
+
+.composer-send {
+  width: 36px; height: 36px;
+  border-radius: 4px;
+  background: var(--color-aubergine);
+  color: white;
+  display: grid;
+  place-items: center;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.composer-send:hover { background: var(--color-aubergine-light); }
+.composer-send svg { width: 18px; height: 18px; }
+
+/* Toast */
+.toast {
+  position: absolute;
+  left: 50%; bottom: 80px;
+  transform: translate(-50%, 12px);
+  background: var(--color-aubergine);
+  color: white;
+  font-size: var(--text-sm);
+  padding: 8px 16px;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap;
+  z-index: 20;
+  left: 108px;
+  transform: translate(0, 12px);
+}
+.toast.is-show { opacity: 1; transform: translate(0, 0); }
+
+/* Scrollbar styling */
+.messages::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar { width: 6px; }
+.messages::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+
+/* Animations */
+.message { animation: fadeSlide 320ms var(--ease-standard) both; }
+.message:nth-child(1) { animation-delay: 0ms; }
+.message:nth-child(2) { animation-delay: 50ms; }
+.message:nth-child(3) { animation-delay: 100ms; }
+.message:nth-child(4) { animation-delay: 150ms; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

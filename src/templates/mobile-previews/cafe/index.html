@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>半窗咖啡 · Cafe</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 9V7a5 5 0 0 0-10 0v2" />
+                  <path d="M5 9h13a1 1 0 0 1 1 1v3a7.5 7.5 0 0 1-15 0v-3a1 1 0 0 1 1-1z" />
+                  <path d="M6 15.5v0c2.5 1.5 9.5 1.5 12 0" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">半窗咖啡</span>
+                <span class="brand-bar__sub">营业中 · 步行 5 分钟 · 21:00 打烊</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已打开导航 · 沿梧桐路直行 350 米" aria-label="到店导航">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：本周豆单（手写菜单板质感）-->
+            <section class="bean-card" aria-label="本周豆单">
+              <div class="bean-card__top">
+                <span class="bean-card__eyebrow">本周豆单 · NO.42</span>
+                <span class="bean-card__price">¥38<i>/ 200g</i></span>
+              </div>
+              <h1 class="bean-card__name">耶加雪菲 · 科契尔</h1>
+              <p class="bean-card__origin">埃塞俄比亚 · 水洗 G1 · 海拔 1,950 m</p>
+              <div class="bean-card__notes" role="group" aria-label="风味标签，点按加入偏好">
+                <button class="note-chip" type="button" aria-pressed="false">柑橘</button>
+                <button class="note-chip" type="button" aria-pressed="false">茉莉</button>
+                <button class="note-chip" type="button" aria-pressed="false">蜂蜜</button>
+                <button class="note-chip" type="button" aria-pressed="false">红茶尾韵</button>
+              </div>
+              <div class="bean-card__bottom">
+                <div class="roast">
+                  <span class="roast__label">烘焙度 · 中浅</span>
+                  <div class="roast__dots" aria-hidden="true">
+                    <i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i><i></i>
+                  </div>
+                </div>
+                <p class="bean-card__brew">手冲 1:16 · 92°C · 研磨中细</p>
+              </div>
+            </section>
+
+            <!-- 3. 双内容卡：集点卡 / 冲煮教室 -->
+            <section class="duo-grid" aria-label="会员卡与课程">
+              <div class="duo-card">
+                <h2 class="duo-card__title">集点卡</h2>
+                <div class="stamps" role="img" aria-label="已集 8 点，共 10 点">
+                  <i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i>
+                  <i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i></i><i></i>
+                </div>
+                <p class="duo-card__note">再集 2 杯，任意饮品免单一杯</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">冲煮教室</h2>
+                <p class="duo-card__num">3<span>/ 9 席</span></p>
+                <p class="duo-card__note">周六 15:00 · 手冲入门 · 本店烘焙</p>
+                <div class="seat-track"><span style="--w: 67%"></span></div>
+              </div>
+            </section>
+
+            <!-- 4. 最近到店 Feed -->
+            <section class="feed" aria-label="最近到店">
+              <div class="feed__head">
+                <h2 class="feed__title">最近到店</h2>
+                <div class="chips" role="tablist" aria-label="筛选消费记录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="drink">饮品</button>
+                  <button class="chip" type="button" data-filter="bakery">烘焙</button>
+                  <button class="chip" type="button" data-filter="beans">豆子</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="drink">
+                  <span class="feed-item__glyph" aria-hidden="true">☕</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">燕麦拿铁 · 大杯</span>
+                    <span class="feed-item__meta">今天 09:24 · 自取 <em class="feed-item__chip">积分 +3</em></span>
+                  </div>
+                  <b class="feed-item__amount">-¥32</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏这杯" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="bakery">
+                  <span class="feed-item__glyph" aria-hidden="true">🥐</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">黄油可颂 · 加热</span>
+                    <span class="feed-item__meta">今天 09:26 · 堂食</span>
+                  </div>
+                  <b class="feed-item__amount">-¥15</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏这个点心" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="drink">
+                  <span class="feed-item__glyph" aria-hidden="true">🍵</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">焙茶拿铁 · 少糖</span>
+                    <span class="feed-item__meta">上周五 15:10 · 靠窗位</span>
+                  </div>
+                  <b class="feed-item__amount">-¥30</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏这杯" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="beans">
+                  <span class="feed-item__glyph" aria-hidden="true">🛒</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">埃塞豆 200g</span>
+                    <span class="feed-item__meta">10 月 2 日 · 门店自提 <em class="feed-item__chip">待取</em></span>
+                  </div>
+                  <b class="feed-item__amount">-¥76</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏这支豆子" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="beans">
+                  <span class="feed-item__glyph" aria-hidden="true">💰</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">会员充值</span>
+                    <span class="feed-item__meta">上周日 · 充 200 送 30</span>
+                  </div>
+                  <b class="feed-item__amount feed-item__amount--in">+¥200</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏这条记录" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="提前点单">
+              <input class="order-input" id="orderInput" type="text" placeholder="给咖啡师留言，如：少冰、燕麦奶……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="orderBtn">提前点单</button>
+                <button class="btn-ghost" type="button" data-toast="已取号 · 到店出示二维码即可">到店自取</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="点单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3h12l-1 5a5 5 0 0 1-10 0L6 3z" /><path d="M12 13v4" /><path d="M8 21h8" />
+              </svg>
+              <span>点单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="豆单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="12" rx="6" ry="9" transform="rotate(28 12 12)" />
+                <path d="M8 7.5c2 2 4.5 5 6 9" />
+              </svg>
+              <span>豆单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="点单" aria-label="快速点单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>点单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="会员卡">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="6" width="18" height="13" rx="3" /><path d="M3 10h18" /><path d="M7 15h4" />
+              </svg>
+              <span>会员卡</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

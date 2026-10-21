@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Refined Journal · 优雅笔记</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">R</span>
+                <div class="brand-text">
+                  <span class="brand-name">Refined</span>
+                  <span class="brand-sub">优雅笔记</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索笔记">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- 今日语录（signature：优雅的 serif 排版焦点） -->
+            <section class="quote-card" aria-label="今日语录">
+              <span class="quote-card__mark" aria-hidden="true">"</span>
+              <blockquote class="quote-card__text">
+                优雅不是浮华，而是内心的从容与克制。
+              </blockquote>
+              <cite class="quote-card__author">— 奥黛丽·赫本</cite>
+              <div class="quote-card__meta">
+                <span class="date">8月14日，星期三</span>
+                <span class="tag">每日一语</span>
+              </div>
+            </section>
+
+            <!-- 写作统计双卡 -->
+            <section class="stat-row" aria-label="写作统计">
+              <div class="stat-card stat-card--words">
+                <div class="stat-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div class="stat-card__content">
+                  <span class="stat-card__val">1,248</span>
+                  <span class="stat-card__cap">今日字数</span>
+                </div>
+              </div>
+              <div class="stat-card stat-card--streak">
+                <div class="stat-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+                </div>
+                <div class="stat-card__content">
+                  <span class="stat-card__val">12</span>
+                  <span class="stat-card__cap">连续天数</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 最近笔记列表 -->
+            <section class="list-block" aria-label="最近笔记">
+              <div class="list-block__head">
+                <h2>最近笔记</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选笔记">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="journal" role="tab" aria-selected="false">日记</button>
+                  <button class="chip" data-filter="idea" role="tab" aria-selected="false">灵感</button>
+                </div>
+              </div>
+
+              <ul class="note-list" id="noteList">
+                <li class="note" data-type="journal">
+                  <div class="note__icon">日</div>
+                  <div class="note__main">
+                    <span class="note__title">晨间思考</span>
+                    <span class="note__sub">今天 07:30 · 日记</span>
+                  </div>
+                  <div class="note__right">
+                    <span class="note__preview">关于简约设计的思考...</span>
+                  </div>
+                </li>
+                <li class="note" data-type="idea">
+                  <div class="note__icon note__icon--idea">灵</div>
+                  <div class="note__main">
+                    <span class="note__title">产品设计灵感</span>
+                    <span class="note__sub">昨天 23:15 · 灵感</span>
+                  </div>
+                  <div class="note__right">
+                    <span class="note__preview">微交互的重要性...</span>
+                  </div>
+                </li>
+                <li class="note" data-type="journal">
+                  <div class="note__icon">日</div>
+                  <div class="note__main">
+                    <span class="note__title">阅读笔记</span>
+                    <span class="note__sub">前天 · 日记</span>
+                  </div>
+                  <div class="note__right">
+                    <span class="note__preview">《设计的法则》摘录...</span>
+                  </div>
+                </li>
+                <li class="note" data-type="idea">
+                  <div class="note__icon note__icon--idea">灵</div>
+                  <div class="note__main">
+                    <span class="note__title">色彩搭配方案</span>
+                    <span class="note__sub">3天前 · 灵感</span>
+                  </div>
+                  <div class="note__right">
+                    <span class="note__preview">温暖的中性色调...</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 写作目标 -->
+            <section class="goal-card" aria-label="写作目标">
+              <div class="goal-card__head">
+                <span class="goal-card__title">本周写作目标</span>
+                <span class="goal-card__num">4,820 <span class="muted">/ 7,000 字</span></span>
+              </div>
+              <div class="goal-card__bar" aria-hidden="true">
+                <span class="goal-card__bar-fill" style="--p: 69%"></span>
+              </div>
+              <p class="goal-card__note">已完成 69%，再写 2,180 字达成目标。</p>
+            </section>
+
+            <!-- 快速操作 -->
+            <section class="action-grid" aria-label="快速操作">
+              <button class="action-btn action-btn--primary" data-toast="开始新笔记">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                <span>新建笔记</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="打开语音输入">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <span>语音记录</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="打开日历视图">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>日历</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="notes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>笔记</span>
+            </button>
+            <button class="tab tab--fab" data-tab="write" aria-label="开始写作">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="calendar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>日历</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

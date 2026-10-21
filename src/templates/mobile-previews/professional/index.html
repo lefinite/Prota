@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>智远交付 · Professional</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">智</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">智远交付</span>
+                <span class="brand-bar__sub">星河银行 · 数字中台项目</span>
+              </div>
+              <button
+                class="brand-bar__icon"
+                type="button"
+                data-toast="项目周报将于每周五 17:00 自动同步"
+                aria-label="项目通知"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.5-3.5" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：交付进度环 + 里程碑 -->
+            <section class="hero-card" aria-label="项目交付进度">
+              <div class="hero-card__main">
+                <div class="hero-card__meter">
+                  <svg viewBox="0 0 96 96" class="ring" aria-hidden="true">
+                    <circle class="ring__track" cx="48" cy="48" r="42" />
+                    <circle class="ring__fill" cx="48" cy="48" r="42" />
+                  </svg>
+                  <p class="hero-card__meter-num"><b>78</b><span>%</span></p>
+                </div>
+                <div class="hero-card__facts">
+                  <span class="hero-card__eyebrow">交付进度 · 第 8 周</span>
+                  <p class="hero-card__fact">交付物 <b>12 / 16</b> · 客户已确认 <b>9</b></p>
+                  <p class="hero-card__fact">本周新增 <b>3</b> 份文档，评审通过率 <b>92%</b></p>
+                  <span class="status-chip" data-tone="warn">2 项待客户确认</span>
+                </div>
+              </div>
+              <ol class="milestones" aria-label="里程碑：需求与方案已完成，开发进行中">
+                <li class="is-done"><i aria-hidden="true"></i><span>需求</span></li>
+                <li class="is-done"><i aria-hidden="true"></i><span>方案</span></li>
+                <li class="is-active"><i aria-hidden="true"></i><span>开发</span></li>
+                <li><i aria-hidden="true"></i><span>验收</span></li>
+              </ol>
+            </section>
+
+            <!-- 3. 双内容卡 -->
+            <section class="duo-grid" aria-label="今日日程与交付物">
+              <div class="duo-card" id="scheduleCard">
+                <h2 class="duo-card__title">今日日程</h2>
+                <div class="schedule-row">
+                  <span class="schedule-row__time">09:30</span>
+                  <div class="schedule-row__body">
+                    <b>客户访谈 · 业务部门</b>
+                    <span>会议室 A · 线上同步</span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <span class="schedule-row__time">14:00</span>
+                  <div class="schedule-row__body">
+                    <b>方案评审 · 架构组</b>
+                    <span>线上 · 45 分钟</span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <span class="schedule-row__time">17:00</span>
+                  <div class="schedule-row__body">
+                    <b>每日站会</b>
+                    <span>项目组全员</span>
+                  </div>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周交付物</h2>
+                <p class="duo-card__num">3<span> / 4 完成</span></p>
+                <p class="duo-card__note">数据字典与联调报告已归档，剩迁移方案</p>
+                <div class="budget-track">
+                  <span class="budget-fill" style="--w: 75%"></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 审批流 Feed -->
+            <section class="feed" aria-label="审批与交付流">
+              <div class="feed__head">
+                <h2 class="feed__title">审批流</h2>
+                <div class="chips" role="tablist" aria-label="筛选事项">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="pending">待处理</button>
+                  <button class="chip" type="button" data-filter="overdue">已逾期</button>
+                  <button class="chip" type="button" data-filter="archived">已归档</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__glyph" aria-hidden="true">王</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">数据治理方案 V2</span>
+                    <span class="feed-item__meta"
+                      >王思远 · 今天 18:00 截止 <em class="status-chip" data-tone="warn">待客户确认</em></span
+                    >
+                  </div>
+                  <b class="feed-item__code">D-241</b>
+                  <button class="feed-item__star" type="button" aria-label="标记重点" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="progress">
+                  <span class="feed-item__glyph" aria-hidden="true">李</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">接口联调报告</span>
+                    <span class="feed-item__meta"
+                      >李澄 · 明天 12:00 <em class="status-chip" data-tone="accent">进行中</em></span
+                    >
+                  </div>
+                  <b class="feed-item__code">D-242</b>
+                  <button class="feed-item__star" type="button" aria-label="标记重点" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="overdue">
+                  <span class="feed-item__glyph" aria-hidden="true">周</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">权限体系评估</span>
+                    <span class="feed-item__meta"
+                      >周吟 · 原定 8 月 12 日 <em class="status-chip" data-tone="danger">已逾期 2 天</em></span
+                    >
+                  </div>
+                  <b class="feed-item__code">D-239</b>
+                  <button class="feed-item__star" type="button" aria-label="标记重点" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__glyph" aria-hidden="true">河</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">UAT 测试用例</span>
+                    <span class="feed-item__meta"
+                      >星河银行 · 8 月 18 日 <em class="status-chip" data-tone="warn">待客户确认</em></span
+                    >
+                  </div>
+                  <b class="feed-item__code">D-243</b>
+                  <button class="feed-item__star" type="button" aria-label="标记重点" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">陈</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">培训材料定稿</span>
+                    <span class="feed-item__meta"
+                      >陈墨 · 8 月 20 日 <em class="status-chip" data-tone="muted">已归档</em></span
+                    >
+                  </div>
+                  <b class="feed-item__code">D-238</b>
+                  <button class="feed-item__star" type="button" aria-label="标记重点" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="同步项目组">
+              <input
+                class="quick-input"
+                id="noteInput"
+                type="text"
+                placeholder="写下备注，同步给项目组……"
+              />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="reportBtn">提交周报</button>
+                <button class="btn-ghost" type="button" data-toast="审批流已创建，等待项目经理会签">发起审批</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="项目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="4" width="7" height="16" rx="1.5" />
+                <rect x="13.5" y="4" width="7" height="10" rx="1.5" />
+              </svg>
+              <span>项目</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+                <path d="M3.5 10h17M8 3v4M16 3v4" />
+              </svg>
+              <span>日程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="审批">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 12.5l2 2 4-4.5" />
+                <path d="M5 4h14v16l-7-3-7 3z" />
+              </svg>
+              <span>审批</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

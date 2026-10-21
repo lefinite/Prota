@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>多语鸟 · Duolingo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 + 连续打卡 -->
+            <header class="topbar">
+              <div class="topbar__left">
+                <div class="duo-mascot" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" fill="currentColor">
+                    <ellipse cx="24" cy="38" rx="14" ry="10"/>
+                    <ellipse cx="24" cy="22" rx="18" ry="16"/>
+                    <circle cx="18" cy="18" r="4" fill="#ffffff"/>
+                    <circle cx="30" cy="18" r="4" fill="#ffffff"/>
+                    <circle cx="18" cy="18" r="2"/>
+                    <circle cx="30" cy="18" r="2"/>
+                    <path d="M20 26 Q24 30 28 26" stroke="#3c3c3c" stroke-width="2" fill="none"/>
+                  </svg>
+                </div>
+                <div>
+                  <h1 class="brand-name">多语鸟</h1>
+                  <span class="brand-greeting">继续加油，小达人！</span>
+                </div>
+              </div>
+              <div class="streak-pill">
+                <span class="streak-flame">🔥</span>
+                <span class="streak-count">7</span>
+              </div>
+            </header>
+
+            <!-- 每日目标进度（signature：猫头鹰绿 + 粗阴影） -->
+            <section class="daily-goal" aria-label="每日学习目标">
+              <div class="goal-card">
+                <div class="goal-card__header">
+                  <span class="goal-card__label">今日经验</span>
+                  <span class="goal-card__xp">45 / 50 XP</span>
+                </div>
+                <div class="goal-card__progress">
+                  <span class="goal-card__progress-fill" style="--progress: 90%"></span>
+                </div>
+                <p class="goal-card__hint">再完成 1 个课程即可达成目标！</p>
+              </div>
+            </section>
+
+            <!-- 课程树（核心学习路径） -->
+            <section class="lesson-path" aria-label="学习路径">
+              <h2 class="section-title">学习路径</h2>
+
+              <div class="path-nodes">
+                <!-- 完成的课程节点 -->
+                <div class="lesson-node lesson-node--done">
+                  <div class="lesson-node__icon lesson-node__icon--basics">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                  </div>
+                  <div class="lesson-node__crown">👑</div>
+                </div>
+
+                <div class="path-line path-line--done"></div>
+
+                <!-- 当前课程节点（高亮脉动） -->
+                <div class="lesson-node lesson-node--active">
+                  <div class="lesson-node__icon lesson-node__icon--food">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                  </div>
+                  <div class="lesson-node__ring"></div>
+                </div>
+
+                <div class="path-line"></div>
+
+                <!-- 锁定课程节点 -->
+                <div class="lesson-node lesson-node--locked">
+                  <div class="lesson-node__icon lesson-node__icon--locked">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="10" width="12" height="10" rx="2"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+                  </div>
+                </div>
+
+                <div class="path-line path-line--dim"></div>
+
+                <!-- 更多锁定节点 -->
+                <div class="lesson-node lesson-node--locked">
+                  <div class="lesson-node__icon lesson-node__icon--locked">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="10" width="12" height="10" rx="2"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+                  </div>
+                </div>
+
+                <div class="path-line path-line--dim"></div>
+
+                <div class="lesson-node lesson-node--locked">
+                  <div class="lesson-node__icon lesson-node__icon--locked">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="10" width="12" height="10" rx="2"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 成就徽章 -->
+            <section class="achievements" aria-label="成就">
+              <div class="section-header">
+                <h2 class="section-title">我的成就</h2>
+                <button class="see-all" data-toast="查看全部成就">全部</button>
+              </div>
+
+              <div class="badge-grid">
+                <div class="badge-item badge-item--earned">
+                  <span class="badge-icon">🏆</span>
+                  <span class="badge-name">初学者</span>
+                </div>
+                <div class="badge-item badge-item--earned">
+                  <span class="badge-icon">⭐</span>
+                  <span class="badge-name">完美一周</span>
+                </div>
+                <div class="badge-item badge-item--locked">
+                  <span class="badge-icon">🎯</span>
+                  <span class="badge-name">百次连胜</span>
+                </div>
+                <div class="badge-item badge-item--locked">
+                  <span class="badge-icon">💎</span>
+                  <span class="badge-name">钻石会员</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 操作按钮区 -->
+            <section class="action-area" aria-label="学习操作">
+              <button class="duo-btn duo-btn--primary" data-toast="开始学习">
+                <span class="duo-btn__text">继续学习</span>
+                <svg class="duo-btn__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+              <button class="duo-btn duo-btn--secondary" data-toast="练习模式">
+                <span class="duo-btn__text">练习薄弱点</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="learn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+              <span>学习</span>
+            </button>
+            <button class="tab" data-tab="practice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+              <span>练习</span>
+            </button>
+            <button class="tab tab--center" data-tab="leaderboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6" /></svg>
+              <span>排行</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>云裔 · Together AI 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__cloud" aria-hidden="true"></div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">云裔 · Inference</span>
+                <span class="brand-bar__sub mono">US-WEST-2 · 24× A100 在线 · 延迟 41ms</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="API Key sk-···4f2a 已复制" aria-label="密钥">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="15.5" r="4"/><path d="M11.5 12.5l6-6M15 3l3 3-3 3-3-3 3-3z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：粉彩渐变 + 推理指标（签名）-->
+            <section class="hero" aria-label="推理概览">
+              <div class="hero__glow" aria-hidden="true"></div>
+              <p class="hero__eyebrow mono">TOK/SEC · ROLLOUT</p>
+              <h1 class="hero__num">18,402</h1>
+              <p class="hero__desc">本工作区吞吐 · 环比 <b>+12%</b> · P99 延迟 82ms</p>
+              <div class="hero__stats">
+                <div><b>142M</b><span>今日 tokens</span></div>
+                <div><b>96.4%</b><span>GPU 利用率</span></div>
+                <div><b>$41.2</b><span>今日成本</span></div>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-ink" type="button" id="deployBtn">部署端点</button>
+                <button class="btn-ghost" type="button" data-toast="用量明细已导出 CSV">用量明细</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="端点">
+              <div class="duo__card">
+                <h2 class="duo__title mono">ENDPOINTS</h2>
+                <p class="duo__num">4<span> 个</span></p>
+                <p class="duo__meta">llama3.1-70b · qwen2.5 · embed · rerank</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">DEDICATED</h2>
+                <p class="duo__num">2<span> 组</span></p>
+                <p class="duo__meta">A100×8 · H100×4 · 独享集群</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：推理日志 -->
+            <section class="feed" aria-label="调用日志">
+              <div class="feed__head">
+                <h2 class="feed__title mono">REQUESTS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="chat">对话</button>
+                  <button class="chip" type="button" data-filter="embed">向量</button>
+                  <button class="chip" type="button" data-filter="err">错误</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="chat">
+                  <span class="feed-item__model m1">70b</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">POST /v1/chat/completions</span>
+                    <span class="feed-item__meta">2.1k tokens · 61ms · 200</span>
+                  </div>
+                  <em class="feed-item__cost mono">$0.0042</em>
+                </li>
+                <li class="feed-item" data-kind="embed">
+                  <span class="feed-item__model m2">emb</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">POST /v1/embeddings</span>
+                    <span class="feed-item__meta">批 128 条 · 18ms · 200</span>
+                  </div>
+                  <em class="feed-item__cost mono">$0.0002</em>
+                </li>
+                <li class="feed-item" data-kind="chat">
+                  <span class="feed-item__model m1">70b</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">POST /v1/chat/completions</span>
+                    <span class="feed-item__meta">流式 · 6.4k tokens · 212ms · 200</span>
+                  </div>
+                  <em class="feed-item__cost mono">$0.0128</em>
+                </li>
+                <li class="feed-item" data-kind="err">
+                  <span class="feed-item__model m3">rer</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">POST /v1/rerank</span>
+                    <span class="feed-item__meta">413 · 输入超长（>8k）</span>
+                  </div>
+                  <em class="feed-item__cost mono">—</em>
+                </li>
+                <li class="feed-item" data-kind="chat">
+                  <span class="feed-item__model m2">qwn</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name mono">POST /v1/chat/completions</span>
+                    <span class="feed-item__meta">json 模式 · 1.2k tokens · 44ms</span>
+                  </div>
+                  <em class="feed-item__cost mono">$0.0024</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="试运行">
+              <div class="chips chips--model">
+                <button class="chip is-active" type="button">Llama3.1-70B</button>
+                <button class="chip" type="button">Qwen2.5-32B</button>
+                <button class="chip" type="button">FLUX-schnell</button>
+              </div>
+              <input class="action__input mono" id="promptInput" type="text" placeholder='curl -d {"prompt": "…"}' />
+              <div class="action__row">
+                <button class="btn-ink" type="button" id="tryBtn">试运行</button>
+                <button class="btn-ghost" type="button" data-toast="SDK 代码已生成（Python / cURL）">生成 SDK</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="概览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4v-9z"/></svg>
+              <span>概览</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="模型">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/><path d="M4.5 11.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg>
+              <span>模型</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="部署" aria-label="部署">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              <span>部署</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5h14M5 10h9M5 15h11M5 20h7"/></svg>
+              <span>日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="账单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5"/></svg>
+              <span>账单</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

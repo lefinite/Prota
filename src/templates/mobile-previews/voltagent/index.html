@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>伏特 · VoltAgent 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <span class="brand-bar__bolt">⚡</span>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">伏特 · Agents</span>
+                <span class="brand-bar__sub mono">ORCHESTRATOR v3 · 6 AGENTS ONLINE</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="Traces 已导出（OTLP）" aria-label="追踪">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h4l3-8 4 16 3-8h2"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：Agent 运行（签名：终端流水 + 绿辉光）-->
+            <section class="hero" aria-label="当前运行">
+              <div class="hero__head">
+                <span class="hero__status"><i></i>RUNNING</span>
+                <span class="mono">run_9f2a · 42s · $0.018</span>
+              </div>
+              <h1 class="hero__task">「每晚 22:00 总结今日 GitHub 活动」</h1>
+              <div class="hero__term" aria-label="运行流水">
+                <p class="line c-mut">↳ trigger: cron 0 22 * * *</p>
+                <p class="line c-ok">✓ fetch events · 128 items</p>
+                <p class="line c-ok">✓ classify: 42 commits / 19 issues</p>
+                <p class="line c-em">▸ summarize · llama3.1-8b …</p>
+                <p class="line c-mut cursor">▍</p>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-emerald" type="button" id="pauseBtn">暂停编排</button>
+                <button class="btn-ghost" type="button" data-toast="已回放到第 3 步">查看 Traces</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="编排">
+              <div class="duo__card">
+                <h2 class="duo__title mono">WORKFLOWS</h2>
+                <p class="duo__num">12</p>
+                <p class="duo__meta">每日运行 8 · 每周 3 · 手动 1</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title mono">SUCCESS 7D</h2>
+                <p class="duo__num">98.4<span>%</span></p>
+                <div class="meter"><i style="--w: 98%"></i></div>
+                <p class="duo__meta">83/84 runs · 1 次工具超时</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：Agent 列表 -->
+            <section class="feed" aria-label="Agent 池">
+              <div class="feed__head">
+                <h2 class="feed__title mono">AGENTS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">all</button>
+                  <button class="chip" type="button" data-filter="run">running</button>
+                  <button class="chip" type="button" data-filter="idle">idle</button>
+                  <button class="chip" type="button" data-filter="err">error</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="agent" data-kind="run">
+                  <i class="agent__led on"></i>
+                  <div class="agent__body">
+                    <b>summarizer</b>
+                    <span class="mono">llama3.1-8b · tools: 3 · mem: on</span>
+                  </div>
+                  <em class="agent__pct mono">64%</em>
+                </li>
+                <li class="agent" data-kind="idle">
+                  <i class="agent__led"></i>
+                  <div class="agent__body">
+                    <b>repo-watcher</b>
+                    <span class="mono">poll 5m · gh api · filter: owner</span>
+                  </div>
+                  <em class="agent__pct mono">—</em>
+                </li>
+                <li class="agent" data-kind="idle">
+                  <i class="agent__led"></i>
+                  <div class="agent__body">
+                    <b>mailer</b>
+                    <span class="mono">resend · template: digest.md</span>
+                  </div>
+                  <em class="agent__pct mono">—</em>
+                </li>
+                <li class="agent" data-kind="err">
+                  <i class="agent__led err"></i>
+                  <div class="agent__body">
+                    <b>scraper-x</b>
+                    <span class="mono">429 被限流 · 退避 15m 后重试</span>
+                  </div>
+                  <em class="agent__pct mono">retry</em>
+                </li>
+                <li class="agent" data-kind="run">
+                  <i class="agent__led on"></i>
+                  <div class="agent__body">
+                    <b>eval-guard</b>
+                    <span class="mono">对输出做事实性抽查 · 82 通过</span>
+                  </div>
+                  <em class="agent__pct mono">31%</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新编排">
+              <div class="chips chips--tpl">
+                <button class="chip" type="button">定时任务</button>
+                <button class="chip is-active" type="button">事件触发</button>
+                <button class="chip" type="button">人工指令</button>
+              </div>
+              <input class="action__input mono" id="flowInput" type="text" placeholder="agent('summarizer').run(input)…" />
+              <div class="action__row">
+                <button class="btn-emerald" type="button" id="runBtn">运行编排</button>
+                <button class="btn-ghost" type="button" data-toast="YAML 定义已复制到剪贴板">导出定义</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="编排">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 9h12M6 15h12"/></svg>
+              <span>编排</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="Agent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="6" width="14" height="12" rx="2"/><path d="M12 3v3M9 12h.01M15 12h.01"/></svg>
+              <span>Agent</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="运行" aria-label="运行">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 4l13 8-13 8V4z"/></svg>
+              <span>运行</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="追踪">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h4l3-8 4 16 3-8h2"/></svg>
+              <span>追踪</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

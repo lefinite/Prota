@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Meta Store · Quest & Ray-Ban Meta</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.41 16.5v-9h-2.5v9h2.5zm4.82 0v-9h-2.5v9h2.5z"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">Meta Store</span>
+                  <span class="brand-sub">探索 VR 与 AR 未来</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="购物车" data-toast="购物车 (2)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <span class="iconbtn__badge" aria-hidden="true">2</span>
+              </button>
+            </header>
+
+            <!-- Hero 产品展示 (signature: 沉浸式产品摄影) -->
+            <section class="hero-card" aria-label="Quest 3">
+              <div class="hero-card__image" aria-hidden="true">
+                <div class="hero-card__overlay"></div>
+              </div>
+              <div class="hero-card__content">
+                <span class="hero-card__tag">新品上市</span>
+                <h2 class="hero-card__title">Quest 3</h2>
+                <p class="hero-card__desc">128GB · 混合现实 VR 头显</p>
+                <div class="hero-card__price">¥ 3,799</div>
+                <button class="btn btn--primary" data-toast="已添加到购物车">立即购买</button>
+              </div>
+            </section>
+
+            <!-- 产品快捷入口 -->
+            <section class="quick-links" aria-label="产品分类">
+              <button class="quick-link" data-toast="浏览 Quest 系列">
+                <span class="quick-link__icon quick-link__icon--quest">Q</span>
+                <span>Quest</span>
+              </button>
+              <button class="quick-link" data-toast="浏览 Ray-Ban Meta">
+                <span class="quick-link__icon quick-link__icon--rayban">R</span>
+                <span>Ray-Ban</span>
+              </button>
+              <button class="quick-link" data-toast="浏览配件">
+                <span class="quick-link__icon quick-link__icon--acc">+</span>
+                <span>配件</span>
+              </button>
+              <button class="quick-link" data-toast="查看优惠">
+                <span class="quick-link__icon quick-link__icon--deal">%</span>
+                <span>优惠</span>
+              </button>
+            </section>
+
+            <!-- 推荐产品双卡 -->
+            <section class="product-row" aria-label="推荐产品">
+              <div class="product-card product-card--light">
+                <div class="product-card__image product-card__image--quest"></div>
+                <div class="product-card__info">
+                  <span class="product-card__tag">热门</span>
+                  <h3 class="product-card__name">Quest 3</h3>
+                  <p class="product-card__spec">512GB</p>
+                  <div class="product-card__price">¥ 4,799</div>
+                </div>
+              </div>
+              <div class="product-card product-card--dark">
+                <div class="product-card__image product-card__image--glasses"></div>
+                <div class="product-card__info">
+                  <span class="product-card__tag product-card__tag--red">新款</span>
+                  <h3 class="product-card__name">Ray-Ban Meta</h3>
+                  <p class="product-card__spec">智能眼镜</p>
+                  <div class="product-card__price">¥ 2,299</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 订单列表 -->
+            <section class="order-section" aria-label="最近订单">
+              <div class="section-header">
+                <h2>最近订单</h2>
+                <button class="textbtn" data-toast="查看全部订单">全部</button>
+              </div>
+
+              <ul class="order-list">
+                <li class="order-item">
+                  <span class="order-item__icon order-item__icon--shipped">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  </span>
+                  <div class="order-item__main">
+                    <span class="order-item__title">Quest 3 128GB</span>
+                    <span class="order-item__sub">今天 10:30 · 已发货</span>
+                  </div>
+                  <div class="order-item__right">
+                    <span class="order-item__status order-item__status--success">运输中</span>
+                  </div>
+                </li>
+                <li class="order-item">
+                  <span class="order-item__icon order-item__icon--processing">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </span>
+                  <div class="order-item__main">
+                    <span class="order-item__title">Ray-Ban Meta 经典款</span>
+                    <span class="order-item__sub">昨天 15:20 · 处理中</span>
+                  </div>
+                  <div class="order-item__right">
+                    <span class="order-item__status order-item__status--pending">处理中</span>
+                  </div>
+                </li>
+                <li class="order-item">
+                  <span class="order-item__icon order-item__icon--done">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <div class="order-item__main">
+                    <span class="order-item__title">Quest Pro 充电 dock</span>
+                    <span class="order-item__sub">3天前 · 已完成</span>
+                  </div>
+                  <div class="order-item__right">
+                    <span class="order-item__status order-item__status--done">已完成</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 服务卡片 -->
+            <section class="service-card" aria-label="客户服务">
+              <div class="service-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              </div>
+              <div class="service-card__content">
+                <h3>需要帮助？</h3>
+                <p>我们的专家团队 24/7 为您服务</p>
+              </div>
+              <button class="btn btn--outline" data-toast="正在连接客服...">联系客服</button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="products">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>商品</span>
+            </button>
+            <button class="tab" data-tab="orders">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>订单</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

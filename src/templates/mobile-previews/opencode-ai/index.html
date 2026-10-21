@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>码房 · OpenCode 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__chip">>_</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">opencode · 码房</span>
+                <span class="brand-bar__sub">~/work/shop-api · session a41c · claude-sonnet</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="tokens: 84k / 200k · 花费 $0.61" aria-label="用量">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V10M10 19V4M16 19v-7M21 19H3"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：终端会话（签名：diff 输出面板）-->
+            <section class="hero" aria-label="当前会话">
+              <div class="hero__prompt">
+                <span class="dollar">$</span>
+                <code>修复下单接口的库存超卖，并补上并发测试</code>
+              </div>
+              <div class="hero__term" aria-label="代理输出">
+                <p class="line c-muted">» 计划：3 个文件 · 先看锁的实现</p>
+                <p class="line">✓ 读 src/services/order.ts (214 行)</p>
+                <p class="line">✓ 定位问题：扣减库存未加事务</p>
+                <p class="line c-blue">» 编辑 src/services/order.ts</p>
+                <p class="line diff-del">- const ok = await decrStock(sku, n)</p>
+                <p class="line diff-add">+ await db.transaction(async (t) =&gt; {</p>
+                <p class="line diff-add">+   await decrStock(t, sku, n) // FOR UPDATE</p>
+                <p class="line diff-add">+ })</p>
+                <p class="line c-green">✓ 测试通过 12/12 · 覆盖率 +3.2%</p>
+                <p class="line c-muted cursor-line">▍</p>
+              </div>
+              <div class="hero__actions">
+                <button class="btn-accent" type="button" id="acceptBtn">接受全部修改</button>
+                <button class="btn-ghost" type="button" data-toast="已要求逐个 diff 审查">逐个审查</button>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="会话统计">
+              <div class="duo__card">
+                <h2 class="duo__title">本次会话</h2>
+                <p class="duo__num">7<span> 轮</span></p>
+                <p class="duo__meta">改动 3 文件 · +64 −22</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">测试</h2>
+                <p class="duo__num">12/12</p>
+                <div class="bar"><span style="--w: 100%"></span></div>
+                <p class="duo__meta">含新增并发用例 2 个</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：会话历史 -->
+            <section class="feed" aria-label="历史会话">
+              <div class="feed__head">
+                <h2 class="feed__title">SESSIONS</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">all</button>
+                  <button class="chip" type="button" data-filter="feat">feat</button>
+                  <button class="chip" type="button" data-filter="fix">fix</button>
+                  <button class="chip" type="button" data-filter="ref">重构</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="fix">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">修复下单接口的库存超卖</span>
+                    <span class="feed-item__meta">a41c · 刚刚 · +64 −22 · 待接受</span>
+                  </div>
+                  <em class="feed-item__state st-warn">PENDING</em>
+                </li>
+                <li class="feed-item" data-kind="feat">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">给订单导出加流式 CSV</span>
+                    <span class="feed-item__meta">b07e · 2 小时前 · +138 −4</span>
+                  </div>
+                  <em class="feed-item__state st-ok">MERGED</em>
+                </li>
+                <li class="feed-item" data-kind="ref">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">抽出统一的错误码枚举</span>
+                    <span class="feed-item__meta">c31d · 昨天 · +96 −180</span>
+                  </div>
+                  <em class="feed-item__state st-ok">MERGED</em>
+                </li>
+                <li class="feed-item" data-kind="fix">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">修 webhooks 重试幂等</span>
+                    <span class="feed-item__meta">d92a · 昨天 · +41 −12</span>
+                  </div>
+                  <em class="feed-item__state st-ok">MERGED</em>
+                </li>
+                <li class="feed-item" data-kind="feat">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">新增加签验签工具命令</span>
+                    <span class="feed-item__meta">e10f · 10-12 · +210 −0</span>
+                  </div>
+                  <em class="feed-item__state st-dim">CLOSED</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="下一条指令">
+              <div class="chips chips--cmd">
+                <button class="chip" type="button" data-cmd="/review">/review</button>
+                <button class="chip" type="button" data-cmd="/test">/test</button>
+                <button class="chip" type="button" data-cmd="/commit">/commit</button>
+                <button class="chip" type="button" data-cmd="/undo">/undo</button>
+              </div>
+              <div class="action__prompt">
+                <span class="dollar">$</span>
+                <input class="action__input" id="cmdInput" type="text" placeholder="描述下一个任务，回车执行…" />
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="会话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8l4 4-4 4M11 16h8"/></svg>
+              <span>会话</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="diff">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16M7 8l-3 3 3 3M17 8l3 3-3 3"/></svg>
+              <span>diff</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新任务" aria-label="新任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新任务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="仓库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 4h16v14H8l-4 3V4z"/></svg>
+              <span>仓库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

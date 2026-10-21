@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Connect · Slack</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <!-- Aubergine Sidebar (signature: Slack's most iconic UI element) -->
+          <aside class="sidebar">
+            <div class="sidebar__header">
+              <span class="workspace-icon">C</span>
+              <span class="workspace-name">Connect</span>
+              <button class="sidebar-btn" data-toast="新建消息" aria-label="新建消息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </div>
+            <nav class="sidebar-nav" aria-label="频道导航">
+              <a href="#" class="sidebar-item sidebar-item--active">
+                <span class="sidebar-item__icon">#</span>
+                <span class="sidebar-item__text">general</span>
+                <span class="unread-badge">3</span>
+              </a>
+              <a href="#" class="sidebar-item">
+                <span class="sidebar-item__icon">#</span>
+                <span class="sidebar-item__text">random</span>
+              </a>
+              <a href="#" class="sidebar-item">
+                <span class="sidebar-item__icon">#</span>
+                <span class="sidebar-item__text">design</span>
+                <span class="unread-dot"></span>
+              </a>
+              <a href="#" class="sidebar-item">
+                <span class="sidebar-item__icon">#</span>
+                <span class="sidebar-item__text">engineering</span>
+              </a>
+              <div class="sidebar-divider"></div>
+              <a href="#" class="sidebar-item">
+                <span class="sidebar-item__icon sidebar-item__icon--dm">P</span>
+                <span class="sidebar-item__text">Ping Zhang</span>
+              </a>
+              <a href="#" class="sidebar-item">
+                <span class="sidebar-item__icon sidebar-item__icon--dm">A</span>
+                <span class="sidebar-item__text">Alex Wang</span>
+              </a>
+            </nav>
+          </aside>
+
+          <main class="app-content" id="appContent">
+            <!-- 频道头部 -->
+            <header class="channel-header">
+              <span class="channel-header__icon">#</span>
+              <span class="channel-header__name">general</span>
+              <div class="channel-header__actions">
+                <span class="channel-header__members">142 成员</span>
+                <button class="header-btn" data-toast="频道详情">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </header>
+
+            <!-- 消息列表 -->
+            <section class="messages" aria-label="消息列表">
+              <div class="message">
+                <img class="message-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle fill='%2336C5F0' cx='18' cy='18' r='18'/%3E%3Ctext x='18' y='24' text-anchor='middle' fill='white' font-size='16' font-family='system-ui'%3EP%3C/text%3E%3C/svg%3E" alt="Ping">
+                <div class="message-main">
+                  <div class="message-header">
+                    <span class="message-author">Ping Zhang</span>
+                    <span class="message-time">9:32 AM</span>
+                  </div>
+                  <p class="message-text">大家好！今天下午 3 点我们在会议室 A 进行产品评审，请准时参加 📋</p>
+                </div>
+              </div>
+
+              <div class="message message--highlight">
+                <img class="message-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle fill='%232EB67D' cx='18' cy='18' r='18'/%3E%3Ctext x='18' y='24' text-anchor='middle' fill='white' font-size='16' font-family='system-ui'%3EA%3C/text%3E%3C/svg%3E" alt="Alex">
+                <div class="message-main">
+                  <div class="message-header">
+                    <span class="message-author">Alex Wang</span>
+                    <span class="message-time">9:45 AM</span>
+                  </div>
+                  <p class="message-text">收到！我会准时参加。对了，设计稿已经更新到 Figma 了，大家看看有什么意见 💡</p>
+                  <div class="message-reactions">
+                    <button class="reaction is-active" data-toast="已点赞">👍 3</button>
+                    <button class="reaction" data-toast="添加反应">🎉 1</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="message">
+                <img class="message-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle fill='%23ECB22E' cx='18' cy='18' r='18'/%3E%3Ctext x='18' y='24' text-anchor='middle' fill='white' font-size='16' font-family='system-ui'%3ES%3C/text%3E%3C/svg%3E" alt="Sarah">
+                <div class="message-main">
+                  <div class="message-header">
+                    <span class="message-author">Sarah Chen</span>
+                    <span class="message-time">10:02 AM</span>
+                  </div>
+                  <p class="message-text">@Alex 我看了最新的设计，整体方向很好！有几个小建议：</p>
+                  <div class="message-attachment">
+                    <div class="attachment-border"></div>
+                    <p class="attachment-text">1. 按钮的圆角可以稍微小一点，更符合 Slack 的风格<br>2. 主色调可以考虑用 Aubergine #4A154B<br>3. 字体大小建议用 15px 作为 base size</p>
+                  </div>
+                  <div class="message-reactions">
+                    <button class="reaction" data-toast="添加反应">❤️ 2</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="message">
+                <img class="message-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle fill='%23E01E5A' cx='18' cy='18' r='18'/%3E%3Ctext x='18' y='24' text-anchor='middle' fill='white' font-size='16' font-family='system-ui'%3EM%3C/text%3E%3C/svg%3E" alt="Mike">
+                <div class="message-main">
+                  <div class="message-header">
+                    <span class="message-author">Mike Liu</span>
+                    <span class="message-time">10:15 AM</span>
+                  </div>
+                  <p class="message-text">同意 @Sarah 的建议！另外，我也准备了一些竞品分析，待会儿分享给大家 📊</p>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 消息输入框 -->
+          <div class="composer">
+            <button class="composer-btn" data-toast="添加附件">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
+            </button>
+            <input type="text" class="composer-input" placeholder="发送消息到 #general" aria-label="发送消息">
+            <button class="composer-send" data-toast="发送消息">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z" /><path d="M22 2 11 13" /></svg>
+            </button>
+          </div>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Stripe Payments · Mobile Preview</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="stripe-logo">
+                  <svg viewBox="0 0 52 24" fill="currentColor" aria-hidden="true">
+                    <path d="M14.2 5.4c-.4 0-.8.3-.8.7v11.8c0 .4.4.7.8.7h2.6c.4 0 .8-.3.8-.7V6.1c0-.4-.4-.7-.8-.7h-2.6zm-6.5 0c-.4 0-.8.3-.8.7v11.8c0 .4.4.7.8.7h2.6c.4 0 .8-.3.8-.7V6.1c0-.4-.4-.7-.8-.7H7.7zm13 0c-.4 0-.8.3-.8.7v11.8c0 .4.4.7.8.7h2.6c.4 0 .8-.3.8-.7V6.1c0-.4-.4-.7-.8-.7h-2.6zM34.8 5.4c-2.4 0-4.3 1.9-4.3 4.3v8.2c0 .4.4.7.8.7h2.6c.4 0 .8-.3.8-.7V9.7c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5v8.2c0 .4.4.7.8.7h2.6c.4 0 .8-.3.8-.7V9.7c0-2.4-1.9-4.3-4.3-4.3h-4.5zm-27.3 0c-.4 0-.8.3-.8.7v11.8c0 .4.4.7.8.7h2.6c.4 0 .8-.3.8-.7V6.1c0-.4-.4-.7-.8-.7H7.5z"/>
+                  </svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">Payments</span>
+                  <span class="brand-sub">Dashboard</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 收入卡 (signature: 紫色渐变 + 优雅轻字重) -->
+            <section class="revenue-card" aria-label="Revenue Overview">
+              <div class="revenue-card__bg"></div>
+              <div class="revenue-card__content">
+                <p class="revenue-card__label">Total Revenue</p>
+                <p class="revenue-card__amount">$124,582.40</p>
+                <div class="revenue-card__meta">
+                  <span class="trend trend--up">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                    +24.5%
+                  </span>
+                  <span class="revenue-card__period">vs last month</span>
+                </div>
+              </div>
+
+              <div class="revenue-card__chart">
+                <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="currentColor" stop-opacity="0.3"/>
+                      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,45 C20,42 40,35 60,38 C80,41 100,28 120,25 C140,22 160,30 180,18 C190,12 195,8 200,5 L200,60 L0,60 Z" fill="url(#chartGradient)" />
+                  <path d="M0,45 C20,42 40,35 60,38 C80,41 100,28 120,25 C140,22 160,30 180,18 C190,12 195,8 200,5" fill="none" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+            </section>
+
+            <!-- 快捷操作卡片 -->
+            <section class="quick-actions">
+              <button class="action-card" data-toast="Create payment link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span>Payment Link</span>
+              </button>
+              <button class="action-card" data-toast="Send invoice">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                <span>Invoice</span>
+              </button>
+              <button class="action-card" data-toast="View customers">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Customers</span>
+              </button>
+              <button class="action-card" data-toast="Transfer funds">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                <span>Transfer</span>
+              </button>
+            </section>
+
+            <!-- 最近交易列表 -->
+            <section class="transactions">
+              <div class="section-header">
+                <h2>Recent Transactions</h2>
+                <div class="chips" role="tablist" aria-label="筛选交易">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+                  <button class="chip" data-filter="succeeded" role="tab" aria-selected="false">Success</button>
+                  <button class="chip" data-filter="pending" role="tab" aria-selected="false">Pending</button>
+                </div>
+              </div>
+
+              <ul class="tx-list" id="txList">
+                <li class="tx" data-type="succeeded">
+                  <div class="tx__icon tx__icon--success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                  </div>
+                  <div class="tx__main">
+                    <span class="tx__title">Acme Corp</span>
+                    <span class="tx__sub">PaymentIntent • ch_3Nq...</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__amount">$2,450.00</span>
+                    <span class="badge badge--success">Succeeded</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="succeeded">
+                  <div class="tx__icon tx__icon--success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                  </div>
+                  <div class="tx__main">
+                    <span class="tx__title">Startup Inc</span>
+                    <span class="tx__sub">Subscription • sub_9W...</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__amount">$99.00</span>
+                    <span class="badge badge--success">Succeeded</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="pending">
+                  <div class="tx__icon tx__icon--pending">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  </div>
+                  <div class="tx__main">
+                    <span class="tx__title">Global Tech Ltd</span>
+                    <span class="tx__sub">PaymentIntent • pi_2Kx...</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__amount">$5,890.00</span>
+                    <span class="badge badge--pending">Pending</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="succeeded">
+                  <div class="tx__icon tx__icon--success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                  </div>
+                  <div class="tx__main">
+                    <span class="tx__title">Design Studio</span>
+                    <span class="tx__sub">Invoice • in_4Mq...</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__amount">$1,200.00</span>
+                    <span class="badge badge--success">Succeeded</span>
+                  </div>
+                </li>
+                <li class="tx" data-type="pending">
+                  <div class="tx__icon tx__icon--pending">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  </div>
+                  <div class="tx__main">
+                    <span class="tx__title">Cloud Services</span>
+                    <span class="tx__sub">PaymentIntent • ch_7Lp...</span>
+                  </div>
+                  <div class="tx__right">
+                    <span class="tx__amount">$342.50</span>
+                    <span class="badge badge--pending">Processing</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 统计卡片 -->
+            <section class="stats-grid">
+              <div class="stat-card">
+                <span class="stat-card__label">Success Rate</span>
+                <span class="stat-card__value">98.2%</span>
+                <span class="stat-card__change trend--up">+0.4%</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-card__label">Avg. Order</span>
+                <span class="stat-card__value">$142</span>
+                <span class="stat-card__change trend--up">+$12</span>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              <span>Dashboard</span>
+            </button>
+            <button class="tab" data-tab="payments">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+              <span>Payments</span>
+            </button>
+            <button class="tab" data-tab="customers">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Customers</span>
+            </button>
+            <button class="tab" data-tab="reports">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              <span>Reports</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

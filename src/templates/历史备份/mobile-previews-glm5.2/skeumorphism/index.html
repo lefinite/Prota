@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>时光计 · Skeumorphism</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">时</span>
+                <div class="brand-text">
+                  <span class="brand-name">时光计</span>
+                  <span class="brand-sub">记录每一刻</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="设置面板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.3-10.7-4.2 4.2m0 4.2 4.2 4.2M1 12h6m6 0h6m-2.3-9.3 4.2 4.2m0 4.2-4.2 4.2" /></svg>
+              </button>
+            </header>
+
+            <!-- 计时器卡（signature：拟物化大计时器，双阴影斜面效果） -->
+            <section class="timer-card" aria-label="当前计时">
+              <div class="timer-face">
+                <svg class="timer-ring" viewBox="0 0 200 200" aria-hidden="true">
+                  <circle class="timer-ring__track" cx="100" cy="100" r="88" fill="none" stroke-width="12" />
+                  <circle class="timer-ring__progress" cx="100" cy="100" r="88" fill="none" stroke-width="12" stroke-dasharray="553" stroke-dashoffset="166" stroke-linecap="round" transform="rotate(-90 100 100)" />
+                </svg>
+                <div class="timer-display">
+                  <span class="timer-value" id="timerValue">25:00</span>
+                  <span class="timer-label">专注模式</span>
+                </div>
+              </div>
+
+              <div class="timer-controls">
+                <button class="timer-btn timer-btn--secondary" id="resetBtn" data-toast="重置计时">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  重置
+                </button>
+                <button class="timer-btn timer-btn--primary" id="toggleBtn" data-toast="开始专注">
+                  <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5,3 19,12 5,21" /></svg>
+                  <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  <span class="btn-text">开始</span>
+                </button>
+                <button class="timer-btn timer-btn--secondary" data-toast="设置时间">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+                  设置
+                </button>
+              </div>
+            </section>
+
+            <!-- 统计双卡 -->
+            <section class="stat-row" aria-label="今日统计">
+              <div class="stat-card stat-card--warm">
+                <span class="stat-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+                </span>
+                <span class="stat-card__cap">今日专注</span>
+                <span class="stat-card__val">3h 24m</span>
+                <span class="stat-card__foot">5 个番茄钟</span>
+              </div>
+              <div class="stat-card stat-card--accent">
+                <span class="stat-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                </span>
+                <span class="stat-card__cap">连续记录</span>
+                <span class="stat-card__val">12 天</span>
+                <span class="stat-card__foot">继续坚持</span>
+              </div>
+            </section>
+
+            <!-- 时间记录列表 -->
+            <section class="record-block" aria-label="今日记录">
+              <div class="record-block__head">
+                <h2>今日记录</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选记录">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="focus" role="tab" aria-selected="false">专注</button>
+                  <button class="chip" data-filter="break" role="tab" aria-selected="false">休息</button>
+                </div>
+              </div>
+
+              <ul class="record-list" id="recordList">
+                <li class="record" data-type="focus">
+                  <span class="record__icon record__icon--focus">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">产品设计工作</span>
+                    <span class="record__sub">09:00 - 09:25 · 深度专注</span>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__duration">25m</span>
+                    <span class="badge badge--success">完成</span>
+                  </div>
+                </li>
+                <li class="record" data-type="break">
+                  <span class="record__icon record__icon--break">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">休息时间</span>
+                    <span class="record__sub">09:25 - 09:30 · 放松一下</span>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__duration">5m</span>
+                    <span class="badge badge--muted">结束</span>
+                  </div>
+                </li>
+                <li class="record" data-type="focus">
+                  <span class="record__icon record__icon--focus">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">代码审查</span>
+                    <span class="record__sub">09:35 - 10:00 · 深度专注</span>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__duration">25m</span>
+                    <span class="badge badge--success">完成</span>
+                  </div>
+                </li>
+                <li class="record" data-type="focus">
+                  <span class="record__icon record__icon--focus">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">阅读技术文章</span>
+                    <span class="record__sub">10:10 - 10:35 · 深度专注</span>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__duration">25m</span>
+                    <span class="badge badge--success">完成</span>
+                  </div>
+                </li>
+                <li class="record" data-type="focus">
+                  <span class="record__icon record__icon--focus">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">文档编写</span>
+                    <span class="record__sub">10:45 - 11:15 · 深度专注</span>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__duration">30m</span>
+                    <span class="badge badge--success">完成</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="timer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14" /></svg>
+              <span>计时</span>
+            </button>
+            <button class="tab" data-tab="stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3" /></svg>
+              <span>统计</span>
+            </button>
+            <button class="tab tab--fab" data-tab="focus" aria-label="快速专注">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <button class="tab" data-tab="history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3" /></svg>
+              <span>历史</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

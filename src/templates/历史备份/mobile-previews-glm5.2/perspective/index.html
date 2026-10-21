@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>视角空间 · Perspective</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">视</span>
+                <div class="brand-text">
+                  <span class="brand-name">视角空间</span>
+                  <span class="brand-sub">3D Product Space</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="筛选" data-toast="筛选产品">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero 产品卡片 (signature: 等距3D效果 + 层叠深度) -->
+            <section class="hero-product" aria-label="精选产品">
+              <div class="hero-product__card">
+                <div class="hero-product__perspective">
+                  <div class="hero-product__visual">
+                    <div class="isometric-box">
+                      <div class="iso-face iso-face--top"></div>
+                      <div class="iso-face iso-face--left"></div>
+                      <div class="iso-face iso-face--right"></div>
+                    </div>
+                  </div>
+                  <div class="hero-product__info">
+                    <span class="hero-product__tag">Featured</span>
+                    <h1 class="hero-product__title">量子工作站 Pro</h1>
+                    <p class="hero-product__desc">下一代空间计算终端</p>
+                    <div class="hero-product__price">¥12,999</div>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-product__actions">
+                <button class="btn-primary" data-toast="加入购物车">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  加入购物车
+                </button>
+                <button class="btn-secondary" data-toast="收藏产品">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 产品分类网格 -->
+            <section class="category-section" aria-label="产品分类">
+              <h2 class="section-title">产品系列</h2>
+              <div class="category-grid">
+                <div class="category-card category-card--1">
+                  <div class="category-card__bg"></div>
+                  <span class="category-card__name">智能穿戴</span>
+                  <span class="category-card__arrow">→</span>
+                </div>
+                <div class="category-card category-card--2">
+                  <div class="category-card__bg"></div>
+                  <span class="category-card__name">AR/VR 设备</span>
+                  <span class="category-card__arrow">→</span>
+                </div>
+                <div class="category-card category-card--3">
+                  <div class="category-card__bg"></div>
+                  <span class="category-card__name">智能家居</span>
+                  <span class="category-card__arrow">→</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 热门产品列表 -->
+            <section class="products-section" aria-label="热门产品">
+              <div class="products-section__head">
+                <h2>热门产品</h2>
+                <button class="text-link" data-toast="查看全部">全部</button>
+              </div>
+              <ul class="product-list" id="productList">
+                <li class="product-item">
+                  <div class="product-item__thumb">
+                    <div class="product-thumb__visual">
+                      <div class="mini-cube"></div>
+                    </div>
+                  </div>
+                  <div class="product-item__main">
+                    <span class="product-item__title">神经连接耳机</span>
+                    <span class="product-item__spec">主动降噪 · 空间音频</span>
+                  </div>
+                  <div class="product-item__right">
+                    <span class="product-item__price">¥2,499</span>
+                    <button class="add-btn" aria-label="加入购物车" data-toast="已添加">+</button>
+                  </div>
+                </li>
+                <li class="product-item">
+                  <div class="product-item__thumb">
+                    <div class="product-thumb__visual">
+                      <div class="mini-cylinder"></div>
+                    </div>
+                  </div>
+                  <div class="product-item__main">
+                    <span class="product-item__title">全息投影仪 Mini</span>
+                    <span class="product-item__spec">4K · 120Hz · HDR</span>
+                  </div>
+                  <div class="product-item__right">
+                    <span class="product-item__price">¥4,999</span>
+                    <button class="add-btn" aria-label="加入购物车" data-toast="已添加">+</button>
+                  </div>
+                </li>
+                <li class="product-item">
+                  <div class="product-item__thumb">
+                    <div class="product-thumb__visual">
+                      <div class="mini-sphere"></div>
+                    </div>
+                  </div>
+                  <div class="product-item__main">
+                    <span class="product-item__title">智能中枢 Hub</span>
+                    <span class="product-item__spec">Matter · Thread · Wi-Fi 7</span>
+                  </div>
+                  <div class="product-item__right">
+                    <span class="product-item__price">¥1,299</span>
+                    <button class="add-btn" aria-label="加入购物车" data-toast="已添加">+</button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 闪购卡片 -->
+            <section class="flash-card" aria-label="限时闪购">
+              <div class="flash-card__content">
+                <span class="flash-card__tag">Flash Sale</span>
+                <h3 class="flash-card__title">量子显示器 Air</h3>
+                <p class="flash-card__desc">限时 8 折 · 仅剩 23 件</p>
+                <div class="flash-card__timer">
+                  <span class="timer-block">02</span>:<span class="timer-block">48</span>:<span class="timer-block">36</span>
+                </div>
+              </div>
+              <div class="flash-card__visual">
+                <div class="flash-visual__box">
+                  <div class="flash-box__face flash-box__face--front"></div>
+                  <div class="flash-box__face flash-box__face--side"></div>
+                  <div class="flash-box__face flash-box__face--top"></div>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="category">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>分类</span>
+            </button>
+            <button class="tab tab--fab" data-tab="cart" aria-label="购物车">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              <span class="tab-badge">3</span>
+            </button>
+            <button class="tab" data-tab="orders">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              <span>订单</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

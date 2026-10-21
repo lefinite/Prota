@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>胶片时光 · Retro</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__rec"></span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">胶片时光</span>
+                <span class="brand-bar__sub">FILMLOG · NO.7</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="相机已连接 · 快门状态良好" aria-label="相机设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3.2" />
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09A1.7 1.7 0 0 0 10.13 2.7V2.6a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1.03h.09a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.03Z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：带齿孔的胶卷卡 -->
+            <section class="film-hero" aria-label="当前胶卷">
+              <div class="film-hero__edge" aria-hidden="true"></div>
+              <div class="film-hero__body">
+                <div class="film-hero__top">
+                  <span class="film-hero__roll" id="filmName">KODAK GOLD 200</span>
+                  <em class="film-hero__rec-chip">● 拍摄中</em>
+                </div>
+                <p class="film-hero__count"><b id="shotCount">12</b><i>/36</i></p>
+                <p class="film-hero__spec">ISO 200 · 35mm · f/5.6 · <span id="shutterHint">1/125</span></p>
+                <div class="film-hero__row">
+                  <button class="shutter" id="snapBtn" type="button" aria-label="拍一张">
+                    <span class="shutter__core" aria-hidden="true"></span>
+                  </button>
+                  <div class="film-hero__hint">
+                    <b>咔嚓一张</b>
+                    <span>对好光，按下快门</span>
+                  </div>
+                </div>
+              </div>
+              <div class="film-hero__flash" id="flash" aria-hidden="true"></div>
+              <div class="film-hero__edge" aria-hidden="true"></div>
+            </section>
+
+            <!-- 3. 双内容卡：测光 + 冲扫进度 -->
+            <section class="duo-grid" aria-label="测光与冲扫">
+              <div class="duo-card">
+                <h2 class="duo-card__title">测光建议</h2>
+                <p class="duo-card__ev">EV 11 <i>多云转晴</i></p>
+                <div class="ap-chips" role="group" aria-label="选择光圈">
+                  <button class="ap-chip" type="button" data-shutter="1/1000">f/1.4</button>
+                  <button class="ap-chip" type="button" data-shutter="1/500">f/2</button>
+                  <button class="ap-chip" type="button" data-shutter="1/250">f/2.8</button>
+                  <button class="ap-chip is-active" type="button" data-shutter="1/125">f/5.6</button>
+                  <button class="ap-chip" type="button" data-shutter="1/60">f/11</button>
+                </div>
+                <p class="duo-card__note">推荐快门 <b id="shutterValue">1/125</b> 秒 · 过曝半档更出暖调</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">冲扫进度</h2>
+                <p class="duo-card__shop">老联通冲扫店</p>
+                <div class="steps">
+                  <i class="is-done" title="已冲洗"></i><i class="is-done" title="已扫描"></i><i title="待取件"></i>
+                </div>
+                <p class="duo-card__note">NO.6 卷 · 周四可取 · 2.3 km</p>
+                <button class="duo-card__btn" type="button" data-toast="已提醒取件 · 到店前 1 小时通知">到店提醒</button>
+              </div>
+            </section>
+
+            <!-- 4. 底片记录 Feed -->
+            <section class="feed" aria-label="底片记录">
+              <div class="feed__head">
+                <h2 class="feed__title">底片档案</h2>
+                <div class="chips" role="tablist" aria-label="筛选底片">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="archived">已归档</button>
+                  <button class="chip" type="button" data-filter="scanning">扫描中</button>
+                  <button class="chip" type="button" data-filter="todo">待冲扫</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="todo">
+                  <span class="feed-item__glyph" aria-hidden="true">🎞️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Fuji Superia 400</span>
+                    <span class="feed-item__meta">36 张 · 10-12 <em class="feed-item__chip" data-level="todo">待冲扫</em></span>
+                  </div>
+                  <b class="feed-item__frames">NO.8</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该卷" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="scanning">
+                  <span class="feed-item__glyph" aria-hidden="true">📷</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Ilford HP5 Plus</span>
+                    <span class="feed-item__meta">36 张 · 10-02 <em class="feed-item__chip" data-level="scanning">扫描中</em></span>
+                  </div>
+                  <b class="feed-item__frames">NO.6</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该卷" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">🌇</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Kodak Portra 400</span>
+                    <span class="feed-item__meta">36 张 · 09-18 <em class="feed-item__chip" data-level="archived">已归档</em></span>
+                  </div>
+                  <b class="feed-item__frames">NO.5</b>
+                  <button class="feed-item__star is-on" type="button" aria-label="收藏该卷" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">🏔️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Fuji C200</span>
+                    <span class="feed-item__meta">24 张 · 09-02 <em class="feed-item__chip" data-level="archived">已归档</em></span>
+                  </div>
+                  <b class="feed-item__frames">NO.4</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该卷" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">🚲</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Kodak Gold 200</span>
+                    <span class="feed-item__meta">27 张 · 08-21 <em class="feed-item__chip" data-level="archived">已归档</em></span>
+                  </div>
+                  <b class="feed-item__frames">NO.3</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该卷" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="archived">
+                  <span class="feed-item__glyph" aria-hidden="true">🌤️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Fuji Superia 100</span>
+                    <span class="feed-item__meta">36 张 · 08-05 <em class="feed-item__chip" data-level="archived">已归档</em></span>
+                  </div>
+                  <b class="feed-item__frames">NO.2</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该卷" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="预约与命名">
+              <input class="quick-input" id="renameInput" type="text" placeholder="给这一卷起个名字，如：秋日骑行" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="bookBtn">预约冲扫</button>
+                <button class="btn-ghost" type="button" data-toast="6 卷底片已导出为高清 JPG">导出底片</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="相机">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 8.5h3l1.5-2h6l1.5 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z" />
+                <circle cx="12" cy="14" r="3.4" />
+              </svg>
+              <span>相机</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="胶卷">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="3.5" width="10" height="17" rx="2.5" /><path d="M7 7h10M7 17h10M10 3.5v17M14 3.5v17" />
+              </svg>
+              <span>胶卷</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="快门" aria-label="按下快门">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>快门</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="相册">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5.5" width="17" height="13" rx="2" /><circle cx="9" cy="10" r="1.6" /><path d="m5.5 17 4.5-4 3 2.5 3-3.5 2.5 5" />
+              </svg>
+              <span>相册</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowPilot · 工作流</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="el-app">
+    <aside class="el-aside">
+      <div class="brand"><span class="brand-mark">F</span><span>FlowPilot</span></div>
+      <nav class="el-menu" aria-label="主导航">
+        <button class="el-menu-item" data-nav="工作台"><span class="icon" data-icon="grid"></span>工作台</button>
+        <button class="el-menu-item is-active" data-nav="工作流"><span class="icon" data-icon="flow"></span>工作流</button>
+        <button class="el-menu-item" data-nav="运行记录"><span class="icon" data-icon="history"></span>运行记录</button>
+        <button class="el-menu-item" data-nav="数据连接"><span class="icon" data-icon="link"></span>数据连接</button>
+        <button class="el-menu-item" data-nav="团队成员"><span class="icon" data-icon="users"></span>团队成员</button>
+        <button class="el-menu-item" data-nav="系统设置"><span class="icon" data-icon="settings"></span>系统设置</button>
+      </nav>
+      <div class="aside-bottom">
+        <button class="help"><span class="icon" data-icon="help"></span>帮助与文档</button>
+        <div class="profile"><div class="el-avatar">林</div><div><strong>林知夏</strong><small>管理员</small></div><span class="icon chevron" data-icon="chevron"></span></div>
+      </div>
+    </aside>
+
+    <main class="el-main">
+      <header class="page-head">
+        <div class="el-breadcrumb"><span>工作台</span><b>/</b><span class="current">工作流</span></div>
+        <div class="page-title-row">
+          <div><h1>工作流</h1><p>创建、监控并优化团队的自动化流程</p></div>
+          <div class="header-actions">
+            <label class="el-input search"><span class="icon" data-icon="search"></span><input id="searchInput" placeholder="搜索工作流" aria-label="搜索工作流"><button class="clear-search" aria-label="清空">×</button></label>
+            <button class="el-button icon-button has-badge" id="noticeBtn" aria-label="通知"><span class="icon" data-icon="bell"></span><i></i><span class="el-tooltip">通知</span></button>
+            <button class="el-button el-button--primary" id="createBtn"><span class="icon" data-icon="plus"></span>新建工作流</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="数据概览">
+        <article class="el-card metric"><div class="metric-head"><span>工作流总数</span><span class="metric-icon blue"><span class="icon" data-icon="flow"></span></span></div><strong>24</strong><small><em class="up">+3</em> 较上周</small></article>
+        <article class="el-card metric"><div class="metric-head"><span>今日运行</span><span class="metric-icon cyan"><span class="icon" data-icon="play"></span></span></div><strong>1,286</strong><small><em class="up">+12.5%</em> 较昨日</small></article>
+        <article class="el-card metric"><div class="metric-head"><span>成功率</span><span class="metric-icon green"><span class="icon" data-icon="check"></span></span></div><strong>97.8%</strong><small><em class="up">+0.6%</em> 较昨日</small></article>
+        <article class="el-card metric"><div class="metric-head"><span>节省时间</span><span class="metric-icon amber"><span class="icon" data-icon="clock"></span></span></div><strong>146 <i>小时</i></strong><small>本月累计</small></article>
+      </section>
+
+      <section class="el-card chart-card">
+        <div class="section-head"><div><h2>近 7 日运行趋势</h2><div class="legend"><span><i class="success-line"></i>成功运行</span><span><i class="fail-line"></i>失败运行</span></div></div><div class="el-segmented" id="rangeGroup"><button class="active" data-range="7">7 天</button><button data-range="30">30 天</button><button data-range="90">90 天</button></div></div>
+        <div class="chart-wrap" id="chartWrap">
+          <div class="chart-y"><span>300</span><span>200</span><span>100</span><span>0</span></div>
+          <svg viewBox="0 0 900 118" preserveAspectRatio="none" role="img" aria-label="运行趋势折线图">
+            <g class="grid"><line x1="0" y1="8" x2="900" y2="8"/><line x1="0" y1="42" x2="900" y2="42"/><line x1="0" y1="76" x2="900" y2="76"/><line x1="0" y1="110" x2="900" y2="110"/></g>
+            <path class="area" id="successArea" d="M0 85 L150 70 L300 76 L450 48 L600 57 L750 29 L900 20 L900 110 L0 110 Z"/>
+            <path class="success-path" id="successPath" d="M0 85 L150 70 L300 76 L450 48 L600 57 L750 29 L900 20"/>
+            <path class="fail-path" id="failPath" d="M0 101 L150 98 L300 102 L450 96 L600 99 L750 92 L900 97"/>
+            <g class="points" id="chartPoints"><circle cx="0" cy="85" r="3"/><circle cx="150" cy="70" r="3"/><circle cx="300" cy="76" r="3"/><circle cx="450" cy="48" r="3"/><circle cx="600" cy="57" r="3"/><circle cx="750" cy="29" r="3"/><circle cx="900" cy="20" r="3"/></g>
+          </svg>
+          <div class="chart-x"><span>8/06</span><span>8/07</span><span>8/08</span><span>8/09</span><span>8/10</span><span>8/11</span><span>8/12</span></div>
+          <div class="chart-tip" id="chartTip"><b>8 月 12 日</b><span><i class="dot green"></i>成功运行 286</span><span><i class="dot red"></i>失败运行 9</span></div>
+        </div>
+      </section>
+
+      <section class="el-card table-card">
+        <div class="tabs-row"><div class="el-tabs" id="statusTabs"><button class="active" data-status="全部">全部 <span>24</span></button><button data-status="运行中">运行中 <span>18</span></button><button data-status="草稿">草稿 <span>4</span></button><button data-status="已停用">已停用 <span>2</span></button></div><div class="table-tools"><button class="el-button is-disabled" id="batchTop" disabled>批量操作</button><button class="el-button icon-button" id="refreshBtn"><span class="icon" data-icon="refresh"></span><span class="el-tooltip">刷新</span></button></div></div>
+        <div class="filters">
+          <button class="el-select" data-filter="status">状态：全部<span class="icon" data-icon="chevron"></span></button>
+          <button class="el-select" data-filter="owner">创建人：全部<span class="icon" data-icon="chevron"></span></button>
+          <button class="el-date" id="dateFilter"><span class="icon" data-icon="calendar"></span>更新时间<span class="icon" data-icon="chevron"></span></button>
+          <span class="filter-result" id="filterResult"></span>
+        </div>
+        <div class="batch-bar" id="batchBar"><span class="icon" data-icon="info"></span>已选择 <strong id="selectedCount">0</strong> 项<button>批量启用</button><button>批量停用</button><button>导出</button><a id="clearSelection">清空</a></div>
+        <div class="table-scroll">
+          <table class="el-table">
+            <thead><tr><th class="check"><input type="checkbox" id="selectAll" aria-label="全选"></th><th>工作流名称</th><th>状态</th><th>触发方式</th><th class="num">今日运行</th><th class="num">成功率</th><th>最近运行</th><th>创建人</th><th>操作</th></tr></thead>
+            <tbody id="workflowBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer"><span id="countText">第 1–6 条，共 24 条</span><div class="el-pagination"><button class="prev" disabled>‹</button><button class="page active">1</button><button class="page">2</button><button class="page">3</button><button class="page">4</button><button class="next">›</button></div></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="el-overlay" id="createOverlay" aria-hidden="true"><section class="el-dialog" role="dialog" aria-modal="true" aria-labelledby="createTitle"><header><h2 id="createTitle">新建工作流</h2><button class="close" data-close="create">×</button></header><form id="createForm" novalidate><div class="el-form-item required"><label>工作流名称</label><input name="name" placeholder="请输入工作流名称"><small class="form-error">请输入工作流名称</small></div><div class="form-grid"><div class="el-form-item required"><label>触发方式</label><select name="trigger"><option value="">请选择触发方式</option><option>新增数据时</option><option>定时触发</option><option>手动触发</option></select><small class="form-error">请选择触发方式</small></div><div class="el-form-item required"><label>负责人</label><select name="owner"><option value="">请选择负责人</option><option>林知夏</option><option>周景明</option><option>陈雨桐</option></select><small class="form-error">请选择负责人</small></div></div><div class="el-form-item"><label>描述</label><textarea name="desc" rows="3" maxlength="200" placeholder="简单描述工作流的用途"></textarea><span class="word-count">0 / 200</span></div></form><footer><button class="el-button" data-close="create">取消</button><button class="el-button el-button--primary" id="confirmCreate">创建</button></footer></section></div>
+
+  <div class="el-overlay drawer-overlay" id="detailOverlay" aria-hidden="true"><aside class="el-drawer" role="dialog" aria-modal="true" aria-labelledby="detailTitle"><header><div><h2 id="detailTitle">高风险订单预警</h2><p>订单创建时触发 · 由林知夏创建</p></div><button class="close" data-close="detail">×</button></header><div class="drawer-body"><div class="el-alert"><span class="icon" data-icon="warning"></span><div><b>运行异常</b><p>最近一次运行于 8 分钟前失败，请及时处理。</p></div></div><section><h3>运行状态</h3><div class="el-descriptions"><div><span>当前状态</span><b><i class="status-dot danger"></i>异常</b></div><div><span>触发方式</span><b>订单创建时</b></div><div><span>今日运行</span><b>89 次</b></div><div><span>成功率</span><b class="danger-text">83.2%</b></div></div></section><section><h3>最近异常原因</h3><div class="error-box"><code>ORDER_RISK_API_TIMEOUT</code><p>风控服务响应超时（超过 10 秒），本次订单校验未完成。</p><span>发生时间：今天 14:32:08</span></div></section><section><h3>运行统计</h3><div class="progress-row"><span>成功 74</span><div class="el-progress"><i style="width:83.2%"></i></div><b>83.2%</b></div><div class="progress-row failed"><span>失败 15</span><div class="el-progress"><i style="width:16.8%"></i></div><b>16.8%</b></div></section><section><h3>操作日志</h3><ol class="el-timeline"><li><i class="danger"></i><b>运行失败</b><span>风控服务响应超时</span><time>14:32</time></li><li><i class="success"></i><b>运行成功</b><span>已发送高风险订单提醒</span><time>14:25</time></li><li><i class="success"></i><b>运行成功</b><span>订单风险等级：低</span><time>14:19</time></li></ol></section></div><footer><button class="el-button" id="editWorkflow"><span class="icon" data-icon="edit"></span>编辑工作流</button><button class="el-button el-button--primary" id="rerunBtn"><span class="icon" data-icon="refresh"></span>重新运行</button></footer></aside></div>
+
+  <div class="el-overlay" id="deleteOverlay" aria-hidden="true"><section class="el-dialog confirm-dialog" role="alertdialog" aria-modal="true"><div class="confirm-content"><span class="confirm-icon"><span class="icon" data-icon="warning"></span></span><div><h2>确认删除工作流？</h2><p>删除后将无法恢复，相关运行记录仍会保留。</p><label><input type="checkbox" id="deleteConfirmCheck"> 我已了解此操作不可撤销</label></div></div><footer><button class="el-button" data-close="delete">取消</button><button class="el-button el-button--danger" id="confirmDelete" disabled>确认删除</button></footer></section></div>
+  <div class="dropdown-menu" id="dropdownMenu"></div>
+  <div class="select-menu" id="selectMenu"></div>
+  <div class="el-message" id="message"><span class="icon" data-icon="check"></span><span></span></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

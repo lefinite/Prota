@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>晨间阅读 · Kami</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="demo-stage">
+    <div class="phone-shell">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="status-bar" aria-label="设备状态栏">
+          <span class="status-bar__time" id="statusTime">9:41</span>
+          <div class="status-bar__island" aria-hidden="true"></div>
+          <div class="status-bar__right" aria-hidden="true">
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+            <span class="battery"></span>
+          </div>
+        </div>
+
+        <main class="app-content" id="appContent">
+          <!-- 顶部品牌栏 -->
+          <header class="topbar">
+            <div class="topbar__brand">
+              <span class="brand-mark">紙</span>
+              <div class="brand-text">
+                <span class="brand-name">晨间阅读</span>
+                <span class="brand-sub">星期五 · 8月14日</span>
+              </div>
+            </div>
+            <button class="iconbtn" aria-label="书签" data-toast="书签已保存">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+            </button>
+          </header>
+
+          <!-- Hero Section：章节编号 + 标题（signature） -->
+          <section class="chapter-hero" aria-label="本期封面">
+            <p class="chapter-num">01</p>
+            <h1 class="chapter-title">设计的克制之美</h1>
+            <p class="chapter-lede">Less, but better — 在信息过载的时代，回归阅读的本质</p>
+            <div class="chapter-meta">
+              <span class="tag">编辑精选</span>
+              <span class="meta">12 分钟阅读</span>
+            </div>
+          </section>
+
+          <!-- 阅读进度卡 -->
+          <section class="progress-card" aria-label="本周阅读">
+            <div class="progress-card__head">
+              <span class="progress-card__title">本周阅读</span>
+              <span class="progress-card__num">4<span class="meta"> 篇</span></span>
+            </div>
+            <div class="progress-card__bar" aria-hidden="true">
+              <span class="progress-card__bar-fill" style="--p: 67%"></span>
+            </div>
+            <p class="progress-card__note">已完成 67%，再读 2 篇达成目标</p>
+          </section>
+
+          <!-- 文章卡片组 -->
+          <section class="article-grid" aria-label="精选文章">
+            <article class="article-card">
+              <p class="article-card__num">02</p>
+              <h2 class="article-card__title"> typography 与留白的艺术</h2>
+              <p class="article-card__excerpt">探讨 Dieter Rams 的设计哲学如何影响现代界面设计</p>
+              <div class="article-card__meta">
+                <span class="author">佐藤健</span>
+                <span class="meta">8 月 12 日</span>
+              </div>
+            </article>
+
+            <article class="article-card article-card--featured">
+              <p class="article-card__num">03</p>
+              <h2 class="article-card__title">纸的质感：数字时代的温暖</h2>
+              <p class="article-card__excerpt">为什么羊皮纸的温暖色调能创造更沉浸的阅读体验</p>
+              <div class="article-card__meta">
+                <span class="author">中村美惠</span>
+                <span class="meta">8 月 11 日</span>
+              </div>
+            </article>
+          </section>
+
+          <!-- 文章列表 -->
+          <section class="list-block" aria-label="更多文章">
+            <div class="list-block__head">
+              <h2>近期文章</h2>
+            </div>
+
+            <ul class="article-list" id="articleList">
+              <li class="article-item" data-type="design">
+                <span class="article-item__num">04</span>
+                <div class="article-item__main">
+                  <span class="article-item__title">衬线字体的复兴</span>
+                  <span class="article-item__sub">设计 · 6 分钟</span>
+                </div>
+                <div class="article-item__right">
+                  <span class="tag">未读</span>
+                </div>
+              </li>
+              <li class="article-item" data-type="tech">
+                <span class="article-item__num">05</span>
+                <div class="article-item__main">
+                  <span class="article-item__title">色彩的温度</span>
+                  <span class="article-item__sub">技术 · 4 分钟</span>
+                </div>
+                <div class="article-item__right">
+                  <span class="tag">未读</span>
+                </div>
+              </li>
+              <li class="article-item" data-type="life">
+                <span class="article-item__num">06</span>
+                <div class="article-item__main">
+                  <span class="article-item__title">晨间阅读仪式</span>
+                  <span class="article-item__sub">生活 · 5 分钟</span>
+                </div>
+                <div class="article-item__right">
+                  <span class="tag tag--read">已读</span>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 引用块（signature element） -->
+          <blockquote class="quote-block">
+            "Good design is as little design as possible."
+            <span class="quote-author">— Dieter Rams</span>
+          </blockquote>
+
+          <div class="bottom-spacer" aria-hidden="true"></div>
+        </main>
+
+        <!-- 底部 Tab -->
+        <nav class="tabbar" aria-label="主导航">
+          <button class="tab is-active" data-tab="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+            <span>首页</span>
+          </button>
+          <button class="tab" data-tab="library">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+            <span>书架</span>
+          </button>
+          <button class="tab" data-tab="bookmark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+            <span>收藏</span>
+          </button>
+          <button class="tab" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+            <span>设置</span>
+          </button>
+        </nav>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

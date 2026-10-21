@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>视界商城 · Meta</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                  <path d="M4 12c0-3 2.5-5 5-5s3.5 2 3.5 5 -1 5-1 5" />
+                  <path d="M20 12c0 3-2.5 5-5 5s-3.5-2-3.5-5 1-5 1-5" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">视界商城</span>
+                <span class="brand-bar__sub">新品首发周 · 会员免运费</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="购物车 2 件商品，合计 ¥3,198" aria-label="购物车">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 7h12l1.2 12.2a1.6 1.6 0 0 1-1.6 1.8H6.4a1.6 1.6 0 0 1-1.6-1.8L6 7z" />
+                  <path d="M9 9V6a3 3 0 0 1 6 0v3" />
+                </svg>
+                <i class="brand-bar__badge">2</i>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：暗面沉浸产品位（Quest）-->
+            <section class="hero-card" aria-label="Meta Quest 3S 首发">
+              <p class="hero-card__eyebrow">QUEST 系列 · 首发</p>
+              <h1 class="hero-card__title">Meta Quest 3S</h1>
+              <p class="hero-card__sub">轻薄混合现实 · 256GB · 触控手柄</p>
+              <div class="hero-card__viz" aria-hidden="true">
+                <div class="viz-glow"></div>
+                <div class="viz-headset">
+                  <span class="viz-headset__lens"></span>
+                  <span class="viz-headset__lens"></span>
+                  <span class="viz-headset__strap"></span>
+                </div>
+              </div>
+              <div class="hero-card__buy">
+                <div class="hero-card__price">
+                      <b>¥2,899</b>
+                      <s>¥3,299</s>
+                </div>
+                <div class="hero-card__cta">
+                  <button class="pill pill--blue" type="button" id="heroBuy">立即购买</button>
+                  <button class="pill pill--outline-dark" type="button" data-toast="演示视频即将上线，已为你预约提醒">观看演示</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡（明面 / Linen）-->
+            <section class="duo-grid" aria-label="推荐单品">
+              <div class="duo-card duo-card--linen">
+                <div class="duo-card__top">
+                  <span class="tag tag--red">限时套装</span>
+                  <button class="heart" type="button" aria-label="收藏 Ray-Ban Meta 智能眼镜" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </div>
+                <h2 class="duo-card__title">Ray-Ban Meta 智能眼镜</h2>
+                <p class="duo-card__note">边听边拍，太阳镜里的开放耳音频</p>
+                <div class="duo-card__foot"><b>¥2,999</b><span>含镜片定制</span></div>
+              </div>
+              <div class="duo-card">
+                <div class="duo-card__top">
+                  <span class="tag">配件精选</span>
+                  <button class="heart" type="button" aria-label="收藏配件套装" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </div>
+                <h2 class="duo-card__title">Elite 头带 + 携行包</h2>
+                <p class="duo-card__note">长时间佩戴更均衡，收纳一步到位</p>
+                <div class="duo-card__foot"><b>¥399</b><span>套装立省 ¥120</span></div>
+              </div>
+            </section>
+
+            <!-- 4. 热门单品 Feed -->
+            <section class="feed" aria-label="热门单品">
+              <div class="feed__head">
+                <h2 class="feed__title">热门单品</h2>
+                <div class="chips" role="tablist" aria-label="筛选品类">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="vr">头显</button>
+                  <button class="chip" type="button" data-filter="glasses">眼镜</button>
+                  <button class="chip" type="button" data-filter="acc">配件</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="vr">
+                  <span class="feed-item__glyph" aria-hidden="true">🥽</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Meta Quest 3S 256GB</span>
+                    <span class="feed-item__meta">现货 · 明日达<em class="state-chip">新品</em></span>
+                  </div>
+                  <b class="feed-item__price">¥2,899</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="glasses">
+                  <span class="feed-item__glyph" aria-hidden="true">🕶️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Ray-Ban Meta Wayfarer</span>
+                    <span class="feed-item__meta">哑光黑 · 50mm<em class="state-chip">热卖</em></span>
+                  </div>
+                  <b class="feed-item__price">¥2,999</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="acc">
+                  <span class="feed-item__glyph" aria-hidden="true">🎮</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Touch Plus 触控手柄</span>
+                    <span class="feed-item__meta">单只 · 支持 TruTouch 震动<em class="state-chip">现货</em></span>
+                  </div>
+                  <b class="feed-item__price">¥499</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="vr">
+                  <span class="feed-item__glyph" aria-hidden="true">🌀</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Quest 3 512GB 曜石黑</span>
+                    <span class="feed-item__meta">旗舰款 · 12 月 1 日发货<em class="state-chip is-pre">预售</em></span>
+                  </div>
+                  <b class="feed-item__price">¥4,299</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="acc">
+                  <span class="feed-item__glyph" aria-hidden="true">🔌</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">双充电座</span>
+                    <span class="feed-item__meta">手柄 + 头显同充<em class="state-chip">现货</em></span>
+                  </div>
+                  <b class="feed-item__price">¥329</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="glasses">
+                  <span class="feed-item__glyph" aria-hidden="true">🎥</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Ray-Ban Meta 圆框亮面</span>
+                    <span class="feed-item__meta">金框棕片 · 500 万像素<em class="state-chip is-pre">预售</em></span>
+                  </div>
+                  <b class="feed-item__price">¥3,199</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.4 4.5 6.9 4.5c2.2 0 3.9 1.3 5.1 3 1.2-1.7 2.9-3 5.1-3 3.5 0 5.5 3.4 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="订阅与购买">
+              <input class="quick-input" id="subscribeInput" type="email" placeholder="输入邮箱，订阅新品首发提醒" />
+              <div class="action-row">
+                <button class="pill pill--blue pill--wide" type="button" id="cartBtn">加入购物车</button>
+                <button class="pill pill--outline pill--wide" type="button" data-toast="已生成对比表：Quest 3S vs Quest 3（6 项差异）">价格对比</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="商店">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 10 12 4l8 6v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19v-9z" />
+              </svg>
+              <span>商店</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="分类">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" />
+                <rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" />
+              </svg>
+              <span>分类</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="搜索" aria-label="搜索商品">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+              </svg>
+              <span>搜索</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="订单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="4" width="14" height="16" rx="3" /><path d="M9 9h6M9 13h6" />
+              </svg>
+              <span>订单</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

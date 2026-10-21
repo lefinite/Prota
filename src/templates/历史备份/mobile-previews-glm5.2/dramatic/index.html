@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Cinema Spotlight · Dramatic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-spotlight">◆</div>
+                <div class="brand-text">
+                  <span class="brand-name">CINEMA SPOTLIGHT</span>
+                  <span class="brand-sub">发现 · 感受 · 分享</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索影片">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero 卡：signature —— 剧院风格聚光灯效果 -->
+            <section class="hero-card" aria-label="今日推荐">
+              <div class="hero-spotlight"></div>
+              <div class="hero-content">
+                <span class="hero-tag">今日推荐</span>
+                <h2 class="hero-title">星际穿越</h2>
+                <p class="hero-desc">克里斯托弗·诺兰执导的科幻史诗，探索时间、空间与人性的边界。</p>
+                <div class="hero-meta">
+                  <span class="meta-item">★★★★★ 9.3</span>
+                  <span class="meta-item">科幻 / 冒险</span>
+                  <span class="meta-item">169分钟</span>
+                </div>
+                <button class="hero-btn" data-toast="开始观看">
+                  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  立即观看
+                </button>
+              </div>
+            </section>
+
+            <!-- 电影双卡 -->
+            <section class="movie-row" aria-label="热门影片">
+              <div class="movie-card">
+                <div class="movie-poster" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
+                  <span class="movie-rating">8.7</span>
+                </div>
+                <span class="movie-title">盗梦空间</span>
+                <span class="movie-year">2010</span>
+              </div>
+              <div class="movie-card">
+                <div class="movie-poster" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                  <span class="movie-rating">8.5</span>
+                </div>
+                <span class="movie-title">黑暗骑士</span>
+                <span class="movie-year">2008</span>
+              </div>
+            </section>
+
+            <!-- 影评列表 -->
+            <section class="list-block" aria-label="热门影评">
+              <div class="list-block__head">
+                <h2>热门影评</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选影评">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="latest" role="tab" aria-selected="false">最新</button>
+                  <button class="chip" data-filter="hot" role="tab" aria-selected="false">热门</button>
+                </div>
+              </div>
+
+              <ul class="review-list" id="reviewList">
+                <li class="review" data-type="latest">
+                  <div class="review-avatar">A</div>
+                  <div class="review-main">
+                    <span class="review-author">Alex Chen</span>
+                    <span class="review-text">诺兰的叙事总是那么迷人，层层递进的梦境结构让人目不暇接。</span>
+                    <span class="review-meta">《盗梦空间》· 2小时前</span>
+                  </div>
+                  <button class="review-like" data-toast="已点赞">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    <span>128</span>
+                  </button>
+                </li>
+                <li class="review" data-type="hot">
+                  <div class="review-avatar">S</div>
+                  <div class="review-main">
+                    <span class="review-author">Sarah Wu</span>
+                    <span class="review-text">希斯·莱杰的小丑演技简直是教科书级别的，永远的小丑！</span>
+                    <span class="review-meta">《黑暗骑士》· 5小时前</span>
+                  </div>
+                  <button class="review-like" data-toast="已点赞">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    <span>256</span>
+                  </button>
+                </li>
+                <li class="review" data-type="hot">
+                  <div class="review-avatar">M</div>
+                  <div class="review-main">
+                    <span class="review-author">Mike Zhang</span>
+                    <span class="review-text">IMAX 影院体验太震撼了，那种身临其境的感觉无法用语言形容。</span>
+                    <span class="review-meta">《星际穿越》· 昨天</span>
+                  </div>
+                  <button class="review-like" data-toast="已点赞">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    <span>89</span>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快速操作区 -->
+            <section class="action-block">
+              <button class="cta-btn" data-toast="打开选片器">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                发现更多影片
+              </button>
+              <div class="action-secondary">
+                <button class="ghost-btn" data-toast="我的片单">片单</button>
+                <button class="ghost-btn" data-toast="观影统计">统计</button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="movies">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+              <span>影片</span>
+            </button>
+            <button class="tab" data-tab="reviews">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>影评</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

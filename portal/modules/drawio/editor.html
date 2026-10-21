@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#f8f9fb">
+    <title>Prota Diagram Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600&display=swap" rel="stylesheet">
+    <!--
+        The editor runtime is the official jgraph/drawio v30.2.5 web app.
+        Keeping the upstream runtime remote avoids forking its large rendering
+        engine, while this same-origin shell makes the visual UI themeable.
+    -->
+    <base href="https://cdn.jsdelivr.net/gh/jgraph/drawio@v30.2.5/src/main/webapp/">
+    <link rel="stylesheet" href="styles/grapheditor.css">
+    <link rel="stylesheet" media="(forced-colors: active)" href="styles/high-contrast.css" id="high-contrast-stylesheet">
+    <script>
+        // A <base> is required by the upstream runtime, so the local theme URL
+        // must be made absolute from this document's real origin. The runtime
+        // guard below keeps this stylesheet after dynamically injected styles.
+        const protaTheme = document.createElement('link');
+        protaTheme.id = 'prota-drawio-theme';
+        protaTheme.rel = 'stylesheet';
+        protaTheme.href = window.location.origin + '/portal/modules/drawio/editor-prota.css?v=20260630-drawio-modes-v17';
+        document.head.appendChild(protaTheme);
+
+        // draw.io's bootstrap controls the remaining parser lifecycle. Load
+        // Prota's runtime after the editor window is ready so it cannot be
+        // skipped or replaced by the upstream bootstrap sequence.
+        window.addEventListener('load', () => {
+            const runtime = document.createElement('script');
+            runtime.src = window.location.origin + '/portal/modules/drawio/editor-prota.js?v=20261013-space-pan-v1';
+            document.head.appendChild(runtime);
+        }, { once: true });
+    </script>
+    <script src="js/bootstrap.js"></script>
+</head>
+<body class="geEditor geClassic">
+    <div id="geInfo">
+        <div class="geBlock">
+            <div class="prota-editor-loader" aria-label="正在加载流程图编辑器">
+                <span class="prota-editor-loader__mark"></span>
+                <strong>正在准备流程图画布</strong>
+                <small>加载 draw.io 编辑能力</small>
+            </div>
+            <h2 id="geStatus" hidden>Loading…</h2>
+        </div>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>

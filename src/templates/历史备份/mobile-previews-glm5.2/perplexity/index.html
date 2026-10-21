@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>知光研究 · Perplexity</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">知</span>
+                <div class="brand-text">
+                  <span class="brand-name">知光研究</span>
+                  <span class="brand-sub">Research Terminal</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索功能">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- 搜索栏 (signature: 聚焦式输入框) -->
+            <section class="search-section" aria-label="搜索">
+              <div class="search-bar">
+                <input type="text" placeholder="Ask anything..." class="search-input" aria-label="搜索输入">
+                <button class="search-submit" aria-label="提交搜索" data-toast="正在搜索...">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 答案卡片 (signature: 深色面 + 引用来源) -->
+            <section class="answer-card" aria-label="研究答案">
+              <div class="answer-header">
+                <h1 class="answer-title">量子计算的基本原理是什么？</h1>
+                <span class="answer-source-badge">3 个来源</span>
+              </div>
+              <div class="answer-body">
+                <p class="answer-paragraph">
+                  量子计算利用量子力学原理进行信息处理。与传统计算机使用比特（0 或 1）不同，量子计算机使用<strong>量子比特（qubits）</strong>，可以同时处于叠加态...
+                </p>
+                <p class="answer-paragraph">
+                  <strong class="inline-cite">[1]</strong> 叠加和纠缠是量子计算的核心概念。叠加允许量子比特同时表示多种状态，而纠缠使量子比特之间产生关联...
+                </p>
+              </div>
+              <div class="answer-sources">
+                <div class="source-chip">
+                  <svg class="source-chip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <span class="source-chip__domain">nature.com</span>
+                </div>
+                <div class="source-chip">
+                  <svg class="source-chip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <span class="source-chip__domain">mit.edu</span>
+                </div>
+                <div class="source-chip">
+                  <svg class="source-chip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <span class="source-chip__domain">ibm.com</span>
+                </div>
+              </div>
+              <div class="answer-actions">
+                <button class="ghost-btn" data-toast="已复制">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  复制
+                </button>
+                <button class="ghost-btn" data-toast="已分享">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+                  分享
+                </button>
+              </div>
+            </section>
+
+            <!-- 研究历史 -->
+            <section class="history-section" aria-label="研究历史">
+              <h2 class="section-title">最近研究</h2>
+              <ul class="history-list">
+                <li class="history-item">
+                  <span class="history-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  </span>
+                  <div class="history-item__main">
+                    <span class="history-item__title">机器学习在医疗诊断中的应用</span>
+                    <span class="history-item__meta">2 小时前 · 5 个来源</span>
+                  </div>
+                </li>
+                <li class="history-item">
+                  <span class="history-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  </span>
+                  <div class="history-item__main">
+                    <span class="history-item__title">气候变化对海洋生态系统的影响</span>
+                    <span class="history-item__meta">昨天 · 8 个来源</span>
+                  </div>
+                </li>
+                <li class="history-item">
+                  <span class="history-item__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  </span>
+                  <div class="history-item__main">
+                    <span class="history-item__title">区块链技术的最新发展</span>
+                    <span class="history-item__meta">2 天前 · 4 个来源</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 发现话题 -->
+            <section class="discover-section" aria-label="发现话题">
+              <h2 class="section-title">热门话题</h2>
+              <div class="topic-grid">
+                <div class="topic-card">
+                  <span class="topic-card__tag">AI</span>
+                  <h3 class="topic-card__title">GPT-5 的预期发布时间</h3>
+                  <p class="topic-card__preview">根据最新消息，OpenAI 的下一代模型可能在...</p>
+                </div>
+                <div class="topic-card">
+                  <span class="topic-card__tag">Science</span>
+                  <h3 class="topic-card__title">詹姆斯·韦伯望远镜的新发现</h3>
+                  <p class="topic-card__preview">NASA 公布了最新的深空观测图像...</p>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span>搜索</span>
+            </button>
+            <button class="tab" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>库</span>
+            </button>
+            <button class="tab" data-tab="discover">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

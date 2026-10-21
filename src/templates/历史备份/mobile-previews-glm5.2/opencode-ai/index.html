@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Code Terminal · OpenCode</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-prompt">></span>
+                <div class="brand-text">
+                  <span class="brand-name">opencode</span>
+                  <span class="brand-sub">AI Coding Agent</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="命令历史" data-toast="历史记录">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M8 12h8"/><path d="M8 8h8"/><path d="M8 16h6"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero Signature: 终端窗口 -->
+            <section class="terminal-window" aria-label="终端">
+              <div class="terminal-header">
+                <div class="terminal-dots"><span></span><span></span><span></span></div>
+                <span class="terminal-title">agent@opencode:~/project</span>
+              </div>
+              <div class="terminal-body" id="terminalBody">
+                <div class="terminal-line">
+                  <span class="prompt">agent@opencode:~$</span>
+                  <span class="command">copilot suggest --context=react</span>
+                </div>
+                <div class="terminal-line terminal-line--output">
+                  <span class="output-icon">✓</span>
+                  <span class="output-text">正在分析代码库...</span>
+                </div>
+                <div class="terminal-line terminal-line--output">
+                  <span class="output-icon">⚡</span>
+                  <span class="output-text">发现 3 个优化建议</span>
+                </div>
+                <div class="terminal-line terminal-line--input">
+                  <span class="prompt">agent@opencode:~$</span>
+                  <span class="cursor">_</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 代码项目统计 -->
+            <section class="stats-grid" aria-label="项目统计">
+              <div class="stat-card">
+                <span class="stat-label">REPOS</span>
+                <span class="stat-value">24</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">COMMITS</span>
+                <span class="stat-value">1.2k</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">PRs</span>
+                <span class="stat-value">89</span>
+              </div>
+            </section>
+
+            <!-- 代码活动列表 -->
+            <section class="code-feed" aria-label="代码活动">
+              <h2 class="section-title">recent_activity.log</h2>
+
+              <div class="chips" id="filterChips" role="tablist">
+                <button class="chip is-active" data-filter="all">全部</button>
+                <button class="chip" data-filter="commit">commits</button>
+                <button class="chip" data-filter="pr">PRs</button>
+              </div>
+
+              <ul class="code-list" id="codeList">
+                <li class="code-item" data-type="commit">
+                  <span class="code-icon code-icon--commit">C</span>
+                  <div class="code-main">
+                    <span class="code-title">fix: 修复内存泄漏问题</span>
+                    <span class="code-sub">readify/app/utils.ts · 2 分钟前</span>
+                  </div>
+                  <span class="code-hash">a3f2c1</span>
+                </li>
+                <li class="code-item" data-type="pr">
+                  <span class="code-icon code-icon--pr">PR</span>
+                  <div class="code-main">
+                    <span class="code-title">feat: 添加暗色模式支持</span>
+                    <span class="code-sub">#142 · 15 分钟前</span>
+                  </div>
+                  <span class="code-status code-status--open">OPEN</span>
+                </li>
+                <li class="code-item" data-type="commit">
+                  <span class="code-icon code-icon--commit">C</span>
+                  <div class="code-main">
+                    <span class="code-title">refactor: 重构状态管理逻辑</span>
+                    <span class="code-sub">readify/store/index.ts · 1 小时前</span>
+                  </div>
+                  <span class="code-hash">b8d4e2</span>
+                </li>
+                <li class="code-item" data-type="pr">
+                  <span class="code-icon code-icon--pr">PR</span>
+                  <div class="code-main">
+                    <span class="code-title">docs: 更新 API 文档</span>
+                    <span class="code-sub">#138 · 2 小时前</span>
+                  </div>
+                  <span class="code-status code-status--merged">MERGED</span>
+                </li>
+                <li class="code-item" data-type="commit">
+                  <span class="code-icon code-icon--commit">C</span>
+                  <div class="code-main">
+                    <span class="code-title">test: 添加单元测试覆盖</span>
+                    <span class="code-sub">readify/test/auth.test.ts · 昨天</span>
+                  </div>
+                  <span class="code-hash">c5a7f3</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快速命令 -->
+            <section class="command-bar">
+              <button class="cmd-btn cmd-btn--primary" data-toast="运行代码生成">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                run generate
+              </button>
+              <button class="cmd-btn" data-toast="打开配置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                config
+              </button>
+            </section>
+
+            <div class="bottom-spacer"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="terminal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              <span>terminal</span>
+            </button>
+            <button class="tab" data-tab="repos">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span>repos</span>
+            </button>
+            <button class="tab tab--fab" data-tab="run" aria-label="运行">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button class="tab" data-tab="activity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>activity</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>settings</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

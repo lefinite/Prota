@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>GROK Terminal · xAI</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">GROK</span>
+                <div class="brand-text">
+                  <span class="brand-name">xAI Assistant</span>
+                  <span class="brand-sub">Terminal Ready</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="Settings" data-toast="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m8.3-4.3-4.2 4.2m0-8.5 4.2 4.2M1 12h6m6 0h6M4.9 4.9l4.2 4.2m0 8.5-4.2 4.2" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero signature：超大 monospace 显示 -->
+            <section class="hero-display" aria-label="AI 状态">
+              <div class="hero-display__label">SYSTEM STATUS</div>
+              <p class="hero-display__text">ONLINE</p>
+              <div class="hero-display__meta">
+                <span class="hero-display__line">Model: Grok-2</span>
+                <span class="hero-display__line">Latency: 42ms</span>
+              </div>
+            </section>
+
+            <!-- 快捷操作卡 -->
+            <section class="action-grid" aria-label="快捷操作">
+              <button class="action-card" data-toast="Starting new session...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                <span>NEW SESSION</span>
+              </button>
+              <button class="action-card" data-toast="Loading code workspace...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <span>CODE</span>
+              </button>
+              <button class="action-card" data-toast="Opening analysis...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                <span>ANALYZE</span>
+              </button>
+              <button class="action-card" data-toast="Syncing data...">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 5.5A10 10 0 1 0 22 12"/></svg>
+                <span>SYNC</span>
+              </button>
+            </section>
+
+            <!-- 会话历史列表 -->
+            <section class="session-list" aria-label="会话历史">
+              <h2 class="section-heading">RECENT SESSIONS</h2>
+              <div class="session-filters" id="sessionFilters" role="tablist">
+                <button class="filter-chip is-active" data-filter="all" role="tab">ALL</button>
+                <button class="filter-chip" data-filter="code" role="tab">CODE</button>
+                <button class="filter-chip" data-filter="analysis" role="tab">ANALYSIS</button>
+              </div>
+              <ul class="session-list__items" id="sessionList">
+                <li class="session-item" data-type="code">
+                  <span class="session-item__icon">&gt;_</span>
+                  <div class="session-item__main">
+                    <span class="session-item__title">Python Data Pipeline</span>
+                    <span class="session-item__sub">2 hours ago · Code generation</span>
+                  </div>
+                  <span class="session-item__meta">ACTIVE</span>
+                </li>
+                <li class="session-item" data-type="analysis">
+                  <span class="session-item__icon">∑</span>
+                  <div class="session-item__main">
+                    <span class="session-item__title">Market Trend Analysis</span>
+                    <span class="session-item__sub">Yesterday · Deep research</span>
+                  </div>
+                  <span class="session-item__meta">DONE</span>
+                </li>
+                <li class="session-item" data-type="code">
+                  <span class="session-item__icon">&gt;_</span>
+                  <div class="session-item__main">
+                    <span class="session-item__title">API Integration Fix</span>
+                    <span class="session-item__sub">2 days ago · Debugging</span>
+                  </div>
+                  <span class="session-item__meta">DONE</span>
+                </li>
+                <li class="session-item" data-type="analysis">
+                  <span class="session-item__icon">∑</span>
+                  <div class="session-item__main">
+                    <span class="session-item__title">Technical Document Review</span>
+                    <span class="session-item__sub">3 days ago · Summary</span>
+                  </div>
+                  <span class="session-item__meta">DONE</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 统计信息 -->
+            <section class="stats-row" aria-label="使用统计">
+              <div class="stat-block">
+                <span class="stat-block__label">TOKENS USED</span>
+                <span class="stat-block__value">2.4M</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-block__label">SESSIONS</span>
+                <span class="stat-block__value">847</span>
+              </div>
+              <div class="stat-block">
+                <span class="stat-block__label">UPTIME</span>
+                <span class="stat-block__value">99.9%</span>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>HOME</span>
+            </button>
+            <button class="tab" data-tab="sessions">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6zM15 2v5h5M9 12h6M9 16h6" /></svg>
+              <span>SESSIONS</span>
+            </button>
+            <button class="tab tab--fab" data-tab="new" aria-label="New Session">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="models">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2" /></svg>
+              <span>MODELS</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>PROFILE</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

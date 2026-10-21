@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>ProtoFlow · Framer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="Device status bar">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- Top Bar -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-logo">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4z" opacity="0.3"/><path d="M4 20h4l4-8 4 8h4l-6-12-6 12z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">ProtoFlow</span>
+                  <span class="brand-sub">Design at speed</span>
+                </div>
+              </div>
+              <button class="pill-btn pill-btn--glass" aria-label="Menu" data-toast="Menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+              </button>
+            </header>
+
+            <!-- Hero: Product screenshot showcase (signature: void canvas + product) -->
+            <section class="hero-section">
+              <h1 class="hero-title">Ship faster<br>with confidence</h1>
+              <p class="hero-sub">Build interactive prototypes that feel like the real thing</p>
+              <div class="hero-preview">
+                <div class="preview-frame">
+                  <div class="preview-mockup">
+                    <div class="mockup-header">
+                      <span class="mockup-dot"></span>
+                      <span class="mockup-dot"></span>
+                      <span class="mockup-dot"></span>
+                    </div>
+                    <div class="mockup-body">
+                      <div class="mockup-block mockup-block--wide"></div>
+                      <div class="mockup-block mockup-block--medium"></div>
+                      <div class="mockup-grid">
+                        <div class="mockup-block"></div>
+                        <div class="mockup-block"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-stats">
+                <div class="stat">
+                  <span class="stat-val">2.4s</span>
+                  <span class="stat-label">Load time</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-val">99%</span>
+                  <span class="stat-label">Satisfaction</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-val">10k+</span>
+                  <span class="stat-label">Projects</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Feature Cards -->
+            <section class="features-section">
+              <h2 class="section-title">Designed for builders</h2>
+              <div class="feature-grid">
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+                  </div>
+                  <h3 class="feature-title">Lightning fast</h3>
+                  <p class="feature-desc">Export production-ready code in seconds</p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
+                  </div>
+                  <h3 class="feature-title">Pixel perfect</h3>
+                  <p class="feature-desc">Every detail rendered with precision</p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  </div>
+                  <h3 class="feature-title">Responsive</h3>
+                  <p class="feature-desc">Looks great on any device</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="cta-section">
+              <h2 class="cta-title">Ready to build?</h2>
+              <p class="cta-sub">Join thousands of designers shipping faster</p>
+              <div class="cta-actions">
+                <button class="cta-btn cta-btn--primary" data-toast="Get started free">
+                  Get started free
+                </button>
+                <button class="cta-btn cta-btn--ghost" data-toast="Watch demo">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+                  Watch demo
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- Bottom Tab -->
+          <nav class="tabbar" aria-label="Main navigation">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+            </button>
+            <button class="tab" data-tab="projects">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="Create new">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="learn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

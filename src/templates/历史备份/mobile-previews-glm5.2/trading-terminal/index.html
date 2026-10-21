@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Crypto Pro · Trading Terminal</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="Device Status Bar">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- Top Brand Bar -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">C</span>
+                <div class="brand-text">
+                  <span class="brand-name">CRYPTO PRO</span>
+                  <span class="brand-sub">实时交易终端</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="Alerts" data-toast="暂无新提醒">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Market Ticker (Signature: Horizontal scrolling ticker with flash indicators) -->
+            <section class="ticker-bar" aria-label="Market Overview">
+              <div class="ticker-item">
+                <span class="ticker-symbol">BTC</span>
+                <span class="ticker-price price-up" data-flash="gain">$67,842</span>
+                <span class="ticker-change change-up">+2.4%</span>
+              </div>
+              <div class="ticker-item">
+                <span class="ticker-symbol">ETH</span>
+                <span class="ticker-price price-down" data-flash="loss">$3,521</span>
+                <span class="ticker-change change-down">-1.2%</span>
+              </div>
+              <div class="ticker-item">
+                <span class="ticker-symbol">SOL</span>
+                <span class="ticker-price price-up" data-flash="gain">$178.45</span>
+                <span class="ticker-change change-up">+5.8%</span>
+              </div>
+              <div class="ticker-item">
+                <span class="ticker-symbol">ADA</span>
+                <span class="ticker-price price-down" data-flash="loss">$0.62</span>
+                <span class="ticker-change change-down">-0.8%</span>
+              </div>
+            </section>
+
+            <!-- Hero Price Card (Signature: Large monospace price with gain/loss) -->
+            <section class="price-card" aria-label="Bitcoin Price">
+              <div class="price-card__header">
+                <span class="price-card__label">BTC/USDT</span>
+                <span class="price-card__tag">24h</span>
+              </div>
+              <p class="price-card__value">
+                <span class="price-sign">$</span>67,842<span class="price-decimal">.50</span>
+              </p>
+              <div class="price-card__change positive">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                +2.42% <span class="change-amount">+$1,608.20</span>
+              </div>
+
+              <!-- Mini Chart Placeholder -->
+              <div class="mini-chart" aria-hidden="true">
+                <svg viewBox="0 0 200 40" class="chart-line">
+                  <polyline points="0,35 20,32 40,28 60,30 80,25 100,20 120,22 140,18 160,12 180,15 200,8" fill="none" stroke="var(--gain)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+
+              <div class="price-card__stats">
+                <div class="stat-item">
+                  <span class="stat-label">24H 高</span>
+                  <span class="stat-value">$68,420</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">24H 低</span>
+                  <span class="stat-value">$66,180</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">成交量</span>
+                  <span class="stat-value">42.8K</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="action-grid" aria-label="Trading Actions">
+              <button class="action-btn action-btn--buy" data-toast="买入订单已提交">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                <span>买入</span>
+              </button>
+              <button class="action-btn action-btn--sell" data-toast="卖出订单已提交">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" /></svg>
+                <span>卖出</span>
+              </button>
+              <button class="action-btn action-btn--swap" data-toast="交易界面即将打开">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l-4 2 4 2M17 14l4-2-4-2M3 12h18" /></svg>
+                <span>兑换</span>
+              </button>
+              <button class="action-btn action-btn--limit" data-toast="限价单设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H6v-6h4a2 2 0 0 1 2 2Z" /><path d="M14 13a2 2 0 0 0 2 2v2a2 2 0 0 0 2 2h4v-6h-4a2 2 0 0 0-2 2Z" /></svg>
+                <span>限价</span>
+              </button>
+            </section>
+
+            <!-- Order Book (Signature: Tabular data layout with no rounded corners) -->
+            <section class="order-book" aria-label="Order Book">
+              <div class="order-book__header">
+                <h2>订单簿</h2>
+                <div class="chips" id="orderBookChips" role="tablist" aria-label="Order Book Filter">
+                  <button class="chip is-active" data-filter="both" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="buy" role="tab" aria-selected="false">买单</button>
+                  <button class="chip" data-filter="sell" role="tab" aria-selected="false">卖单</button>
+                </div>
+              </div>
+
+              <div class="order-book__table">
+                <!-- Sell Orders (Asks) -->
+                <div class="order-book__section order-book__asks">
+                  <div class="order-row order-row--ask" data-type="sell">
+                    <span class="order-size">0.4521 BTC</span>
+                    <span class="order-price price-down">$67,845</span>
+                    <span class="order-total">$30,658</span>
+                  </div>
+                  <div class="order-row order-row--ask" data-type="sell">
+                    <span class="order-size">0.8200 BTC</span>
+                    <span class="order-price price-down">$67,850</span>
+                    <span class="order-total">$55,637</span>
+                  </div>
+                  <div class="order-row order-row--ask" data-type="sell">
+                    <span class="order-size">1.2500 BTC</span>
+                    <span class="order-price price-down">$67,855</span>
+                    <span class="order-total">$84,819</span>
+                  </div>
+                </div>
+
+                <!-- Spread Indicator -->
+                <div class="spread-row">
+                  <span class="spread-label">Spread</span>
+                  <span class="spread-value">$6.00</span>
+                </div>
+
+                <!-- Buy Orders (Bids) -->
+                <div class="order-book__section order-book__bids">
+                  <div class="order-row order-row--bid" data-type="buy">
+                    <span class="order-size">0.6800 BTC</span>
+                    <span class="order-price price-up">$67,839</span>
+                    <span class="order-total">$46,130</span>
+                  </div>
+                  <div class="order-row order-row--bid" data-type="buy">
+                    <span class="order-size">1.1000 BTC</span>
+                    <span class="order-price price-up">$67,835</span>
+                    <span class="order-total">$74,619</span>
+                  </div>
+                  <div class="order-row order-row--bid" data-type="buy">
+                    <span class="order-size">2.5000 BTC</span>
+                    <span class="order-price price-up">$67,830</span>
+                    <span class="order-total">$169,575</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Portfolio Summary -->
+            <section class="portfolio-card" aria-label="Portfolio Summary">
+              <div class="portfolio-card__header">
+                <span class="portfolio-card__title">持仓总览</span>
+                <span class="portfolio-card__value">$128,452.80</span>
+              </div>
+              <div class="portfolio-card__change positive">
+                <span class="change-icon">▲</span>
+                +12.4% <span class="change-label">今日</span>
+              </div>
+              <div class="portfolio-card__list">
+                <div class="portfolio-item">
+                  <span class="portfolio-symbol">BTC</span>
+                  <span class="portfolio-amount">1.4520</span>
+                  <span class="portfolio-value">$98,542</span>
+                </div>
+                <div class="portfolio-item">
+                  <span class="portfolio-symbol">ETH</span>
+                  <span class="portfolio-amount">8.5000</span>
+                  <span class="portfolio-value">$29,910</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- Bottom Tab Navigation -->
+          <nav class="tabbar" aria-label="Main Navigation">
+            <button class="tab is-active" data-tab="market">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18" /><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" /></svg>
+              <span>行情</span>
+            </button>
+            <button class="tab" data-tab="trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+              <span>交易</span>
+            </button>
+            <button class="tab tab--fab" data-tab="quick-trade" aria-label="Quick Trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 12h8M13 6h8M13 18h8M3 12h1M3 6h1M3 18h1" /></svg>
+            </button>
+            <button class="tab" data-tab="portfolio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" /></svg>
+              <span>资产</span>
+            </button>
+            <button class="tab" data-tab="alerts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /><path d="M12 17v.01" /></svg>
+              <span>提醒</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

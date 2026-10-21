@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>币簿 CoinBook · Binance-Inspired</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.6 14.2 4.8 12 7 9.8 4.8 12 2.6z" />
+                  <path d="M3.4 10.4 5.6 12.6 3.4 14.8 1.2 12.6 3.4 10.4z" />
+                  <path d="M20.6 10.4 22.8 12.6 20.6 14.8 18.4 12.6 20.6 10.4z" />
+                  <path d="M12 8.6 16.2 12.8 12 17 7.8 12.8 12 8.6z" />
+                  <path d="M12 17.2 14.2 19.4 12 21.6 9.8 19.4 12 17.2z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">币簿 <em>COINBOOK</em></span>
+                <span class="brand-bar__sub">24H 成交 ¥482.9 亿</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="收款码已刷新，30 分钟内有效" aria-label="收款码">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3v3h-3z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：总资产 + 金色走势 -->
+            <section class="hero-card" aria-label="总资产">
+              <div class="hero-card__top">
+                <span class="hero-card__label">总资产 · USDT 折算</span>
+                <span class="hero-card__delta" id="heroDelta">24H +2.41%</span>
+              </div>
+              <p class="hero-card__amount">$ 18,243<span class="hero-card__amount-dec">.06</span></p>
+              <div class="hero-card__chart" role="img" aria-label="近 30 日资产走势，整体上行">
+                <svg viewBox="0 0 320 72" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="hero-card__spark-fill" d="M0 58 L32 54 L64 60 L96 44 L128 48 L160 34 L192 40 L224 28 L256 32 L288 18 L320 12 L320 72 L0 72 Z" />
+                  <path class="hero-card__spark" id="sparkPath" d="M0 58 L32 54 L64 60 L96 44 L128 48 L160 34 L192 40 L224 28 L256 32 L288 18 L320 12" />
+                </svg>
+              </div>
+              <div class="hero-card__foot">
+                <span>今日盈亏 <b id="heroPnl" class="is-up">+$428.77</b></span>
+                <span>持仓 6 · 委托中 1</span>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡：行情三连 -->
+            <section class="market-trio" aria-label="热门行情">
+              <button class="market-card" type="button" data-coin="BTC" data-toast="已打开 BTC/USDT 行情图">
+                <span class="market-card__glyph market-card__glyph--btc" aria-hidden="true">₿</span>
+                <span class="market-card__pair">BTC<span>/USDT</span></span>
+                <b class="market-card__price" data-price>67,412.5</b>
+                <i class="market-card__delta is-up" data-delta>+1.82%</i>
+              </button>
+              <button class="market-card" type="button" data-coin="ETH" data-toast="已打开 ETH/USDT 行情图">
+                <span class="market-card__glyph market-card__glyph--eth" aria-hidden="true">Ξ</span>
+                <span class="market-card__pair">ETH<span>/USDT</span></span>
+                <b class="market-card__price" data-price>3,482.1</b>
+                <i class="market-card__delta is-down" data-delta>-0.64%</i>
+              </button>
+              <button class="market-card" type="button" data-coin="BNB" data-toast="已打开 BNB/USDT 行情图">
+                <span class="market-card__glyph market-card__glyph--bnb" aria-hidden="true">◆</span>
+                <span class="market-card__pair">BNB<span>/USDT</span></span>
+                <b class="market-card__price" data-price>588.3</b>
+                <i class="market-card__delta is-up" data-delta>+2.40%</i>
+              </button>
+            </section>
+
+            <!-- 3b. 内容卡：理财 + 安全 -->
+            <section class="duo-grid" aria-label="理财与安全">
+              <div class="duo-card">
+                <h2 class="duo-card__title">理财 · 赚币</h2>
+                <p class="duo-card__num">8.99<em>%</em></p>
+                <p class="duo-card__note">活期年化 · 每日发放</p>
+                <div class="budget-row__track">
+                  <span class="budget-row__fill budget-row__fill--gold" style="--w: 62%"></span>
+                </div>
+                <p class="duo-card__meta">已存 0.4218 BNB · 限额 62%</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">安全中心</h2>
+                <ul class="safe-list">
+                  <li><i>双重验证</i><b class="is-ok">已开启</b></li>
+                  <li><i>反钓鱼码</i><b class="is-ok">已设置</b></li>
+                  <li><i>设备锁</i><b>2 台</b></li>
+                </ul>
+                <button class="duo-card__link" type="button" data-toast="安全评分 92 / 100">查看评分</button>
+              </div>
+            </section>
+
+            <!-- 4. 成交 Feed -->
+            <section class="feed" aria-label="成交记录">
+              <div class="feed__head">
+                <h2 class="feed__title">成交记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选成交记录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="buy">买入</button>
+                  <button class="chip" type="button" data-filter="sell">卖出</button>
+                  <button class="chip" type="button" data-filter="pending">挂单</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="buy">
+                  <span class="feed-item__glyph feed-item__glyph--btc" aria-hidden="true">₿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">买入 BTC</span>
+                    <span class="feed-item__meta">14:32 · 市价 0.0121 BTC</span>
+                  </div>
+                  <b class="feed-item__amount">-815.66</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该记录" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sell">
+                  <span class="feed-item__glyph feed-item__glyph--eth" aria-hidden="true">Ξ</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">卖出 ETH</span>
+                    <span class="feed-item__meta">13:08 · 限价 $3,490</span>
+                  </div>
+                  <b class="feed-item__amount is-in">+402.17</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该记录" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="pending">
+                  <span class="feed-item__glyph feed-item__glyph--sol" aria-hidden="true">◎</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">挂单 买入 SOL</span>
+                    <span class="feed-item__meta">12:44 · 2.5 SOL @ $142.8 <em class="feed-item__chip">待成交</em></span>
+                  </div>
+                  <b class="feed-item__amount">-357.00</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该记录" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="buy">
+                  <span class="feed-item__glyph feed-item__glyph--bnb" aria-hidden="true">◆</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">理财申购 BNB</span>
+                    <span class="feed-item__meta">昨天 20:15 · 赚币 7 天</span>
+                  </div>
+                  <b class="feed-item__amount">-117.68</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该记录" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="buy">
+                  <span class="feed-item__glyph feed-item__glyph--btc" aria-hidden="true">₿</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">买入 BTC</span>
+                    <span class="feed-item__meta">昨天 21:40 · 市价 0.008 BTC</span>
+                  </div>
+                  <b class="feed-item__amount">-539.30</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏该记录" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快捷交易">
+              <input class="quick-input" id="tradeInput" type="text" inputmode="decimal" placeholder="买入金额 USDT，如：100" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="buyBtn">买入 BTC</button>
+                <button class="btn-ghost" type="button" id="sellBtn">卖出</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="行情">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19V5M4 19h16" /><path d="M8 15l3-4 3 2 4-6" />
+              </svg>
+              <span>行情</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="交易">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 4v12M7 16l-3-3M17 20V8M17 8l3 3" />
+              </svg>
+              <span>交易</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="资产">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M16 15h2" />
+              </svg>
+              <span>资产</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="充提" aria-label="充值与提现">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 3 6 13h5l-1 8 8-11h-6l1-7z" />
+              </svg>
+              <span>充提</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

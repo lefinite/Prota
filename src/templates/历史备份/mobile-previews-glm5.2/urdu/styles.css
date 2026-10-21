@@ -1,0 +1,433 @@
+/* =========================================================================
+ * mobile-previews/urdu — Khabar Urdu (خبر اردو)
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/urdu 的 :root token
+ * 页面：乌尔都语新闻阅读器 · RTL · Nastaliq 排版 · 文化美学
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/urdu）—— */
+  --bg: #f3faf4;
+  --surface: #ffffff;
+  --surface-warm: #e5f5e7;
+  --fg: #15261a;
+  --fg-2: #38513e;
+  --muted: #6b7d70;
+  --meta: #1f8f46;
+  --border: #d4e3d7;
+  --border-soft: #edf3ee;
+  --accent: #1f8f46;
+  --accent-on: #ffffff;
+  --accent-hover: #1a7a3b;
+  --accent-active: #156b32;
+  --success: #16a34a;
+  --warn: #d97706;
+  --danger: #dc2626;
+  --font-display: "Noto Nastaliq Urdu", Georgia, "Times New Roman", serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 36px;
+  --text-3xl: 54px;
+  --text-4xl: 76px;
+  --leading-body: 1.52;
+  --leading-tight: 1.06;
+  --tracking-display: -0.025em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --section-y-desktop: 96px;
+  --section-y-tablet: 68px;
+  --section-y-phone: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 20px 48px rgba(21, 38, 26, 0.10);
+  --focus-ring: 0 0 0 4px rgba(31, 143, 70, 0.24);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1180px;
+  --container-gutter-desktop: 36px;
+  --container-gutter-tablet: 24px;
+  --container-gutter-phone: 16px;
+
+  /* —— Urdu-specific tokens —— */
+  --color-primary: #0F595E;
+  --color-primary-dark: #0D3F45;
+  --color-accent: #C05621;
+  --color-bg-primary: #F4F1EA;
+  --color-text-primary: #1A202C;
+  --color-text-secondary: #4A5568;
+  --color-border: #E2E8F0;
+  --font-urdu: "Noto Nastaliq Urdu", serif;
+  --line-height-urdu: 1.8;
+
+  /* —— 手机外壳（与暖绿色系统协调）—— */
+  --page-backdrop-top: #e8f4ea;
+  --page-backdrop-bottom: #d4e3d7;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e5f5e7;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(21, 38, 26, 0.12);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(31, 143, 70, 0.06), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  direction: rtl;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; direction: ltr; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; left: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; direction: rtl; }
+
+/* ===== Page content · Khabar Urdu ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 42px; height: 42px; border-radius: var(--radius-md);
+  display: grid; place-items: center; font-weight: 700; font-size: 20px;
+  color: var(--accent-on); background: var(--accent);
+  font-family: var(--font-urdu);
+  line-height: 1.8;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.4; }
+.brand-name {
+  font-size: var(--text-lg); font-weight: 700;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+}
+.brand-sub {
+  font-size: var(--text-sm); color: var(--muted);
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  margin-top: 2px;
+}
+
+.iconbtn {
+  position: relative; width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; color: var(--fg);
+  box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 19px; height: 19px; }
+.iconbtn:active { background: var(--surface-warm); }
+.iconbtn__dot { position: absolute; top: 9px; left: 10px; width: 7px; height: 7px; border-radius: 999px; background: var(--color-accent); box-shadow: 0 0 0 2px var(--surface); }
+
+/* Hero Section (Signature: Large Nastaliq display) */
+.hero-section { margin-bottom: 24px; }
+.featured-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--elev-raised);
+}
+.featured-card__image {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+}
+.image-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.category-tag {
+  position: absolute; bottom: 12px; right: 12px;
+  padding: 6px 14px;
+  background: var(--color-primary);
+  color: var(--accent-on);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+}
+.featured-card__content { padding: 20px; }
+.featured-title {
+  margin: 0 0 12px;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-text-primary);
+}
+.featured-excerpt {
+  margin: 0 0 16px;
+  font-size: var(--text-base);
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-text-secondary);
+}
+.featured-meta {
+  display: flex; gap: 12px;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.meta-time { font-family: var(--font-body); }
+.meta-category {
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+}
+
+/* Category Pills (RTL-aware) */
+.categories {
+  display: flex; gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-5);
+  scrollbar-width: none;
+}
+.categories::-webkit-scrollbar { display: none; }
+.category-pill {
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-base);
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  transition: background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+}
+.category-pill.is-active {
+  background: var(--accent);
+  color: var(--accent-on);
+  border-color: var(--accent);
+}
+.category-pill:active { transform: scale(0.97); }
+
+/* News Section */
+.news-section { margin-bottom: 24px; }
+.section-title {
+  margin: 0 0 16px;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-text-primary);
+}
+
+.news-list { display: flex; flex-direction: column; gap: 16px; }
+.news-item {
+  display: flex; gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elev-ring);
+  transition: box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+.news-item:active { transform: scale(0.99); box-shadow: var(--elev-raised); }
+.news-item__thumbnail {
+  width: 60px; height: 60px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.thumbnail-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.news-item__content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.news-category {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--surface-warm);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  align-self: flex-start;
+}
+.news-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-excerpt {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-time {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-body);
+}
+
+/* Quote Section (Signature: Cultural element with terracotta accent) */
+.quote-section { margin-bottom: 20px; }
+.quote-card {
+  padding: 24px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-warm) 100%);
+  border-right: 4px solid var(--color-accent);
+  border-radius: var(--radius-md);
+}
+.quote-text {
+  margin: 0 0 16px;
+  font-size: var(--text-lg);
+  font-weight: 400;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-text-primary);
+  font-style: normal;
+}
+.quote-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 12px;
+}
+.quote-author {
+  font-size: var(--text-base);
+  font-weight: 600;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  color: var(--color-primary);
+}
+.quote-source {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-family: var(--font-body);
+}
+
+.bottom-spacer { height: 12px; }
+
+/* Tab Navigation */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+  padding: 8px 10px 18px; background: var(--surface);
+  box-shadow: 0 -1px 0 var(--border-soft);
+  direction: ltr;
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; color: var(--muted); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 21px; height: 21px; }
+.tab span { font-family: var(--font-urdu); line-height: var(--line-height-urdu); }
+.tab.is-active { color: var(--accent); }
+.tab--fab {
+  justify-self: center; position: relative; top: -14px;
+  width: 50px; height: 50px; border-radius: var(--radius-pill);
+  background: var(--accent); color: var(--accent-on);
+  display: grid; place-items: center; box-shadow: 0 8px 18px rgba(31, 143, 70, 0.25);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.tab--fab svg { width: 22px; height: 22px; }
+.tab--fab:active { transform: scale(0.92); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--surface);
+  font-size: var(--text-sm); padding: 10px 16px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+  font-family: var(--font-urdu);
+  line-height: var(--line-height-urdu);
+  direction: rtl;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Animations */
+.hero-section, .categories, .news-section, .quote-section { animation: fade-in-up 560ms var(--ease-standard) both; }
+.categories { animation-delay: 100ms; }
+.news-section { animation-delay: 200ms; }
+.quote-section { animation-delay: 300ms; }
+
+@keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Ensure proper RTL direction for Urdu text */
+[lang="ur"] { direction: rtl; }
+
+/* Icon mirroring for RTL */
+.tabbar svg { transform: scaleX(1); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

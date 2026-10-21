@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>跃马 · Ferrari 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__horse" aria-hidden="true">🐎</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">跃马 · SF90 XX</span>
+                <span class="brand-bar__sub label">MARANELLO · ITALIA · 车架 2091</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="车辆状态：一切正常" aria-label="车辆状态">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.4-3 7.5-7 9-4-1.5-7-4.6-7-9V6l7-3z"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：黑场仪表（签名：速度大数字 + 转速红区）-->
+            <section class="hero" aria-label="车辆仪表">
+              <p class="hero__mode label" id="modeLabel">MANETTINO · SPORT</p>
+              <div class="hero__speed">
+                <b id="speedNum">218</b>
+                <span class="label">KM/H</span>
+              </div>
+              <div class="hero__revs" role="img" aria-label="转速表，当前 7600 转，接近红区">
+                <i style="--h: 30%"></i><i style="--h: 44%"></i><i style="--h: 56%"></i><i style="--h: 66%"></i>
+                <i style="--h: 74%"></i><i style="--h: 82%"></i><i class="is-red" style="--h: 88%"></i>
+                <i class="is-red" style="--h: 94%"></i><i class="is-red" style="--h: 100%"></i>
+              </div>
+              <div class="hero__telemetry">
+                <div><span class="label">GEAR</span><b id="gearNum">6</b></div>
+                <div><span class="label">RPM</span><b>7,600</b></div>
+                <div><span class="label">BATT</span><b>82%</b></div>
+              </div>
+              <button class="engine" type="button" id="engineBtn">ENGINE START</button>
+            </section>
+
+            <!-- 3. 白场编辑面板（chiaroscuro 节奏）-->
+            <section class="panel" aria-label="驾驶模式">
+              <div class="panel__head">
+                <h2 class="panel__title">MANETTINO 驾驶模式</h2>
+                <span class="panel__note label">WET / SPORT / RACE</span>
+              </div>
+              <div class="modes" id="modes">
+                <button class="mode is-active" type="button" data-mode="WET" data-max="120">WET</button>
+                <button class="mode" type="button" data-mode="SPORT" data-max="218">SPORT</button>
+                <button class="mode" type="button" data-mode="RACE" data-max="286">RACE</button>
+              </div>
+            </section>
+
+            <!-- 4. Feed：行程记录 -->
+            <section class="feed" aria-label="行程记录">
+              <div class="feed__head">
+                <h2 class="feed__title">行程档案</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="track">赛道</button>
+                  <button class="chip" type="button" data-filter="road">公路</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="track">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">上海国际赛车场 · 圈速 2:04.8</span>
+                    <span class="feed-item__meta label">10-12 · 18 LAPS · BEST SECTOR S2</span>
+                  </div>
+                  <em class="lap">-0.6s</em>
+                </li>
+                <li class="feed-item" data-kind="road">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">莫干山山路 · 晨驰</span>
+                    <span class="feed-item__meta label">10-08 · 96 KM · AVG 64 KM/H</span>
+                  </div>
+                  <em class="lap">96 km</em>
+                </li>
+                <li class="feed-item" data-kind="track">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">浙江赛车场 · 雨战训练</span>
+                    <span class="feed-item__meta label">10-01 · 12 LAPS · WET MODE</span>
+                  </div>
+                  <em class="lap">WET</em>
+                </li>
+                <li class="feed-item" data-kind="road">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">滨海大道 · 通勤</span>
+                    <span class="feed-item__meta label">09-27 · 42 KM · ELEC 71%</span>
+                  </div>
+                  <em class="lap">42 km</em>
+                </li>
+                <li class="feed-item" data-kind="track">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">品牌赛道日 · 教练随行</span>
+                    <span class="feed-item__meta label">09-19 · 20 LAPS · CORSA TIRES</span>
+                  </div>
+                  <em class="lap">PB</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="panel panel--action" aria-label="车辆操作">
+              <input class="action__input" id="addrInput" type="text" placeholder="发送目的地到车机…" />
+              <div class="action__row">
+                <button class="btn-solid" type="button" data-toast="已远程预热座舱，3 分钟后出发">座舱预热</button>
+                <button class="btn-line" type="button" data-toast="充电口已解锁，剩余 71%">充电</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="车辆">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13l1.5-5h15L21 13v6h-2.5v-2h-13v2H3v-6z"/><path d="M6.5 15.5h.01M17.5 15.5h.01"/></svg>
+              <span class="label">车辆</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19h9a4 4 0 0 0 4-4V8"/><path d="M17 8l-3-3M17 8l3-3"/></svg>
+              <span class="label">行程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="车库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12"/><path d="M7 21v-8h10v8"/></svg>
+              <span class="label">车库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="跃马会">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span class="label">跃马会</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

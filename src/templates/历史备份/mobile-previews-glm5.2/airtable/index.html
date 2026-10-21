@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Team Base · Airtable</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">Team Base</span>
+                  <span class="brand-sub">产品研发项目</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索记录">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- 视图切换器 -->
+            <nav class="view-switcher" role="tablist" aria-label="视图切换">
+              <button class="view-tab is-active" data-view="grid" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                网格视图
+              </button>
+              <button class="view-tab" data-view="kanban" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h12M3 10h12M3 15h12M3 20h12M17 5h4M17 10h4M17 15h4M17 20h4"/></svg>
+                看板
+              </button>
+              <button class="view-tab" data-view="calendar" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                日历
+              </button>
+            </nav>
+
+            <!-- 统计卡（Signature：蓝色阴影层叠 + 网格结构） -->
+            <section class="stats-card" aria-label="项目概览">
+              <div class="stat-row-main">
+                <div class="stat-item">
+                  <span class="stat-item__label">进行中任务</span>
+                  <span class="stat-item__value">24</span>
+                  <span class="stat-item__change stat-item__change--up">+3 本周</span>
+                </div>
+                <div class="stat-divider" aria-hidden="true"></div>
+                <div class="stat-item">
+                  <span class="stat-item__label">已完成</span>
+                  <span class="stat-item__value">186</span>
+                  <span class="stat-item__change stat-item__change--neutral">保持稳定</span>
+                </div>
+                <div class="stat-divider" aria-hidden="true"></div>
+                <div class="stat-item">
+                  <span class="stat-item__label">团队成员</span>
+                  <span class="stat-item__value">12</span>
+                  <span class="stat-item__change stat-item__change--up">活跃中</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 记录列表（表格行风格） -->
+            <section class="records-section" aria-label="任务记录">
+              <div class="section-header">
+                <h2>最近记录</h2>
+                <div class="filter-chips" role="tablist" aria-label="筛选状态">
+                  <button class="filter-chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="filter-chip" data-filter="todo" role="tab" aria-selected="false">待办</button>
+                  <button class="filter-chip" data-filter="done" role="tab" aria-selected="false">已完成</button>
+                </div>
+              </div>
+
+              <ul class="record-list" id="recordList">
+                <li class="record" data-status="todo">
+                  <span class="record__icon record__icon--high">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">用户认证系统重构</span>
+                    <div class="record__meta">
+                      <span class="record__status record__status--high">高优先级</span>
+                      <span class="record__assignee">张明</span>
+                    </div>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__date">今天</span>
+                  </div>
+                </li>
+                <li class="record" data-status="done">
+                  <span class="record__icon record__icon--done">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">API 文档更新</span>
+                    <div class="record__meta">
+                      <span class="record__status record__status--done">已完成</span>
+                      <span class="record__assignee">李华</span>
+                    </div>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__date">昨天</span>
+                  </div>
+                </li>
+                <li class="record" data-status="todo">
+                  <span class="record__icon record__icon--med">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">数据导出功能优化</span>
+                    <div class="record__meta">
+                      <span class="record__status record__status--med">中优先级</span>
+                      <span class="record__assignee">王芳</span>
+                    </div>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__date">3天前</span>
+                  </div>
+                </li>
+                <li class="record" data-status="todo">
+                  <span class="record__icon record__icon--low">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">移动端适配调整</span>
+                    <div class="record__meta">
+                      <span class="record__status record__status--low">低优先级</span>
+                      <span class="record__assignee">陈静</span>
+                    </div>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__date">上周</span>
+                  </div>
+                </li>
+                <li class="record" data-status="done">
+                  <span class="record__icon record__icon--done">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                  </span>
+                  <div class="record__main">
+                    <span class="record__title">性能测试报告</span>
+                    <div class="record__meta">
+                      <span class="record__status record__status--done">已完成</span>
+                      <span class="record__assignee">刘强</span>
+                    </div>
+                  </div>
+                  <div class="record__right">
+                    <span class="record__date">上周</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 快速操作 -->
+            <section class="quick-actions" aria-label="快速操作">
+              <button class="action-btn action-btn--primary" data-toast="创建新记录">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+                新建记录
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="导入数据">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                导入
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="导出当前视图">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                导出
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="base">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5z"/></svg>
+              <span>工作区</span>
+            </button>
+            <button class="tab" data-tab="interfaces">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span>界面</span>
+            </button>
+            <button class="tab" data-tab="automations">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42 1.42"/></svg>
+              <span>自动化</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

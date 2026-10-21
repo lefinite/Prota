@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Zapier · Automation Workspace</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">Zapier</span>
+                <div class="brand-text">
+                  <span class="brand-name">自动化工作区</span>
+                  <span class="brand-sub">让工作更轻松</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="打开设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m8.3-4.3-4.2 4.2m0-8.5 4.2 4.2M1 12h6m6 0h6M4.9 4.9l4.2 4.2m0 8.5-4.2 4.2" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero signature：自动化流程统计 -->
+            <section class="hero-stats" aria-label="自动化概览">
+              <h2 class="hero-stats__title">本月自动化</h2>
+              <div class="hero-stats__value">2,847</div>
+              <p class="hero-stats__label">次任务运行成功</p>
+              <div class="hero-stats__trend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>
+                <span>较上月 +23%</span>
+              </div>
+            </section>
+
+            <!-- 快速操作 -->
+            <section class="quick-actions" aria-label="快速操作">
+              <button class="action-btn action-btn--primary" data-toast="创建新 Zaps">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                <span>新建自动化</span>
+              </button>
+              <button class="action-btn action-btn--secondary" data-toast="浏览模板">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9" /></svg>
+                <span>模板库</span>
+              </button>
+            </section>
+
+            <!-- 活跃的 Zaps -->
+            <section class="zaps-section" aria-label="活跃自动化">
+              <div class="section-header">
+                <h2 class="section-heading">活跃的 Zaps</h2>
+                <div class="filter-tabs" id="zapFilters" role="tablist">
+                  <button class="filter-tab is-active" data-filter="all" role="tab">全部</button>
+                  <button class="filter-tab" data-filter="active" role="tab">运行中</button>
+                  <button class="filter-tab" data-filter="paused" role="tab">已暂停</button>
+                </div>
+              </div>
+
+              <ul class="zap-list" id="zapList">
+                <li class="zap-item" data-type="active">
+                  <div class="zap-item__icon">
+                    <span class="app-icon">S</span>
+                    <svg class="zap-item__connector" viewBox="0 0 24 24"><path d="M13 6H5v12h8M17 12l-4-4m4 4-4 4m4-4H9" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <span class="app-icon app-icon--accent">G</span>
+                  </div>
+                  <div class="zap-item__main">
+                    <span class="zap-item__title">Slack 新消息 → Google Sheets</span>
+                    <span class="zap-item__sub">运行 1,234 次 · 今天</span>
+                  </div>
+                  <div class="zap-item__status zap-item__status--active">ON</div>
+                </li>
+
+                <li class="zap-item" data-type="active">
+                  <div class="zap-item__icon">
+                    <span class="app-icon">G</span>
+                    <svg class="zap-item__connector" viewBox="0 0 24 24"><path d="M13 6H5v12h8M17 12l-4-4m4 4-4 4m4-4H9" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <span class="app-icon app-icon--accent">M</span>
+                  </div>
+                  <div class="zap-item__main">
+                    <span class="zap-item__title">Gmail 新邮件 → Markdown 笔记</span>
+                    <span class="zap-item__sub">运行 856 次 · 昨天</span>
+                  </div>
+                  <div class="zap-item__status zap-item__status--active">ON</div>
+                </li>
+
+                <li class="zap-item" data-type="paused">
+                  <div class="zap-item__icon">
+                    <span class="app-icon">T</span>
+                    <svg class="zap-item__connector" viewBox="0 0 24 24"><path d="M13 6H5v12h8M17 12l-4-4m4 4-4 4m4-4H9" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <span class="app-icon app-icon--accent">N</span>
+                  </div>
+                  <div class="zap-item__main">
+                    <span class="zap-item__title">Twitter 提及 → Notion 数据库</span>
+                    <span class="zap-item__sub">已暂停 · 3天前</span>
+                  </div>
+                  <div class="zap-item__status zap-item__status--paused">OFF</div>
+                </li>
+
+                <li class="zap-item" data-type="active">
+                  <div class="zap-item__icon">
+                    <span class="app-icon">C</span>
+                    <svg class="zap-item__connector" viewBox="0 0 24 24"><path d="M13 6H5v12h8M17 12l-4-4m4 4-4 4m4-4H9" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <span class="app-icon app-icon--accent">D</span>
+                  </div>
+                  <div class="zap-item__main">
+                    <span class="zap-item__title">Calendly 预约 → Discord 通知</span>
+                    <span class="zap-item__sub">运行 432 次 · 本周</span>
+                  </div>
+                  <div class="zap-item__status zap-item__status--active">ON</div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 连接的应用 -->
+            <section class="apps-section" aria-label="连接的应用">
+              <h2 class="section-heading">连接的应用</h2>
+              <div class="apps-grid">
+                <button class="app-card" data-toast="打开 Slack">
+                  <span class="app-card__icon" style="background: #4A154B;">S</span>
+                  <span class="app-card__name">Slack</span>
+                </button>
+                <button class="app-card" data-toast="打开 Google">
+                  <span class="app-card__icon" style="background: #4285F4;">G</span>
+                  <span class="app-card__name">Google</span>
+                </button>
+                <button class="app-card" data-toast="打开 Notion">
+                  <span class="app-card__icon" style="background: #000000;">N</span>
+                  <span class="app-card__name">Notion</span>
+                </button>
+                <button class="app-card" data-toast="添加更多应用">
+                  <span class="app-card__icon app-card__icon--add">+</span>
+                  <span class="app-card__name">更多</span>
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="zaps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+              <span>Zaps</span>
+            </button>
+            <button class="tab tab--fab" data-tab="create" aria-label="创建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button class="tab" data-tab="history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" /></svg>
+              <span>历史</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

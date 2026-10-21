@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>闪启 · Raycast</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 9V6.5A3.5 3.5 0 0 1 12.5 3v0A3.5 3.5 0 0 1 16 6.5V9M9 9H7.5A2.5 2.5 0 0 0 5 11.5V17A4 4 0 0 0 9 21h6a4 4 0 0 0 4-4v-5.5A2.5 2.5 0 0 0 16.5 9H9z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">闪启</span>
+                <span class="brand-bar__sub">⌥Space 随时唤起 · 248 条命令</span>
+              </div>
+              <button
+                class="brand-bar__icon"
+                type="button"
+                data-toast="设置已同步：3 台设备，快捷键 ⌥Space"
+                aria-label="启动器设置"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3.2" />
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.96 4.6h.05A1.7 1.7 0 0 0 10.04 3.04V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8.98v.05A1.7 1.7 0 0 0 20.96 10.04H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.03z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：活动命令 -->
+            <section class="hero-card" aria-label="当前活动命令">
+              <div class="hero-card__top">
+                <span class="status-chip" data-tone="success">运行中</span>
+                <span class="hero-card__palette"><i class="kbd">⌘</i><i class="kbd">K</i></span>
+              </div>
+              <h1 class="hero-card__name">静音模式 · 45 分钟</h1>
+              <p class="hero-card__sub">下午免打扰，通知转入每日摘要</p>
+              <div class="hero-card__keys" aria-label="快捷键 ⌥ M 4 5">
+                <i class="kbd">⌥</i>
+                <i class="kbd">M</i>
+                <i class="kbd">4</i>
+                <i class="kbd">5</i>
+              </div>
+              <div class="hero-card__stats">
+                <span>本周执行 <b id="runCount">326</b> 次</span>
+                <span>平均唤起 <b>0.4s</b></span>
+              </div>
+              <div class="hero-card__progress">
+                <div class="hero-card__progress-head">
+                  <span>今日专注</span>
+                  <b>2.1h / 4h</b>
+                </div>
+                <div class="progress-track">
+                  <span class="progress-fill" style="--w: 52%"></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. 双内容卡 -->
+            <section class="duo-grid" aria-label="常用命令与扩展">
+              <div class="duo-card">
+                <h2 class="duo-card__title">常用命令</h2>
+                <div class="mini-row">
+                  <span>清空下载文件夹</span>
+                  <span class="mini-row__keys"><i class="kbd">⌘</i><i class="kbd">⇧</i><i class="kbd">D</i></span>
+                </div>
+                <div class="mini-row">
+                  <span>息屏 15 分钟</span>
+                  <span class="mini-row__keys"><i class="kbd">⌥</i><i class="kbd">S</i></span>
+                </div>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">扩展</h2>
+                <p class="duo-card__num">12<span> 个已装</span></p>
+                <p class="duo-card__note">GitHub、Vercel 有新版本可用</p>
+                <span class="status-chip" data-tone="warn">2 个待更新</span>
+              </div>
+            </section>
+
+            <!-- 4. 命令 Feed -->
+            <section class="feed" aria-label="命令列表">
+              <div class="feed__head">
+                <h2 class="feed__title">命令</h2>
+                <div class="chips" role="tablist" aria-label="筛选命令">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="used">常用</button>
+                  <button class="chip" type="button" data-filter="new">新装</button>
+                  <button class="chip" type="button" data-filter="team">团队</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="used">
+                  <span class="feed-item__glyph" aria-hidden="true">系</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">打开废纸篓</span>
+                    <span class="feed-item__meta"
+                      >系统 <em class="status-chip" data-tone="info">常用</em></span
+                    >
+                  </div>
+                  <span class="feed-item__keys"><i class="kbd">⌘</i><i class="kbd">⇧</i><i class="kbd">D</i></span>
+                  <button class="feed-item__star" type="button" aria-label="固定置顶" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="used">
+                  <span class="feed-item__glyph" aria-hidden="true">剪</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">剪贴板历史</span>
+                    <span class="feed-item__meta"
+                      >剪贴板 <em class="status-chip" data-tone="info">常用</em></span
+                    >
+                  </div>
+                  <span class="feed-item__keys"><i class="kbd">⌘</i><i class="kbd">⇧</i><i class="kbd">V</i></span>
+                  <button class="feed-item__star" type="button" aria-label="固定置顶" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__glyph" aria-hidden="true">G</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">搜索 GitHub 仓库</span>
+                    <span class="feed-item__meta"
+                      >GitHub <em class="status-chip" data-tone="accent">新</em></span
+                    >
+                  </div>
+                  <span class="feed-item__keys"><i class="kbd">⌘</i><i class="kbd">G</i></span>
+                  <button class="feed-item__star" type="button" aria-label="固定置顶" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="team">
+                  <span class="feed-item__glyph" aria-hidden="true">团</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">清理系统缓存</span>
+                    <span class="feed-item__meta"
+                      >团队共享 <em class="status-chip" data-tone="muted">团队</em></span
+                    >
+                  </div>
+                  <span class="feed-item__keys"><i class="kbd">⌘</i><i class="kbd">⇧</i><i class="kbd">C</i></span>
+                  <button class="feed-item__star" type="button" aria-label="固定置顶" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="new">
+                  <span class="feed-item__glyph" aria-hidden="true">窗</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">新建窗口组</span>
+                    <span class="feed-item__meta"
+                      >窗口管理 <em class="status-chip" data-tone="accent">新</em></span
+                    >
+                  </div>
+                  <span class="feed-item__keys"><i class="kbd">⌘</i><i class="kbd">⇧</i><i class="kbd">N</i></span>
+                  <button class="feed-item__star" type="button" aria-label="固定置顶" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="used">
+                  <span class="feed-item__glyph" aria-hidden="true">系</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">静音模式 · 45 分钟</span>
+                    <span class="feed-item__meta"
+                      >系统 <em class="status-chip" data-tone="info">常用</em></span
+                    >
+                  </div>
+                  <span class="feed-item__keys"><i class="kbd">⌥</i><i class="kbd">M</i><i class="kbd">4</i><i class="kbd">5</i></span>
+                  <button class="feed-item__star" type="button" aria-label="固定置顶" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="运行命令">
+              <input
+                class="quick-input"
+                id="cmdInput"
+                type="text"
+                placeholder="新建命令，如：打开设计稿……"
+              />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="runBtn">立即执行</button>
+                <button class="btn-ghost" type="button" data-toast="扩展商店：128 个扩展可浏览安装">扩展商店</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="命令">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 17l6-5-6-5M12 19h8" />
+              </svg>
+              <span>命令</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="剪贴板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="4" width="12" height="17" rx="2" />
+                <path d="M9.5 4a2.5 2.5 0 0 1 5 0" />
+              </svg>
+              <span>剪贴板</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="窗口">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5" width="17" height="14" rx="2" />
+                <path d="M3.5 10h17" />
+              </svg>
+              <span>窗口</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="设置">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3.2" />
+                <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
+              </svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

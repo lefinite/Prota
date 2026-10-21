@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>巷口周刊 · Editorial</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <span class="brand-bar__glyph">巷</span>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">巷口周刊</span>
+                <span class="brand-bar__sub">第 47 期 · 十月号 · 双周刊</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="本期目录已展开至「目录」区" aria-label="本期目录">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 6h16M4 12h10M4 18h7" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：封面故事 -->
+            <section class="cover-card" aria-label="本期封面故事">
+              <p class="cover-card__kicker">Cover Story · Vol.47</p>
+              <h1 class="cover-card__headline">菜市场的<br />凌晨四点</h1>
+              <p class="cover-card__lead">摊主们的一天从两点半开始。我们跟拍七位摊主，记录一座城市醒来之前的秩序与热闹。</p>
+              <dl class="cover-card__stats">
+                <div><dt>特稿</dt><dd>6,800 字</dd></div>
+                <div><dt>图片</dt><dd>14 张</dd></div>
+                <div><dt>阅读</dt><dd>22 分钟</dd></div>
+              </dl>
+              <p class="cover-card__byline">文 · 林小满　图 · 高原</p>
+            </section>
+
+            <!-- 3. 内容卡 ×2 -->
+            <section class="duo-grid" aria-label="栏目与编者的话">
+              <div class="duo-card">
+                <h2 class="duo-card__title">本期栏目</h2>
+                <ul class="toc-mini">
+                  <li><span>特稿</span><i>P.12</i></li>
+                  <li><span>城市</span><i>P.28</i></li>
+                  <li><span>人物</span><i>P.44</i></li>
+                  <li><span>书评</span><i>P.62</i></li>
+                </ul>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">编者的话</h2>
+                <blockquote class="editor-note">「秋天适合把节奏放慢，一期刊物也是。」</blockquote>
+                <div class="read-progress">
+                  <div class="read-progress__head"><span>本期已读</span><b>32%</b></div>
+                  <div class="read-progress__track"><span class="read-progress__fill" style="--w: 32%"></span></div>
+                  <p class="read-progress__note">读完还需约 48 分钟</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 本期目录 Feed -->
+            <section class="feed" aria-label="本期目录">
+              <div class="feed__head">
+                <h2 class="feed__title">目录</h2>
+                <div class="chips" role="tablist" aria-label="按栏目筛选">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="feature">特稿</button>
+                  <button class="chip" type="button" data-filter="city">城市</button>
+                  <button class="chip" type="button" data-filter="people">人物</button>
+                  <button class="chip" type="button" data-filter="books">书评</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="feature">
+                  <span class="feed-item__glyph" aria-hidden="true">特</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">菜市场的凌晨四点</span>
+                    <span class="feed-item__meta">P.12 · 22 分钟 <em class="feed-item__chip">免费</em></span>
+                  </div>
+                  <button class="feed-item__mark" type="button" aria-label="加入书签" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 4h12v16l-6-4-6 4V4z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="city">
+                  <span class="feed-item__glyph" aria-hidden="true">城</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">骑楼改造备忘录</span>
+                    <span class="feed-item__meta">P.28 · 14 分钟 <em class="feed-item__chip" data-tone="member">会员</em></span>
+                  </div>
+                  <button class="feed-item__mark" type="button" aria-label="加入书签" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 4h12v16l-6-4-6 4V4z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="people">
+                  <span class="feed-item__glyph" aria-hidden="true">人</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">修表匠的最后一年</span>
+                    <span class="feed-item__meta">P.44 · 18 分钟 <em class="feed-item__chip">免费</em></span>
+                  </div>
+                  <button class="feed-item__mark" type="button" aria-label="加入书签" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 4h12v16l-6-4-6 4V4z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="city">
+                  <span class="feed-item__glyph" aria-hidden="true">城</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">桥下的羽毛球馆</span>
+                    <span class="feed-item__meta">P.34 · 12 分钟 <em class="feed-item__chip" data-tone="serial">连载中</em></span>
+                  </div>
+                  <button class="feed-item__mark" type="button" aria-label="加入书签" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 4h12v16l-6-4-6 4V4z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="books">
+                  <span class="feed-item__glyph" aria-hidden="true">书</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">《夜航西飞》重读</span>
+                    <span class="feed-item__meta">P.62 · 10 分钟 <em class="feed-item__chip">免费</em></span>
+                  </div>
+                  <button class="feed-item__mark" type="button" aria-label="加入书签" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 4h12v16l-6-4-6 4V4z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="订阅本刊">
+              <input class="subscribe-input" id="subscribeInput" type="email" placeholder="留下邮箱，收下一期预告与全文" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="subscribeBtn">订阅全年刊</button>
+                <button class="btn-ghost" type="button" data-toast="已为你打开本期免费试读">免费试读</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="本期">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" />
+              </svg>
+              <span>本期</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="目录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5h14M5 12h14M5 19h9" />
+              </svg>
+              <span>目录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="专栏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20V6a2 2 0 0 1 2-2h12v14H6a2 2 0 0 0-2 2z" /><path d="M8 8h8" />
+              </svg>
+              <span>专栏</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

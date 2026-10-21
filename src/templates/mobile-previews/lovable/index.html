@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Lovable 工坊 · Lovable</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3.5l2.1 4.6 4.9.6-3.6 3.4.9 4.9-4.3-2.4-4.3 2.4.9-4.9L5 8.7l4.9-.6z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">Lovable 工坊</span>
+                <span class="brand-bar__sub">12 个项目 · 1 个在构建</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="3 条构建通知已读" aria-label="构建通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero 签名卡：AI 构建台 -->
+            <section class="builder-card" aria-label="AI 构建台">
+              <p class="builder-card__eyebrow">AI 构建台<span class="builder-card__pro">Pro</span></p>
+              <h1 class="builder-card__title">用一句话，<br />捏出一个小应用</h1>
+              <input class="builder-card__input" id="promptInput" type="text" placeholder="描述你想做的应用，如：给咖啡店做一个订位页…" />
+              <div class="builder-card__pills" role="list" aria-label="试试这些点子">
+                <button class="pill" type="button" data-pill="给山谷咖啡做一个周末订位页">订位页</button>
+                <button class="pill" type="button" data-pill="给手作饰品店做一个会员卡包">会员卡包</button>
+                <button class="pill" type="button" data-pill="做一个小活动报名 RSVP 页">活动 RSVP</button>
+                <button class="pill" type="button" data-pill="给烘焙工作室做一个菜单展示页">菜单展示</button>
+              </div>
+              <div class="builder-card__row">
+                <button class="btn-dark" type="button" id="generateBtn">生成应用</button>
+                <button class="btn-pill" type="button" data-toast="语音描述已就绪，长按说话" aria-label="语音输入">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+                  </svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="构建状态与用量">
+              <div class="build-card">
+                <div class="build-card__head">
+                  <h2 class="build-card__title">集市小铺</h2>
+                  <span class="build-card__chip" data-state="building">构建中</span>
+                </div>
+                <div class="build-card__track">
+                  <span class="build-card__fill" id="buildFill" style="--w: 72%"></span>
+                </div>
+                <ul class="build-card__steps">
+                  <li class="is-done">解析需求 · 12 项页面要素</li>
+                  <li class="is-done">生成界面 · 8 个组件</li>
+                  <li class="is-doing">接线数据 · 商品与购物车</li>
+                  <li>部署预览 · 待开始</li>
+                </ul>
+              </div>
+              <div class="usage-card">
+                <h2 class="usage-card__title">本月构建</h2>
+                <p class="usage-card__num">18<span> 次</span></p>
+                <p class="usage-card__note">上线 5 个 · 剩 12 次额度</p>
+                <p class="usage-card__log">▸ 正在生成商品卡组件…</p>
+              </div>
+            </section>
+
+            <!-- 4. 项目库 Feed -->
+            <section class="feed" aria-label="项目库">
+              <div class="feed__head">
+                <h2 class="feed__title">项目库</h2>
+                <div class="chips" role="tablist" aria-label="筛选项目">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="live">已上线</button>
+                  <button class="chip" type="button" data-filter="building">构建中</button>
+                  <button class="chip" type="button" data-filter="draft">草稿</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="building">
+                  <span class="feed-item__thumb" aria-hidden="true">🛍️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">集市小铺 · 在线商店</span>
+                    <span class="feed-item__meta">刚刚 · 商店 <em class="feed-item__chip" data-state="building">构建中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏项目" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="live">
+                  <span class="feed-item__thumb" aria-hidden="true">☕</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">山谷咖啡 · 订位页</span>
+                    <span class="feed-item__meta">昨天 · 落地页 <em class="feed-item__chip" data-state="live">已上线</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏项目" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="live">
+                  <span class="feed-item__thumb" aria-hidden="true">🎧</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">白噪音混音台</span>
+                    <span class="feed-item__meta">8/12 · 小工具 <em class="feed-item__chip" data-state="live">已上线</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏项目" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <span class="feed-item__thumb" aria-hidden="true">📚</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">读书会 RSVP</span>
+                    <span class="feed-item__meta">8/11 · 活动 <em class="feed-item__chip" data-state="draft">草稿</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏项目" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="live">
+                  <span class="feed-item__thumb" aria-hidden="true">🧳</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">旅行手账</span>
+                    <span class="feed-item__meta">8/09 · 小工具 <em class="feed-item__chip" data-state="live">已上线</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏项目" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="draft">
+                  <span class="feed-item__thumb" aria-hidden="true">🎞️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">表情包工坊</span>
+                    <span class="feed-item__meta">8/07 · 小工具 <em class="feed-item__chip" data-state="shared">分享中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏项目" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="新建项目">
+              <div class="action-row">
+                <button class="btn-dark btn-dark--wide" type="button" id="newBtn">从模板新建</button>
+                <button class="btn-ghost" type="button" data-toast="已连接 GitHub，选择一个仓库吧">导入 GitHub</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="工坊">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 11l8-6.5 8 6.5" /><path d="M6 10v9h12v-9" />
+              </svg>
+              <span>工坊</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="项目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="5" width="16" height="14" rx="2" /><path d="M9 5V3.5h6V5" />
+              </svg>
+              <span>项目</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新建" aria-label="新建项目">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新建</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="模板">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" />
+              </svg>
+              <span>模板</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

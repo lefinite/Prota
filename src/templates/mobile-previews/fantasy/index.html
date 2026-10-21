@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>星陨旅人 · Fantasy</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__sigil" aria-hidden="true">✦</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">星陨旅人</span>
+                <span class="brand-bar__sub">第三纪元 · 霜月 · 夜空晴朗</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="旅团信使送来 2 封信" aria-label="信件">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：冒险者卡（签名：星空角色卡 + HP/MP 光条）-->
+            <section class="hero" aria-label="角色状态">
+              <div class="hero__stars" aria-hidden="true"></div>
+              <div class="hero__head">
+                <div class="hero__avatar" aria-hidden="true">🧝</div>
+                <div class="hero__ident">
+                  <p class="hero__class">月影游侠 · LV.27</p>
+                  <h1 class="hero__name">艾洛蒂</h1>
+                </div>
+                <div class="hero__gold">
+                  <span>2,480</span><i>金币</i>
+                </div>
+              </div>
+              <div class="hero__bars">
+                <div class="bar bar--hp"><span style="--w: 78%"></span><b>HP 312/400</b></div>
+                <div class="bar bar--mp"><span style="--w: 45%"></span><b>MP 90/200</b></div>
+                <div class="bar bar--xp"><span id="xpFill" style="--w: 62%"></span><b>EXP 62%</b></div>
+              </div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="装备与技能">
+              <div class="duo__card">
+                <h2 class="duo__title">⚔ 装备</h2>
+                <ul class="gear">
+                  <li><span>霜语长弓</span><i class="rar rar--epic">史诗</i></li>
+                  <li><span>夜幕斗篷</span><i class="rar rar--rare">稀有</i></li>
+                  <li><span>旅者之靴</span><i class="rar">精良</i></li>
+                </ul>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">✦ 星辉</h2>
+                <p class="duo__num">14<span> 枚</span></p>
+                <div class="constellation" aria-hidden="true">
+                  <i class="is-lit"></i><i class="is-lit"></i><i class="is-lit"></i><i class="is-lit"></i><i class="is-lit"></i><i></i><i></i>
+                </div>
+                <p class="duo__meta">集满 7 枚点亮「猎户臂」</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：委托板 -->
+            <section class="feed" aria-label="酒馆委托">
+              <div class="feed__head">
+                <h2 class="feed__title">酒馆委托板</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="main">主线</button>
+                  <button class="chip" type="button" data-filter="side">支线</button>
+                  <button class="chip" type="button" data-filter="daily">每日</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="main">
+                  <span class="feed-item__glyph" aria-hidden="true">🌑</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">穿过低语荒原</span>
+                    <span class="feed-item__meta">主线 · 推荐 LV.26 · 3,200 EXP</span>
+                  </div>
+                  <em class="quest quest--main">进行中</em>
+                </li>
+                <li class="feed-item" data-kind="side">
+                  <span class="feed-item__glyph" aria-hidden="true">🐉</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">讨伐苔泽双头龙</span>
+                    <span class="feed-item__meta">支线 · 组队 3/5 · 掉落龙鳞</span>
+                  </div>
+                  <em class="quest quest--side">招募中</em>
+                </li>
+                <li class="feed-item" data-kind="daily">
+                  <span class="feed-item__glyph" aria-hidden="true">🍄</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">采集月光蘑菇 ×8</span>
+                    <span class="feed-item__meta">每日 · 5/8 · 240 金币</span>
+                  </div>
+                  <em class="quest quest--daily">差 3 个</em>
+                </li>
+                <li class="feed-item" data-kind="side">
+                  <span class="feed-item__glyph" aria-hidden="true">📜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">失落的星图残页</span>
+                    <span class="feed-item__meta">支线 · 解谜 · 星辉 ×1</span>
+                  </div>
+                  <em class="quest quest--side">新</em>
+                </li>
+                <li class="feed-item" data-kind="daily">
+                  <span class="feed-item__glyph" aria-hidden="true">🍺</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">酒馆的谢礼</span>
+                    <span class="feed-item__meta">每日 · 与 3 位旅人共饮</span>
+                  </div>
+                  <em class="quest quest--daily">1/3</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="行动">
+              <div class="chips chips--party">
+                <button class="chip is-active" type="button" data-toast="小茂（牧师）已就位">小茂 · 牧师</button>
+                <button class="chip" type="button" data-toast="岩井（狂战）已就位">岩井 · 狂战</button>
+                <button class="chip" type="button" data-toast="向酒馆发布招募…">＋ 招募队友</button>
+              </div>
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="adventureBtn">继续冒险</button>
+                <button class="btn-ghost" type="button" data-toast="篝火点燃，HP/MP 每秒恢复">扎营休整</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="冒险">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
+              <span>冒险</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="背包">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 7V5a4 4 0 0 1 8 0v2"/><rect x="4" y="7" width="16" height="13" rx="2"/></svg>
+              <span>背包</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="技能">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/></svg>
+              <span>技能</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="旅团">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M15.5 14.6c2 .3 3.6 1.7 4.3 4"/></svg>
+              <span>旅团</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="星图">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+              <span>星图</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

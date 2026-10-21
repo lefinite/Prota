@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>健康生活 · Apple</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <span class="brand-name">健康生活</span>
+              <button class="iconbtn" aria-label="个人资料" data-toast="打开个人资料">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              </button>
+            </header>
+
+            <!-- 活动圆环（signature：Apple 标志性活动圆环） -->
+            <section class="activity-rings" aria-label="今日活动概览">
+              <div class="activity-ring activity-ring--move">
+                <svg class="ring-svg" viewBox="0 0 100 100">
+                  <circle class="ring-bg" cx="50" cy="50" r="42"/>
+                  <circle class="ring-progress" cx="50" cy="50" r="42" style="--progress: 0.78"/>
+                </svg>
+                <span class="ring-icon">🚶</span>
+                <span class="ring-label">活动</span>
+                <span class="ring-value">78%</span>
+              </div>
+              <div class="activity-ring activity-ring--exercise">
+                <svg class="ring-svg" viewBox="0 0 100 100">
+                  <circle class="ring-bg" cx="50" cy="50" r="42"/>
+                  <circle class="ring-progress" cx="50" cy="50" r="42" style="--progress: 0.92"/>
+                </svg>
+                <span class="ring-icon">🏃</span>
+                <span class="ring-label">锻炼</span>
+                <span class="ring-value">92%</span>
+              </div>
+              <div class="activity-ring activity-ring--stand">
+                <svg class="ring-svg" viewBox="0 0 100 100">
+                  <circle class="ring-bg" cx="50" cy="50" r="42"/>
+                  <circle class="ring-progress" cx="50" cy="50" r="42" style="--progress: 0.65"/>
+                </svg>
+                <span class="ring-icon">🧍</span>
+                <span class="ring-label">站立</span>
+                <span class="ring-value">65%</span>
+              </div>
+            </section>
+
+            <!-- 步数卡片 -->
+            <section class="stat-card" aria-label="今日步数">
+              <div class="stat-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3c-1 0-3 1-3 1S9 3 9 3s-2 1-2 1v11c-1 0-3-1-3-1z"/></svg>
+              </div>
+              <div class="stat-card__content">
+                <span class="stat-card__label">今日步数</span>
+                <span class="stat-card__value">8,642</span>
+              </div>
+              <div class="stat-card__trend">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8l4-4 4 4"/></svg>
+                <span>+12%</span>
+              </div>
+            </section>
+
+            <!-- 健康指标卡 -->
+            <section class="health-metrics" aria-label="健康指标">
+              <h3 class="section-title">健康指标</h3>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <span class="metric-icon">❤️</span>
+                  <span class="metric-label">心率</span>
+                  <span class="metric-value">72 <small>bpm</small></span>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-icon">😴</span>
+                  <span class="metric-label">睡眠</span>
+                  <span class="metric-value">7.5 <small>小时</small></span>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-icon">🔥</span>
+                  <span class="metric-label">卡路里</span>
+                  <span class="metric-value">486 <small>kcal</small></span>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-icon">💧</span>
+                  <span class="metric-label">饮水</span>
+                  <span class="metric-value">1.8 <small>L</small></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 最近活动列表 -->
+            <section class="activity-list" aria-label="最近活动">
+              <h3 class="section-title">最近活动</h3>
+              <div class="activity-items">
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--walk">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  </div>
+                  <div class="activity-info">
+                    <span class="activity-title">户外步行</span>
+                    <span class="activity-meta">今天 08:30 · 3.2公里</span>
+                  </div>
+                  <span class="activity-duration">32分钟</span>
+                </div>
+
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--cycle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-3 11.5V14l-3.1-1 .6-3 4.1 1.3"/><path d="M9 17.5v-5l3.3-1 2.7 5.2"/></svg>
+                  </div>
+                  <div class="activity-info">
+                    <span class="activity-title">室内骑行</span>
+                    <span class="activity-meta">昨天 19:00 · 280卡路里</span>
+                  </div>
+                  <span class="activity-duration">45分钟</span>
+                </div>
+
+                <div class="activity-item">
+                  <div class="activity-icon activity-icon--swim">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M2 12c0 3 2 5 5 5s5-2 5-5"/><path d="M12 12c0 3 2 5 5 5s5-2 5-5"/></svg>
+                  </div>
+                  <div class="activity-info">
+                    <span class="activity-title">游泳训练</span>
+                    <span class="activity-meta">前天 07:00 · 1.5公里</span>
+                  </div>
+                  <span class="activity-duration">40分钟</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 目标进度 -->
+            <section class="goal-card" aria-label="周目标">
+              <div class="goal-header">
+                <span class="goal-title">本周锻炼目标</span>
+                <span class="goal-status">5/7 天</span>
+              </div>
+              <div class="goal-progress">
+                <div class="goal-bar">
+                  <div class="goal-fill" style="--p: 71%"></div>
+                </div>
+              </div>
+              <span class="goal-hint">再完成 2 天即可达成目标</span>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="today">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>今天</span>
+            </button>
+            <button class="tab" data-tab="fitness">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>体能</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="记录活动">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="sleep">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <span>睡眠</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+# Mobile Previews · 进度清单
+
+> 总计 158 个设计系统，全部完成 ✅
+> 落盘 `src/templates/mobile-previews/{id}/`（自包含 index.html + styles.css + app.js）
+> 配方 `_RECIPE.md`；每个页面由子 Agent 先调用 frontend-design skill 后产出。
+
+## ✅ 已完成（158）
+agentic, airbnb, airtable, ant, apple, application, arc, artistic, atelier-zero, bento, binance, bmw, bmw-m, bold, brutalism, bugatti, cafe, cal, canva, cisco, claude, clay, claymorphism, clean, clickhouse, cohere, coinbase, colorful, composio, contemporary, corporate, cosmic, creative, cursor, dashboard, default, discord, dithered, doodle, dramatic, duolingo, editorial, editorial-serif, elegant, elevenlabs, energetic, enterprise, expo, expressive, fantasy, ferrari, figma, flat, forest-calm, framer, friendly, futuristic, github, glass-aurora, glassmorphism, gradient, hashicorp, hud, huggingface, ibm, indigo-focus, intercom, kami, kraken, lamborghini, levels, linear-app, lingo, loom, lovable, luxury, mastercard, material, meta, midnight-terminal, minimal, minimal-monochrome, minimax, mintlify, miro, mission-control, mistral-ai, modern, mongodb, mono, mono-blue-print, neobrutalism, neon, neumorphism, nike, notion, nvidia, ollama, openai, opencode-ai, pacman, paper, perplexity, perspective, pinterest, playstation, posthog, premium, professional, publication, raycast, refined, renault, replicate, resend, retro, revolut, runwayml, sanity, sentry, shadcn, shopify, simple, skeumorphism, slack, sleek, spacex, spacious, spotify, starbucks, storytelling, stripe, sunset-warm, supabase, superhuman, tesla, tetris, theverge, together-ai, totality-festival, trading-terminal, uber, urdu, vercel, vibrant, vintage, vodafone, voltagent, warm-editorial, warp, webex, webflow, wechat, wired, wise, x-ai, xiaohongshu, zapier

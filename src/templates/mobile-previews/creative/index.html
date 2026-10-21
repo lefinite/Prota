@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>灵感市集 · Creative</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.3l-4.8 2.6.9-5.4L4.2 7.7l5.4-.8L12 2z" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">灵感市集</span>
+                <span class="brand-bar__sub">第 42 期 · 周五上新 128 件</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已抽中「羊毛毡刺猬」摊位盲盒" aria-label="抽摊位盲盒">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="8" width="18" height="4" rx="1" />
+                  <path d="M5 12v8h14v-8" />
+                  <path d="M12 8v12" />
+                  <path d="M12 8c0-3 1.5-5 4-5 0 2.5-1.5 4-4 5z" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：主题票根 -->
+            <section class="ticket" aria-label="本周主题">
+              <div class="ticket__main">
+                <div class="ticket__eyebrow">
+                  <span class="ticket__sticker">NEW</span>
+                  <span class="ticket__kind">本周主题</span>
+                  <span class="ticket__no">NO.42</span>
+                </div>
+                <h1 class="ticket__title">城市野餐</h1>
+                <p class="ticket__sub">CITY PICNIC · 野餐垫、帆布袋与手冲壶的周末</p>
+                <div class="ticket__stats">
+                  <div><b>214</b><span>摊主</span></div>
+                  <div><b>86</b><span>投稿</span></div>
+                  <div><b>2 天</b><span>距截稿</span></div>
+                </div>
+              </div>
+              <i class="ticket__notch ticket__notch--l" aria-hidden="true"></i>
+              <i class="ticket__notch ticket__notch--r" aria-hidden="true"></i>
+              <div class="ticket__stub">
+                <span class="ticket__stub-code">PICNIC-0427</span>
+                <span class="ticket__stub-note">凭票入场 · 支持手作人</span>
+              </div>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="人气榜与收藏提醒">
+              <div class="duo-card">
+                <h2 class="duo-card__title">人气榜 TOP3</h2>
+                <div class="rank-row">
+                  <i class="rank-row__no">1</i>
+                  <span class="rank-row__name">月光石戒指</span>
+                  <b class="rank-row__price">¥168</b>
+                </div>
+                <div class="rank-row">
+                  <i class="rank-row__no">2</i>
+                  <span class="rank-row__name">野餐帆布袋</span>
+                  <b class="rank-row__price">¥89</b>
+                </div>
+                <div class="rank-row">
+                  <i class="rank-row__no">3</i>
+                  <span class="rank-row__name">柠檬蜡烛</span>
+                  <b class="rank-row__price">¥38</b>
+                </div>
+              </div>
+              <div class="duo-card duo-card--tilt">
+                <h2 class="duo-card__title">收藏提醒</h2>
+                <p class="duo-card__num">8<span> 家摊位</span></p>
+                <p class="duo-card__note">「山雾银器」上新时第一时间叫你</p>
+                <button class="toggle is-on" id="remindToggle" type="button" role="switch" aria-checked="true" aria-label="新品提醒开关">
+                  <i class="toggle__knob"></i>
+                </button>
+              </div>
+            </section>
+
+            <!-- 4. 本周上新 Feed -->
+            <section class="feed" aria-label="本周上新">
+              <div class="feed__head">
+                <h2 class="feed__title">本周上新</h2>
+                <div class="chips" role="tablist" aria-label="筛选品类">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="handmade">手作</button>
+                  <button class="chip" type="button" data-filter="illustration">插画</button>
+                  <button class="chip" type="button" data-filter="vintage">古着</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="handmade">
+                  <span class="feed-item__glyph" aria-hidden="true">🧶</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">羊毛毡 · 刺猬胸针</span>
+                    <span class="feed-item__meta">春见手作 <em class="feed-item__chip" data-level="new">新品</em></span>
+                  </div>
+                  <b class="feed-item__price">¥45</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="illustration">
+                  <span class="feed-item__glyph" aria-hidden="true">🎨</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">水彩 · 雨后的巷口</span>
+                    <span class="feed-item__meta">阿蓝 · 原稿 <em class="feed-item__chip" data-level="rare">孤品</em></span>
+                  </div>
+                  <b class="feed-item__price">¥320</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="handmade">
+                  <span class="feed-item__glyph" aria-hidden="true">💍</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">银黏土 · 月光石戒指</span>
+                    <span class="feed-item__meta">山雾银器 <em class="feed-item__chip" data-level="hot">人气</em></span>
+                  </div>
+                  <b class="feed-item__price">¥168</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="vintage">
+                  <span class="feed-item__glyph" aria-hidden="true">📷</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">中古胶片相机 · Kowa 6</span>
+                    <span class="feed-item__meta">三日古道具</span>
+                  </div>
+                  <b class="feed-item__price">¥1,280</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="handmade">
+                  <span class="feed-item__glyph" aria-hidden="true">🕯️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">手作柠檬蜡烛</span>
+                    <span class="feed-item__meta">一周一烛 <em class="feed-item__chip" data-level="restock">补货</em></span>
+                  </div>
+                  <b class="feed-item__price">¥38</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="illustration">
+                  <span class="feed-item__glyph" aria-hidden="true">👜</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">丝网印刷 · 野餐帆布袋</span>
+                    <span class="feed-item__meta">印物所 <em class="feed-item__chip" data-level="new">新品</em></span>
+                  </div>
+                  <b class="feed-item__price">¥89</b>
+                  <button class="feed-item__heart" type="button" aria-label="收藏" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="搜索与出摊">
+              <input class="quick-input" id="quickInput" type="text" placeholder="搜好物：「野餐」「月光石」……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" data-toast="出摊申请已提交 · 24 小时内审核">我要出摊</button>
+                <button class="btn-ghost" type="button" id="shuffleBtn">换一批</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="市集">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 9l1.5-5h13L20 9" />
+                <path d="M4 9c0 1.4 1.1 2.5 2.5 2.5S9 10.4 9 9c0 1.4 1.1 2.5 2.5 2.5S14 10.4 14 9c0 1.4 1.1 2.5 2.5 2.5S19 10.4 19 9" />
+                <path d="M5.5 11.5V20h13v-8.5" />
+              </svg>
+              <span>市集</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="主题">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9.5h.01M15 9.5h.01" />
+              </svg>
+              <span>主题</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="出摊" aria-label="发起出摊">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>出摊</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="收藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20.5s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.3 5.2c-1.8 4.3-9.3 9-9.3 9z" />
+              </svg>
+              <span>收藏</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

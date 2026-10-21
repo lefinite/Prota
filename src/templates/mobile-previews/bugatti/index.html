@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>EB 遥测车库 · Bugatti</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">EB</div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">EB 遥测车库</span>
+                <span class="brand-bar__sub">MOLSHEIM · 21:40 · DRY 14°C</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="工坊通知：年度保养窗口已确认" aria-label="工坊通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名：纪念碑式大字极速 -->
+            <section class="hero" aria-label="极速记录">
+              <p class="hero__eyebrow">VELOCITÀ MASSIMA · 纳尔多环道</p>
+              <p class="hero__speed">412<span class="hero__unit">KM/H</span></p>
+              <p class="hero__note">极速记录 · 2026 年 5 月 · W16 MISTRAL</p>
+              <div class="hero__power" role="img" aria-label="功率输出条：低转平缓，高转陡增，当前工作区间偏高">
+                <span style="--h: 18%"></span>
+                <span style="--h: 24%"></span>
+                <span style="--h: 30%"></span>
+                <span style="--h: 38%"></span>
+                <span style="--h: 47%"></span>
+                <span style="--h: 58%"></span>
+                <span style="--h: 66%"></span>
+                <span style="--h: 78%"></span>
+                <span class="is-now" style="--h: 86%"></span>
+                <span style="--h: 74%"></span>
+                <span style="--h: 60%"></span>
+                <span class="is-peak" style="--h: 100%"></span>
+                <span style="--h: 56%"></span>
+                <span style="--h: 34%"></span>
+              </div>
+              <p class="hero__spec">1,600 PS · 1,600 N·M · 0–100 KM/H 2.3 S</p>
+            </section>
+
+            <!-- 3. 双内容框：今晚行程 / 车况 -->
+            <section class="duo" aria-label="今晚行程与车况">
+              <div class="frame">
+                <h2 class="frame__title">今晚行程</h2>
+                <p class="frame__big">128.4<span>KM</span></p>
+                <div class="frame__row"><span>均速</span><b>96 KM/H</b></div>
+                <div class="frame__row"><span>时长</span><b>1:24</b></div>
+                <div class="frame__row"><span>路线</span><b>MU — RV</b></div>
+              </div>
+              <div class="frame">
+                <h2 class="frame__title">车况</h2>
+                <div class="meter">
+                  <div class="meter__head"><span>燃油</span><b>62%</b></div>
+                  <div class="meter__track"><span style="--w: 62%"></span></div>
+                </div>
+                <div class="meter">
+                  <div class="meter__head"><span>机油温度</span><b data-level="warn">94°C</b></div>
+                  <div class="meter__track"><span data-level="warn" style="--w: 78%"></span></div>
+                </div>
+                <div class="meter">
+                  <div class="meter__head"><span>保养剩余</span><b>1,240 KM</b></div>
+                  <div class="meter__track"><span style="--w: 41%"></span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 行程 Feed -->
+            <section class="feed" aria-label="行程与圈速记录">
+              <div class="feed__head">
+                <h2 class="feed__title">记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选记录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="track">赛道</button>
+                  <button class="chip" type="button" data-filter="road">公路</button>
+                  <button class="chip" type="button" data-filter="workshop">工坊</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="track">
+                  <span class="feed-item__glyph" aria-hidden="true">NR</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">纳尔多高速环道</span>
+                    <span class="feed-item__meta">10 月 12 日 · 6 圈 · 干地 <em class="feed-item__chip">最快圈</em></span>
+                  </div>
+                  <b class="feed-item__value">2:41.3</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏此行程" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="road">
+                  <span class="feed-item__glyph" aria-hidden="true">AS</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">阿尔萨斯山路</span>
+                    <span class="feed-item__meta">上周六 · 晨雾 · 214 KM</span>
+                  </div>
+                  <b class="feed-item__value">96 KM/H</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏此行程" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="road">
+                  <span class="feed-item__glyph" aria-hidden="true">RV</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">莱茵河谷夜巡</span>
+                    <span class="feed-item__meta">9 月 28 日 · 周日 · 双人</span>
+                  </div>
+                  <b class="feed-item__value">112 KM/H</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏此行程" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="workshop">
+                  <span class="feed-item__glyph" aria-hidden="true">WK</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Molsheim 工坊年检</span>
+                    <span class="feed-item__meta">9 月 20 日 · 全项通过 <em class="feed-item__chip">完成</em></span>
+                  </div>
+                  <b class="feed-item__value">42 项</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏此行程" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="track">
+                  <span class="feed-item__glyph" aria-hidden="true">NR</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">纳尔多 · 雨地课程</span>
+                    <span class="feed-item__meta">8 月 30 日 · 教练随行</span>
+                  </div>
+                  <b class="feed-item__value">178 KM/H</b>
+                  <button class="feed-item__star" type="button" aria-label="收藏此行程" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="开始行程">
+              <input class="trip-input" id="tripInput" type="text" placeholder="目的地，如：阿尔萨斯赛道……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="startBtn">开始行程</button>
+                <button class="btn-ghost" type="button" data-toast="展厅模式：外部灯光已点亮，环绕视图开启">展厅模式</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="车库">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 13l1.8-5.2A2 2 0 0 1 6.7 6.5h10.6a2 2 0 0 1 1.9 1.3L21 13" />
+                <path d="M4 13h16v6H4z" /><path d="M7.5 16h2M14.5 16h2" />
+              </svg>
+              <span>车库</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="18" r="2" /><circle cx="18" cy="18" r="2" />
+                <path d="M8 18h8M6 16l2-7h5l3 5" />
+              </svg>
+              <span>行程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="遥测">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19h16" /><path d="M7 15l4-6 3 4 4-8" />
+              </svg>
+              <span>遥测</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="EB 俱乐部">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>EB 俱乐部</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

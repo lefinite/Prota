@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>天弓任务控制台 · Mission Control</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">09:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 任务标题栏 -->
+            <header class="mission-header">
+              <div class="mission-header__brand">
+                <svg class="mission-logo" viewBox="0 0 24 24" fill="none" stroke="var(--data-primary)" stroke-width="1.8">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">天弓任务控制台</span>
+                  <span class="brand-sub">MISSION CONTROL</span>
+                </div>
+              </div>
+              <div class="status-badge status-badge--nominal">系统正常</div>
+            </header>
+
+            <!-- T-Minus 倒计时（Signature：琥珀色遥测数字） -->
+            <section class="countdown-panel" aria-label="任务倒计时">
+              <div class="countdown-header">
+                <span class="countdown-label">T-MINUS</span>
+                <span class="countdown-status">发射窗口开启中</span>
+              </div>
+              <div class="countdown-display">
+                <span class="countdown-time" id="countdownTime">02:14:36</span>
+                <span class="countdown-unit">HH:MM:SS</span>
+              </div>
+              <div class="countdown-meta">
+                <span class="meta-item">目标轨道：LEO 500km</span>
+                <span class="meta-item">载荷：8,420 kg</span>
+              </div>
+            </section>
+
+            <!-- 遥测数据网格 -->
+            <section class="telemetry-grid" aria-label="实时遥测数据">
+              <div class="data-tile">
+                <span class="data-tile-label">高度 ALT</span>
+                <span class="data-tile-value" id="altValue">124,820</span>
+                <span class="data-tile-unit">m</span>
+              </div>
+              <div class="data-tile">
+                <span class="data-tile-label">速度 VEL</span>
+                <span class="data-tile-value" id="velValue">7,842</span>
+                <span class="data-tile-unit">m/s</span>
+              </div>
+              <div class="data-tile">
+                <span class="data-tile-label">推进器</span>
+                <span class="data-tile-value data-tile-value--success">98.2%</span>
+                <span class="data-tile-unit">燃料</span>
+              </div>
+              <div class="data-tile">
+                <span class="data-tile-label">电力 EPS</span>
+                <span class="data-tile-value data-tile-value--secondary">2.4</span>
+                <span class="data-tile-unit">kW</span>
+              </div>
+            </section>
+
+            <!-- 系统状态列表 -->
+            <section class="system-panel" aria-label="子系统状态">
+              <div class="panel-header">
+                <span class="panel-title">子系统状态</span>
+                <div class="chips" role="tablist" aria-label="筛选系统">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="prop" role="tab" aria-selected="false">推进</button>
+                  <button class="chip" data-filter="comms" role="tab" aria-selected="false">通信</button>
+                </div>
+              </div>
+              <ul class="system-list" id="systemList">
+                <li class="system-item" data-type="prop">
+                  <span class="system-icon system-icon--nominal">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l6 4-6 4-6-4 6-4zM8 8v6M4 10l-2 1M12 10l2 1"/></svg>
+                  </span>
+                  <div class="system-main">
+                    <span class="system-title">主发动机 ME-1</span>
+                    <span class="system-sub">推力：7,500 kN · 温度正常</span>
+                  </div>
+                  <div class="system-right">
+                    <span class="status-badge status-badge--nominal">正常</span>
+                    <span class="system-time">09:41:23</span>
+                  </div>
+                </li>
+                <li class="system-item" data-type="comms">
+                  <span class="system-icon system-icon--nominal">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 4h8v2H4zM2 7h12v2H2zM3 10h10v2H3z"/></svg>
+                  </span>
+                  <div class="system-main">
+                    <span class="system-title">S波段收发机</span>
+                    <span class="system-sub">信号强度：-62 dBm · 延迟 120ms</span>
+                  </div>
+                  <div class="system-right">
+                    <span class="status-badge status-badge--nominal">连接中</span>
+                    <span class="system-time">09:41:20</span>
+                  </div>
+                </li>
+                <li class="system-item" data-type="prop">
+                  <span class="system-icon system-icon--warning">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l6 12H2L8 2zM8 6v4M8 11h.01"/></svg>
+                  </span>
+                  <div class="system-main">
+                    <span class="system-title">RCS 姿控喷口 A2</span>
+                    <span class="system-sub">推力轻微偏差 · 建议校准</span>
+                  </div>
+                  <div class="system-right">
+                    <span class="status-badge status-badge--warning">警告</span>
+                    <span class="system-time">09:40:58</span>
+                  </div>
+                </li>
+                <li class="system-item" data-type="comms">
+                  <span class="system-icon system-icon--nominal">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="2"/><path d="M2 8h12M8 2v12"/></svg>
+                  </span>
+                  <div class="system-main">
+                    <span class="system-title">GPS 接收机</span>
+                    <span class="system-sub">锁定卫星：12 · 定位精度 3m</span>
+                  </div>
+                  <div class="system-right">
+                    <span class="status-badge status-badge--nominal">锁定</span>
+                    <span class="system-time">09:41:15</span>
+                  </div>
+                </li>
+                <li class="system-item" data-type="prop">
+                  <span class="system-icon system-icon--critical">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l6 12H2L8 2zM8 6v4M8 11h.01"/></svg>
+                  </span>
+                  <div class="system-main">
+                    <span class="system-title">氧化剂泵增压</span>
+                    <span class="system-sub">压力低于阈值 · 触发冗余切换</span>
+                  </div>
+                  <div class="system-right">
+                    <span class="status-badge status-badge--critical">严重</span>
+                    <span class="system-time">09:39:42</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 进度条 -->
+            <section class="progress-section" aria-label="任务进度">
+              <div class="progress-header">
+                <span class="progress-title">任务阶段</span>
+                <span class="progress-value">阶段 2/5</span>
+              </div>
+              <div class="progress-bar">
+                <span class="progress-bar-fill" style="--p: 40%"></span>
+              </div>
+              <p class="progress-note">当前：动力上升 · 预计分离 T+04:20</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="telemetry">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6" /></svg>
+              <span>遥测</span>
+            </button>
+            <button class="tab" data-tab="systems">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 12h6M9 15h6" /></svg>
+              <span>系统</span>
+            </button>
+            <button class="tab" data-tab="timeline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" /></svg>
+              <span>时序</span>
+            </button>
+            <button class="tab" data-tab="comms">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span>通信</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

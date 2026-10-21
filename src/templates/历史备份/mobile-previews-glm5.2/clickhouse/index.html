@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>QueryDeck · ClickHouse</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18V3H3zm2 2h14v14H5V5zm4 4h2v2H9V9zm4 0h2v2h-2V9zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2z"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">QueryDeck</span>
+                  <span class="brand-sub">性能监控</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="设置" data-toast="打开设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+              </button>
+            </header>
+
+            <!-- 性能统计（Signature：超大型数字 + neon volt 点缀） -->
+            <section class="perf-stats" aria-label="性能指标">
+              <div class="perf-label">QUERIES PER SECOND</div>
+              <div class="perf-value">
+                <span class="perf-number">12,847</span>
+                <span class="perf-unit">QPS</span>
+              </div>
+              <div class="perf-meta">
+                <span class="perf-indicator perf-indicator--up"></span>
+                <span class="perf-change">+23% vs 上小时</span>
+              </div>
+            </section>
+
+            <!-- 性能指标卡片 -->
+            <section class="metric-cards" aria-label="关键指标">
+              <div class="metric-card">
+                <span class="metric-card__label">AVG LATENCY</span>
+                <span class="metric-card__value">2.4<span class="metric-card__unit">ms</span></span>
+                <span class="metric-card__status metric-card__status--good">优秀</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-card__label">MEMORY</span>
+                <span class="metric-card__value">68<span class="metric-card__unit">%</span></span>
+                <span class="metric-card__status metric-card__status--warn">偏高</span>
+              </div>
+              <div class="metric-card metric-card--highlight">
+                <span class="metric-card__label">ACTIVE CLUSTERS</span>
+                <span class="metric-card__value">8<span class="metric-card__unit">/10</span></span>
+                <span class="metric-card__status metric-card__status--good">运行中</span>
+              </div>
+            </section>
+
+            <!-- 查询列表（终端风格） -->
+            <section class="queries-section" aria-label="最近查询">
+              <div class="section-header">
+                <h2>RECENT QUERIES</h2>
+                <div class="filter-chips" role="tablist" aria-label="筛选查询">
+                  <button class="filter-chip is-active" data-filter="all" role="tab" aria-selected="true">ALL</button>
+                  <button class="filter-chip" data-filter="slow" role="tab" aria-selected="false">SLOW</button>
+                  <button class="filter-chip" data-filter="failed" role="tab" aria-selected="false">FAILED</button>
+                </div>
+              </div>
+
+              <ul class="query-list" id="queryList">
+                <li class="query" data-type="normal">
+                  <span class="query__status query__status--success"></span>
+                  <div class="query__main">
+                    <code class="query__text">SELECT count(*) FROM events WHERE ts > now() - 3600</code>
+                    <span class="query__meta">14:32:05 · 2.1ms · 1.2M rows</span>
+                  </div>
+                </li>
+                <li class="query" data-type="slow">
+                  <span class="query__status query__status--warn"></span>
+                  <div class="query__main">
+                    <code class="query__text">SELECT * FROM analytics JOIN users ON analytics.user_id = users.id</code>
+                    <span class="query__meta">14:28:12 · 847ms · 534 rows</span>
+                  </div>
+                </li>
+                <li class="query" data-type="failed">
+                  <span class="query__status query__status--error"></span>
+                  <div class="query__main">
+                    <code class="query__text">SELECT avg(response_time) FROM metrics GROUP BY service</code>
+                    <span class="query__meta">14:25:33 · FAILED · Memory limit exceeded</span>
+                  </div>
+                </li>
+                <li class="query" data-type="normal">
+                  <span class="query__status query__status--success"></span>
+                  <div class="query__main">
+                    <code class="query__text">INSERT INTO logs VALUES (now(), 'INFO', 'Service started')</code>
+                    <span class="query__meta">14:20:00 · 0.8ms · OK</span>
+                  </div>
+                </li>
+                <li class="query" data-type="normal">
+                  <span class="query__status query__status--success"></span>
+                  <div class="query__main">
+                    <code class="query__text">SELECT toString(count()) FROM system.databases</code>
+                    <span class="query__meta">14:15:22 · 1.2ms · 42 rows</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section" aria-label="快捷操作">
+              <button class="action-btn action-btn--neon" data-toast="执行新查询">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+                NEW QUERY
+              </button>
+              <button class="action-btn action-btn--forest" data-toast="查看集群状态">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                CLUSTERS
+              </button>
+              <button class="action-btn action-btn--ghost" data-toast="导出监控报告">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                EXPORT
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="monitor">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18V3H3zm2 2h14v14H5V5zm4 4h2v2H9V9zm4 0h2v2h-2V9z"/></svg>
+              <span>监控</span>
+            </button>
+            <button class="tab" data-tab="queries">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h12"/></svg>
+              <span>查询</span>
+            </button>
+            <button class="tab" data-tab="clusters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24"/></svg>
+              <span>集群</span>
+            </button>
+            <button class="tab" data-tab="logs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              <span>日志</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

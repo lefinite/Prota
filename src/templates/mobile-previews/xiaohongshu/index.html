@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>生活簿 · 小红书风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶栏：关注/发现/附近 -->
+            <header class="topbar">
+              <button class="topbar__tab" type="button" data-toast="关注流：42 条新笔记">关注</button>
+              <button class="topbar__tab is-active" type="button">发现</button>
+              <button class="topbar__tab" type="button" data-toast="附近：3km 内 128 条笔记">附近</button>
+              <button class="topbar__search" type="button" data-toast="热搜：秋天第一杯奶茶" aria-label="搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. 分类 chips -->
+            <div class="chips" role="tablist" aria-label="分类">
+              <button class="chip is-active" type="button">推荐</button>
+              <button class="chip" type="button">穿搭</button>
+              <button class="chip" type="button">美食</button>
+              <button class="chip" type="button">旅行</button>
+              <button class="chip" type="button">家居</button>
+              <button class="chip" type="button">职场</button>
+            </div>
+
+            <!-- 3+4. 瀑布流（签名：错落双列）-->
+            <section class="falls" aria-label="笔记流">
+              <div class="col">
+                <article class="note" data-toast="打开笔记：桂花味的秋天">
+                  <div class="note__img m1" role="img" aria-label="桂花拿铁与手写标签"></div>
+                  <p class="note__title">桂花味的秋天🥮｜自制拿铁配方公开</p>
+                  <div class="note__foot">
+                    <span class="note__user"><i class="u1"></i>小栗</span>
+                    <button class="like" type="button" aria-label="点赞" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>2.1k</button>
+                  </div>
+                </article>
+                <article class="note" data-toast="打开笔记：出租屋改造">
+                  <div class="note__img m3" role="img" aria-label="原木色出租屋一角"></div>
+                  <p class="note__title">出租屋改造｜300块的幸福感🌿</p>
+                  <div class="note__foot">
+                    <span class="note__user"><i class="u3"></i>阿宅</span>
+                    <button class="like" type="button" aria-label="点赞" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>876</button>
+                  </div>
+                </article>
+                <article class="note" data-toast="打开笔记：周末骑行">
+                  <div class="note__img m5" role="img" aria-label="江边骑行道"></div>
+                  <p class="note__title">周末骑行路线🚲｜江边晚风版（附地图）</p>
+                  <div class="note__foot">
+                    <span class="note__user"><i class="u5"></i>风子</span>
+                    <button class="like" type="button" aria-label="点赞" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>1.3k</button>
+                  </div>
+                </article>
+              </div>
+              <div class="col">
+                <article class="note" data-toast="打开笔记：通勤穿搭">
+                  <div class="note__img m2" role="img" aria-label="风衣通勤穿搭"></div>
+                  <p class="note__title">通勤穿搭｜风衣的一百种穿法🍂</p>
+                  <div class="note__foot">
+                    <span class="note__user"><i class="u2"></i>林一</span>
+                    <button class="like" type="button" aria-label="点赞" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>4.2k</button>
+                  </div>
+                </article>
+                <article class="note" data-toast="打开笔记：一人食">
+                  <div class="note__img m4" role="img" aria-label="一锅番茄肥牛"></div>
+                  <p class="note__title">一人食🍅｜十五分钟番茄肥牛锅</p>
+                  <div class="note__foot">
+                    <span class="note__user"><i class="u4"></i>圆圆</span>
+                    <button class="like" type="button" aria-label="点赞" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>5.8k</button>
+                  </div>
+                </article>
+                <article class="note" data-toast="打开笔记：手帐排版">
+                  <div class="note__img m6" role="img" aria-label="牛皮纸手帐本"></div>
+                  <p class="note__title">手帐排版📓｜我的周计划模板</p>
+                  <div class="note__foot">
+                    <span class="note__user"><i class="u6"></i>未名</span>
+                    <button class="like" type="button" aria-label="点赞" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21C6.7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5c1.7 0 3.2.8 4.4 2.3 1.2-1.5 2.7-2.3 4.4-2.3 2.5 0 4.6 1.9 4.6 4.8 0 3.9-3.7 7.2-9 11.7z"/></svg>632</button>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <!-- 5. 操作区：发布入口 -->
+            <section class="action" aria-label="发布">
+              <div class="action__row">
+                <button class="btn-red pill" type="button" data-toast="拍照/相册/模板，开始你的笔记">＋ 发布笔记</button>
+                <button class="btn-light pill" type="button" data-toast="草稿箱：2 篇待完成">草稿箱 2</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4v-9z"/></svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="购物">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l1 12H4L5 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+              <span>购物</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发布" aria-label="发布">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>发布</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="消息">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 3V5z"/></svg>
+              <span>消息</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

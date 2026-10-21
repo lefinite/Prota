@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>活力 · Material</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" stroke-dasharray="42 14" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">活力</span>
+                <span class="brand-bar__sub">10 月 18 日 · 周六</span>
+              </div>
+              <button class="brand-bar__avatar" type="button" data-toast="晚上好，敏敏 · 本周目标完成 76%" aria-label="个人中心">
+                M
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：活动三环 -->
+            <section class="hero-card" aria-label="今日活动环">
+              <div class="hero-card__head">
+                <span class="hero-card__label">今日活动</span>
+                <span class="hero-card__delta" data-kind="up">▲ 12% 较昨日</span>
+              </div>
+              <div class="ring-zone">
+                <svg class="ring" viewBox="0 0 200 200" role="img" aria-label="三环进度：步数 8432 步、运动 32 分钟、卡路里 412 千卡">
+                  <g transform="rotate(-90 100 100)">
+                    <circle class="ring__track ring__track--outer" cx="100" cy="100" r="86" />
+                    <circle class="ring__track ring__track--mid" cx="100" cy="100" r="68" />
+                    <circle class="ring__track ring__track--inner" cx="100" cy="100" r="50" />
+                    <circle class="ring__bar ring__bar--steps" cx="100" cy="100" r="86" style="--p: 84" />
+                    <circle class="ring__bar ring__bar--move" cx="100" cy="100" r="68" style="--p: 71" />
+                    <circle class="ring__bar ring__bar--cal" cx="100" cy="100" r="50" style="--p: 82" />
+                  </g>
+                </svg>
+                <div class="ring-center">
+                  <p class="ring-center__num"><span id="stepCount">0</span><i>步</i></p>
+                  <p class="ring-center__note">目标 10,000 · 还差 1,568</p>
+                </div>
+              </div>
+              <ul class="ring-legend">
+                <li><i class="dot dot--steps"></i>步数 <b>8,432</b></li>
+                <li><i class="dot dot--move"></i>运动 <b>32 分</b></li>
+                <li><i class="dot dot--cal"></i>热量 <b>412</b></li>
+              </ul>
+            </section>
+
+            <!-- 3. 两张内容卡 -->
+            <section class="duo-grid" aria-label="周活动与睡眠">
+              <div class="duo-card">
+                <h2 class="duo-card__title">本周步数</h2>
+                <div class="week-chart" role="img" aria-label="近 7 天步数柱状图，今日 8432 步">
+                  <div class="week-chart__col"><span style="--h: 52%"></span><i>一</i></div>
+                  <div class="week-chart__col"><span style="--h: 68%"></span><i>二</i></div>
+                  <div class="week-chart__col"><span style="--h: 44%"></span><i>三</i></div>
+                  <div class="week-chart__col"><span style="--h: 76%"></span><i>四</i></div>
+                  <div class="week-chart__col"><span style="--h: 61%"></span><i>五</i></div>
+                  <div class="week-chart__col"><span style="--h: 90%"></span><i>六</i></div>
+                  <div class="week-chart__col"><span class="is-today" style="--h: 84%"></span><i>今</i></div>
+                </div>
+                <p class="duo-card__foot">日均 7,930 步 · 周环比 +6%</p>
+              </div>
+              <div class="duo-card">
+                <h2 class="duo-card__title">昨晚睡眠</h2>
+                <p class="sleep-num">7<i>小时</i>24<i>分</i></p>
+                <span class="sleep-chip" data-level="good">质量良好</span>
+                <div class="switch-row">
+                  <span class="switch-row__label">就寝提醒</span>
+                  <button class="m-switch is-on" type="button" role="switch" aria-checked="true" aria-label="就寝提醒开关" id="bedSwitch">
+                    <span class="m-switch__thumb"></span>
+                  </button>
+                </div>
+                <p class="duo-card__foot">23:00 提醒 · 深睡 2h 06m</p>
+              </div>
+            </section>
+
+            <!-- 4. 今日记录 Feed -->
+            <section class="feed" aria-label="今日记录">
+              <div class="feed__head">
+                <h2 class="feed__title">今日记录</h2>
+                <div class="chips" role="tablist" aria-label="筛选记录">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="sport">运动</button>
+                  <button class="chip" type="button" data-filter="life">生活</button>
+                  <button class="chip" type="button" data-filter="plan">计划</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="sport">
+                  <span class="feed-item__glyph" aria-hidden="true">🏃</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">快走 · 滨江绿道</span>
+                    <span class="feed-item__meta">07:40 · 3.2 公里<em class="state-chip">已完成</em></span>
+                  </div>
+                  <b class="feed-item__value">+248</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为常用" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="sport">
+                  <span class="feed-item__glyph" aria-hidden="true">🚴</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">骑行 · 通勤</span>
+                    <span class="feed-item__meta">09:12 · 18 分钟<em class="state-chip is-live">进行中</em></span>
+                  </div>
+                  <b class="feed-item__value">+96</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为常用" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="life">
+                  <span class="feed-item__glyph" aria-hidden="true">💧</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">喝水 6 次</span>
+                    <span class="feed-item__meta">目标 8 次<em class="state-chip">75%</em></span>
+                  </div>
+                  <b class="feed-item__value">1.2L</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为常用" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="life">
+                  <span class="feed-item__glyph" aria-hidden="true">⚖️</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">体重记录</span>
+                    <span class="feed-item__meta">08:05 · 较上周 -0.4kg</span>
+                  </div>
+                  <b class="feed-item__value">61.2</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为常用" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="plan">
+                  <span class="feed-item__glyph" aria-hidden="true">🧘</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">睡前拉伸</span>
+                    <span class="feed-item__meta">计划 22:30 · 10 分钟<em class="state-chip is-plan">待开始</em></span>
+                  </div>
+                  <b class="feed-item__value">+15</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为常用" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="plan">
+                  <span class="feed-item__glyph" aria-hidden="true">🛌</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">就寝</span>
+                    <span class="feed-item__meta">目标 23:00<em class="state-chip is-plan">待开始</em></span>
+                  </div>
+                  <b class="feed-item__value">—</b>
+                  <button class="feed-item__star" type="button" aria-label="标记为常用" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="快速记录">
+              <input class="quick-input" id="quickInput" type="text" placeholder="记一次活动，如：步行 20 分钟" />
+              <div class="action-row">
+                <button class="btn-filled" type="button" id="logBtn">记录运动</button>
+                <button class="btn-tonal" type="button" data-toast="本周报告已生成：活动 6/7 天达标">本周报告</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="统计">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 20V9M12 20V4M19 20v-7" />
+              </svg>
+              <span>统计</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="记录" aria-label="记录运动">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>记录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="计划">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="5" width="16" height="15" rx="3" /><path d="M8 3v4M16 3v4M4 10h16" />
+              </svg>
+              <span>计划</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

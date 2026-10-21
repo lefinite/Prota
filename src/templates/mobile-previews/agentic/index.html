@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>蜂巢 · Agentic</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__hex" aria-hidden="true"></div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">蜂巢</span>
+                <span class="brand-bar__sub">3 个 Agent 在线 · 今日委托 12 次</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="Agent 池已刷新" aria-label="刷新">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-2.6-6.3" /><path d="M21 3v6h-6" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：运行中的 Agent 任务（签名：流式步骤时间线）-->
+            <section class="hero" aria-label="运行中的任务">
+              <div class="hero__head">
+                <span class="hero__status"><i class="hero__pulse"></i>运行中</span>
+                <span class="hero__eta">已运行 2 分 14 秒</span>
+              </div>
+              <h1 class="hero__title">调研竞品定价策略</h1>
+              <p class="hero__desc">委托给「侦察蜂」· 每小时汇总一次，完成后推送摘要</p>
+              <ol class="hero__steps" id="heroSteps">
+                <li class="is-done"><b>拆解任务</b><span>生成 4 个子问题</span></li>
+                <li class="is-done"><b>检索来源</b><span>爬取 17 个页面</span></li>
+                <li class="is-running"><b>交叉验证</b><span class="hero__stream">正在核对第 6 条定价数据<span class="cursor"></span></span></li>
+                <li class="is-pending"><b>汇总输出</b><span>排队中</span></li>
+              </ol>
+              <div class="hero__bar" aria-hidden="true"><span style="--w: 62%"></span></div>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo">
+              <div class="duo__card">
+                <h2 class="duo__title">今日委托</h2>
+                <p class="duo__num">12<span> 次</span></p>
+                <p class="duo__meta">成功率 <b>92%</b> · 平均 4.6 分钟</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">Agent 池</h2>
+                <ul class="duo__agents">
+                  <li><i style="--c: var(--accent)"></i>侦察蜂</li>
+                  <li><i style="--c: var(--success)"></i>笔杆蜂</li>
+                  <li><i style="--c: var(--warn)"></i>算数蜂</li>
+                </ul>
+                <p class="duo__meta">3 在线 · 1 休息中</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：委托记录 -->
+            <section class="feed" aria-label="委托记录">
+              <div class="feed__head">
+                <h2 class="feed__title">委托记录</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="running">运行中</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="queued">排队</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="running">
+                  <span class="feed-item__glyph" aria-hidden="true">🔍</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">调研竞品定价策略</span>
+                    <span class="feed-item__meta">侦察蜂 · 09:20 开始</span>
+                  </div>
+                  <em class="feed-item__badge feed-item__badge--run">62%</em>
+                  <button class="feed-item__toggle" type="button" aria-label="关注此任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">📝</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">周报初稿生成</span>
+                    <span class="feed-item__meta">笔杆蜂 · 08:47 完成 · 1,204 字</span>
+                  </div>
+                  <em class="feed-item__badge feed-item__badge--ok">完成</em>
+                  <button class="feed-item__toggle" type="button" aria-label="关注此任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">📊</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">Q3 营收对账</span>
+                    <span class="feed-item__meta">算数蜂 · 08:12 完成 · 差异 ¥3.2</span>
+                  </div>
+                  <em class="feed-item__badge feed-item__badge--ok">完成</em>
+                  <button class="feed-item__toggle" type="button" aria-label="关注此任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="queued">
+                  <span class="feed-item__glyph" aria-hidden="true">🧹</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">清理过期缓存</span>
+                    <span class="feed-item__meta">系统 Agent · 22:00 执行</span>
+                  </div>
+                  <em class="feed-item__badge feed-item__badge--wait">排队</em>
+                  <button class="feed-item__toggle" type="button" aria-label="关注此任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__glyph" aria-hidden="true">💌</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">回复 3 封合作邮件</span>
+                    <span class="feed-item__meta">笔杆蜂 · 昨日完成 · 已人工确认</span>
+                  </div>
+                  <em class="feed-item__badge feed-item__badge--ok">完成</em>
+                  <button class="feed-item__toggle" type="button" aria-label="关注此任务" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="新委托">
+              <div class="chips chips--pick">
+                <button class="chip is-active" type="button" data-pick="调研">调研</button>
+                <button class="chip" type="button" data-pick="写作">写作</button>
+                <button class="chip" type="button" data-pick="数据">数据</button>
+                <button class="chip" type="button" data-pick="日常">日常</button>
+              </div>
+              <input class="action__input" id="delegateInput" type="text" placeholder="想委托什么？如：汇总本周行业新闻" />
+              <div class="action__row">
+                <button class="btn-primary" type="button" id="dispatchBtn">派出 Agent</button>
+                <button class="btn-ghost" type="button" data-toast="执行日志已导出（14 条）">执行日志</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="指令台">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z" /></svg>
+              <span>指令台</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>
+              <span>任务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新委托" aria-label="新委托">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>新委托</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="日志">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16l-7-3-7 3V4z"/></svg>
+              <span>日志</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

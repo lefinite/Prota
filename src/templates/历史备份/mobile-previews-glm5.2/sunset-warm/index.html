@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>橘光生活 · Sunset Warm</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">🌅</span>
+                <div class="brand-text">
+                  <span class="brand-name">橘光生活</span>
+                  <span class="brand-sub">早安，美好的一天</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- 今日心情卡片 (signature: 暖色渐变 + emoji) -->
+            <section class="mood-card" aria-label="今日心情">
+              <div class="mood-card__bg"></div>
+              <div class="mood-card__content">
+                <p class="mood-card__label">今日心情</p>
+                <p class="mood-card__title">充满阳光的一天 ✨</p>
+                <div class="mood-emojis">
+                  <button class="mood-emoji is-active" data-mood="happy" data-toast="选择开心">😊</button>
+                  <button class="mood-emoji" data-mood="calm" data-toast="选择平静">🌿</button>
+                  <button class="mood-emoji" data-mood="energetic" data-toast="选择活力">⚡</button>
+                  <button class="mood-emoji" data-mood="cozy" data-toast="选择惬意">☕</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 今日任务 -->
+            <section class="tasks-section">
+              <div class="section-header">
+                <h2>今日任务</h2>
+                <span class="task-count">3/5 完成</span>
+              </div>
+
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="--progress: 60%"></div>
+              </div>
+
+              <ul class="task-list">
+                <li class="task">
+                  <label class="task__checkbox">
+                    <input type="checkbox" checked data-toast="任务已完成" />
+                    <span class="task__checkmark"></span>
+                  </label>
+                  <div class="task__content">
+                    <span class="task__title completed">晨间瑜伽 30 分钟</span>
+                    <span class="task__time">07:30 - 08:00</span>
+                  </div>
+                  <span class="task__icon">🧘</span>
+                </li>
+                <li class="task">
+                  <label class="task__checkbox">
+                    <input type="checkbox" checked data-toast="任务已完成" />
+                    <span class="task__checkmark"></span>
+                  </label>
+                  <div class="task__content">
+                    <span class="task__title completed">阅读 20 页</span>
+                    <span class="task__time">08:30 - 09:00</span>
+                  </div>
+                  <span class="task__icon">📖</span>
+                </li>
+                <li class="task">
+                  <label class="task__checkbox">
+                    <input type="checkbox" checked data-toast="任务已完成" />
+                    <span class="task__checkmark"></span>
+                  </label>
+                  <div class="task__content">
+                    <span class="task__title completed">整理房间</span>
+                    <span class="task__time">10:00 - 10:30</span>
+                  </div>
+                  <span class="task__icon">🏠</span>
+                </li>
+                <li class="task">
+                  <label class="task__checkbox">
+                    <input type="checkbox" data-toast="任务标记为完成" />
+                    <span class="task__checkmark"></span>
+                  </label>
+                  <div class="task__content">
+                    <span class="task__title">下午茶时光</span>
+                    <span class="task__time">15:00 - 15:30</span>
+                  </div>
+                  <span class="task__icon">🍵</span>
+                </li>
+                <li class="task">
+                  <label class="task__checkbox">
+                    <input type="checkbox" data-toast="任务标记为完成" />
+                    <span class="task__checkmark"></span>
+                  </label>
+                  <div class="task__content">
+                    <span class="task__title">写日记</span>
+                    <span class="task__time">21:00 - 21:30</span>
+                  </div>
+                  <span class="task__icon">📝</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 推荐活动 -->
+            <section class="activities">
+              <div class="section-header">
+                <h2>推荐活动</h2>
+                <button class="more-btn" data-toast="查看更多活动">查看更多</button>
+              </div>
+
+              <div class="activity-cards">
+                <div class="activity-card" data-toast="详情: 户外散步">
+                  <div class="activity-card__emoji">🌳</div>
+                  <span class="activity-card__title">户外散步</span>
+                  <span class="activity-card__meta">30 分钟 · 轻松</span>
+                </div>
+                <div class="activity-card" data-toast="详情: 冥想放松">
+                  <div class="activity-card__emoji">🧘</div>
+                  <span class="activity-card__title">冥想放松</span>
+                  <span class="activity-card__meta">15 分钟 · 静心</span>
+                </div>
+                <div class="activity-card" data-toast="详情: 音乐欣赏">
+                  <div class="activity-card__emoji">🎵</div>
+                  <span class="activity-card__title">音乐欣赏</span>
+                  <span class="activity-card__meta">20 分钟 · 愉悦</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快捷记录 -->
+            <section class="quick-log">
+              <button class="log-btn log-btn--primary" data-toast="打开心情日记">
+                <span>📔</span>
+                <span>写日记</span>
+              </button>
+              <button class="log-btn log-btn--secondary" data-toast="添加照片记录">
+                <span>📷</span>
+                <span>添加照片</span>
+              </button>
+              <button class="log-btn log-btn--secondary" data-toast="记录饮水">
+                <span>💧</span>
+                <span>喝水打卡</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <span>🏠</span>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="tasks">
+              <span>✅</span>
+              <span>任务</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="添加">
+              <span>+</span>
+            </button>
+            <button class="tab" data-tab="activities">
+              <span>🎯</span>
+              <span>活动</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <span>👤</span>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,319 @@
+/* =========================================================================
+ * mobile-previews/dithered — Pixel Quest (Retro Game Tracker)
+ * Signature: 像素风格等级展示
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/dithered）—— */
+  --bg: #fff4cf;
+  --surface: #fffaf0;
+  --surface-warm: #ffdca8;
+  --fg: #2a1810;
+  --fg-2: #593625;
+  --muted: #8a6652;
+  --meta: #d24b1f;
+  --border: #d9aa7a;
+  --border-soft: #efd0ab;
+  --accent: #d24b1f;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #3d8f4f;
+  --warn: #f2a93b;
+  --danger: #b83a2f;
+  --font-display: "Courier New", ui-monospace, monospace;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "Courier New", ui-monospace, monospace;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 28px;
+  --text-3xl: 40px;
+  --text-4xl: 56px;
+  --leading-body: 1.45;
+  --leading-tight: 1.06;
+  --tracking-display: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 6px 6px 0 rgba(42, 24, 16, 0.26);
+  --focus-ring: 0 0 0 4px rgba(210, 75, 31, 0.28);
+  --motion-fast: 100ms;
+  --motion-base: 180ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* —— 手机外壳（与设计系统协调）—— */
+  --page-backdrop-top: #fff9e6;
+  --page-backdrop-bottom: #ffe8a0;
+  --phone-shell: #fffaf0;
+  --phone-shell-edge: #e8c88a;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(42, 24, 16, 0.15);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-display);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 250, 240, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #2a1810; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; font-family: var(--font-display); }
+
+/* ===== Page content · Pixel Quest ===== */
+
+/* 像素边框风格 */
+.pixel-border {
+  border: 2px solid var(--border);
+  position: relative;
+  box-shadow: 4px 4px 0 rgba(42, 24, 16, 0.12);
+  transition: box-shadow var(--motion-fast) var(--ease-standard);
+}
+.pixel-border:active {
+  box-shadow: 2px 2px 0 rgba(42, 24, 16, 0.12);
+}
+
+/* 顶部品牌栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.topbar__brand { display: flex; align-items: center; gap: 10px; }
+.brand-pixel {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 700;
+  color: var(--accent-on); background: var(--accent);
+  font-family: var(--font-display);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.05em; }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+.iconbtn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--radius-sm); }
+.iconbtn svg { width: 18px; height: 18px; }
+
+/* Hero 卡：signature —— 像素风格等级展示 */
+.hero-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.hero-level { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.level-label { font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.1em; }
+.level-number {
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  color: var(--accent);
+  line-height: var(--leading-tight);
+  font-family: var(--font-display);
+}
+.hero-stats { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.stat { text-align: center; }
+.stat-val {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--fg);
+  font-family: var(--font-display);
+  display: block;
+}
+.stat-label { font-size: var(--text-xs); color: var(--muted); margin-top: 2px; display: block; }
+.hero-progress {
+  height: 8px;
+  border-radius: 0;
+  background: var(--border-soft);
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+.progress-fill { display: block; height: 100%; width: var(--p); background: var(--accent); transform-origin: left; animation: grow 800ms var(--ease-standard) both; }
+.hero-hint { margin: 0; font-size: var(--text-xs); color: var(--muted); text-align: center; }
+
+/* 任务双卡 */
+.mission-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.mission-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.mission-tag {
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  display: inline-block;
+  width: fit-content;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.mission-tag.daily { color: var(--accent-on); background: var(--accent); }
+.mission-tag.weekly { color: var(--fg); background: var(--surface-warm); }
+.mission-title { font-size: var(--text-sm); font-weight: 600; color: var(--fg); }
+.mission-status { font-size: var(--text-xs); color: var(--muted); }
+.mission-bar { height: 4px; background: var(--border-soft); overflow: hidden; margin-top: 2px; }
+.mission-fill { height: 100%; width: var(--p); background: var(--warn); transform-origin: left; animation: grow 800ms var(--ease-standard) both; }
+
+/* 成就列表 */
+.list-block { margin-bottom: 16px; }
+.list-block__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.list-block__head h2 { margin: 0; font-size: var(--text-base); font-weight: 700; }
+.chips { display: inline-flex; background: var(--surface); gap: 4px; }
+.chip {
+  padding: 4px 10px;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+.chip.is-active { color: var(--accent-on); background: var(--accent); }
+
+.achievement-list { list-style: none; margin: 0; padding: 0; }
+.achievement {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.achievement:last-child { border-bottom: 0; }
+.achievement.is-hidden { display: none; }
+.achievement-icon {
+  flex: none; width: 32px; height: 32px;
+  display: grid; place-items: center;
+  font-size: 14px;
+  color: var(--accent);
+  background: var(--surface);
+  font-weight: 700;
+}
+.achievement-main { flex: 1; min-width: 0; }
+.achievement-title { font-size: var(--text-sm); font-weight: 600; color: var(--fg); display: block; }
+.achievement-desc { font-size: var(--text-xs); color: var(--muted); display: block; margin-top: 2px; }
+.achievement-time { font-size: var(--text-xs); color: var(--muted); font-family: var(--font-display); }
+
+/* 操作区 */
+.action-block { margin-bottom: 16px; }
+.cta-btn {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px;
+  background: var(--accent);
+  color: var(--accent-on);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+.cta-btn svg { width: 18px; height: 18px; }
+.action-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ghost-btn {
+  padding: 10px;
+  background: var(--surface);
+  color: var(--fg);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
+  padding: 8px 12px 14px;
+  background: var(--surface);
+  border-top: 2px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--muted); padding: 4px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+.tab.is-active svg { stroke-width: 2.4; }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--surface);
+  font-size: var(--text-xs); padding: 8px 14px;
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+  font-family: var(--font-display);
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-card, .mission-row, .list-block, .action-block { animation: rise 500ms var(--ease-standard) both; }
+.mission-row { animation-delay: 60ms; }
+.list-block { animation-delay: 120ms; }
+.action-block { animation-delay: 180ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

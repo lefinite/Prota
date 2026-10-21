@@ -1,0 +1,320 @@
+/* =========================================================================
+ * mobile-previews/tesla — Tesla
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/tesla 的 :root token
+ * 页面：车辆控制 · Vehicle Control
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/tesla）—— */
+  --bg: #ffffff;
+  --surface: #f4f4f4;
+  --surface-warm: #f4f4f4;
+  --fg: #171a20;
+  --fg-2: #393c41;
+  --muted: #5c5e62;
+  --meta: #8e8e8e;
+  --border: #d0d1d2;
+  --border-soft: #eeeeee;
+  --accent: #3e6ae1;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #16a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+  --font-display: "Universal Sans Display", -apple-system, Arial, sans-serif;
+  --font-body: "Universal Sans Text", -apple-system, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 17px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  --text-4xl: 40px;
+  --leading-body: 1.43;
+  --leading-tight: 1.20;
+  --tracking-display: normal;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+  --motion-fast: 250ms;
+  --motion-base: 330ms;
+  --ease-standard: cubic-bezier(0.5, 0, 0, 0.75);
+
+  /* —— 手机外壳（与设计系统协调）—— */
+  --page-backdrop-top: #ffffff;
+  --page-backdrop-bottom: #f4f4f4;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e9ecf2;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(23, 26, 32, 0.12);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background: linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 18px 104px; }
+
+/* ===== Page content · Tesla Vehicle Control ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.topbar__brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 38px; height: 38px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-weight: 700; font-size: 20px;
+  background: var(--fg); color: var(--bg);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: var(--text-xl); font-weight: 500; font-family: var(--font-display); letter-spacing: 0.1em; color: var(--fg); }
+.brand-sub { font-size: var(--text-base); font-weight: 500; color: var(--muted); }
+
+.iconbtn {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--fg);
+  transition: background var(--motion-base) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: var(--surface); }
+
+/* Hero Section：Signature —— 全景车辆状态 */
+.hero-section {
+  position: relative; height: 180px;
+  background: linear-gradient(180deg, #f8f9fa 0%, var(--bg) 100%);
+  border-radius: var(--radius-md);
+  padding: 20px; display: flex; flex-direction: column; align-items: center;
+  overflow: hidden;
+}
+.hero-section__image {
+  flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
+}
+.car-silhouette { width: 100%; max-width: 180px; color: var(--fg); opacity: 0.3; }
+.hero-section__info { text-align: center; }
+.hero-section__range {
+  margin: 0; font-family: var(--font-display);
+  font-size: var(--text-3xl); font-weight: 500; line-height: 1;
+  color: var(--fg);
+}
+.hero-section__label {
+  font-size: var(--text-base); font-weight: 400;
+  color: var(--muted); margin: 4px 0;
+}
+.hero-section__status {
+  font-size: var(--text-sm); font-weight: 400;
+  color: var(--accent);
+}
+
+/* 控制双卡 */
+.control-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.control-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  transition: all var(--motion-base) var(--ease-standard);
+}
+.control-card:active { transform: scale(0.98); background: var(--border-soft); }
+.control-card__icon {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--fg);
+  background: var(--bg);
+}
+.control-card__icon svg { width: 18px; height: 18px; }
+.control-card__label { font-size: var(--text-base); font-weight: 500; color: var(--fg); }
+.control-card__status { font-size: var(--text-sm); font-weight: 400; color: var(--muted); }
+
+/* 环境控制 */
+.env-section { margin-top: 24px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-header h2 { margin: 0; font-size: var(--text-base); font-weight: 500; }
+
+.chips { display: inline-flex; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; }
+.chip {
+  padding: 6px 14px; border-radius: var(--radius-sm); font-size: var(--text-sm); font-weight: 400; color: var(--muted);
+  transition: all var(--motion-base) var(--ease-standard);
+}
+.chip.is-active { color: var(--bg); background: var(--fg); }
+
+.control-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.control-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 4px; border-bottom: 1px solid var(--border-soft);
+}
+.control-item:last-child { border-bottom: 0; }
+
+.control-item__icon {
+  flex: none; width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; color: var(--fg);
+  background: var(--surface);
+}
+.control-item__icon svg { width: 18px; height: 18px; }
+.control-item__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.control-item__title { font-size: var(--text-base); font-weight: 500; color: var(--fg); }
+.control-item__sub { font-size: var(--text-sm); font-weight: 400; color: var(--muted); }
+
+/* Toggle Switch */
+.toggle {
+  position: relative; width: 48px; height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  transition: background var(--motion-base) var(--ease-standard);
+}
+.toggle.is-on { background: var(--accent); }
+.toggle__track, .toggle__thumb {
+  position: absolute; top: 2px;
+}
+.toggle__track {
+  inset: 2px; border-radius: var(--radius-pill);
+}
+.toggle__thumb {
+  left: 2px; width: 22px; height: 22px; border-radius: 999px;
+  background: var(--bg);
+  transition: left var(--motion-base) var(--ease-standard);
+}
+.toggle.is-on .toggle__thumb { left: 22px; }
+
+/* Stepper */
+.stepper { display: flex; align-items: center; gap: 8px; }
+.stepper__btn {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  font-size: var(--text-xl); font-weight: 400; color: var(--fg);
+  background: var(--bg);
+  transition: background var(--motion-base) var(--ease-standard);
+}
+.stepper__btn:active { background: var(--surface); }
+.stepper__value {
+  min-width: 24px; text-align: center;
+  font-size: var(--text-base); font-weight: 500; color: var(--fg);
+}
+
+.control-item__badge {
+  font-size: var(--text-sm); font-weight: 500;
+  padding: 4px 10px; border-radius: var(--radius-sm);
+  color: var(--success); background: color-mix(in oklab, var(--success), transparent 90%);
+}
+
+/* 操作区 */
+.action-section {
+  margin-top: 20px; display: flex; flex-direction: column; gap: 10px;
+}
+.primary-cta, .secondary-cta {
+  width: 100%; height: 44px; border-radius: var(--radius-sm);
+  font-size: var(--text-base); font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all var(--motion-base) var(--ease-standard);
+}
+.primary-cta {
+  background: var(--accent); color: var(--accent-on);
+}
+.primary-cta:active { background: var(--accent-hover); }
+.primary-cta svg { width: 18px; height: 18px; }
+.secondary-cta {
+  background: var(--bg); color: var(--fg);
+}
+.secondary-cta:active { background: var(--surface); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+  padding: 8px 10px 16px; background: var(--bg);
+  border-top: 1px solid var(--border-soft);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-base) var(--ease-standard);
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--bg);
+  font-size: var(--text-sm); padding: 10px 16px; border-radius: var(--radius-sm);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-section, .control-row, .env-section, .action-section { animation: rise 520ms var(--ease-standard) both; }
+.control-row { animation-delay: 70ms; }
+.env-section { animation-delay: 140ms; }
+.action-section { animation-delay: 200ms; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>叠境 · Perspective</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+                  <path d="M12 3l9 5.2-9 5.2-9-5.2L12 3z" />
+                  <path d="M3 12.6l9 5.2 9-5.2" />
+                  <path d="M3 16.8L12 22l9-5.2" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">叠境</span>
+                <span class="brand-bar__sub">望京 · 云澜公寓 · 今日带看 3 场</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已开启沉浸导览模式" aria-label="导览设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" />
+                  <circle cx="12" cy="12" r="2.8" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：等轴测分层户型 + 楼栋切换 -->
+            <section class="space-hero" aria-label="户型总览">
+              <div class="space-hero__head">
+                <div class="space-hero__title-group">
+                  <h1 class="space-hero__title">3 层 · B3 户</h1>
+                  <p class="space-hero__sub">南北通透 · 两梯四户 · 朝南主卧</p>
+                </div>
+                <div class="floor-chips" role="tablist" aria-label="切换户型">
+                  <button class="floor-chip" type="button" data-floor="A2">A2</button>
+                  <button class="floor-chip is-active" type="button" data-floor="B3">B3</button>
+                  <button class="floor-chip" type="button" data-floor="C1">C1</button>
+                </div>
+              </div>
+
+              <div class="iso-stage" role="img" aria-label="户型等轴测示意图，客厅抬升最高，主卧次卧次之">
+                <div class="iso" aria-hidden="true">
+                  <span class="iso__floor"></span>
+                  <button class="room" style="left: 0; top: 0; width: 158px; height: 122px; --h: 24px; --tint: 92%" data-toast="客厅 · 42㎡ · 南向整面采光">
+                    <i class="room__label">客厅</i>
+                  </button>
+                  <button class="room" style="left: 166px; top: 0; width: 98px; height: 94px; --h: 15px; --tint: 82%" data-toast="主卧 · 18㎡ · 带飘窗">
+                    <i class="room__label">主卧</i>
+                  </button>
+                  <button class="room" style="left: 166px; top: 102px; width: 98px; height: 102px; --h: 9px; --tint: 74%" data-toast="次卧 · 14㎡ · 北向安静">
+                    <i class="room__label">次卧</i>
+                  </button>
+                  <button class="room" style="left: 0; top: 130px; width: 78px; height: 74px; --h: 5px; --tint: 66%" data-toast="厨房 · 7㎡ · 西厨台">
+                    <i class="room__label">厨房</i>
+                  </button>
+                  <button class="room" style="left: 86px; top: 130px; width: 72px; height: 74px; --h: 3px; --tint: 60%" data-toast="卫浴 · 5㎡ · 干湿分离">
+                    <i class="room__label">卫</i>
+                  </button>
+                </div>
+                <span class="iso-badge">层高 2.95m<i>客厅抬升预览</i></span>
+              </div>
+
+              <dl class="space-stats">
+                <div><dt>建面</dt><dd><span id="statArea">89</span>㎡</dd></div>
+                <div><dt>得房率</dt><dd><span id="statRate">81</span>%</dd></div>
+                <div><dt>参考总价</dt><dd class="space-stats__hot">¥<span id="statPrice">612</span>万</dd></div>
+              </dl>
+            </section>
+
+            <!-- 3. 内容卡 ×2：采光节奏 + 周边纵深 -->
+            <section class="duo-grid" aria-label="采光与配套">
+              <div class="panel">
+                <h2 class="panel__title">采光节奏</h2>
+                <div class="light-row">
+                  <span class="light-row__label">清晨</span>
+                  <span class="light-row__track"><span class="light-row__fill" style="--w: 42%"></span></span>
+                  <b class="light-row__val">4.2</b>
+                </div>
+                <div class="light-row">
+                  <span class="light-row__label">正午</span>
+                  <span class="light-row__track"><span class="light-row__fill" style="--w: 88%"></span></span>
+                  <b class="light-row__val">8.8</b>
+                </div>
+                <div class="light-row">
+                  <span class="light-row__label">黄昏</span>
+                  <span class="light-row__track"><span class="light-row__fill" style="--w: 56%"></span></span>
+                  <b class="light-row__val">5.6</b>
+                </div>
+                <div class="light-row">
+                  <span class="light-row__label">阴天</span>
+                  <span class="light-row__track"><span class="light-row__fill" style="--w: 24%"></span></span>
+                  <b class="light-row__val">2.4</b>
+                </div>
+              </div>
+              <div class="panel">
+                <h2 class="panel__title">周边纵深</h2>
+                <div class="near-row">
+                  <span class="near-row__name">14 号线 · 阜通站</span>
+                  <span class="near-row__track"><span class="near-row__fill" style="--w: 18%"></span></span>
+                  <b class="near-row__dist">380m</b>
+                </div>
+                <div class="near-row">
+                  <span class="near-row__name">望京公园</span>
+                  <span class="near-row__track"><span class="near-row__fill" style="--w: 30%"></span></span>
+                  <b class="near-row__dist">620m</b>
+                </div>
+                <div class="near-row">
+                  <span class="near-row__name">望京学校</span>
+                  <span class="near-row__track"><span class="near-row__fill" style="--w: 46%"></span></span>
+                  <b class="near-row__dist">950m</b>
+                </div>
+                <div class="near-row">
+                  <span class="near-row__name">三甲医院</span>
+                  <span class="near-row__track"><span class="near-row__fill" style="--w: 62%"></span></span>
+                  <b class="near-row__dist">1.2km</b>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 带看安排 Feed -->
+            <section class="feed" aria-label="带看安排">
+              <div class="feed__head">
+                <h2 class="feed__title">带看安排</h2>
+                <div class="chips" role="tablist" aria-label="筛选带看">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="today">今天</button>
+                  <button class="chip" type="button" data-filter="weekend">周末</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="today">
+                  <span class="feed-item__time">10:30</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">云澜公寓 · B3 户</span>
+                    <span class="feed-item__meta">陈经纪 · 南门集合 <em class="tag tag--live">进行中</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏房源" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="today">
+                  <span class="feed-item__time">14:00</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">湖光壹号 · A2 户</span>
+                    <span class="feed-item__meta">王经纪 · 东门集合 <em class="tag">未开始</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏房源" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="today">
+                  <span class="feed-item__time">16:30</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">云澜公寓 · C1 户</span>
+                    <span class="feed-item__meta">陈经纪 · 样板层 <em class="tag">未开始</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏房源" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="weekend">
+                  <span class="feed-item__time">周六 09:30</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">山语城 · 两居</span>
+                    <span class="feed-item__meta">李经纪 · 含车位 <em class="tag">未开始</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏房源" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="weekend">
+                  <span class="feed-item__time">周日 15:00</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">云澜公寓 · A2 户</span>
+                    <span class="feed-item__meta">陈经纪 · 复看采光 <em class="tag tag--moved">已改期</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏房源" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="done">
+                  <span class="feed-item__time">周二</span>
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">湖光壹号 · 样板间</span>
+                    <span class="feed-item__meta">王经纪 · 已留备注 <em class="tag tag--ok">已完成</em></span>
+                  </div>
+                  <button class="feed-item__star" type="button" aria-label="收藏房源" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="预约带看">
+              <input class="memo-input" id="memoInput" type="text" placeholder="给经纪人留言，如：重点看采光……" />
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="bookBtn">预约带看</button>
+                <button class="btn-ghost" type="button" data-toast="已加入对比：B3 户 vs 湖光壹号 A2">收藏对比</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="房源">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 11l8-7 8 7" /><path d="M6 10v9h12v-9" />
+              </svg>
+              <span>房源</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="带看">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="5" width="16" height="15" rx="3" /><path d="M8 3v4M16 3v4M4 10h16" />
+              </svg>
+              <span>带看</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="新增带看" aria-label="新增带看">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>新增带看</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="对比">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v16M6 8l-3 6h6l-3-6zM18 8l-3 6h6l-3-6z" />
+              </svg>
+              <span>对比</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

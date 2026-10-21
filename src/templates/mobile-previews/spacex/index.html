@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>任务控制 · SpaceX</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏：无容器，纯文字叠在星空上 -->
+            <header class="brand-bar">
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">星舰 · STARSHIP</span>
+                <span class="brand-bar__sub">任务控制 · MISSION CONTROL</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="已连接测控网络 · 信号强度 96%" aria-label="测控网络">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21V9M8 21l4-6 4 6" /><circle cx="12" cy="7" r="2" /><path d="M7.5 11.5a6.4 6.4 0 0 1 0-9M16.5 2.5a6.4 6.4 0 0 1 0 9M4.7 14.3a10.4 10.4 0 0 1 0-14.6M19.3 -0.3a10.4 10.4 0 0 1 0 14.6" transform="translate(0,1.2)" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：T- 倒计时任务简报 -->
+            <section class="mission" aria-label="下一次发射">
+              <span class="mission__eyebrow">下一次发射 · NEXT LAUNCH</span>
+              <h1 class="mission__title">星舰 第 12 次试飞</h1>
+              <p class="mission__vehicle">超重助推 B15 + 星舰 S34 · 卡纳维拉尔角 LC-39A</p>
+              <p class="mission__count" id="countdown" role="timer" aria-live="off">T-00:04:37</p>
+              <p class="mission__window">发射窗口 · 08:00 — 12:00 东部时间 · 余量充足</p>
+
+              <div class="mission__phases" aria-label="任务阶段">
+                <div class="phase is-done"><i></i><span>加注</span></div>
+                <div class="phase is-live" id="phaseCheck"><i></i><span>射前检查</span></div>
+                <div class="phase" id="phaseIgnition"><i></i><span>点火</span></div>
+                <div class="phase" id="phaseAscent"><i></i><span>上升</span></div>
+              </div>
+              <div class="mission__track"><span id="phaseFill"></span></div>
+
+              <svg class="mission__arc" viewBox="0 0 300 80" aria-hidden="true">
+                <path d="M6 74C70 74 150 40 292 8" />
+                <circle cx="292" cy="8" r="3.4" class="mission__arc-dot" />
+                <circle cx="196" cy="52" r="2.4" class="mission__arc-mark" />
+                <circle cx="100" cy="70" r="2.4" class="mission__arc-mark" />
+              </svg>
+            </section>
+
+            <!-- 3. 载具数据：无卡片，细线分块 -->
+            <section class="telemetry" aria-label="载具数据">
+              <h2 class="block-label">载具数据 · TELEMETRY</h2>
+              <div class="telemetry__grid">
+                <div class="stat">
+                  <b>450<i>KM</i></b>
+                  <span>目标轨道</span>
+                </div>
+                <div class="stat">
+                  <b>120<i>T</i></b>
+                  <span>有效载荷</span>
+                </div>
+                <div class="stat">
+                  <b>33<i>台</i></b>
+                  <span>猛禽发动机</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. 事件日志 Feed：无卡片时间线 -->
+            <section class="feed" aria-label="事件日志">
+              <div class="feed__head">
+                <h2 class="block-label">事件日志 · EVENT LOG</h2>
+                <div class="chips" role="tablist" aria-label="筛选事件">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="live">进行中</button>
+                  <button class="chip" type="button" data-filter="wait">待执行</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="log" data-kind="done">
+                  <span class="log__time">T-02:10:00</span>
+                  <span class="log__event">一级燃料开始加注</span>
+                  <em class="log__state is-done">已完成</em>
+                </li>
+                <li class="log" data-kind="done">
+                  <span class="log__time">T-00:40:00</span>
+                  <span class="log__event">超冷推进剂置换</span>
+                  <em class="log__state is-done">已完成</em>
+                </li>
+                <li class="log" data-kind="live">
+                  <span class="log__time">T-00:18:00</span>
+                  <span class="log__event">射前检查启动 · 33 项自检</span>
+                  <em class="log__state is-live"><i></i>进行中</em>
+                </li>
+                <li class="log" data-kind="wait">
+                  <span class="log__time">T-00:04:37</span>
+                  <span class="log__event">燃气发生器预热</span>
+                  <em class="log__state">待执行</em>
+                </li>
+                <li class="log" data-kind="wait">
+                  <span class="log__time">T-00:00:40</span>
+                  <span class="log__event">自动倒计时序列接管</span>
+                  <em class="log__state">待执行</em>
+                </li>
+                <li class="log" data-kind="wait">
+                  <span class="log__time">T-00:00:03</span>
+                  <span class="log__event">点火 · 全发动机推力上升</span>
+                  <em class="log__state">待执行</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区：实心信号钮 + 幽灵按钮 -->
+            <section class="action-area" aria-label="任务操作">
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="subscribeBtn">订阅发射提醒</button>
+                <button class="btn-ghost" type="button" data-toast="任务手册已离线缓存 · 48 页">任务手册</button>
+              </div>
+              <p class="action-note">提醒将在 T-00:10:00 与点火时刻各推送一次</p>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="任务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2c3 3 4.5 6.5 4.5 10L12 16l-4.5-4C7.5 8.5 9 5 12 2z" /><path d="M7.5 12L4 15l2.5 1L8 20l3-3M16.5 12L20 15l-2.5 1L16 20l-3-3" />
+              </svg>
+              <span>任务</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="发射台">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 21h16M7 21l2-11M17 21l-2-11M12 10V4M12 4l2.5 3M12 4L9.5 7" />
+              </svg>
+              <span>发射台</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="星链">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" /><path d="M2 12c2.2-2.4 4.4-3.6 6.6-3.6M22 12c-2.2-2.4-4.4-3.6-6.6-3.6M2 12c2.2 2.4 4.4 3.6 6.6 3.6M22 12c-2.2 2.4-4.4 3.6-6.6 3.6" />
+              </svg>
+              <span>星链</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

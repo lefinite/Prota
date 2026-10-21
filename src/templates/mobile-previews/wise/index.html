@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>直兑 · Wise</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17L17 3M9 17h8v-8M3 12v8h8"/></svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">直兑</span>
+                <span class="brand-bar__sub">中间市场汇率 · 手续费前置透明</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="3 个余额账户 · 支持 42 种货币" aria-label="账户">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero：汇率计算器（签名：转换器卡）-->
+            <section class="hero" aria-label="汇率计算">
+              <h1 class="hero__title">你的钱，<br />走得更远。</h1>
+              <div class="calc">
+                <div class="calc__row">
+                  <div class="calc__money">
+                    <span class="calc__cur chip-ghost" data-cur="CNY" role="button">🇨🇳 CNY</span>
+                    <input class="calc__input" id="amountIn" type="text" value="10,000" inputmode="decimal" aria-label="汇出金额" />
+                  </div>
+                </div>
+                <button class="calc__swap" type="button" id="swapBtn" aria-label="交换货币">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13M7 17l-3-3M17 20V7M17 7l3 3"/></svg>
+                </button>
+                <div class="calc__row calc__row--out">
+                  <div class="calc__money">
+                    <span class="calc__cur chip-ghost" data-cur="EUR" role="button">🇪🇺 EUR</span>
+                    <b class="calc__out" id="amountOut">1,286.42</b>
+                  </div>
+                </div>
+              </div>
+              <ul class="hero__fees">
+                <li><span>汇率（中间价）</span><b>1 CNY = 0.128642 EUR</b></li>
+                <li><span>手续费</span><b>4.21 CNY</b></li>
+                <li class="sum"><span>到账</span><b id="sumLine">1,285.88 EUR</b></li>
+              </ul>
+              <button class="btn-lime" type="button" data-toast="发送确认邮件已发出 · 指纹验证后执行">立即转账</button>
+            </section>
+
+            <!-- 3. 内容卡 -->
+            <section class="duo" aria-label="账户">
+              <div class="duo__card">
+                <h2 class="duo__title">本月换汇</h2>
+                <p class="duo__num">¥48,200</p>
+                <p class="duo__meta">共 6 笔 · 较银行省 ¥1,860</p>
+              </div>
+              <div class="duo__card">
+                <h2 class="duo__title">平均到账</h2>
+                <p class="duo__num">21<span> 秒</span></p>
+                <p class="duo__meta">EUR 走 SEPA 即时 · 美元 1 天内</p>
+              </div>
+            </section>
+
+            <!-- 4. Feed：转账记录 -->
+            <section class="feed" aria-label="转账记录">
+              <div class="feed__head">
+                <h2 class="feed__title">转账记录</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="done">已完成</button>
+                  <button class="chip" type="button" data-filter="pend">处理中</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="tx" data-kind="done">
+                  <span class="tx__flag">🇪🇺</span>
+                  <div class="tx__body">
+                    <span class="tx__name">→ 柏林房租</span>
+                    <span class="tx__meta mono">10-14 · CNY → EUR · 22s 到账</span>
+                  </div>
+                  <b class="tx__amount">€980.00</b>
+                </li>
+                <li class="tx" data-kind="pend">
+                  <span class="tx__flag">🇯🇵</span>
+                  <div class="tx__body">
+                    <span class="tx__name">→ 京都民宿尾款</span>
+                    <span class="tx__meta mono">今天 09:02 · CNY → JPY · 处理中</span>
+                  </div>
+                  <b class="tx__amount">¥46,200</b>
+                </li>
+                <li class="tx" data-kind="done">
+                  <span class="tx__flag">🇺🇸</span>
+                  <div class="tx__body">
+                    <span class="tx__name">→ AWS 账单</span>
+                    <span class="tx__meta mono">10-11 · CNY → USD · 6h 到账</span>
+                  </div>
+                  <b class="tx__amount">$612.40</b>
+                </li>
+                <li class="tx" data-kind="done">
+                  <span class="tx__flag">🇬🇧</span>
+                  <div class="tx__body">
+                    <span class="tx__name">→ 伦敦设计费</span>
+                    <span class="tx__meta mono">10-08 · GBP → CNY · 收款</span>
+                  </div>
+                  <b class="tx__amount is-in">+¥8,940</b>
+                </li>
+                <li class="tx" data-kind="done">
+                  <span class="tx__flag">🇸🇬</span>
+                  <div class="tx__body">
+                    <span class="tx__name">→ 新加坡订阅</span>
+                    <span class="tx__meta mono">10-05 · CNY → SGD · 自动 recurring</span>
+                  </div>
+                  <b class="tx__amount">S$128.00</b>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="收款">
+              <input class="action__input" id="aliasInput" type="text" placeholder="设置收款别名（如 rent@直兑）…" />
+              <div class="action__row">
+                <button class="btn-lime btn-lime--wide" type="button" data-toast="多币种账户详情已生成（IBAN / ACH）">我的账户详情</button>
+                <button class="btn-ghost btn-ghost--wide" type="button" data-toast="费率提醒：EUR/CNY 跌破 7.8 时通知我">费率提醒</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="换汇">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17L17 3M9 17h8v-8"/></svg>
+              <span>换汇</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="余额">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+              <span>余额</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="转账" aria-label="转账">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17L17 3M9 17h8v-8"/></svg>
+              <span>转账</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="记录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5h14M5 10h9M5 15h11M5 20h7"/></svg>
+              <span>记录</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

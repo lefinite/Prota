@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>VibeMusic · Gradient</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-logo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">VibeMusic</span>
+                  <span class="brand-sub">发现你的节奏</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="个人中心" data-toast="个人中心">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 卡片：正在播放（signature：紫色渐变 + 专辑封面） -->
+            <section class="now-playing-card">
+              <div class="album-cover">
+                <div class="album-gradient">
+                  <div class="album-overlay">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                  </div>
+                </div>
+                <button class="play-btn" data-toast="播放/暂停" aria-label="播放">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                </button>
+              </div>
+              <div class="track-info">
+                <span class="track-badge">正在播放</span>
+                <h2 class="track-title">夜色温柔</h2>
+                <p class="track-artist">星河乐队 · 银河系巡演</p>
+              </div>
+              <div class="track-progress">
+                <div class="progress-bar-gradient">
+                  <div class="progress-fill" style="--p: 45%"></div>
+                </div>
+                <div class="progress-time">
+                  <span class="progress-current">2:34</span>
+                  <span class="progress-total">5:48</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 推荐歌单卡片 -->
+            <section class="playlist-section">
+              <div class="section-header">
+                <h2>推荐歌单</h2>
+                <button class="more-btn" data-toast="查看更多">更多</button>
+              </div>
+              <div class="playlist-grid">
+                <div class="playlist-card" data-playlist="chill" data-toast="打开歌单">
+                  <div class="playlist-cover playlist-cover--purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+                  </div>
+                  <span class="playlist-name">慵懒午后</span>
+                  <span class="playlist-count">24 首</span>
+                </div>
+                <div class="playlist-card" data-playlist="party" data-toast="打开歌单">
+                  <div class="playlist-cover playlist-cover--pink">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+                  </div>
+                  <span class="playlist-name">派对热曲</span>
+                  <span class="playlist-count">38 首</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 热门歌曲列表 -->
+            <section class="tracks-section">
+              <div class="section-header">
+                <h2>热门单曲</h2>
+              </div>
+              <div class="track-list" id="trackList">
+                <div class="track-item" data-type="trending">
+                  <div class="track-rank track-rank--top">1</div>
+                  <div class="track-item-cover track-item-cover--gradient-1"></div>
+                  <div class="track-item-main">
+                    <span class="track-item-title">夏日微风</span>
+                    <span class="track-item-sub">晴天乐队</span>
+                  </div>
+                  <div class="track-item-meta">
+                    <span class="track-item-duration">3:42</span>
+                    <button class="like-btn" data-toast="已收藏" aria-label="收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="track-item" data-type="trending">
+                  <div class="track-rank track-rank--top">2</div>
+                  <div class="track-item-cover track-item-cover--gradient-2"></div>
+                  <div class="track-item-main">
+                    <span class="track-item-title">午夜飞行</span>
+                    <span class="track-item-sub">极光乐团</span>
+                  </div>
+                  <div class="track-item-meta">
+                    <span class="track-item-duration">4:15</span>
+                    <button class="like-btn is-liked" data-toast="取消收藏" aria-label="取消收藏">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="track-item" data-type="trending">
+                  <div class="track-rank track-rank--top">3</div>
+                  <div class="track-item-cover track-item-cover--gradient-3"></div>
+                  <div class="track-item-main">
+                    <span class="track-item-title">城市霓虹</span>
+                    <span class="track-item-sub">电子梦</span>
+                  </div>
+                  <div class="track-item-meta">
+                    <span class="track-item-duration">3:58</span>
+                    <button class="like-btn" data-toast="已收藏" aria-label="收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="track-item" data-type="new">
+                  <div class="track-rank">4</div>
+                  <div class="track-item-cover track-item-cover--gradient-4"></div>
+                  <div class="track-item-main">
+                    <span class="track-item-title">星空漫步</span>
+                    <span class="track-item-sub">月光奏鸣曲</span>
+                  </div>
+                  <div class="track-item-meta">
+                    <span class="track-item-duration">5:12</span>
+                    <button class="like-btn" data-toast="已收藏" aria-label="收藏">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-section">
+              <button class="cta-btn cta-btn--primary" data-toast="随机播放">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /><polygon points="19 3 19 21" /></svg>
+                随机播放全部
+              </button>
+              <div class="action-row">
+                <button class="action-chip" data-toast="创建歌单">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                  创建
+                </button>
+                <button class="action-chip" data-toast="下载音乐">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                  下载
+                </button>
+                <button class="action-chip" data-toast="分享音乐">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                  分享
+                </button>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+              <span>发现</span>
+            </button>
+            <button class="tab" data-tab="library">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+              <span>乐库</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

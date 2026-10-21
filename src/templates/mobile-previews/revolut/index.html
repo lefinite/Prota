@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>寰旅钱包 · Revolut</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg
+                class="status-bar__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0"
+                />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 顶部品牌栏 -->
+            <header class="brand-bar">
+              <div class="brand-bar__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 5v14M7 12l7-7M7 12l7 7" />
+                </svg>
+              </div>
+              <div class="brand-bar__text">
+                <span class="brand-bar__name">寰旅钱包</span>
+                <span class="brand-bar__sub">多币种账户 · 已开通 4 种</span>
+              </div>
+              <button class="brand-bar__icon" type="button" data-toast="汇率到价提醒已开启 · EUR/CNY ≤ 7.75" aria-label="通知设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+              </button>
+            </header>
+
+            <!-- 2. Hero / 签名卡：深色多币种余额卡 -->
+            <section class="wallet-hero" aria-label="总余额">
+              <div class="wallet-hero__top">
+                <span class="wallet-hero__label">总余额 · 折合人民币</span>
+                <em class="wallet-hero__delta">今日 +0.4%</em>
+              </div>
+              <p class="wallet-hero__amount">¥ 32,480<i>.65</i></p>
+              <ul class="wallet-hero__rows">
+                <li>
+                  <span class="wallet-hero__flag" aria-hidden="true">🇪🇺</span>
+                  <span class="wallet-hero__code">EUR</span>
+                  <b class="wallet-hero__money">€2,340.50</b>
+                  <em class="wallet-hero__chip" data-trend="up">+0.6%</em>
+                </li>
+                <li>
+                  <span class="wallet-hero__flag" aria-hidden="true">🇺🇸</span>
+                  <span class="wallet-hero__code">USD</span>
+                  <b class="wallet-hero__money">$890.20</b>
+                  <em class="wallet-hero__chip" data-trend="down">-0.2%</em>
+                </li>
+                <li>
+                  <span class="wallet-hero__flag" aria-hidden="true">🇯🇵</span>
+                  <span class="wallet-hero__code">JPY</span>
+                  <b class="wallet-hero__money">¥45,200</b>
+                  <em class="wallet-hero__chip" data-trend="up">+0.1%</em>
+                </li>
+                <li>
+                  <span class="wallet-hero__flag" aria-hidden="true">🇬🇧</span>
+                  <span class="wallet-hero__code">GBP</span>
+                  <b class="wallet-hero__money">£120.00</b>
+                  <em class="wallet-hero__chip" data-trend="up">+0.3%</em>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 3. 双内容卡：换算器 + 旅行账单 -->
+            <section class="duo-grid" aria-label="换算与账单">
+              <div class="conv-card">
+                <h2 class="conv-card__title">汇率换算</h2>
+                <div class="conv-card__input-row">
+                  <input class="conv-card__input" id="convInput" type="number" min="0" value="100" inputmode="decimal" aria-label="换算金额" />
+                  <span class="conv-card__unit" id="convCode">EUR</span>
+                </div>
+                <div class="chips" role="group" aria-label="选择币种">
+                  <button class="chip is-active" type="button" data-rate="7.82" data-code="EUR">EUR</button>
+                  <button class="chip" type="button" data-rate="7.21" data-code="USD">USD</button>
+                  <button class="chip" type="button" data-rate="0.0472" data-code="JPY">JPY</button>
+                  <button class="chip" type="button" data-rate="9.12" data-code="GBP">GBP</button>
+                </div>
+                <p class="conv-card__result"><b id="convOut">782.00</b><i> CNY</i></p>
+              </div>
+              <div class="bill-card">
+                <h2 class="bill-card__title">旅行账单</h2>
+                <p class="bill-card__num">¥4,210</p>
+                <p class="bill-card__note">本月境外消费</p>
+                <div class="bill-card__track"><span style="--w: 64%"></span></div>
+                <p class="bill-card__save">免手续费省 <b>¥328</b></p>
+              </div>
+            </section>
+
+            <!-- 4. 汇率行情 Feed -->
+            <section class="feed" aria-label="汇率行情">
+              <div class="feed__head">
+                <h2 class="feed__title">汇率行情</h2>
+                <div class="chips" role="tablist" aria-label="筛选行情">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="up">上涨</button>
+                  <button class="chip" type="button" data-filter="down">下跌</button>
+                </div>
+              </div>
+              <ul class="feed__list" id="feedList">
+                <li class="feed-item" data-kind="up">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">EUR / CNY</span>
+                    <span class="feed-item__meta">欧元 · 实时价</span>
+                  </div>
+                  <b class="feed-item__rate">7.8214</b>
+                  <em class="feed-item__delta" data-trend="up">+0.6%</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该货币对" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="down">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">USD / CNY</span>
+                    <span class="feed-item__meta">美元 · 实时价</span>
+                  </div>
+                  <b class="feed-item__rate">7.2143</b>
+                  <em class="feed-item__delta" data-trend="down">-0.2%</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该货币对" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">GBP / CNY</span>
+                    <span class="feed-item__meta">英镑 · 实时价</span>
+                  </div>
+                  <b class="feed-item__rate">9.1207</b>
+                  <em class="feed-item__delta" data-trend="up">+0.3%</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该货币对" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">JPY / CNY</span>
+                    <span class="feed-item__meta">日元 · 实时价</span>
+                  </div>
+                  <b class="feed-item__rate">0.04722</b>
+                  <em class="feed-item__delta" data-trend="up">+0.1%</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该货币对" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="down">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">HKD / CNY</span>
+                    <span class="feed-item__meta">港币 · 实时价</span>
+                  </div>
+                  <b class="feed-item__rate">0.92414</b>
+                  <em class="feed-item__delta" data-trend="down">-0.1%</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该货币对" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+                <li class="feed-item" data-kind="up">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">CHF / CNY</span>
+                    <span class="feed-item__meta">瑞郎 · 实时价</span>
+                  </div>
+                  <b class="feed-item__rate">8.2403</b>
+                  <em class="feed-item__delta" data-trend="up">+0.2%</em>
+                  <button class="feed-item__star" type="button" aria-label="关注该货币对" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action-area" aria-label="兑换与入账">
+              <div class="action-row">
+                <button class="btn-primary" type="button" id="swapBtn">兑换货币</button>
+                <button class="btn-outline" type="button" data-toast="添加资金通道已打开 · 支持银联与 Swift">添加资金</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="首页">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 13l8-8 8 8" /><path d="M6 11.5V20h12v-8.5" />
+              </svg>
+              <span>首页</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行情">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 17l5-6 4 3 4-7 5 5" />
+              </svg>
+              <span>行情</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="兑换" aria-label="兑换货币">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8h13l-3-3M20 16H7l3 3" />
+              </svg>
+              <span>兑换</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="卡包">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="6" width="18" height="13" rx="3" /><path d="M3 10.5h18" />
+              </svg>
+              <span>卡包</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="我的">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

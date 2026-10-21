@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>DevTerm · 暗夜终端</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="terminal-prompt">›</span>
+                <div class="brand-text">
+                  <span class="brand-name">DevTerm</span>
+                  <span class="brand-sub">~ developer@workspace</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="系统状态" data-toast="系统运行正常">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
+            </header>
+
+            <!-- 系统状态卡 (signature: 终端风格状态监控) -->
+            <section class="sys-status" aria-label="系统状态">
+              <div class="sys-status__header">
+                <span class="sys-status__prompt">➜ ~</span>
+                <span class="sys-status__cmd">system status</span>
+              </div>
+              <div class="sys-status__grid">
+                <div class="sys-card">
+                  <span class="sys-card__label">CPU</span>
+                  <span class="sys-card__value sys-card__value--cyan">42%</span>
+                  <div class="sys-card__bar"><span class="sys-card__bar-fill" style="--p: 42%"></span></div>
+                </div>
+                <div class="sys-card">
+                  <span class="sys-card__label">MEM</span>
+                  <span class="sys-card__value sys-card__value--blue">68%</span>
+                  <div class="sys-card__bar"><span class="sys-card__bar-fill sys-card__bar-fill--blue" style="--p: 68%"></span></div>
+                </div>
+                <div class="sys-card">
+                  <span class="sys-card__label">DISK</span>
+                  <span class="sys-card__value">23%</span>
+                  <div class="sys-card__bar"><span class="sys-card__bar-fill" style="--p: 23%"></span></div>
+                </div>
+                <div class="sys-card">
+                  <span class="sys-card__label">NET</span>
+                  <span class="sys-card__value sys-card__value--success">↑ 2.4MB/s</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快捷命令 -->
+            <section class="cmd-quick" aria-label="快捷命令">
+              <button class="cmd-btn" data-toast="正在执行: git status">
+                <span class="cmd-btn__icon">git</span>
+                <span>git status</span>
+              </button>
+              <button class="cmd-btn" data-toast="正在执行: npm run dev">
+                <span class="cmd-btn__icon">npm</span>
+                <span>npm run dev</span>
+              </button>
+              <button class="cmd-btn" data-toast="正在执行: docker ps">
+                <span class="cmd-btn__icon">docker</span>
+                <span>docker ps</span>
+              </button>
+              <button class="cmd-btn" data-toast="正在执行: kubectl get pods">
+                <span class="cmd-btn__icon">k8s</span>
+                <span>kubectl get</span>
+              </button>
+            </section>
+
+            <!-- 进程监控双卡 -->
+            <section class="proc-row" aria-label="进程监控">
+              <div class="proc-card">
+                <div class="proc-card__head">
+                  <span class="proc-card__tag proc-card__tag--running">●</span>
+                  <span class="proc-card__name">api-server</span>
+                </div>
+                <div class="proc-card__info">
+                  <span class="proc-card__pid">PID: 8424</span>
+                  <span class="proc-card__uptime">uptime: 2h 34m</span>
+                </div>
+                <div class="proc-card__metrics">
+                  <span class="metric"><span class="metric__val">234ms</span> <span class="metric__label">latency</span></span>
+                  <span class="metric metric--cyan"><span class="metric__val">99.9%</span> <span class="metric__label">success</span></span>
+                </div>
+              </div>
+              <div class="proc-card">
+                <div class="proc-card__head">
+                  <span class="proc-card__tag proc-card__tag--pending">○</span>
+                  <span class="proc-card__name">worker-pool</span>
+                </div>
+                <div class="proc-card__info">
+                  <span class="proc-card__pid">PID: 8425</span>
+                  <span class="proc-card__uptime">uptime: 2h 34m</span>
+                </div>
+                <div class="proc-card__metrics">
+                  <span class="metric"><span class="metric__val">8</span> <span class="metric__label">workers</span></span>
+                  <span class="metric metric--warn"><span class="metric__val">12</span> <span class="metric__label">queue</span></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 日志流 -->
+            <section class="log-section" aria-label="日志流">
+              <div class="section-header">
+                <span class="log-prompt">$</span>
+                <h2>tail -f server.log</h2>
+              </div>
+
+              <ul class="log-list">
+                <li class="log-entry log-entry--info">
+                  <span class="log-time">09:41:23</span>
+                  <span class="log-level">INFO</span>
+                  <span class="log-msg">GET /api/health 200 12ms</span>
+                </li>
+                <li class="log-entry log-entry--success">
+                  <span class="log-time">09:41:21</span>
+                  <span class="log-level">SUCCESS</span>
+                  <span class="log-msg">Deployment completed successfully</span>
+                </li>
+                <li class="log-entry log-entry--warn">
+                  <span class="log-time">09:41:18</span>
+                  <span class="log-level">WARN</span>
+                  <span class="log-msg">High memory usage detected: 68%</span>
+                </li>
+                <li class="log-entry log-entry--info">
+                  <span class="log-time">09:41:15</span>
+                  <span class="log-level">INFO</span>
+                  <span class="log-msg">Worker started: pool-1-thread-8</span>
+                </li>
+                <li class="log-entry log-entry--error">
+                  <span class="log-time">09:41:12</span>
+                  <span class="log-level">ERROR</span>
+                  <span class="log-msg">Connection timeout: db-01</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 终端输入区 -->
+            <section class="terminal-input" aria-label="命令输入">
+              <span class="terminal-prompt">➜ ~</span>
+              <input type="text" placeholder="输入命令..." class="terminal-field" data-toast-placeholder="执行命令中...">
+              <button class="terminal-submit" aria-label="执行" data-toast="命令已执行">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="dashboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>仪表盘</span>
+            </button>
+            <button class="tab" data-tab="logs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>日志</span>
+            </button>
+            <button class="tab" data-tab="processes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>进程</span>
+            </button>
+            <button class="tab" data-tab="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>设置</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

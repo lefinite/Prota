@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Totality Festival · Cosmic Experience</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">◐</span>
+                <div class="brand-text">
+                  <span class="brand-name">TOTALITY</span>
+                  <span class="brand-sub">日食 · 宇宙庆典</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="菜单" data-toast="菜单 · 即将开放">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+              </button>
+            </header>
+
+            <!-- Hero 区域 - 宇宙渐变背景 -->
+            <section class="hero-section" aria-label="节日倒计时">
+              <div class="hero-gradient"></div>
+              <div class="hero-content">
+                <div class="hero-badge">
+                  <span>LIVE EXPERIENCE</span>
+                </div>
+                <h1 class="hero-title">2024 TOTALITY</h1>
+                <div class="hero-countdown">
+                  <span class="countdown-unit">
+                    <span class="countdown-value">02</span>
+                    <span class="countdown-label">DAYS</span>
+                  </span>
+                  <span class="countdown-sep">:</span>
+                  <span class="countdown-unit">
+                    <span class="countdown-value">14</span>
+                    <span class="countdown-label">HOURS</span>
+                  </span>
+                  <span class="countdown-sep">:</span>
+                  <span class="countdown-unit">
+                    <span class="countdown-value">36</span>
+                    <span class="countdown-label">MINS</span>
+                  </span>
+                </div>
+                <button class="btn-hero" data-toast="获取门票 · 即将跳转">
+                  <span>GET TICKETS</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 演出时间表卡片 -->
+            <section class="schedule-section" aria-label="演出时间表">
+              <div class="section-header">
+                <span class="section-label">LINEUP</span>
+                <h2 class="section-title">今日演出</h2>
+              </div>
+
+              <div class="schedule-list">
+                <div class="schedule-card schedule-card--active">
+                  <div class="schedule-time">
+                    <span class="time-value">20:00</span>
+                    <span class="time-status">NOW</span>
+                  </div>
+                  <div class="schedule-info">
+                    <h3 class="schedule-artist">NEBULA SONIC</h3>
+                    <p class="schedule-desc">Cosmic Stage · 电子宇宙</p>
+                  </div>
+                  <div class="schedule-indicator">
+                    <span class="live-dot"></span>
+                    <span>LIVE</span>
+                  </div>
+                </div>
+
+                <div class="schedule-card">
+                  <div class="schedule-time">
+                    <span class="time-value">22:00</span>
+                  </div>
+                  <div class="schedule-info">
+                    <h3 class="schedule-artist">ECLIPSE ORCHESTRA</h3>
+                    <p class="schedule-desc">Main Stage · 交响日全</p>
+                  </div>
+                  <div class="schedule-meta">
+                    <span>45 MIN</span>
+                  </div>
+                </div>
+
+                <div class="schedule-card">
+                  <div class="schedule-time">
+                    <span class="time-value">00:00</span>
+                  </div>
+                  <div class="schedule-info">
+                    <h3 class="schedule-artist">MIDNIGHT CORONA</h3>
+                    <p class="schedule-desc">Star Dome · 午夜日冕</p>
+                  </div>
+                  <div class="schedule-meta">
+                    <span>60 MIN</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 体验区域卡片 -->
+            <section class="zones-section" aria-label="体验区域">
+              <div class="section-header">
+                <span class="section-label">EXPLORE</span>
+                <h2 class="section-title">体验区域</h2>
+              </div>
+
+              <div class="zone-grid">
+                <div class="zone-card zone-card--amber" data-zone="cosmic">
+                  <div class="zone-icon">✦</div>
+                  <h3 class="zone-name">COSMIC STAGE</h3>
+                  <p class="zone-desc">电子音乐与光影</p>
+                  <span class="zone-status">OPEN</span>
+                </div>
+
+                <div class="zone-card zone-card--cyan" data-zone="star">
+                  <div class="zone-icon">◉</div>
+                  <h3 class="zone-name">STAR DOME</h3>
+                  <p class="zone-desc">沉浸式星空体验</p>
+                  <span class="zone-status">OPEN</span>
+                </div>
+
+                <div class="zone-card zone-card--lavender" data-zone="nexus">
+                  <div class="zone-icon">◈</div>
+                  <h3 class="zone-name">NEXUS LOUNGE</h3>
+                  <p class="zone-desc">休息与社交空间</p>
+                  <span class="zone-status">OPEN</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 互动功能区 -->
+            <section class="interactive-section" aria-label="互动功能">
+              <div class="glass-card">
+                <div class="glass-header">
+                  <span class="glass-badge">INTERACTIVE</span>
+                  <h3>参与日食仪式</h3>
+                </div>
+                <p class="glass-desc">在日全食时刻，与全球观众一起参与冥想与音乐仪式</p>
+                <button class="btn-glass" data-toast="加入仪式 · 即将开始">
+                  <span>JOIN CEREMONY</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20" /></svg>
+                </button>
+              </div>
+            </section>
+
+            <!-- 操作区 -->
+            <section class="action-bar">
+              <button class="btn-primary" data-toast="我的门票">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                <span>My Tickets</span>
+              </button>
+              <button class="btn-secondary" data-toast="地图导航">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
+                <span>Map</span>
+              </button>
+              <button class="btn-secondary" data-toast="活动信息">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                <span>Info</span>
+              </button>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>Home</span>
+            </button>
+            <button class="tab" data-tab="schedule">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+              <span>Schedule</span>
+            </button>
+            <button class="tab" data-tab="map">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /></svg>
+              <span>Map</span>
+            </button>
+            <button class="tab" data-tab="social">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              <span>Social</span>
+            </button>
+            <button class="tab" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <span>Profile</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

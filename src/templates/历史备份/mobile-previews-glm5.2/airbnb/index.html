@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Wanderlust 旅程 · Airbnb</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="demo-stage">
+    <div class="phone-shell">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="status-bar" aria-label="设备状态栏">
+          <span class="status-bar__time" id="statusTime">9:41</span>
+          <div class="status-bar__island" aria-hidden="true"></div>
+          <div class="status-bar__right" aria-hidden="true">
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18" /></svg>
+            <span class="battery"></span>
+          </div>
+        </div>
+
+        <main class="app-content" id="appContent">
+          <!-- 顶部品牌栏 + 搜索 -->
+          <header class="topbar">
+            <div class="topbar__brand">
+              <span class="brand-logo">Wanderlust</span>
+              <span class="brand-sub">探索全球独特住宿</span>
+            </div>
+            <button class="iconbtn" aria-label="愿望清单" data-toast="打开愿望清单">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
+            </button>
+          </header>
+
+          <!-- 搜索栏 -->
+          <div class="search-bar" role="search">
+            <div class="search-bar__input">
+              <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.4-4.4" /></svg>
+              <input type="text" placeholder="搜索目的地、体验" aria-label="搜索">
+            </div>
+            <button class="search-bar__submit" aria-label="搜索" data-toast="开始搜索">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
+            </button>
+          </div>
+
+          <!-- 分类标签 -->
+          <nav class="category-tabs" role="tablist" aria-label="住宿分类">
+            <button class="category-tab is-active" data-category="homes" role="tab" aria-selected="true">
+              <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4L6 14v12h8v-6h4v6h8V14L16 4z" fill="currentColor"/></svg>
+              <span>民宿</span>
+            </button>
+            <button class="category-tab" data-category="experiences" role="tab" aria-selected="false">
+              <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12S22.6 4 16 4zm-2 15l-4-4 1.4-1.4 2.6 2.6 6.6-6.6 1.4 1.4-8 8z" fill="currentColor"/></svg>
+              <span>体验</span>
+              <span class="new-badge">NEW</span>
+            </button>
+            <button class="category-tab" data-category="places" role="tab" aria-selected="false">
+              <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg>
+              <span>景点</span>
+            </button>
+          </nav>
+
+          <!-- Hero：精选房源（signature：全出血图片 + Rausch 粉色心形） -->
+          <section class="featured-section" aria-label="精选房源">
+            <h2 class="section-title">本周精选</h2>
+            <div class="featured-card">
+              <div class="featured-card__image">
+                <div class="image-placeholder" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);">
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 20l12-12 12 12M24 8v24M8 32l12 12 12-12"/></svg>
+                </div>
+                <button class="favorite-btn" aria-label="收藏" data-toast="已添加到愿望清单">
+                  <svg class="favorite-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
+                </button>
+                <div class="guest-favorite">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                  <span>4.92</span>
+                </div>
+              </div>
+              <div class="featured-card__content">
+                <span class="location-tag">京都, 日本</span>
+                <h3 class="listing-title">传统町屋 · 鸭川河畔</h3>
+                <p class="listing-desc">2间卧室 · 庭院 · 浴缸</p>
+                <div class="listing-price">
+                  <span class="price-amount">¥1,280</span>
+                  <span class="price-unit">/ 晚</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 房源列表 -->
+          <section class="listings-section" aria-label="热门房源">
+            <h2 class="section-title">热门房源</h2>
+            <ul class="listing-list" id="listingList">
+              <li class="listing-item">
+                <div class="listing-item__image">
+                  <div class="image-placeholder" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="16" width="32" height="24" rx="2"/><path d="M16 16V8h16v8"/></svg>
+                  </div>
+                  <button class="favorite-btn" aria-label="收藏" data-toast="已收藏">
+                    <svg class="favorite-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
+                  </button>
+                  <span class="listing-badge">超赞房东</span>
+                </div>
+                <div class="listing-item__content">
+                  <div class="listing-item__location">大理, 中国</div>
+                  <h3 class="listing-item__title">洱海景观别墅</h3>
+                  <p class="listing-item__desc">3间卧室 · 私人泳池 · 山景</p>
+                  <div class="listing-item__price">
+                    <span>¥856</span> / 晚
+                  </div>
+                </div>
+              </li>
+              <li class="listing-item">
+                <div class="listing-item__image">
+                  <div class="image-placeholder" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 4l-6 8h12l-6-8zM8 20h32v24H8z"/></svg>
+                  </div>
+                  <button class="favorite-btn" aria-label="收藏" data-toast="已收藏">
+                    <svg class="favorite-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
+                  </button>
+                </div>
+                <div class="listing-item__content">
+                  <div class="listing-item__location">清迈, 泰国</div>
+                  <h3 class="listing-item__title">热带雨林树屋</h3>
+                  <p class="listing-item__desc">1间卧室 · 吊床 · 早餐</p>
+                  <div class="listing-item__price">
+                    <span>¥420</span> / 晚
+                  </div>
+                </div>
+              </li>
+              <li class="listing-item">
+                <div class="listing-item__image">
+                  <div class="image-placeholder" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 36V12l16-8 16 8v24M24 4v40"/></svg>
+                  </div>
+                  <button class="favorite-btn" aria-label="收藏" data-toast="已收藏">
+                    <svg class="favorite-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
+                  </button>
+                  <span class="listing-badge listing-badge--plus">Plus</span>
+                </div>
+                <div class="listing-item__content">
+                  <div class="listing-item__location">巴厘岛, 印尼</div>
+                  <h3 class="listing-item__title">稻田别墅套房</h3>
+                  <p class="listing-item__desc">2间卧室 · 私人管家 · SPA</p>
+                  <div class="listing-item__price">
+                    <span>¥1,650</span> / 晚
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 操作区 -->
+          <section class="action-area">
+            <button class="reserve-btn" data-toast="开始预订流程">
+              立即预订
+            </button>
+            <button class="secondary-btn" data-toast="联系房东">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              联系房东
+            </button>
+          </section>
+
+          <div class="bottom-spacer" aria-hidden="true"></div>
+        </main>
+
+        <!-- 底部 Tab -->
+        <nav class="tabbar" aria-label="主导航">
+          <button class="tab is-active" data-tab="explore">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>探索</span>
+          </button>
+          <button class="tab" data-tab="wishlists">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"/></svg>
+            <span>愿望清单</span>
+          </button>
+          <button class="tab" data-tab="trips">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 17h2v-4h-4v2h2v2zm-2-6h4V8h-4v3zm-2 3h-2v-2H8v2h2v2H8v2h5v-2h2v-2zM8 8h5v2H8V8zm11-4H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V6h14v14z"/></svg>
+            <span>行程</span>
+          </button>
+          <button class="tab" data-tab="inbox">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <span>收件箱</span>
+          </button>
+          <button class="tab" data-tab="profile">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>我的</span>
+          </button>
+        </nav>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

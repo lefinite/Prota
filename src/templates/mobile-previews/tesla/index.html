@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>特站 · Tesla 风格</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" />
+              </svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" />
+              </svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 1. 品牌栏（悬浮透明）-->
+            <header class="brand-bar">
+              <span class="brand-bar__word">MODEL 3</span>
+              <button class="brand-bar__link" type="button" data-toast="已定位：地库 B2 · 017 号位">定位车辆</button>
+            </header>
+
+            <!-- 2. Hero：全幅车影 + 电量（签名：radical subtraction）-->
+            <section class="hero" aria-label="车辆状态">
+              <div class="hero__photo" role="img" aria-label="珍珠白 Model 3 侧影，停于地库">
+                <div class="hero__car" aria-hidden="true">
+                  <i class="body"></i><i class="roof"></i><i class="wheel wheel--f"></i><i class="wheel wheel--r"></i><i class="light"></i>
+                </div>
+              </div>
+              <div class="hero__stats">
+                <div class="hero__stat">
+                  <b id="batteryNum">68<i>%</i></b>
+                  <span>电量 · 342 km</span>
+                </div>
+                <div class="hero__stat">
+                  <b id="tempNum">23<i>°</i></b>
+                  <span>车内 · 已预热</span>
+                </div>
+                <div class="hero__stat">
+                  <b>08:12</b>
+                  <span>今晨出发</span>
+                </div>
+              </div>
+              <div class="hero__charge">
+                <div class="hero__charge-info">
+                  <span class="hero__charge-label">正在充电 · 交流慢充</span>
+                  <span class="hero__charge-eta" id="chargeEta">预计 03:12 充满</span>
+                </div>
+                <div class="hero__charge-bar"><span id="chargeFill"></span></div>
+              </div>
+            </section>
+
+            <!-- 3. 操作卡：车辆控制 -->
+            <section class="controls" aria-label="快捷控制">
+              <button class="controls__btn is-on" type="button" data-toast="空调已开启 · 23°C">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v8a3 3 0 1 0 3 3V3h6"/><path d="M17 3v3"/></svg>
+                <span>空调</span>
+              </button>
+              <button class="controls__btn" type="button" data-toast="前备箱已开启">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 12l2-6h14l2 6v7H3v-7z"/><path d="M3 12h18"/></svg>
+                <span>前备箱</span>
+              </button>
+              <button class="controls__btn" type="button" data-toast="喇叭已鸣响 2 秒">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M18 9a4 4 0 0 1 0 6"/></svg>
+                <span>鸣笛</span>
+              </button>
+              <button class="controls__btn" type="button" data-toast="车窗正在通风 3 分钟">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="4" width="14" height="16" rx="1"/><path d="M9 14l4-4"/></svg>
+                <span>通风</span>
+              </button>
+            </section>
+
+            <!-- 4. Feed：行程 -->
+            <section class="feed" aria-label="行程">
+              <div class="feed__head">
+                <h2 class="feed__title">行程</h2>
+                <div class="chips">
+                  <button class="chip is-active" type="button" data-filter="all">全部</button>
+                  <button class="chip" type="button" data-filter="work">通勤</button>
+                  <button class="chip" type="button" data-filter="trip">远行</button>
+                </div>
+              </div>
+              <ul class="feed__list">
+                <li class="feed-item" data-kind="work">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">家 → 公司</span>
+                    <span class="feed-item__meta">今天 08:12 · 21.4 km · 百公里 12.1 kWh</span>
+                  </div>
+                  <b class="feed-item__value">32<i>分</i></b>
+                </li>
+                <li class="feed-item" data-kind="work">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">公司 → 家</span>
+                    <span class="feed-item__meta">昨天 19:40 · 22.0 km · 晚高峰</span>
+                  </div>
+                  <b class="feed-item__value">41<i>分</i></b>
+                </li>
+                <li class="feed-item" data-kind="trip">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">杭州湾环线</span>
+                    <span class="feed-item__meta">10-11 · 186 km · AP 辅助 82%</span>
+                  </div>
+                  <b class="feed-item__value">2.1<i>时</i></b>
+                </li>
+                <li class="feed-item" data-kind="trip">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">莫干山露营往返</span>
+                    <span class="feed-item__meta">10-04 · 158 km · 外放电 3.2 kWh</span>
+                  </div>
+                  <b class="feed-item__value">2.6<i>时</i></b>
+                </li>
+                <li class="feed-item" data-kind="work">
+                  <div class="feed-item__body">
+                    <span class="feed-item__name">送机 · 浦东机场</span>
+                    <span class="feed-item__meta">10-02 · 54 km · 凌晨畅行</span>
+                  </div>
+                  <b class="feed-item__value">44<i>分</i></b>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 5. 操作区 -->
+            <section class="action" aria-label="充电与升级">
+              <div class="action__row">
+                <button class="btn-blue" type="button" id="chargeBtn">开始充电</button>
+                <button class="btn-ghost" type="button" data-toast="软件 2026.14.3 已是最新">软件更新</button>
+              </div>
+              <p class="action__note">家用充电桩 · 谷时 23:00 自动开始 · 限额 80%</p>
+            </section>
+          </main>
+
+          <!-- 6. 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tabbar__item is-active" type="button" data-tab="车辆">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13v6h-3v-2H6v2H3v-6z"/><path d="M6.5 15.5h.01M17.5 15.5h.01"/></svg>
+              <span>车辆</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="充电">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L6 13h5l-1 9 8-12h-5l1-8z"/></svg>
+              <span>充电</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="行程">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19h8a4 4 0 0 0 4-4V8"/><path d="M16 8l-3-3M16 8l3-3"/></svg>
+              <span>行程</span>
+            </button>
+            <button class="tabbar__item" type="button" data-tab="服务">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.1 2.1M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.1"/></svg>
+              <span>服务</span>
+            </button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

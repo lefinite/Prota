@@ -1,0 +1,428 @@
+/* =========================================================================
+ * mobile-previews/lamborghini — 终极座驾
+ * 设计系统：Lamborghini - 纯黑背景、金色强调、全大写排版、锐角设计
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（Lamborghini）—— */
+  --bg: #050505;
+  --surface: #141414;
+  --surface-warm: #211b0b;
+  --fg: #f8f4e6;
+  --fg-2: #d8ceb0;
+  --muted: #9b927d;
+  --meta: #d4af37;
+  --border: #3a321d;
+  --border-soft: #282315;
+  --accent: #d4af37;
+  --accent-on: #050505;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #39a852;
+  --warn: #f7c948;
+  --danger: #e63946;
+
+  /* Typography - LamboType 风格，全大写显示 */
+  --font-display: "Eurostile", "Arial Black", Arial, sans-serif;
+  --font-body: "Inter", Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 42px;
+  --text-5xl: 54px;
+  --text-6xl: 72px;
+
+  --leading-body: 1.48;
+  --leading-tight: 0.96;
+  --leading-display: 1.1;
+
+  --tracking-display: -0.025em;
+  --tracking-wide: 0.15em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Lamborghini：零圆角为主，仅徽章有小圆角 */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-pill: 9999px;
+
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 28px 84px rgba(0, 0, 0, 0.54);
+  --elev-gold: 0 0 0 1px var(--accent);
+
+  --focus-ring: 0 0 0 4px rgba(212, 175, 55, 0.32);
+
+  --motion-fast: 120ms;
+  --motion-base: 210ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* —— 手机外壳（与纯黑协调）—— */
+  --page-backdrop-top: #0a0a0a;
+  --page-backdrop-bottom: #030303;
+  --phone-shell: #141414;
+  --phone-shell-edge: #0a0a0a;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(0, 0, 0, 0.8);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(10, 10, 10, 0.96), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; font-family: var(--font-mono); }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 20px 96px; }
+
+/* ===== Page content · 终极座驾 ===== */
+
+/* 顶部品牌栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.topbar__brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: var(--radius-none);
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-on);
+}
+.brand-mark svg { width: 18px; height: 18px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-name {
+  font-size: var(--text-sm); font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.iconbtn {
+  width: 40px; height: 40px; border-radius: var(--radius-none);
+  display: grid; place-items: center; color: var(--fg);
+  background: var(--surface);
+  box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 18px; height: 18px; }
+.iconbtn:active { background: var(--surface-warm); }
+
+/* Hero Section — signature element（金色 CTA + 纯黑背景） */
+.hero-section {
+  position: relative;
+  border-radius: var(--radius-none);
+  padding: 32px 24px 28px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.hero-section__bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  opacity: 0.8;
+}
+.hero-section__content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.hero-section__eyebrow {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent);
+  text-transform: uppercase;
+  margin: 0;
+}
+.hero-section__title {
+  font-family: var(--font-display);
+  font-size: var(--text-5xl);
+  font-weight: 700;
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg);
+  text-transform: uppercase;
+  margin: 0;
+}
+.hero-section__subtitle {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* 金色 CTA — signature */
+.cta-gold {
+  margin-top: 16px;
+  padding: 14px 28px;
+  background: var(--accent);
+  color: var(--accent-on);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: var(--radius-none);
+  transition: background var(--motion-fast) var(--ease-standard);
+  width: fit-content;
+}
+.cta-gold:active {
+  background: var(--accent-active);
+}
+
+/* 六角形装饰 */
+.hero-section__hex {
+  position: absolute; bottom: 12px; right: 16px;
+  width: 24px; height: 24px;
+  color: var(--accent);
+  opacity: 0.3;
+}
+
+/* 车辆状态卡 */
+.status-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-bottom: 20px;
+}
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-none);
+  padding: 16px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.status-card__label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.status-card__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.status-card__value .unit {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+/* 驾驶模式 */
+.mode-section { margin-bottom: 20px; }
+.section-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+.mode-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.mode-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-none);
+  padding: 16px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.mode-btn--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-on);
+}
+.mode-btn:active { transform: scale(0.98); }
+.mode-btn__name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mode-btn__label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+.mode-btn--active .mode-btn__label { opacity: 1; }
+
+/* 行程列表 */
+.list-block { margin-bottom: 20px; }
+.list-block__head { margin-bottom: 12px; }
+.list-block__head h2 {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.drive-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.drive-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0; border-bottom: 1px solid var(--border-soft);
+  transition: opacity var(--motion-fast) var(--ease-standard);
+}
+.drive-item:last-child { border-bottom: 0; }
+.drive-item.is-hidden { display: none; }
+.drive-item__icon {
+  flex: none; width: 36px; height: 36px; border-radius: var(--radius-none);
+  display: grid; place-items: center;
+  background: var(--surface); color: var(--accent);
+  border: 1px solid var(--border);
+}
+.drive-item__icon svg { width: 16px; height: 16px; }
+.drive-item__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.drive-item__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+.drive-item__sub { font-size: var(--text-xs); color: var(--muted); }
+.drive-item__right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.drive-item__stat {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--fg);
+}
+.badge { font-size: 9px; font-weight: 700; padding: 3px 8px; letter-spacing: 0.05em; text-transform: uppercase; }
+.badge--gold { color: var(--accent-on); background: var(--accent); }
+.badge--alert { color: var(--accent-on); background: var(--warn); }
+
+/* 车辆提醒 */
+.alert-section { margin-bottom: 8px; }
+.alert-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-none);
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.alert-card__icon {
+  width: 20px; height: 20px; color: var(--warn);
+}
+.alert-card__text {
+  flex: 1; font-size: var(--text-sm);
+  font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: end;
+  padding: 10px 12px 18px; background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 9px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tab svg { width: 20px; height: 20px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--bg);
+  font-size: var(--text-xs);
+  font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 10px 20px; border-radius: var(--radius-none);
+  opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.hero-section, .status-grid, .mode-section, .list-block, .alert-section { animation: rise 520ms var(--ease-standard) both; }
+.status-grid { animation-delay: 70ms; }
+.mode-section { animation-delay: 140ms; }
+.list-block { animation-delay: 200ms; }
+.alert-section { animation-delay: 260ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

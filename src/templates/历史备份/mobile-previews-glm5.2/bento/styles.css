@@ -1,0 +1,303 @@
+/* =========================================================================
+ * mobile-previews/bento — BentoBoard
+ * 保留：Shared mobile frame（手机外壳）
+ * 注入：design-systems/bento 的 :root token
+ * 页面：Page content（模块化看板 App）
+ * ========================================================================= */
+
+:root {
+  /* —— 设计系统 token（design-systems/bento）—— */
+  --bg: #f5f8ff;
+  --surface: #ffffff;
+  --surface-warm: #eaf1ff;
+  --fg: #101828;
+  --fg-2: #344054;
+  --muted: #667085;
+  --meta: #2563eb;
+  --border: #d7e0ef;
+  --border-soft: #edf2f8;
+  --accent: #2563eb;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #16a34a;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --font-display: Inter, system-ui, sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 36px;
+  --text-3xl: 54px;
+  --text-4xl: 76px;
+  --leading-body: 1.52;
+  --leading-tight: 1.06;
+  --tracking-display: -0.025em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 20px 52px rgba(16, 24, 40, 0.11);
+  --focus-ring: 0 0 0 4px rgba(37, 99, 235, 0.22);
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* —— 手机外壳（与设计系统协调）—— */
+  --page-backdrop-top: #e8f0ff;
+  --page-backdrop-bottom: #d0dcfc;
+  --phone-shell: #ffffff;
+  --phone-shell-edge: #e0ecff;
+  --phone-screen: var(--bg);
+  --phone-radius: 56px;
+  --screen-radius: 46px;
+  --phone-shadow: 0 28px 72px rgba(37, 99, 235, 0.15);
+  --text-primary: var(--fg);
+  --text-secondary: var(--muted);
+  --font-ui: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.9), transparent 30%),
+    linear-gradient(180deg, var(--page-backdrop-top), var(--page-backdrop-bottom));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select { font: inherit; }
+button { border: 0; padding: 0; background: none; color: inherit; cursor: pointer; }
+
+/* ===== Shared mobile frame ===== */
+.demo-stage { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.phone-shell {
+  position: relative; width: 382px; height: 826px; padding: 10px;
+  border-radius: var(--phone-radius);
+  background: linear-gradient(180deg, var(--phone-shell), var(--phone-shell-edge));
+  box-shadow: var(--phone-shadow);
+}
+.phone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--screen-radius); background: var(--phone-screen); }
+.status-bar { position: absolute; inset: 0 0 auto; z-index: 10; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px 0; color: var(--text-primary); pointer-events: none; }
+.status-bar__time { min-width: 54px; font-size: 15px; font-weight: 700; }
+.status-bar__island { position: absolute; top: 13px; left: 50%; width: 74px; height: 22px; border-radius: 999px; background: #111217; transform: translateX(-50%); }
+.status-bar__right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 74px; }
+.status-bar__icon { width: 15px; height: 15px; }
+.battery { position: relative; width: 24px; height: 12px; border: 1.8px solid currentColor; border-radius: 4px; }
+.battery::before { content: ""; position: absolute; inset: 2px 6px 2px 2px; border-radius: 2px; background: currentColor; }
+.battery::after { content: ""; position: absolute; top: 3px; right: -4px; width: 2px; height: 5px; border-radius: 999px; background: currentColor; }
+.app-content { position: relative; z-index: 1; height: 100%; overflow: auto; padding: 60px 16px 96px; }
+
+/* ===== Page content · BentoBoard ===== */
+
+/* 顶部品牌栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.topbar__brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; font-weight: 700; font-size: 20px;
+  background: linear-gradient(135deg, var(--accent), #3b82f6);
+  color: var(--accent-on);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+.brand-name { font-size: var(--text-base); font-weight: 700; color: var(--fg); }
+.brand-sub { font-size: var(--text-xs); color: var(--muted); }
+
+.iconbtn {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: grid; place-items: center; color: var(--fg);
+  background: var(--surface);
+  box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn:active { background: var(--surface-warm); transform: scale(0.95); }
+
+/* Bento Grid（signature：模块化卡片网格） */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.bento-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--elev-ring);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+.bento-card:hover { box-shadow: var(--elev-raised); }
+.bento-card:active { transform: scale(0.98); }
+
+.bento-card__cap { font-size: var(--text-xs); color: var(--muted); font-weight: 500; }
+.bento-card__val { font-size: var(--text-2xl); font-weight: 700; color: var(--fg); line-height: 1; }
+.bento-card__foot { font-size: var(--text-xs); color: var(--muted); }
+.bento-card__progress { height: 4px; border-radius: 999px; background: var(--border-soft); overflow: hidden; margin-top: 4px; }
+.bento-card__progress::after { content: ""; display: block; height: 100%; width: var(--p); background: var(--accent); border-radius: 999px; animation: grow 800ms var(--ease-standard) both; }
+
+.trend--up { color: var(--success); }
+.trend--down { color: var(--accent); }
+
+/* 天气卡片（大块） */
+.bento-card--weather {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  color: white;
+  padding: 18px;
+}
+.weather-main { display: flex; align-items: center; gap: 16px; }
+.weather-icon { font-size: 48px; }
+.weather-temp { display: flex; flex-direction: column; }
+.weather-temp__val { font-size: 44px; font-weight: 700; line-height: 1; }
+.weather-temp__hint { font-size: var(--text-sm); opacity: 0.9; }
+.weather-meta { display: flex; justify-content: space-between; margin-top: auto; font-size: var(--text-sm); opacity: 0.9; }
+.bento-card--weather .bento-card__val { color: white; }
+
+/* 任务卡片（竖向） */
+.bento-card--tasks { grid-row: span 2; }
+
+/* 快捷操作（横向） */
+.bento-card--actions { grid-column: span 2; }
+.action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+.action-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 8px 4px; border-radius: var(--radius-sm);
+  font-size: var(--text-xs); color: var(--muted);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.action-item svg { width: 20px; height: 20px; color: var(--accent); }
+.action-item:active { background: var(--surface-warm); }
+
+/* Widget 列表 */
+.widget-section { margin-bottom: 20px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-header h2 { margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--fg); }
+.chip-add {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-size: 18px;
+  background: var(--accent); color: var(--accent-on);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.chip-add:active { transform: scale(0.9); }
+
+.widget-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.widget-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: var(--radius-md);
+  background: var(--surface); box-shadow: var(--elev-ring);
+  transition: background var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
+}
+.widget-item:active { transform: scale(0.98); }
+.widget-icon {
+  flex: none; width: 40px; height: 40px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; font-size: 20px;
+  background: var(--surface-warm);
+}
+.widget-main { flex: 1; min-width: 0; }
+.widget-title { font-size: var(--text-sm); font-weight: 600; color: var(--fg); display: block; }
+.widget-sub { font-size: var(--text-xs); color: var(--muted); display: block; margin-top: 2px; }
+.widget-arrow { flex: none; width: 18px; height: 18px; color: var(--muted); }
+
+/* 操作区 */
+.action-section { display: flex; gap: 10px; margin-bottom: 20px; }
+.btn-primary, .btn-secondary {
+  flex: 1; height: 44px; border-radius: var(--radius-md);
+  font-size: var(--text-sm); font-weight: 600;
+  display: grid; place-items: center;
+  transition: transform var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard);
+}
+.btn-primary {
+  background: var(--accent); color: var(--accent-on);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+.btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3); }
+.btn-secondary {
+  background: var(--surface); color: var(--fg);
+  box-shadow: var(--elev-ring);
+}
+.btn-secondary:active { transform: scale(0.97); }
+
+.bottom-spacer { height: 12px; }
+
+/* 底部 Tab */
+.tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
+  padding: 8px 12px 16px; background: color-mix(in oklab, var(--surface), transparent 2%);
+  backdrop-filter: blur(8px); box-shadow: 0 -1px 0 var(--border);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--muted); padding: 6px 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+.tab svg { width: 22px; height: 22px; }
+.tab.is-active { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: absolute; left: 50%; bottom: 96px; transform: translate(-50%, 12px);
+  background: var(--fg); color: var(--surface);
+  font-size: var(--text-xs); padding: 9px 16px; border-radius: var(--radius-pill);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard);
+  white-space: nowrap; z-index: 20;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 进场动画 */
+.bento-grid, .widget-section, .action-section { animation: rise 500ms var(--ease-standard) both; }
+.widget-section { animation-delay: 80ms; }
+.action-section { animation-delay: 150ms; }
+
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 460px), (max-height: 860px) {
+  .demo-stage { padding: 0; }
+  .phone-shell { width: min(100vw, 382px); height: min(100vh, 826px); padding: 0; border-radius: 0; box-shadow: none; background: var(--phone-screen); }
+  .phone-screen { border-radius: 0; }
+}
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ===== [Hide-scrollbar-patch] App 观感：隐藏滚动条，保留滚动能力 ===== */
+* {
+  scrollbar-width: none !important;   /* Firefox */
+  -ms-overflow-style: none !important; /* legacy Edge */
+}
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;           /* Chrome / Safari / Electron */
+}

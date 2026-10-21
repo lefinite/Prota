@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>内容运营控制台 · TDesign</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app" class="td-app">
+      <!-- ============ Sider ============ -->
+      <aside class="td-sider" id="sider">
+        <div class="sider-logo">
+          <span class="logo-mark">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>
+            </svg>
+          </span>
+          <span class="logo-text">灵犀运营台</span>
+        </div>
+
+        <nav class="sider-menu" aria-label="主导航">
+          <div class="menu-group-label">运营总览</div>
+          <a class="menu-item active" data-nav="dashboard" href="#">
+            <svg viewBox="0 0 24 24" class="m-ico"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            <span>控制台</span>
+          </a>
+          <a class="menu-item" data-nav="content" href="#">
+            <svg viewBox="0 0 24 24" class="m-ico"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <span>内容投放</span>
+            <span class="m-badge">12</span>
+          </a>
+
+          <div class="menu-group-label">增长分析</div>
+          <a class="menu-item" data-nav="analytics" href="#">
+            <svg viewBox="0 0 24 24" class="m-ico"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+            <span>数据看板</span>
+          </a>
+          <a class="menu-item" data-nav="abtest" href="#">
+            <svg viewBox="0 0 24 24" class="m-ico"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 0 0-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 0 0 0-1.41z"/></svg>
+            <span>AB 实验</span>
+          </a>
+
+          <div class="menu-group-label">资源管理</div>
+          <a class="menu-item" data-nav="assets" href="#">
+            <svg viewBox="0 0 24 24" class="m-ico"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>素材库</span>
+          </a>
+          <a class="menu-item" data-nav="settings" href="#">
+            <svg viewBox="0 0 24 24" class="m-ico"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>系统设置</span>
+          </a>
+        </nav>
+
+        <div class="sider-corp">
+          <div class="corp-tag">
+            <span class="corp-dot"></span>
+            企业版 · 灵犀科技
+          </div>
+          <div class="corp-quota">
+            <div class="quota-head">
+              <span>本月调用量</span>
+              <span class="quota-val">68%</span>
+            </div>
+            <div class="quota-bar"><div class="quota-fill" style="width:68%"></div></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ Main ============ -->
+      <div class="td-main">
+        <!-- Topbar -->
+        <header class="td-topbar">
+          <div class="topbar-left">
+            <button class="icon-btn" id="sider-toggle" aria-label="折叠菜单">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
+            <nav class="crumb" aria-label="面包屑">
+              <span class="crumb-item">运营总览</span>
+              <svg viewBox="0 0 24 24" class="crumb-sep" width="14" height="14" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+              <span class="crumb-item crumb-current">控制台</span>
+            </nav>
+          </div>
+          <div class="topbar-search">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="s-ico"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+            <input type="text" id="global-search" placeholder="搜索投放计划、素材名称、ID…" />
+          </div>
+          <div class="topbar-right">
+            <button class="icon-btn" title="问询中心">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+            </button>
+            <button class="icon-btn has-dot" title="通知">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            </button>
+            <div class="topbar-user">
+              <div class="user-avatar">陈</div>
+              <div class="user-meta">
+                <div class="user-name">陈思远</div>
+                <div class="user-role">内容运营负责人</div>
+              </div>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+          </div>
+        </header>
+
+        <!-- ============ Dashboard View ============ -->
+        <section class="td-view" data-view="dashboard" id="view-dashboard">
+          <!-- Page header -->
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">控制台</h1>
+              <p class="page-sub">下午好，陈思远。当前有 <b>3</b> 条投放计划待审核，<b>2</b> 条实验需关注。</p>
+            </div>
+            <div class="head-actions">
+              <button class="btn btn-outline btn-sm" data-action="refresh">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                刷新
+              </button>
+              <button class="btn btn-primary btn-sm" data-action="open-create">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                新建投放计划
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI strip -->
+          <div class="kpi-strip" id="kpi-strip"></div>
+
+          <!-- Two column: trend + pipeline -->
+          <div class="dash-grid">
+            <!-- Trend card -->
+            <div class="card trend-card">
+              <div class="card-head">
+                <div class="card-title-group">
+                  <h3 class="card-title">曝光与转化趋势</h3>
+                  <span class="card-sub">最近 14 天</span>
+                </div>
+                <div class="seg" role="tablist">
+                  <button class="seg-btn active" data-trend="exposure">曝光量</button>
+                  <button class="seg-btn" data-trend="conversion">转化率</button>
+                </div>
+              </div>
+              <div class="trend-body">
+                <div class="trend-summary">
+                  <div>
+                    <div class="trend-num" id="trend-num">1,284,690</div>
+                    <div class="trend-label" id="trend-label">累计曝光</div>
+                  </div>
+                  <div class="trend-delta up" id="trend-delta">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+                    <span>12.6%</span>
+                    <span class="trend-delta-text">较上周期</span>
+                  </div>
+                </div>
+                <div class="trend-chart" id="trend-chart"></div>
+              </div>
+            </div>
+
+            <!-- Pipeline card -->
+            <div class="card pipe-card">
+              <div class="card-head">
+                <div class="card-title-group">
+                  <h3 class="card-title">投放管线健康度</h3>
+                </div>
+                <button class="btn btn-text btn-xs" data-nav="content">查看全部</button>
+              </div>
+              <div class="pipe-list" id="pipe-list"></div>
+            </div>
+          </div>
+
+          <!-- Recent plans table -->
+          <div class="card table-card">
+            <div class="card-head">
+              <div class="card-title-group">
+                <h3 class="card-title">近期投放计划</h3>
+                <span class="card-sub">展示最近创建的 6 条计划</span>
+              </div>
+              <button class="btn btn-text btn-xs" data-nav="content">进入内容投放</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>计划名称</th>
+                    <th>渠道</th>
+                    <th>状态</th>
+                    <th>目标受众</th>
+                    <th class="num-col">曝光</th>
+                    <th class="num-col">转化率</th>
+                    <th class="num-col">消耗</th>
+                    <th>更新时间</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Content View ============ -->
+        <section class="td-view hidden" data-view="content" id="view-content">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">内容投放</h1>
+              <p class="page-sub">管理所有内容投放计划，跟踪投放效果与审核状态</p>
+            </div>
+            <div class="head-actions">
+              <button class="btn btn-outline btn-sm" data-action="export">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                导出
+              </button>
+              <button class="btn btn-primary btn-sm" data-action="open-create">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                新建投放计划
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter bar -->
+          <div class="filter-bar">
+            <div class="filter-tabs">
+              <button class="ftab active" data-ftab="all">全部 <span class="ftab-count" id="ftab-count-all">0</span></button>
+              <button class="ftab" data-ftab="running"><i class="ftab-dot ftab-dot-blue"></i>投放中 <span class="ftab-count" id="ftab-count-running">0</span></button>
+              <button class="ftab" data-ftab="review">待审核 <span class="ftab-count" id="ftab-count-review">0</span></button>
+              <button class="ftab" data-ftab="ended">已结束 <span class="ftab-count" id="ftab-count-ended">0</span></button>
+            </div>
+            <div class="filter-controls">
+              <div class="input-mini">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="im-ico"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+                <input type="text" id="table-search" placeholder="搜索计划名称" />
+              </div>
+              <div class="select-mini">
+                <select id="filter-channel">
+                  <option value="all">全部渠道</option>
+                  <option value="wechat">微信生态</option>
+                  <option value="douyin">抖音</option>
+                  <option value="xiaohongshu">小红书</option>
+                  <option value="bilibili">哔哩哔哩</option>
+                  <option value="app">自有App</option>
+                </select>
+              </div>
+              <div class="select-mini">
+                <select id="sort-by">
+                  <option value="time-desc">最近更新</option>
+                  <option value="exposure-desc">曝光最高</option>
+                  <option value="cost-desc">消耗最高</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch toolbar -->
+          <div class="batch-bar hidden" id="batch-bar">
+            <div class="batch-left">
+              <button class="btn btn-text btn-xs" data-action="clear-selection">取消</button>
+              <span class="batch-info">已选 <b id="batch-count">0</b> 项</span>
+            </div>
+            <div class="batch-actions">
+              <button class="btn btn-outline btn-sm" data-action="batch-pause">批量暂停</button>
+              <button class="btn btn-danger-outline btn-sm" data-action="batch-end">批量结束</button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card table-card table-card-flush">
+            <div class="table-wrap">
+              <table class="data-table data-table-select">
+                <thead>
+                  <tr>
+                    <th class="th-check"><input type="checkbox" id="check-all" aria-label="全选" /></th>
+                    <th>计划名称</th>
+                    <th>渠道</th>
+                    <th>状态</th>
+                    <th class="num-col">曝光</th>
+                    <th class="num-col">点击率</th>
+                    <th class="num-col">转化率</th>
+                    <th class="num-col">消耗</th>
+                    <th>投放周期</th>
+                    <th class="th-actions">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="content-tbody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span class="footer-info" id="content-footer-info">共 0 条</span>
+              <div class="pager" id="pager"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Placeholder views -->
+        <section class="td-view hidden" data-view="analytics">
+          <div class="empty-view">
+            <div class="empty-ico">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+            </div>
+            <h3>数据看板</h3>
+            <p>渠道归因、人群漏斗与 ROI 模型将在此呈现，支持自定义指标卡片。</p>
+          </div>
+        </section>
+        <section class="td-view hidden" data-view="abtest">
+          <div class="empty-view">
+            <div class="empty-ico">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 0 0-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 0 0 0-1.41z"/></svg>
+            </div>
+            <h3>AB 实验</h3>
+            <p>当前有 <b>2</b> 条实验处于观察期，显著性达标后将自动提示结案。</p>
+          </div>
+        </section>
+        <section class="td-view hidden" data-view="assets">
+          <div class="empty-view">
+            <div class="empty-ico">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            </div>
+            <h3>素材库</h3>
+            <p>图文、视频与落地页素材的统一管理中心，支持版本与权限控制。</p>
+          </div>
+        </section>
+        <section class="td-view hidden" data-view="settings">
+          <div class="empty-view">
+            <div class="empty-ico">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </div>
+            <h3>系统设置</h3>
+            <p>团队成员、API 密钥、通知规则与计费方案。</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============ Detail Drawer ============ -->
+      <div class="drawer-mask hidden" id="drawer-mask"></div>
+      <aside class="detail-drawer hidden" id="detail-drawer" aria-hidden="true">
+        <div class="drawer-header">
+          <div>
+            <span class="drawer-status" id="drawer-status">投放中</span>
+            <h2 class="drawer-title" id="drawer-title">计划详情</h2>
+          </div>
+          <button class="drawer-close" data-action="close-drawer" aria-label="关闭">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div class="drawer-body" id="drawer-body"></div>
+        <div class="drawer-footer" id="drawer-footer"></div>
+      </aside>
+
+      <!-- ============ Create Dialog ============ -->
+      <div class="dialog-mask hidden" id="create-mask"></div>
+      <div class="dialog hidden" id="create-dialog" role="dialog" aria-modal="true">
+        <div class="dialog-header">
+          <h3 class="dialog-title">新建投放计划</h3>
+          <button class="dialog-close" data-action="close-create" aria-label="关闭">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <div class="form-row">
+            <label class="form-label">计划名称 <span class="req">*</span></label>
+            <input class="form-input" id="create-name" type="text" placeholder="例如：618 大促·品牌专场" />
+          </div>
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label">投放渠道 <span class="req">*</span></label>
+              <div class="select-mini select-full">
+                <select id="create-channel">
+                  <option value="wechat">微信生态</option>
+                  <option value="douyin">抖音</option>
+                  <option value="xiaohongshu">小红书</option>
+                  <option value="bilibili">哔哩哔哩</option>
+                  <option value="app">自有App</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">内容类型</label>
+              <div class="select-mini select-full">
+                <select id="create-type">
+                  <option value="article">图文</option>
+                  <option value="video">短视频</option>
+                  <option value="live">直播</option>
+                  <option value="h5">落地页</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">目标受众</label>
+            <div class="audience-chips" id="audience-chips">
+              <button class="chip active" data-audience="new">拉新用户</button>
+              <button class="chip" data-audience="active">活跃用户</button>
+              <button class="chip" data-audience="sleep">沉睡召回</button>
+              <button class="chip" data-audience="vip">高价值会员</button>
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label">每日预算（元）</label>
+              <input class="form-input" id="create-budget" type="number" placeholder="5000" value="5000" />
+            </div>
+            <div>
+              <label class="form-label">投放周期</label>
+              <input class="form-input" id="create-range" type="text" value="2026-08-12 ~ 2026-08-25" />
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">备注</label>
+            <textarea class="form-textarea" id="create-note" rows="2" placeholder="补充说明，例如素材对接人、特殊定向条件…"></textarea>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn btn-text" data-action="close-create">取消</button>
+          <button class="btn btn-outline btn-sm" data-action="create-draft">存为草稿</button>
+          <button class="btn btn-primary btn-sm" data-action="create-submit" id="create-submit">提交审核</button>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+      <script src="./app.js"></script>
+    </div>
+  </body>
+</html>

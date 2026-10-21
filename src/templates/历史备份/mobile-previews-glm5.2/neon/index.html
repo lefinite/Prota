@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>NEON NIGHTS · Neon</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <span class="brand-mark">N</span>
+                <div class="brand-text">
+                  <span class="brand-name">NEON NIGHTS</span>
+                  <span class="brand-sub">夜生活指南</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Hero signature：霓虹光晕特效 -->
+            <section class="hero-card" aria-label="今夜焦点">
+              <div class="hero-card__glow" aria-hidden="true"></div>
+              <p class="hero-card__label">TONIGHT'S HEADLINER</p>
+              <h1 class="hero-card__title">ELECTRIC DREAMS</h1>
+              <p class="hero-card__subtitle">赛博朋克 · 电子音乐节</p>
+              <div class="hero-card__meta">
+                <span class="hero-card__time">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  22:00 - 04:00
+                </span>
+                <span class="hero-card__loc">上海 · 碧云</span>
+              </div>
+              <button class="hero-card__cta" data-toast="已加入预约列表">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5v14h14V5M12 12l5-5M12 12l-5-5M12 12V5"/></svg>
+                立即预约
+              </button>
+            </section>
+
+            <!-- 热门活动卡 -->
+            <section class="stat-row" aria-label="热门活动">
+              <div class="event-card event-card--purple">
+                <div class="event-card__glow event-card__glow--purple"></div>
+                <span class="event-card__tag">LIVE</span>
+                <span class="event-card__title">霓虹集市</span>
+                <span class="event-card__sub">创意市集</span>
+              </div>
+              <div class="event-card event-card--pink">
+                <div class="event-card__glow event-card__glow--pink"></div>
+                <span class="event-card__tag">DJ</span>
+                <span class="event-card__title">午夜派对</span>
+                <span class="event-card__sub">地下电子</span>
+              </div>
+            </section>
+
+            <!-- 活动列表 -->
+            <section class="list-block" aria-label="近期活动">
+              <div class="list-block__head">
+                <h2>近期活动</h2>
+                <div class="chips" id="filterChips" role="tablist" aria-label="筛选活动">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="music" role="tab" aria-selected="false">音乐</button>
+                  <button class="chip" data-filter="art" role="tab" aria-selected="false">艺术</button>
+                </div>
+              </div>
+
+              <ul class="event-list" id="eventList">
+                <li class="event" data-type="music">
+                  <span class="event__icon event__icon--music">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  </span>
+                  <div class="event__main">
+                    <span class="event__title">Synthwave Night</span>
+                    <span class="event__sub">周五 23:00 · 复古合成波</span>
+                  </div>
+                  <div class="event__right">
+                    <span class="event__price">¥128</span>
+                    <span class="badge badge--glow">热映中</span>
+                  </div>
+                </li>
+                <li class="event" data-type="art">
+                  <span class="event__icon event__icon--art">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                  </span>
+                  <div class="event__main">
+                    <span class="event__title">霓虹艺术展</span>
+                    <span class="event__sub">周六 14:00 · 光影装置</span>
+                  </div>
+                  <div class="event__right">
+                    <span class="event__price">¥68</span>
+                    <span class="badge badge--success">售票中</span>
+                  </div>
+                </li>
+                <li class="event" data-type="music">
+                  <span class="event__icon event__icon--music">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  </span>
+                  <div class="event__main">
+                    <span class="event__title">Bass Drop</span>
+                    <span class="event__sub">周日 22:00 · 低音电子</span>
+                  </div>
+                  <div class="event__right">
+                    <span class="event__price">¥158</span>
+                    <span class="badge badge--muted">即将开场</span>
+                  </div>
+                </li>
+                <li class="event" data-type="art">
+                  <span class="event__icon event__icon--art">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                  </span>
+                  <div class="event__main">
+                    <span class="event__title">赛博画廊</span>
+                    <span class="event__sub">下周六 10:00 · 数字艺术</span>
+                  </div>
+                  <div class="event__right">
+                    <span class="event__price">¥88</span>
+                    <span class="badge badge--warn">早鸟</span>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 预算/进度条 -->
+            <section class="progress-card" aria-label="本月活动">
+              <div class="progress-card__head">
+                <span class="progress-card__title">本月活动</span>
+                <span class="progress-card__num">4 <span class="muted">/ 8 场</span></span>
+              </div>
+              <div class="progress-card__bar" aria-hidden="true">
+                <span class="progress-card__bar-fill" style="--p: 50%"></span>
+              </div>
+              <p class="progress-card__note">再参加 4 场达成目标，解锁专属霓虹徽章。</p>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10" /></svg>
+              <span>首页</span>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2-6.3z"/></svg>
+              <span>探索</span>
+            </button>
+            <button class="tab tab--fab" data-tab="scan" aria-label="扫码">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 8h8v8H8z"/></svg>
+            </button>
+            <button class="tab" data-tab="tickets">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M10 6h4M10 10h4M10 14h4"/></svg>
+              <span>票夹</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

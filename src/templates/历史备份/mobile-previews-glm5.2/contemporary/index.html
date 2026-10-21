@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>WorkGrid · Contemporary</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <div class="brand-mark">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </div>
+                <div class="brand-text">
+                  <span class="brand-name">WorkGrid</span>
+                  <span class="brand-sub">团队协作空间</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="搜索" data-toast="搜索功能即将开放">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
+            </header>
+
+            <!-- Bento 仪表盘（signature：便当盒式数据网格） -->
+            <section class="bento-dashboard" aria-label="项目仪表盘">
+              <div class="bento-main">
+                <div class="bento-hero">
+                  <span class="bento-label">本周进度</span>
+                  <p class="bento-number">87<span class="bento-percent">%</span></p>
+                  <div class="bento-progress">
+                    <span class="bento-progress-fill" style="--p: 87%"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="bento-side">
+                <div class="bento-stat bento-stat--tasks">
+                  <span class="bento-stat-icon">✓</span>
+                  <span class="bento-stat-num">24</span>
+                  <span class="bento-stat-label">已完成</span>
+                </div>
+                <div class="bento-stat bento-stat--pending">
+                  <span class="bento-stat-icon">○</span>
+                  <span class="bento-stat-num">8</span>
+                  <span class="bento-stat-label">进行中</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 快速入口 -->
+            <section class="quick-access">
+              <button class="quick-entry" data-toast="新建任务">
+                <div class="quick-entry-icon quick-entry-icon--primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+                </div>
+                <span>新建任务</span>
+              </button>
+              <button class="quick-entry" data-toast="日程安排">
+                <div class="quick-entry-icon quick-entry-icon--secondary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v6"/><path d="M8 2v6"/><path d="M3 10h18"/></svg>
+                </div>
+                <span>日程</span>
+              </button>
+              <button class="quick-entry" data-toast="团队日历">
+                <div class="quick-entry-icon quick-entry-icon--tertiary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <span>团队</span>
+              </button>
+              <button class="quick-entry" data-toast="文件中心">
+                <div class="quick-entry-icon quick-entry-icon--quaternary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <span>文件</span>
+              </button>
+            </section>
+
+            <!-- 任务列表 -->
+            <section class="task-list" aria-label="今日任务">
+              <div class="list-header">
+                <h2>今日任务</h2>
+                <div class="chips" id="taskChips" role="tablist">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+                  <button class="chip" data-filter="todo" role="tab" aria-selected="false">待办</button>
+                  <button class="chip" data-filter="done" role="tab" aria-selected="false">完成</button>
+                </div>
+              </div>
+
+              <ul class="task-items" id="taskList">
+                <li class="task" data-type="todo">
+                  <button class="task-check" aria-label="标记完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <div class="task-main">
+                    <span class="task-title">完成 UI 设计稿评审</span>
+                    <span class="task-meta">设计团队 · 高优先级</span>
+                  </div>
+                  <span class="task-tag task-tag--urgent">紧急</span>
+                </li>
+                <li class="task" data-type="done">
+                  <button class="task-check is-checked" aria-label="标记未完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <div class="task-main">
+                    <span class="task-title task-title--done">更新产品需求文档</span>
+                    <span class="task-meta">产品团队 · 已完成</span>
+                  </div>
+                  <span class="task-tag task-tag--done">完成</span>
+                </li>
+                <li class="task" data-type="todo">
+                  <button class="task-check" aria-label="标记完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <div class="task-main">
+                    <span class="task-title">代码审查 PR #234</span>
+                    <span class="task-meta">开发团队 · 中优先级</span>
+                  </div>
+                  <span class="task-tag task-tag--normal">普通</span>
+                </li>
+                <li class="task" data-type="todo">
+                  <button class="task-check" aria-label="标记完成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <div class="task-main">
+                    <span class="task-title">准备周会演示材料</span>
+                    <span class="task-meta">管理团队 · 今天截止</span>
+                  </div>
+                  <span class="task-tag task-tag--deadline">截止</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- 项目卡片 -->
+            <section class="project-cards">
+              <div class="project-card">
+                <div class="project-header">
+                  <div class="project-avatar" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                    <span>M</span>
+                  </div>
+                  <div class="project-info">
+                    <span class="project-name">移动端重构</span>
+                    <span class="project-meta">4 个活跃任务</span>
+                  </div>
+                </div>
+                <div class="project-progress">
+                  <span class="progress-label">进度 65%</span>
+                  <div class="progress-bar">
+                    <span class="progress-fill" style="--p: 65%"></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              <span>概览</span>
+            </button>
+            <button class="tab" data-tab="tasks">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span>任务</span>
+            </button>
+            <button class="tab tab--fab" data-tab="add" aria-label="新建">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="tab" data-tab="calendar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v6"/><path d="M8 2v6"/><path d="M3 10h18"/></svg>
+              <span>日历</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+              <span>我的</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

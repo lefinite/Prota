@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>PR Watch · GitHub</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="demo-stage">
+      <div class="phone-shell">
+        <div class="phone-screen" id="phoneScreen">
+          <div class="status-bar" aria-label="设备状态栏">
+            <span class="status-bar__time" id="statusTime">9:41</span>
+            <div class="status-bar__island" aria-hidden="true"></div>
+            <div class="status-bar__right" aria-hidden="true">
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 20V4" /></svg>
+              <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v.01M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 14 0M1.5 9.5a15 15 0 0 1 21 0" /></svg>
+              <span class="battery"></span>
+            </div>
+          </div>
+
+          <main class="app-content" id="appContent">
+            <!-- 顶部品牌栏 -->
+            <header class="topbar">
+              <div class="topbar__brand">
+                <svg class="brand-logo" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                <div class="brand-text">
+                  <span class="brand-name">PR Watch</span>
+                  <span class="brand-sub">Pull Request 监控</span>
+                </div>
+              </div>
+              <button class="iconbtn" aria-label="通知" data-toast="暂无新通知">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+                <span class="iconbtn__dot" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- PR 统计卡（signature：功能密度 + 状态药丸） -->
+            <section class="stats-card" aria-label="PR 统计">
+              <div class="stats-card__header">
+                <h2 class="stats-card__title">Pull Requests</h2>
+                <span class="stats-card__repo">octocat / hello-world</span>
+              </div>
+              <div class="stats-grid">
+                <div class="stat-item stat-item--open">
+                  <span class="stat-item__count">12</span>
+                  <span class="stat-item__label">Open</span>
+                </div>
+                <div class="stat-item stat-item--merged">
+                  <span class="stat-item__count">48</span>
+                  <span class="stat-item__label">Merged</span>
+                </div>
+                <div class="stat-item stat-item--closed">
+                  <span class="stat-item__count">3</span>
+                  <span class="stat-item__label">Closed</span>
+                </div>
+                <div class="stat-item stat-item--draft">
+                  <span class="stat-item__count">5</span>
+                  <span class="stat-item__label">Draft</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 筛选栏 -->
+            <section class="filter-bar">
+              <div class="filter-bar__left">
+                <span class="filter-label">Filter</span>
+                <div class="chips" id="prChips" role="tablist" aria-label="筛选 PR">
+                  <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+                  <button class="chip" data-filter="open" role="tab" aria-selected="false">Open</button>
+                  <button class="chip" data-filter="merged" role="tab" aria-selected="false">Merged</button>
+                </div>
+              </div>
+              <button class="sort-btn" data-toast="切换排序方式">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M9 18h6" /></svg>
+              </button>
+            </section>
+
+            <!-- PR 列表（密集列表行） -->
+            <ul class="pr-list" id="prList">
+              <li class="pr-item" data-type="open">
+                <div class="pr-item__icon">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM12 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/></svg>
+                </div>
+                <div class="pr-item__main">
+                  <div class="pr-item__header">
+                    <span class="pr-item__title">
+                      <a href="#" class="pr-link">feat: add user authentication flow</a>
+                    </span>
+                    <span class="badge badge--open">Open</span>
+                  </div>
+                  <p class="pr-item__meta">#142 opened 2 hours ago by <span class="user-link">chen-dev</span></p>
+                  <div class="pr-item__labels">
+                    <span class="label label--enhancement">enhancement</span>
+                    <span class="label label--auth">auth</span>
+                  </div>
+                </div>
+              </li>
+              <li class="pr-item" data-type="merged">
+                <div class="pr-item__icon">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/></svg>
+                </div>
+                <div class="pr-item__main">
+                  <div class="pr-item__header">
+                    <span class="pr-item__title">
+                      <a href="#" class="pr-link">fix: resolve memory leak in WebSocket handler</a>
+                    </span>
+                    <span class="badge badge--merged">Merged</span>
+                  </div>
+                  <p class="pr-item__meta">#138 merged 5 hours ago by <span class="user-link">wang-fix</span></p>
+                  <div class="pr-item__labels">
+                    <span class="label label--bug">bug</span>
+                  </div>
+                </div>
+              </li>
+              <li class="pr-item" data-type="open">
+                <div class="pr-item__icon">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM12 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/></svg>
+                </div>
+                <div class="pr-item__main">
+                  <div class="pr-item__header">
+                    <span class="pr-item__title">
+                      <a href="#" class="pr-link">docs: update API documentation for v2.0</a>
+                    </span>
+                    <span class="badge badge--open">Open</span>
+                  </div>
+                  <p class="pr-item__meta">#135 opened yesterday by <span class="user-link">li-docs</span></p>
+                  <div class="pr-item__labels">
+                    <span class="label label--docs">documentation</span>
+                  </div>
+                </div>
+              </li>
+              <li class="pr-item" data-type="closed">
+                <div class="pr-item__icon">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/></svg>
+                </div>
+                <div class="pr-item__main">
+                  <div class="pr-item__header">
+                    <span class="pr-item__title">
+                      <a href="#" class="pr-link">refactor: migrate to TypeScript</a>
+                    </span>
+                    <span class="badge badge--closed">Closed</span>
+                  </div>
+                  <p class="pr-item__meta">#128 closed 2 days ago by <span class="user-link">zhang-ts</span></p>
+                  <div class="pr-item__labels">
+                    <span class="label label--refactor">refactor</span>
+                    <span class="label label--ts">typescript</span>
+                  </div>
+                </div>
+              </li>
+              <li class="pr-item" data-type="merged">
+                <div class="pr-item__icon">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/></svg>
+                </div>
+                <div class="pr-item__main">
+                  <div class="pr-item__header">
+                    <span class="pr-item__title">
+                      <a href="#" class="pr-link">chore: upgrade dependencies to latest versions</a>
+                    </span>
+                    <span class="badge badge--merged">Merged</span>
+                  </div>
+                  <p class="pr-item__meta">#125 merged 3 days ago by <span class="user-link">dependabot</span></p>
+                  <div class="pr-item__labels">
+                    <span class="label label--chore">dependencies</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+
+            <!-- 创建 PR 按钮 -->
+            <div class="action-bar">
+              <button class="btn btn--primary" data-toast="创建新 PR">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                New pull request
+              </button>
+            </div>
+
+            <div class="bottom-spacer" aria-hidden="true"></div>
+          </main>
+
+          <!-- 底部 Tab -->
+          <nav class="tabbar" aria-label="主导航">
+            <button class="tab is-active" data-tab="pulls">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></svg>
+              <span>Pulls</span>
+            </button>
+            <button class="tab" data-tab="issues">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+              <span>Issues</span>
+            </button>
+            <button class="tab" data-tab="explore">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
+              <span>Explore</span>
+            </button>
+            <button class="tab" data-tab="me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+              <span>Profile</span>
+            </button>
+          </nav>
+
+          <!-- Toast -->
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
