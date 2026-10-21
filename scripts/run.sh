@@ -14,6 +14,9 @@ if [ -f ".env" ]; then
     set +a
 fi
 
+# Initialize the shared workspace before starting Python and Node concurrently.
+python3 -c 'from server.workspace import workspace_root; workspace_root()'
+
 lsof -ti :8080 | xargs kill -9 2>/dev/null || true
 lsof -ti :8081 | xargs kill -9 2>/dev/null || true
 

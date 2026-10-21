@@ -27,7 +27,7 @@ export function getWorkspaceRoot() {
         const manifest = JSON.parse(fs.readFileSync(path.join(root, 'workspace.json'), 'utf8'));
         if (manifest.formatVersion !== 1 || !manifest.id) throw new Error('工作区清单无效，请在设置中重新选择。');
     }
-    return root;
+    return fs.realpathSync(root);
 }
 export function workspaceLocked() {
     return fs.existsSync(path.join(configDirectory, 'workspace.lock'));
