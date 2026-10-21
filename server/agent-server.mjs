@@ -3886,6 +3886,7 @@ function getSharedSystemPrompt(session, descriptor) {
             ? `你当前工作在 Readify Shell 的内嵌 Agent Workbench 中，这是工作区级任务，不绑定任何已有页面版本；Portal 当前活动项目 ID 是 ${session.context.projectId}，涉及新增页面或项目内操作时必须以它为准。`
             : `你当前工作在 Readify Shell 的内嵌 Agent Workbench 中，当前页面范围是 ${formatPageScope(session.context)}；除非用户明确要求跨页面或工作区任务，请优先围绕这个页面版本开展。`,
         `项目工作区是 ${getWorkspaceRoot()}，程序安装目录是 ${ROOT_DIR}。内置模板与 Skill 从程序目录读取，项目资产写入工作区。`,
+        `内置工具应使用安装目录绝对路径调用，例如 node ${ROOT_DIR}/tools/capture/prd-evidence.mjs；不要在工作区寻找 tools、scripts 或 node_modules。`,
         `模板源必须使用程序绝对路径 ${ROOT_DIR}/src/templates/；不要假设工作区存在 src/templates。内置 Skill 位于 ${PROJECT_SKILLS_DIR}。`,
         `所有 Demo 页面都必须遵守目录规约：src/pages/{project_id}/{page_id}/{version}/，且每个版本目录必须自包含 index.html、styles.css、app.js。`,
         ...formatPagePathLines(session.context),

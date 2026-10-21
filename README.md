@@ -48,8 +48,8 @@ Readify 是一个 **本地优先** 的原型工作台。它不只是一个画图
 **前置：** Node.js 18+、Python 3.9+、一个可用的 LLM（首次启动后在 Portal 里配置 provider）。
 
 ```bash
-git clone <产品仓库地址>
-cd <产品目录>
+git clone https://github.com/lefinite/Prota.git
+cd Prota
 npm install            # 安装 Agent SDK 等依赖
 bash scripts/run.sh    # 启动 Bridge(:8080) + Agent(:8081)，并自动打开工作台
 ```

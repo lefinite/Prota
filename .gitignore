@@ -34,3 +34,14 @@ __pycache__/
 .claude/skills/**/user-preferences.md
 .design-previews/
 tmp/
+
+# Local agent/editor state and generated design experiments.
+.agents/
+.trae/
+.stfolder/
+.claude/CLAUDE.md
+design-previews/
+.tmp-*.mjs
+_diag-*.mjs
+tmp_*.mjs
+skills-lock.json
