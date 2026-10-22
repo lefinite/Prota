@@ -10,11 +10,13 @@
     "mindmap:bundle": "esbuild portal/modules/mindmap/bundle-entry.js --bundle --format=esm --minify --outfile=portal/modules/mindmap/vendor/mindmap-react.bundle.mjs --log-level=warning",
     "public": "bash scripts/start-public.sh",
     "playwright:install": "npx playwright install chromium",
-    "release:prepare": "python3 tools/public-release.py"
+    "release:prepare": "python3 tools/public-release.py",
+    "vercel": "node scripts/vercel-cli.mjs"
   },
   "dependencies": {
     "@codeany/open-agent-sdk": "^0.2.1",
-    "playwright": "^1.60.0"
+    "playwright": "^1.60.0",
+    "vercel": "50.1.3"
   },
   "devDependencies": {
     "@xiangfa/mindmap": "^0.6.5",
@@ -22,5 +24,8 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "scheduler": "^0.27.0"
+  },
+  "engines": {
+    "node": ">=22.9.0"
   }
 }

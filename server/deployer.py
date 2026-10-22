@@ -54,7 +54,7 @@ def read_vercel_auth():
         if not team and (directory / 'config.json').is_file():
             team = json.loads((directory / 'config.json').read_text()).get('currentTeam')
     if not token:
-        raise ValueError('请先在本机终端执行 npx vercel login，然后重新发布。')
+        raise ValueError('请先在本机终端执行 npm run vercel -- login（在产品安装目录执行），然后重新发布。')
     return token, team
 
 
@@ -94,7 +94,7 @@ def vercel_api(endpoint, token, team=None, method='GET'):
             return json.load(response)
     except urllib.error.HTTPError as exc:
         if exc.code in {401, 403}:
-            raise ValueError('Vercel 登录已失效或没有项目权限，请执行 npx vercel login 后重试。') from None
+            raise ValueError('Vercel 登录已失效或没有项目权限，请执行 npm run vercel -- login（在产品安装目录执行）后重试。') from None
         raise ValueError(f'Vercel 请求失败（HTTP {exc.code}），请检查项目配置。') from None
 
 
@@ -249,10 +249,15 @@ class VercelDeployer:
                 directory = Path(temporary)
                 static = self.prepare(directory, share_files)
                 workspace.atomic_json(directory / '.vercel/project.json', {k: config[k] for k in ['projectId', 'orgId']})
-                binary = shutil.which('vercel')
-                cached = sorted((Path.home() / '.npm/_npx').glob('*/node_modules/vercel/dist/index.js'), key=lambda file: file.stat().st_mtime, reverse=True)
-                command = [binary] if binary else [shutil.which('node') or 'node', str(cached[0])] if cached else [shutil.which('npx') or 'npx', '--yes', '--prefer-offline', 'vercel']
+                node = shutil.which('node')
+                if not node:
+                    raise ValueError('未找到 Node.js，请安装 Node.js 并在产品安装目录执行 npm ci。')
+                command = [node, str(self.app / 'scripts/vercel-cli.mjs')]
                 env = {**deployment_environment(), 'NO_COLOR': '1', 'VERCEL_ORG_ID': config['orgId'], 'VERCEL_PROJECT_ID': config['projectId']}
+                dependency = subprocess.run([*command, '--prota-check'], env=env,
+                                            capture_output=True, text=True, timeout=15)
+                if dependency.returncode:
+                    raise ValueError('Vercel CLI 依赖缺失或版本不匹配，请在产品安装目录执行 npm ci 后重试。')
                 result = subprocess.run([*command, 'deploy', '--prebuilt', '--prod', '--yes', '--cwd', str(directory)],
                                         env=env, capture_output=True, text=True, timeout=300)
                 if result.returncode:

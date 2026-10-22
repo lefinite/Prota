@@ -17,16 +17,17 @@ fi
 # Initialize the shared workspace before starting Python and Node concurrently.
 python3 -c 'from server.workspace import workspace_root; workspace_root()'
 
-lsof -ti :8080 | xargs kill -9 2>/dev/null || true
-lsof -ti :8081 | xargs kill -9 2>/dev/null || true
-
 echo "🚀 Starting Readify Portal..."
 mkdir -p logs
 
-if [ ! -d "node_modules/@codeany/open-agent-sdk" ]; then
-    echo "📦 Installing Node dependencies..."
-    npm install
+if [ ! -d "node_modules/@codeany/open-agent-sdk" ] || ! node scripts/vercel-cli.mjs --prota-check >/dev/null 2>&1; then
+    echo "📦 Installing locked product dependencies (including Vercel CLI)..."
+    npm ci
 fi
+node scripts/vercel-cli.mjs --prota-check
+
+lsof -ti :8080 | xargs kill -9 2>/dev/null || true
+lsof -ti :8081 | xargs kill -9 2>/dev/null || true
 
 python3 server/bridge.py > logs/bridge.log 2>&1 &
 BRIDGE_PID=$!

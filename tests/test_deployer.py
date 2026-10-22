@@ -3,6 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 from server.deployer import VercelDeployer, share_payload
 
 
@@ -10,7 +11,7 @@ class DirectPublishTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.base = Path(self.tmp.name)
+        self.base = Path(self.tmp.name).resolve()
         self.app, self.root = self.base/'app', self.base/'workspace'
         self.write(self.app, 'portal/shell.js', 'return /* __READIFY_DATA_START__ */{"secret":"private index"} /* __READIFY_DATA_END__ */;')
         self.write(self.app, 'portal/index.html', '<html></html>')
@@ -63,6 +64,42 @@ class DirectPublishTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'自动部署已关闭'):
                 self.deployer.deploy(self.share)
             command.assert_not_called()
+
+    def configure_publish(self):
+        config = self.base / 'config'
+        self.write(config, 'vercel.json', json.dumps({'projectId':'fixture-project', 'orgId':'fixture-team', 'staticDomain':''}))
+        return config
+
+    def test_deploy_uses_product_wrapper_and_isolated_output_preserving_links(self):
+        config = self.configure_publish()
+        seen = []
+        def run(command, **kwargs):
+            seen.append(command)
+            self.assertEqual(command[:2], ['/fixture/node', str(self.app/'scripts/vercel-cli.mjs')])
+            if command[-1] == '--prota-check':
+                return SimpleNamespace(returncode=0, stdout='', stderr='')
+            self.assertEqual(command[2:7], ['deploy', '--prebuilt', '--prod', '--yes', '--cwd'])
+            directory = Path(command[-1])
+            self.assertTrue(directory.is_relative_to(config/'vercel-publish'))
+            self.assertFalse((directory/'.vercel/output/static/data/projects.json').exists())
+            self.assertTrue((directory/'.vercel/output/static/shares/reader-v1-static.html').is_file())
+            return SimpleNamespace(returncode=0, stdout='https://share.example.com\n', stderr='')
+        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node') as which, patch('server.deployer.subprocess.run', side_effect=run):
+            self.assertEqual(self.deployer.deploy(self.share), 'https://share.example.com')
+            which.assert_called_once_with('node')
+        self.assertEqual(len(seen), 2)
+        self.assertTrue((self.root/'data/published-static/reader-v1-static.html').is_file())
+        self.assertTrue((self.root/'data/published-static/shares/reader-v1-static.html').is_file())
+
+    def test_missing_cli_stops_before_upload_and_preserves_previous_snapshot(self):
+        config = self.configure_publish()
+        snapshot = self.write(self.root, 'data/published-static/old.html', 'previous public bytes')
+        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node'), patch('server.deployer.subprocess.run', return_value=SimpleNamespace(returncode=1, stdout='', stderr='missing dependency')) as command:
+            with self.assertRaisesRegex(ValueError, 'npm ci'):
+                self.deployer.deploy(self.share)
+            command.assert_called_once()
+            self.assertEqual(command.call_args.args[0][-1], '--prota-check')
+        self.assertEqual(snapshot.read_text(), 'previous public bytes')
 
     def test_download_archive_omits_hidden_credentials_and_rejects_symlinks(self):
         import io

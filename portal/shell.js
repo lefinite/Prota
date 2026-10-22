@@ -6913,12 +6913,16 @@ class DemoShell {
         this.agentActiveSkill = null;
         const staticDomain = this.staticDomainInput?.value?.trim() || this.settings?.staticDomain || 'share.你的域名.com';
         const prompt = [
-            '请配置 Vercel 直接部署分享，保留现有域名 ' + staticDomain + ' 和分享路径。',
-            '先执行 python3 scripts/configure-vercel.py --domain ' + staticDomain + '，读取本机登录并定位该域名所属的现有 Vercel 项目。',
-            '凭据失效时指导我执行 npx vercel login；不得把 token 写入源码、工作区或聊天。',
-            '分享只通过独立 Build Output 目录直接部署，禁止 git add、commit、push，禁止上传完整工作区。',
-            '验证既有项目的 Git 集成，完成直接部署验证后再断开原 Git 仓库，避免旧流程覆盖分享。',
-            '不要新建替代域名，不要删除历史部署。分享域名仍需遵守公司的访问要求。'
+            '请配置 Vercel 直接部署分享，沿用分享域名 ' + staticDomain + ' 和原分享路径；已配置的项目先检查状态，不重复创建。',
+            '先从系统运行上下文确定程序安装目录。当前 Agent 工作目录是独立的业务工作区，请使用程序安装目录内 scripts/configure-vercel.py 的绝对路径，以 python3 调用并传入 --domain ' + staticDomain + '。不要在业务工作区寻找这个脚本。',
+            '该脚本只关联已绑定域名的现有 Vercel 项目，不负责创建项目或配置 DNS。先确认本机 Vercel 账号、团队及域名所属项目。',
+            '确实没有分享项目时，在独立空目录创建仅包含空白 index.html 的引导项目，再通过上述产品 CLI 入口执行 deploy --cwd 加空白目录绝对路径创建分享项目（不可省略 --cwd）；禁止从产品目录或业务工作区直接部署。域名必须先在该项目绑定并按控制台提示配置 DNS，然后再执行关联脚本。',
+            '登录、初始化项目和版本检查一律使用产品安装目录内 scripts/vercel-cli.mjs 的绝对路径，以 node 调用，例如 node /产品安装目录/scripts/vercel-cli.mjs login；产品目录内也可使用 npm run vercel -- login。禁止调用全局 vercel、npx vercel 或随意升级 latest。CLI 缺失或版本不符时先在产品安装目录执行 npm ci；更新产品后也通过 npm ci 并重启统一更新 CLI。',
+            '凭据失效时指导我使用上述产品入口重新登录；不得把 token 写入源码、工作区或聊天。不要要求把产品仓库导入 Vercel，不要把 Output Directory 设置为 shares。',
+            '分享通过独立 Build Output 目录直接部署，禁止 git add、commit、push，禁止上传完整工作区。保留已发布快照，叠加本次明确分享的页面，不同步其他页面的未分享修改。',
+            '开启 vercelAutoDeploy 并保存正确域名，使用经过确认的分享内容验证部署和原链接。不能把本地文件生成或部署失败当作线上成功。',
+            '完成直接部署验证后，仅在仍有关联的旧 Git 仓库时断开该关联，避免旧流程覆盖分享。',
+            '不要新建替代域名，不要删除已有分享或发布快照，不要在本次配置中清理历史部署。访问权限保持用户已选择的策略。'
         ].join('\n');
         if (this.agentInput) this.agentInput.value = prompt;
         this.renderAgentWorkbench();
