@@ -110,6 +110,17 @@ python3 -m unittest discover -s tests -p "test_*.py"   # Python tests
 
 Project conventions for agents (directory layout, versioning, page registration) are in [AGENTS.md](./AGENTS.md).
 
+## License and acknowledgments
+
+Prota is available under the [MIT License](./LICENSE). You may use, modify, distribute and sell it, including in closed-source products, provided you retain the copyright and license notice identifying [Prota by lefinite](https://github.com/lefinite/Prota) as the original project.
+
+Many of the design templates are sourced or adapted from [OpenDesign](https://github.com/nexu-io/open-design); thanks to its creators. Third-party templates, assets and dependencies remain subject to their respective licenses and notices.
+
 ---
 
 <p align="center">From idea to delivery. <b>Prota helps great ideas ship faster.</b></p>
+
+<p align="center">If Prota helps you, consider sponsoring a few tokens.</p>
+<p align="center">
+  <img src="./assets/readme/sponsor.jpg" width="320" alt="Sponsor Prota via WeChat">
+</p>

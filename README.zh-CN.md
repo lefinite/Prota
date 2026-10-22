@@ -109,6 +109,17 @@ python3 -m unittest discover -s tests -p "test_*.py"  # Python 测试
 
 给 Agent 的项目规约（目录结构、版本迭代、页面注册）见 [AGENTS.md](./AGENTS.md)。
 
+## 开源协议与致谢
+
+Prota 采用 [MIT 协议](./LICENSE)，允许自由使用、修改、分发、商用及闭源使用，只需保留版权与许可声明，其中注明了原始项目为 [lefinite 的 Prota](https://github.com/lefinite/Prota)。
+
+项目中的许多设计模板来自或改编自 [OpenDesign](https://github.com/nexu-io/open-design)，感谢原作者的分享。第三方模板、素材及依赖仍遵循各自的许可证与署名要求。
+
 ---
 
 <p align="center">从想法到交付，<b>Prota，让好想法更快落地。</b></p>
+
+<p align="center">如果 Prota 对你有帮助，欢迎赞助一点 Token。</p>
+<p align="center">
+  <img src="./assets/readme/sponsor.jpg" width="320" alt="微信赞赏码：赞助 Token">
+</p>
