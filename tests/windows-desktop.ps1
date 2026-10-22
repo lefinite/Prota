@@ -10,7 +10,7 @@ if ($LASTEXITCODE) { throw 'git archive failed' }
 Expand-Archive -LiteralPath $archive -DestinationPath $product
 $env:READIFY_CONFIG_DIR=Join-Path $base 'config'
 $env:READIFY_PORT='18080'; $env:READIFY_AGENT_PORT='18081'
-$env:PROTA_NO_OPEN='1'; $env:PROTA_MANAGED_NODE_ONLY='1'
+$env:PROTA_NO_OPEN='1'; $env:PROTA_LAUNCHER_TEST_UI='1'; $env:PROTA_MANAGED_NODE_ONLY='1'
 Remove-Item Env:READIFY_WORKSPACE -ErrorAction SilentlyContinue
 $cache=Join-Path $env:LOCALAPPDATA 'Prota'
 function Launch-And-Wait($cold) {
@@ -27,7 +27,7 @@ function Launch-And-Wait($cold) {
             if ($state.show) { $visible=$true; [void]$seen.Add([int]$state.step) }
             if ($state.state -eq 'error') { throw $state.detail }
         }
-        if (!$windowSeen -and (Get-Process powershell -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -eq 'Prota' -and $_.MainWindowHandle -ne 0 })) { $windowSeen=$true }
+        if (Get-ChildItem -LiteralPath $cache -Filter 'launch-*.json.ui' -ErrorAction SilentlyContinue) { $windowSeen=$true }
         Start-Sleep -Milliseconds 100
         $app.Refresh()
     }

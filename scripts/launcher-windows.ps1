@@ -2,6 +2,14 @@
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class ProtaLauncherWindow {
+    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr handle, int command);
+    [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr handle);
+}
+'@
 [Windows.Forms.Application]::EnableVisualStyles()
 $cache=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Prota'
 [IO.Directory]::CreateDirectory($cache) | Out-Null
@@ -36,6 +44,7 @@ try {
         $process=Start-Process -FilePath $info.FileName -ArgumentList $info.Arguments -WindowStyle Hidden -PassThru -RedirectStandardOutput $outLog -RedirectStandardError $errLog
         $null=$process.Handle
         $failure=$null
+        $windowRecorded=$false
         while (!$process.HasExited) {
             if (Test-Path -LiteralPath $statusFile) {
                 try {
@@ -43,7 +52,17 @@ try {
                     if ($state.show) {
                         $title.Text=$state.title; $detail.Text=$state.detail
                         $steps.Text='第 '+$state.step+'/4 步 · 运行环境 → Python → 产品依赖 → 工作台'
-                        if (!$form.Visible) { $form.Show(); $form.Activate() }
+                        if (!$form.Visible) { $form.Show() }
+                        if (![ProtaLauncherWindow]::IsWindowVisible($form.Handle)) { [void][ProtaLauncherWindow]::ShowWindow($form.Handle,5) }
+                        if (!$windowRecorded -and [ProtaLauncherWindow]::IsWindowVisible($form.Handle)) {
+                            $form.Activate(); $windowRecorded=$true
+                            if ($env:PROTA_LAUNCHER_TEST_UI -eq '1') {
+                                [IO.File]::WriteAllText($statusFile+'.ui','visible')
+                                $form.Refresh()
+                                $image=New-Object Drawing.Bitmap($form.Width,$form.Height)
+                                try { $form.DrawToBitmap($image,(New-Object Drawing.Rectangle(0,0,$form.Width,$form.Height))); $image.Save((Join-Path $cache 'preparation.png')) } finally { $image.Dispose() }
+                            }
+                        }
                     }
                     if ($state.state -eq 'error') { $failure=$state.detail }
                 } catch { }
@@ -67,4 +86,5 @@ try {
 } finally {
     $form.Dispose()
     Remove-Item -LiteralPath $statusFile -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath ($statusFile+'.ui') -ErrorAction SilentlyContinue
 }
