@@ -4,10 +4,10 @@ $source=(Resolve-Path "$PSScriptRoot\..").Path
 $product=Join-Path $base 'product'
 New-Item -ItemType Directory -Path $product -Force | Out-Null
 # Copy the committed product only, never developer caches or business data.
-& git -C $source archive --format=tar -o (Join-Path $base 'product.tar') HEAD
+$archive=Join-Path $env:RUNNER_TEMP 'prota-product.zip'
+& git -C $source archive --format=zip -o $archive HEAD
 if ($LASTEXITCODE) { throw 'git archive failed' }
-& tar.exe -xf (Join-Path $base 'product.tar') -C $product
-if ($LASTEXITCODE) { throw 'extract failed' }
+Expand-Archive -LiteralPath $archive -DestinationPath $product
 $env:READIFY_CONFIG_DIR=Join-Path $base 'config'
 $env:READIFY_PORT='18080'; $env:READIFY_AGENT_PORT='18081'
 $env:PROTA_NO_OPEN='1'; $env:PROTA_MANAGED_NODE_ONLY='1'

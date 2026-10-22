@@ -39,8 +39,11 @@ try {
     if (!(Test-Path -LiteralPath $node) -and !$env:PROTA_MANAGED_NODE_ONLY) { $command=Get-Command node.exe -ErrorAction SilentlyContinue; if ($command) { $node=$command.Source } }
     $ready=$false
     if ($node -and (Test-Path -LiteralPath $node)) {
-        & $node -e 'const fs=require("fs"),p=require("path"),[a,b]=process.versions.node.split(".").map(Number);process.exit((a>22||a===22&&b>=9)&&fs.existsSync(p.join(p.dirname(process.execPath),"node_modules/npm/bin/npm-cli.js"))?0:1)'
-        $ready=$LASTEXITCODE -eq 0
+        $versionOutput=& $node --version
+        $npm=Join-Path (Split-Path -Parent $node) 'node_modules\npm\bin\npm-cli.js'
+        if ($LASTEXITCODE -eq 0 -and $versionOutput -match '^v(\d+)\.(\d+)\.') {
+            $ready=([int]$Matches[1] -gt 22 -or ([int]$Matches[1] -eq 22 -and [int]$Matches[2] -ge 9)) -and (Test-Path -LiteralPath $npm)
+        }
     }
     if (!$ready) {
         Write-State 1 '准备运行环境' '正在下载 Node.js，首次启动需要一些时间。'

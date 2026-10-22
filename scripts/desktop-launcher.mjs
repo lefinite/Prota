@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolveVercelCLI } from '../server/vercel-cli.mjs';
+import { extractRuntime } from './runtime-archive.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 try { process.loadEnvFile(path.join(root, '.env')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
@@ -88,7 +89,8 @@ export async function pythonRuntime(candidates = windows ? [path.join(runtime, '
         }
         const actual = crypto.createHash('sha256').update(fs.readFileSync(archive)).digest('hex');
         if (!/^[a-f0-9]{64}$/.test(expected) || actual !== expected) throw Error('Python 下载校验未通过，请重试。');
-        execute(windows ? path.join(process.env.SystemRoot, 'System32/tar.exe') : '/usr/bin/tar', ['-xzf', archive, '-C', temporary]);
+        if (windows) extractRuntime(archive, temporary);
+        else execute('/usr/bin/tar', ['-xzf', archive, '-C', temporary]);
         const relativeBinary = windows ? 'python.exe' : 'bin/python3';
         const binary = path.join(temporary, 'python', relativeBinary);
         execute(binary, ['-c', 'import ssl, http.server, sys;assert sys.version_info >= (3,9)']);
