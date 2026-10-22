@@ -6,12 +6,7 @@
   <b>English</b> · <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
-<p align="center">
-  <a href="./assets/readme/video/prota-intro-en.mp4">
-    <img src="./assets/readme/video-poster-en.jpg" width="100%" alt="Watch the 77-second Prota product tour">
-  </a>
-</p>
-<!-- For inline playback on GitHub: drag assets/readme/video/prota-intro-en.mp4 into the GitHub web editor, then replace the block above with the generated https://github.com/user-attachments/assets/... link on its own line. -->
+https://github.com/user-attachments/assets/21d60f86-e12e-456d-b857-c80f1837dc50
 
 ## Got an idea?
 
