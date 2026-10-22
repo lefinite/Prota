@@ -6,7 +6,7 @@ const icons = {
     models: svg('<rect x="5" y="5" width="14" height="14" rx="3"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3"/>'),
     close: svg('<path d="m18 6-12 12M6 6l12 12"/>')
 };
-const labels = { storage: '存储位置', sharing: '分享配置', models: '模型配置' };
+const labels = { models: '模型配置', storage: '存储位置', sharing: '分享配置' };
 
 export class UnifiedSettings {
     constructor(shell) {
@@ -17,7 +17,7 @@ export class UnifiedSettings {
         this.root = document.createElement('div');
         this.root.className = 'unified-settings';
         this.root.hidden = true;
-        this.root.innerHTML = `<div class="us-scrim" data-us-close></div><section class="us-window" role="dialog" aria-modal="true" aria-labelledby="usTitle" tabindex="-1"><aside class="us-sidebar"><h2 id="usTitle">设置</h2><p>工作区与应用偏好</p><nav aria-label="设置分类">${Object.entries(labels).map(([id,label]) => `<button type="button" data-us-tab="${id}" aria-controls="us-${id}">${icons[id]}<span>${label}</span><i aria-label="有未保存修改"></i></button>`).join('')}</nav></aside><main class="us-main"><header class="us-heading"><div><h3 id="usSectionTitle">存储位置</h3><p id="usSectionHint">选择独立文件夹，保存你的项目资产。</p><span id="usSaveFeedback" class="us-save-feedback" role="status"></span></div><button type="button" class="us-close" data-us-close aria-label="关闭设置">${icons.close}</button></header><div class="us-body"><section id="us-storage" class="us-storage"><div id="usSetup" class="us-callout" hidden><strong>给项目选择一个存放位置</strong><p>项目资产可独立于程序保存；已有项目可以完整迁移。</p><button type="button" class="us-link" data-us-keep>暂时使用原位置</button></div><label class="us-field-label">当前工作区</label><div class="us-path"><code id="usCurrentPath">正在读取…</code><span id="usAvailability"></span></div><div class="us-path-actions"><button type="button" class="us-link" data-us-copy>复制路径</button></div><p class="us-description">包含项目页面、素材、PRD、标注、会话与附件。<br>程序、内置模板与模型密钥单独保存在本机。</p><div class="us-storage-actions"><button type="button" class="us-primary" data-us-mode="migrate">更改位置</button><button type="button" class="us-secondary" data-us-mode="open">打开已有工作区</button><button type="button" class="us-link" data-us-mode="new">新建工作区</button></div><section id="usLocationForm" class="us-location-form" hidden><h4 id="usLocationTitle">迁移当前工作区</h4><label for="usTarget">目标文件夹</label><div class="us-choose-row"><input id="usTarget" type="text" autocomplete="off" spellcheck="false" placeholder="选择文件夹，或输入本机完整路径"><button type="button" class="us-secondary" data-us-choose>选择文件夹</button></div><small>选择的是运行 Prota 的这台电脑上的文件夹。</small><div class="us-form-actions"><button type="button" class="us-secondary" data-us-location-cancel>取消</button><button type="button" class="us-primary" data-us-plan>检查位置</button></div></section><section id="usPlan" class="us-plan" hidden><h4 id="usPlanTitle">确认迁移</h4><dl><dt>来源</dt><dd id="usSource"></dd><dt>目标</dt><dd id="usDestination"></dd><dt>内容</dt><dd id="usContents"></dd></dl><p id="usPlanHint">复制并校验成功后才切换，原位置的文件会保留。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-plan-cancel>返回修改</button><button type="button" class="us-primary" data-us-change>确认迁移</button></div></section><div id="usProgress" class="us-callout" hidden role="status"></div><div id="usStorageError" class="us-error" role="alert"></div></section><section id="us-sharing" hidden></section><section id="us-models" hidden></section></div><div id="usGuard" class="us-guard" role="alertdialog" aria-modal="true" aria-labelledby="usGuardTitle" hidden><div><h3 id="usGuardTitle">有尚未保存的修改</h3><p>保存后继续，或放弃本次修改。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-guard-cancel>继续编辑</button><button type="button" class="us-secondary" data-us-discard>放弃修改</button><button type="button" class="us-primary" data-us-save-continue>保存并继续</button></div><div class="us-error" id="usGuardError" role="alert"></div></div></div></main></section>`;
+        this.root.innerHTML = `<div class="us-scrim" data-us-close></div><section class="us-window" role="dialog" aria-modal="true" aria-labelledby="usTitle" tabindex="-1"><aside class="us-sidebar"><h2 id="usTitle">设置</h2><nav aria-label="设置分类">${Object.entries(labels).map(([id,label]) => `<button type="button" data-us-tab="${id}" aria-controls="us-${id}">${icons[id]}<span>${label}</span><i aria-label="有未保存修改"></i></button>`).join('')}</nav></aside><main class="us-main"><header class="us-heading"><div><h3 id="usSectionTitle">存储位置</h3><p id="usSectionHint">选择独立文件夹，保存你的项目资产。</p><span id="usSaveFeedback" class="us-save-feedback" role="status"></span></div><button type="button" class="us-close" data-us-close aria-label="关闭设置">${icons.close}</button></header><div class="us-body"><section id="us-storage" class="us-storage"><div id="usSetup" class="us-callout" hidden><strong>给项目选择一个存放位置</strong><p>项目资产可独立于程序保存；已有项目可以完整迁移。</p><button type="button" class="us-link" data-us-keep>暂时使用原位置</button></div><div class="us-storage-label"><label class="us-field-label" for="usCurrentPath">保存文件夹</label><p>项目与聊天记录自动保存在这里。</p></div><div class="us-folder"><div class="us-folder-location"><span class="us-folder-icon">${icons.storage}</span><div class="us-folder-text"><strong id="usFolderName">正在读取…</strong><code id="usCurrentPath">正在读取…</code></div></div><div class="us-folder-footer"><span>本机存储</span><div class="us-path-buttons"><button type="button" class="us-secondary" data-us-mode="migrate" title="将现有内容复制到空文件夹，并切换保存位置">迁移到</button><button type="button" class="us-primary" data-us-mode="switch" title="只切换保存文件夹，不迁移现有内容">更改</button></div></div></div><span id="usAvailability" role="status"></span><section id="usLocationForm" class="us-location-form" hidden><h4 id="usLocationTitle">迁移当前工作区</h4><label for="usTarget">目标文件夹</label><div class="us-choose-row"><input id="usTarget" type="text" autocomplete="off" spellcheck="false" placeholder="点击右侧选择文件夹，也可粘贴完整路径"><button type="button" class="us-secondary" data-us-choose>选择文件夹</button></div><small id="usLocationHint">选择一个空文件夹，现有项目会自动复制过去。</small><div class="us-form-actions"><button type="button" class="us-secondary" data-us-location-cancel>取消</button><button type="button" class="us-primary" data-us-plan>继续</button></div></section><section id="usPlan" class="us-plan" hidden><h4 id="usPlanTitle">确认迁移</h4><dl><dt>来源</dt><dd id="usSource"></dd><dt>目标</dt><dd id="usDestination"></dd><dt>内容</dt><dd id="usContents"></dd></dl><p id="usPlanHint">复制并校验成功后才切换，原位置的文件会保留。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-plan-cancel>返回修改</button><button type="button" class="us-primary" data-us-change>确认迁移</button></div></section><div id="usProgress" class="us-callout" hidden role="status"></div><div id="usStorageError" class="us-error" role="alert"></div></section><section id="us-sharing" hidden></section><section id="us-models" hidden></section></div><div id="usGuard" class="us-guard" role="alertdialog" aria-modal="true" aria-labelledby="usGuardTitle" hidden><div><h3 id="usGuardTitle">有尚未保存的修改</h3><p>保存后继续，或放弃本次修改。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-guard-cancel>继续编辑</button><button type="button" class="us-secondary" data-us-discard>放弃修改</button><button type="button" class="us-primary" data-us-save-continue>保存并继续</button></div><div class="us-error" id="usGuardError" role="alert"></div></div></div></main></section>`;
         document.body.append(this.root);
         this.dialog = this.root.querySelector('.us-window');
         const trigger = document.createElement('button');
@@ -25,7 +25,7 @@ export class UnifiedSettings {
         trigger.innerHTML = document.querySelector('#shareSettingsBtn svg')?.outerHTML || icons.settings;
         trigger.title = '设置'; trigger.setAttribute('aria-label', '设置'); trigger.setAttribute('aria-haspopup', 'dialog');
         document.querySelector('.content-header')?.append(trigger);
-        trigger.addEventListener('click', () => this.open('storage'));
+        trigger.addEventListener('click', () => this.open('models'));
         for (const [id, panel] of [['sharing', shell.shareSettingsModal], ['models', shell.agentConfigModal]]) {
             if (!panel) continue;
             this.root.querySelector(`#us-${id}`).append(panel);
@@ -34,7 +34,17 @@ export class UnifiedSettings {
         this.root.addEventListener('click', event => this.click(event));
         const touch = event => { const tab = event.target.closest('#us-models') ? 'models' : event.target.closest('#us-sharing') ? 'sharing' : null; if (tab) this.userTouched.add(tab); this.refreshDirty(); };
         this.root.addEventListener('input', touch);
+        this.root.addEventListener('input', event => { if (event.target.id === 'staticDomainInput') this.shell.vercelConnection?.updateSummary(); });
         this.root.addEventListener('change', touch);
+        this.root.addEventListener('change', event => {
+            if (event.target.name !== 'shareSetup') return;
+            const mode = event.target.value;
+            if (mode === 'custom' && this.shell.staticDomainInput.value.endsWith('.vercel.app')) this.shell.staticDomainInput.value = this.customDomainDraft || '';
+            if (mode === 'vercel' && !this.shell.staticDomainInput.value.endsWith('.vercel.app')) this.customDomainDraft = this.shell.staticDomainInput.value;
+            this.shell.gitAutoPushCheckbox.checked = true;
+            this.updateShareChoice(mode);
+            this.refreshDirty();
+        });
         this.root.addEventListener('click', event => { if (event.target.closest('#providerFormContent')) this.userTouched.add('models'); }, true);
         // Capture Escape before legacy modal handlers. Keep keyboard focus inside
         // the single visible settings window, including the unsaved-change guard.
@@ -71,7 +81,7 @@ export class UnifiedSettings {
             if (this.workspace.needsSetup || !this.workspace.available) this.open('storage');
         } catch (error) { this.loadError = error.message; }
     }
-    async open(tab = 'storage') {
+    async open(tab = 'models') {
         const opening = this.root.hidden;
         if (opening) {
             this.returnFocus = document.activeElement;
@@ -81,6 +91,7 @@ export class UnifiedSettings {
             this.background.forEach(node => node.inert = true);
         }
         this.setTab(tab);
+        if (opening) this.q('.us-body').scrollTop = 0;
         if (opening) this.q(`[data-us-tab="${tab}"]`).focus();
         if (tab === 'storage') {
             try { this.workspace = await this.api(''); this.renderWorkspace(); }
@@ -89,24 +100,44 @@ export class UnifiedSettings {
     }
     setTab(tab) {
         if (!labels[tab] || this.busy) return;
+        const changed = this.tab !== tab;
         if (!this.initialized.has(tab)) {
-            if (tab === 'sharing') { this.shell.renderSettingsInfo(); this.shell.settingsHelpOpen = false; this.shell.shareSettingsModal.querySelector('.settings-modal__dialog')?.classList.add('is-collapsed'); this.shell.updateHelpBannerText(); }
+            if (tab === 'sharing') { this.shell.renderSettingsInfo(); this.shell.settingsHelpOpen = false; this.shell.updateHelpBannerText(); }
             if (tab === 'models') { this.shell.syncAgentConfigForm(); this.shell.renderProviderList(); }
             this.initialized.add(tab); this.markSaved(tab);
         }
         this.tab = tab;
+        this.root.dataset.tab = tab;
+        if (tab === 'storage') this.api('').then(data => { this.workspace = data; this.renderWorkspace(); }).catch(error => this.error(error.message));
         this.q('#usSaveFeedback').textContent = '';
         for (const id of Object.keys(labels)) this.q(`#us-${id}`).hidden = id !== tab;
         this.shell.shareSettingsOpen = tab === 'sharing'; this.shell.shareSettingsModal.hidden = tab !== 'sharing';
         this.shell.agentConfigModalOpen = tab === 'models'; this.shell.agentConfigModal.hidden = tab !== 'models';
-        this.q('#usSectionTitle').textContent = tab === 'storage' ? '项目存放位置' : labels[tab];
-        this.q('#usSectionHint').textContent = { storage: '选择独立文件夹，保存你的项目资产。', sharing: '当前工作区的分享域名与发布策略。', models: '连接信息保存在本机，不随工作区迁移。' }[tab];
+        this.q('#usSectionTitle').textContent = labels[tab];
+        this.q('#usSectionHint').textContent = { storage: '选择项目在电脑上的保存位置。', sharing: '把原型发给别人看，先选择适合你的方式。', models: '选择服务商，填写 API Key，再选择要使用的模型。' }[tab];
         for (const button of this.root.querySelectorAll('[data-us-tab]')) { button.classList.toggle('is-active', button.dataset.usTab === tab); button.setAttribute('aria-current', button.dataset.usTab === tab ? 'page' : 'false'); }
         this.refreshDirty();
+        if (changed) this.q('.us-body').scrollTop = 0;
+        if (tab === 'sharing') this.shell.vercelConnection?.refresh();
     }
+    updateShareChoice(mode) {
+        mode = mode === 'custom' ? 'custom' : 'vercel';
+        this.shell.gitAutoPushCheckbox.checked = true;
+        const selected = this.q(`[name=shareSetup][value=${mode}]`);
+        if (selected) selected.checked = true;
+        this.q('#shareChoiceTitle').textContent = mode === 'vercel' ? '无需购买域名，适合快速分享' : '使用专属网址，方便识别与长期对外分享';
+        this.q('#shareChoiceDescription').textContent = mode === 'vercel' ? '使用 Vercel 提供的固定 *.vercel.app 项目地址。同一页面版本重新发布后，链接不变，打开即可查看更新。' : '使用你拥有的域名，体现产品或团队品牌。同一页面版本重新发布后链接不变，将来更换托管服务也可保留域名。需要先购买域名并完成解析设置。';
+        this.shell.staticDomainInput.closest('.settings-form__group').hidden = mode !== 'custom';
+        this.shell.staticDomainInput.disabled = mode !== 'custom';
+        this.shell.gitAutoPushCheckbox.closest('.settings-form__group').hidden = true;
+        for (const guide of this.root.querySelectorAll('[data-share-guide]')) guide.hidden = guide.dataset.shareGuide !== mode;
+        this.shell.staticDomainInput.placeholder = '例如 share.example.com';
+        this.shell.vercelConnection?.updateSummary();
+    }
+
     snapshot(tab) {
         const selector = tab === 'models' ? '#providerFormContent' : '#shareSettingsForm';
-        return JSON.stringify({ fields: [...this.q(selector)?.querySelectorAll('input,select,textarea') || []].map(input => [input.id, input.type === 'checkbox' ? input.checked : input.value]), models: tab === 'models' ? this.shell.getSelectedProvider()?.models || [] : undefined });
+        return JSON.stringify({ fields: [...this.q(selector)?.querySelectorAll('input,select,textarea') || []].map(input => [input.id, ['checkbox','radio'].includes(input.type) ? input.checked : input.id === 'staticDomainInput' && input.disabled ? '' : input.value]), models: tab === 'models' ? this.shell.getSelectedProvider()?.models || [] : undefined });
     }
     markSaved(tab, announce = false) { const existing = this.baselines[tab] !== undefined; this.baselines[tab] = this.snapshot(tab); this.userTouched.delete(tab); this.refreshDirty(); if (announce && existing && !this.root.hidden) { this.setFeedback(`${labels[tab]}已保存`); clearTimeout(this.feedbackTimer); this.feedbackTimer = setTimeout(() => this.q('#usSaveFeedback').textContent = '', 2500); } }
     dirtyPanels() { return ['sharing','models'].filter(tab => this.initialized.has(tab) && this.userTouched.has(tab) && this.baselines[tab] !== this.snapshot(tab)); }
@@ -131,8 +162,10 @@ export class UnifiedSettings {
     renderWorkspace() {
         const data = this.workspace;
         this.q('#usCurrentPath').textContent = data.path;
-        this.q('#usAvailability').textContent = !data.available ? '不可用' : data.legacy ? '程序目录' : '独立工作区';
-        this.q('#usSetup').hidden = !data.needsSetup;
+        this.q('#usFolderName').textContent = data.path?.split(/[\\/]/).filter(Boolean).at(-1) || data.path;
+        this.q('#usCurrentPath').title = data.path;
+        this.q('#usAvailability').textContent = !data.available ? '不可用，请重新选择文件夹。' : '';
+        this.q('#usSetup').hidden = true;
         if (data.error) this.error(data.error);
         if (data.job?.state === 'running' && !this.polling) this.pollJob(data.job.id);
     }
@@ -159,7 +192,24 @@ export class UnifiedSettings {
             }
             if (this.busy) return;
             if (button.dataset.usMode) {
-                this.guard(() => { this.mode = button.dataset.usMode; this.q('#usLocationForm').hidden = false; this.q('#usPlan').hidden = true; this.q('#usTarget').value = ''; this.q('#usLocationTitle').textContent = { migrate: '迁移当前工作区', open: '打开已有工作区', new: '新建空白工作区' }[this.mode]; this.q('#usTarget').focus(); }); return;
+                this.guard(async () => {
+                    this.error(); this.mode = button.dataset.usMode;
+                    this.q('#usLocationForm').hidden = true; this.q('#usPlan').hidden = true;
+                    this.q('#usTarget').value = '';
+                    this.q('#usLocationTitle').textContent = this.mode === 'migrate' ? '迁移到新文件夹' : '更改保存文件夹';
+                    this.q('#usLocationHint').textContent = this.mode === 'migrate' ? '目标必须是空文件夹，现有内容会复制过去。' : '只切换文件夹，原内容留在原位置。';
+                    button.disabled = true;
+                    try {
+                        const chosen = await this.api('/choose', {});
+                        if (!chosen.path) return;
+                        this.q('#usTarget').value = chosen.path;
+                        this.q('[data-us-plan]').click();
+                    } catch (error) {
+                        this.error(error.message);
+                        this.q('#usLocationForm').hidden = false;
+                        this.q('#usTarget').focus();
+                    } finally { button.disabled = false; }
+                }); return;
             }
             if (button.hasAttribute('data-us-copy')) { await navigator.clipboard.writeText(this.workspace.path); button.textContent = '已复制'; setTimeout(() => button.textContent = '复制路径', 1800); return; }
             if (button.hasAttribute('data-us-keep')) { this.workspace = await this.api('/keep', {}); this.renderWorkspace(); return; }
@@ -170,10 +220,10 @@ export class UnifiedSettings {
                 this.error(); button.disabled = true;
                 this.proposal = await this.api('/plan', { path: this.q('#usTarget').value.trim(), mode: this.mode });
                 this.q('#usSource').textContent = this.proposal.source; this.q('#usDestination').textContent = this.proposal.target;
-                this.q('#usContents').textContent = this.mode === 'migrate' ? `${this.proposal.files} 个文件，约 ${(this.proposal.bytes / 1024 / 1024).toFixed(1)} MB` : this.mode === 'new' ? '创建空白工作区，当前内容保留在原位置' : '加载目标文件夹的项目，当前内容保留在原位置';
-                const title = { migrate: '确认迁移', new: '确认新建工作区', open: '确认打开工作区' }[this.mode];
+                this.q('#usContents').textContent = this.mode === 'migrate' ? `${this.proposal.files} 个文件，约 ${(this.proposal.bytes / 1024 / 1024).toFixed(1)} MB` : this.proposal.mode === 'new' ? '从空白开始，现有内容不迁移' : '显示目标文件夹里的项目，现有内容不迁移';
+                const title = this.mode === 'migrate' ? '确认迁移到此文件夹' : '确认更改保存文件夹';
                 this.q('#usPlanTitle').textContent = title; this.q('[data-us-change]').textContent = title;
-                this.q('#usPlanHint').textContent = this.mode === 'migrate' ? '复制并校验成功后才切换，原位置的文件会保留。' : '不合并或覆盖现有项目。切换后将重新加载项目列表。';
+                this.q('#usPlanHint').textContent = this.mode === 'migrate' ? '复制并校验成功后才切换，原位置的文件会保留。' : '仅更改保存位置，原文件保留在原处，不会复制到新文件夹。';
                 this.q('#usLocationForm').hidden = true; this.q('#usPlan').hidden = false;
             }
             if (button.hasAttribute('data-us-change')) {
@@ -182,7 +232,7 @@ export class UnifiedSettings {
                 const job = await this.api('/change', { path: this.proposal.target, mode: this.proposal.mode, source: this.proposal.source });
                 this.pollJob(job.id);
             }
-        } catch (error) { if (!this.q('#usGuard').hidden) this.q('#usGuardError').textContent = error.message; else this.error(error.message); }
+        } catch (error) { if (!this.q('#usGuard').hidden) this.q('#usGuardError').textContent = error.message; else { this.error(error.message); if (button.hasAttribute('data-us-plan')) this.q('#usLocationForm').hidden = false; } }
         finally { if (!this.busy) button.disabled = false; }
     }
     async pollJob(id) {

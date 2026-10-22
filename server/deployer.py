@@ -54,7 +54,7 @@ def read_vercel_auth():
         if not team and (directory / 'config.json').is_file():
             team = json.loads((directory / 'config.json').read_text()).get('currentTeam')
     if not token:
-        raise ValueError('请先在本机终端执行 npm run vercel -- login（在产品安装目录执行），然后重新发布。')
+        raise ValueError('请在产品的「设置 → 分享配置」中连接 Vercel，然后重新发布。')
     return token, team
 
 
@@ -82,19 +82,20 @@ def deployment_environment():
     return env
 
 
-def vercel_api(endpoint, token, team=None, method='GET'):
+def vercel_api(endpoint, token, team=None, method='GET', data=None, timeout=30):
     suffix = ('&' if '?' in endpoint else '?') + urllib.parse.urlencode({'teamId': team}) if team else ''
     request = urllib.request.Request('https://api.vercel.com' + endpoint + suffix,
-                                    headers={'Authorization': 'Bearer ' + token}, method=method)
+                                    data=json.dumps(data).encode() if data is not None else None,
+                                    headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}, method=method)
     try:
         env = deployment_environment()
         proxies = {protocol: env[protocol + '_proxy'] for protocol in ['http', 'https'] if env.get(protocol + '_proxy')}
         opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxies)) if proxies else urllib.request.build_opener()
-        with opener.open(request, timeout=30) as response:
+        with opener.open(request, timeout=timeout) as response:
             return json.load(response)
     except urllib.error.HTTPError as exc:
         if exc.code in {401, 403}:
-            raise ValueError('Vercel 登录已失效或没有项目权限，请执行 npm run vercel -- login（在产品安装目录执行）后重试。') from None
+            raise ValueError('Vercel 登录已失效或没有项目权限，请在「设置 → 分享配置」中重新连接。') from None
         raise ValueError(f'Vercel 请求失败（HTTP {exc.code}），请检查项目配置。') from None
 
 
@@ -257,7 +258,7 @@ class VercelDeployer:
                 dependency = subprocess.run([*command, '--prota-check'], env=env,
                                             capture_output=True, text=True, timeout=15)
                 if dependency.returncode:
-                    raise ValueError('Vercel CLI 依赖缺失或安装不完整，请在产品安装目录执行 npm run vercel:update 后重试。')
+                    raise ValueError('分享工具尚未准备好，请关闭后重新双击 Prota，等待自动准备完成。')
                 result = subprocess.run([*command, 'deploy', '--prebuilt', '--prod', '--yes', '--cwd', str(directory)],
                                         env=env, capture_output=True, text=True, timeout=300)
                 if result.returncode:

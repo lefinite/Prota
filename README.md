@@ -84,16 +84,11 @@ Your projects live in a **workspace** separate from the app. By default it's `~/
 
 ## Quick start
 
-**Requirements:** macOS (the one-click launcher uses `open` and `lsof`), Node.js 22.9 or later, Python 3, and an API key for a model provider.
+On macOS, download and extract the complete product folder, then double-click **Prota.app**. Keep the app beside the source folders. Missing runtimes and dependencies are prepared automatically with a native progress window; when everything is ready, the Portal opens directly. No terminal commands or terminal window are needed.
 
-```bash
-git clone https://github.com/lefinite/Prota.git
-cd Prota
-npm ci                 # installs dependencies and the latest Vercel CLI used for sharing
-bash scripts/run.sh    # or double-click start-portal.command
-```
+For cloud sharing, click **Connect Vercel** in Settings and authorize in your browser. Prota creates or reuses the sharing project and saves its address automatically. Existing data and sharing links are retained. A custom domain is optional; DNS records at an external provider still require your action.
 
-The Portal opens in your browser. Keep the terminal window open while you use it.
+[Startup and sharing guide](./docs/share-setup-guide.md) · [Developer setup](./docs/developer-setup.md)
 
 1. **Connect a model:** click the gear icon in the top-right of the project list and go to **Settings → Models**. Pick a preset or choose *OpenAI-compatible / custom*, then enter your API key. Both Anthropic Messages-style and OpenAI-compatible APIs are supported.
 2. **Create a project and a page** (mobile by default, Web if you ask for it), pick a design template, and describe your idea.

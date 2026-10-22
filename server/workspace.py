@@ -90,7 +90,7 @@ def status():
             identity = json.loads(manifest.read_text(encoding='utf-8'))['id']
         except (ValueError, KeyError, OSError):
             error = '工作区清单损坏，请选择有效的工作区。'
-    return {'path': str(root), 'id': identity, 'legacy': root == APP_ROOT,
+    return {'defaultPath': str(CONFIG_DIR / 'workspace'), 'path': str(root), 'id': identity, 'legacy': root == APP_ROOT,
             'needsSetup': not bool(config.get('path')), 'available': error is None,
             'error': error, 'job': dict(_job) if _job else None}
 
@@ -155,7 +155,9 @@ def check_target(value, mode, source):
         if not isinstance(data.get('projects'), list):
             raise ValueError('工作区项目索引无效。')
     elif target.exists() and (not target.is_dir() or any(target.iterdir())):
-        raise ValueError('目标文件夹不是空目录。已有工作区请使用“打开已有工作区”，不自动合并或覆盖。')
+        if mode == 'migrate':
+            raise ValueError('无法迁移：目标文件夹不是空文件夹（包括隐藏文件）。请选择一个干净的空文件夹。')
+        raise ValueError('所选文件夹已有其他内容，且不是 Prota 项目文件夹。请选择空文件夹或之前使用的 Prota 文件夹。')
     parent = target if target.is_dir() else target.parent
     if not parent.is_dir() or not os.access(parent, os.W_OK):
         raise ValueError('目标位置不存在或不可写，请选择可写的文件夹。')
@@ -178,6 +180,10 @@ def asset_files(source):
 
 
 def plan(value, mode):
+    # Changing location never copies current assets. Reuse a valid workspace,
+    # or initialize a blank one; let the normal target checks reject conflicts.
+    if mode == 'switch':
+        mode = 'open' if value and (Path(value).expanduser() / 'workspace.json').exists() else 'new'
     try:
         source = workspace_root()
     except (OSError, ValueError):
@@ -277,8 +283,16 @@ def _run(job):
             guidance = (APP_ROOT / 'AGENTS.md').read_text(encoding='utf-8') if (APP_ROOT / 'AGENTS.md').is_file() else '# Prota 工作区\n页面目录：src/pages/{project_id}/{page_id}/{version}/。\n'
             guidance += f'\n\n## 当前工作区运行上下文\n程序安装目录：{APP_ROOT}\n内置模板源：{APP_ROOT / "src/templates"}\n项目资产写入当前工作区；同步本工作区 data/projects.json 与本工作区 portal/shell.js 的 defaultData；不修改程序安装目录的 portal/shell.js。\n'
             (stage / 'AGENTS.md').write_text(guidance, encoding='utf-8')
+            # Recheck after copying as well: the destination may have been
+            # populated since the user confirmed the initial plan.
+            check_target(str(target), job['mode'], source)
             if target.exists():
-                target.rmdir()  # Refuses if another process has populated it meanwhile.
+                try:
+                    target.rmdir()  # Also refuses writes racing the final check.
+                except OSError:
+                    if target.is_dir() and any(target.iterdir()):
+                        raise ValueError('目标文件夹已出现其他内容，操作已停止。请选择一个干净的空文件夹。') from None
+                    raise
             stage.rename(target)
             stage = None
         _job['phase'] = '切换'

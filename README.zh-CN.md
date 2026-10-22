@@ -84,16 +84,11 @@ Agent 预置了产品经理工作流需要的技能：**产品思考**（Plan �
 
 ## 快速开始
 
-**环境要求：** macOS（一键启动脚本用到 `open` 和 `lsof`）、Node.js 22.9 及以上、Python 3，以及一个模型服务的 API Key。
+macOS 用户下载并解压完整产品文件夹，双击 **Prota.app**。请保留应用入口与源码目录的相对位置。缺少环境或依赖时，原生窗口会显示准备步骤并自动安装；都已就绪时直接打开工作台，无需输入命令，也不需要保留终端窗口。
 
-```bash
-git clone https://github.com/lefinite/Prota.git
-cd Prota
-npm ci                 # 安装依赖，并安装分享功能用到的最新版 Vercel CLI
-bash scripts/run.sh    # 或者双击 start-portal.command
-```
+云分享只需在设置里点击「连接 Vercel」，然后在浏览器中登录授权。Prota 会自动创建或沿用分享项目、获取地址并保存，保留现有数据与分享链接。默认地址不需要购买域名；自有域名托管在其他服务商时，仍需按提示添加 DNS 记录。
 
-Portal 会自动在浏览器中打开。使用期间请保持终端窗口开着。
+[启动与分享教程](./docs/share-setup-guide.md) · [开发者安装说明](./docs/developer-setup.md)
 
 1. **接入模型：** 点击项目列表右上角的齿轮，进入 **设置 → 模型配置**。选择一个预设服务商，或者选「OpenAI 兼容 / 自定义」，填入 API Key。支持 Anthropic Messages 格式和 OpenAI 兼容格式的接口。
 2. **新建项目和页面**（默认是手机端，需要时可以指定 Web 端），选一套设计模板，然后用一句话描述你的想法。

@@ -9,6 +9,8 @@ import re
 import base64
 import html
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 try:
     from server import workspace
 except ImportError:
@@ -24,7 +26,7 @@ def load_settings():
     settings_path = os.path.join(root, 'data', 'settings.json')
     defaults = {
         "publicDomain": "prota.example.com",
-        "staticDomain": "share.example.com",
+        "staticDomain": "",
         "gitAutoPush": False,
         "vercelAutoDeploy": True
     }
@@ -43,6 +45,18 @@ def save_settings(data):
     os.makedirs(os.path.dirname(settings_path), exist_ok=True)
     with open(settings_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def sharing_configured(settings):
+    """A saved address alone is not a configured publishing destination."""
+    domain = settings.get('staticDomain')
+    if not isinstance(domain, str) or not domain or domain.endswith('.example.com') or not settings.get('vercelAutoDeploy', True):
+        return False
+    try:
+        config = json.loads((workspace.CONFIG_DIR / 'vercel.json').read_text(encoding='utf-8'))
+        return bool(config.get('projectId') and config.get('orgId') and config.get('staticDomain') == domain)
+    except (OSError, ValueError, AttributeError):
+        return False
 
 
 def get_agent_provider_config_path():
@@ -2271,6 +2285,10 @@ def build_share_page_html(share_data):
     return template.replace('__SHARE_TITLE__', title).replace('__SHARE_DATA__', data_json)
 
 
+import hashlib
+_PRODUCT_BUILD = hashlib.sha256(b''.join((workspace.APP_ROOT / file).read_bytes() for file in ['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py'])).hexdigest()
+
+
 class BridgeHandler(http.server.SimpleHTTPRequestHandler):
     # Ensure UTF-8 charset for text-based files to avoid garbled characters in browsers
     extensions_map = http.server.SimpleHTTPRequestHandler.extensions_map.copy()
@@ -2317,6 +2335,19 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         clean_path = self.path.split('?')[0]
+        if clean_path == '/api/product/health':
+            import hashlib
+            return self.workspace_reply(200, {'product': 'prota', 'installation': hashlib.sha256(str(workspace.APP_ROOT.resolve()).encode()).hexdigest(), 'build': _PRODUCT_BUILD})
+        if clean_path == '/api/vercel/status':
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机连接分享账号。'})
+            from server import vercel_setup
+            return self.workspace_reply(200, vercel_setup.status())
+        if clean_path == '/api/vercel/connection':
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机检查分享授权。'})
+            from server import vercel_setup
+            return self.workspace_reply(200, vercel_setup.inspect_connection())
         if clean_path == '/api/workspace':
             if not self.workspace_local():
                 return self.workspace_reply(403, {'error': '只能在运行程序的本机管理存储位置。'})
@@ -2350,6 +2381,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             settings = load_settings()
+            settings['sharingConfigured'] = sharing_configured(settings)
             self.wfile.write(json.dumps(settings).encode('utf-8'))
             return
 
@@ -2389,6 +2421,24 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         clean_path = self.path.split('?')[0]
+        if clean_path.startswith('/api/vercel/'):
+            if not self.workspace_local() or not self.headers.get('Content-Type', '').startswith('application/json'):
+                return self.workspace_reply(403, {'error': '只能在本机产品界面管理分享账号。'})
+            try:
+                if workspace.bridge_locked():
+                    raise ValueError('请等待工作区切换完成后再连接。')
+                length = int(self.headers.get('Content-Length', '0'))
+                if length < 0 or length > 4096:
+                    return self.workspace_reply(413, {'error': '请求过大。'})
+                params = json.loads(self.rfile.read(length) or b'{}')
+                from server import vercel_setup
+                if clean_path == '/api/vercel/connect':
+                    return self.workspace_reply(202, vercel_setup.start(params.get('domain', '')))
+                if clean_path == '/api/vercel/cancel':
+                    return self.workspace_reply(200, vercel_setup.cancel())
+                return self.workspace_reply(404, {'error': '未知操作。'})
+            except Exception as error:
+                return self.workspace_reply(400, {'error': str(error)})
         if clean_path.startswith('/api/workspace/'):
             if not self.workspace_local():
                 return self.workspace_reply(403, {'error': '只能在运行程序的本机管理存储位置。'})
@@ -3957,7 +4007,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 f.write(build_share_page_html(shell_share_data))
 
             settings = load_settings()
-            static_domain = settings.get("staticDomain", "share.example.com")
+            static_domain = settings.get("staticDomain", "")
             public_domain = settings.get("publicDomain", "prota.example.com")
 
             deploy_warning = ''
@@ -3972,7 +4022,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 except Exception as e:
                     deploy_warning = str(e)
                     print(f"Static share file generated, but Vercel deploy failed: {deploy_warning}", flush=True)
-                url = f'https://{static_domain}/shares/{filename}'
+                url = f'https://{static_domain}/shares/{filename}' if static_domain else ''
             elif is_public:
                 url = f'https://{public_domain}/shares/{filename}'
             else:
@@ -4139,7 +4189,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 f.write(build_share_page_html(share_payload))
 
             settings = load_settings()
-            static_domain = settings.get("staticDomain", "share.example.com")
+            static_domain = settings.get("staticDomain", "")
             public_domain = settings.get("publicDomain", "prota.example.com")
 
             deploy_warning = ''
@@ -4155,7 +4205,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 except Exception as e:
                     deploy_warning = str(e)
                     print(f"Static folder share file generated, but Vercel deploy failed: {deploy_warning}", flush=True)
-                url = f'https://{static_domain}/shares/{filename}'
+                url = f'https://{static_domain}/shares/{filename}' if static_domain else ''
             elif is_public:
                 url = f'https://{public_domain}/shares/{filename}'
             else:
@@ -4194,16 +4244,17 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             
             settings = {
                 "publicDomain": str(data.get("publicDomain", "prota.example.com")).strip(),
-                "staticDomain": str(data.get("staticDomain", "share.example.com")).strip(),
+                "staticDomain": str(data.get("staticDomain", "")).strip(),
                 "gitAutoPush": False,
-                "vercelAutoDeploy": bool(data.get("vercelAutoDeploy", True))
+                "vercelAutoDeploy": bool(data.get("vercelAutoDeploy", True)),
+                "shareMode": data.get("shareMode") if data.get("shareMode") in {"vercel", "custom", "local"} else ("custom" if data.get("staticDomain") and not str(data.get("staticDomain")).endswith(".vercel.app") else "vercel")
             }
             save_settings(settings)
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "success", "settings": settings}).encode('utf-8'))
+            self.wfile.write(json.dumps({"status": "success", "settings": {**settings, 'sharingConfigured': sharing_configured(settings)}}).encode('utf-8'))
         except Exception as e:
             self.send_response(500)
             self.end_headers()

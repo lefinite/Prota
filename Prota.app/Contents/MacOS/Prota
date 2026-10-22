@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+PRODUCT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+exec /usr/bin/osascript -l JavaScript "$PRODUCT_DIR/scripts/launcher-macos.jxa" "$PRODUCT_DIR"

@@ -31,6 +31,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
+const PRODUCT_AGENT_BUILD = createHash('sha256').update(fsSync.readFileSync(__filename)).digest('hex');
 const PORT = Number.parseInt(process.env.READIFY_AGENT_PORT || '8081', 10);
 const HOST = process.env.READIFY_AGENT_HOST || '127.0.0.1';
 const PROVIDER_PRESETS_PATH = path.join(ROOT_DIR, 'data', 'agent-provider-presets.json');
@@ -6949,7 +6950,10 @@ const server = http.createServer(async (req, res) => {
             sendJson(res, 200, {
                 ok: true,
                 now: new Date().toISOString(),
-                sessions: sessions.size
+                sessions: sessions.size,
+                activeRuns: [...sessions.values()].filter(session => session.runState?.active).length,
+                installation: createHash('sha256').update(fsSync.realpathSync(ROOT_DIR)).digest('hex'),
+                build: PRODUCT_AGENT_BUILD
             });
             return;
         }

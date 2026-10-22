@@ -4,6 +4,7 @@
  */
 
 import { UnifiedSettings } from './modules/settings/index.js';
+import { VercelConnection } from './modules/settings/vercel.js';
 import { PRDModule } from './modules/prd/index.js?v=20261013-auto-polish-v1';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
 import { MindmapModule } from './modules/mindmap/index.js?v=20260701-xmind-v12';
@@ -544,6 +545,7 @@ class DemoShell {
         this.annotationLinkSaving = false;
 
         this.unifiedSettings = new UnifiedSettings(this);
+        if (!this.isShareMode) this.vercelConnection = new VercelConnection(this);
         this.init();
     }
 
@@ -3350,7 +3352,7 @@ class DemoShell {
         if (!this.settings) {
             this.settings = {
                 publicDomain: "prota.example.com",
-                staticDomain: "share.example.com",
+                staticDomain: "",
                 gitAutoPush: false, vercelAutoDeploy: true
             };
         }
@@ -3365,6 +3367,7 @@ class DemoShell {
         if (this.publicDomainInput) this.publicDomainInput.value = this.settings.publicDomain || '';
         if (this.staticDomainInput) this.staticDomainInput.value = this.settings.staticDomain || '';
         if (this.gitAutoPushCheckbox) this.gitAutoPushCheckbox.checked = this.settings.vercelAutoDeploy !== false;
+        this.unifiedSettings?.updateShareChoice(this.settings.shareMode || (this.settings.vercelAutoDeploy === false ? 'local' : this.settings.staticDomain && !this.settings.staticDomain.endsWith('.vercel.app') ? 'custom' : 'vercel'));
 
             if (this.unifiedSettings?.initialized.has('sharing')) this.unifiedSettings.markSaved('sharing');
         }
@@ -3374,7 +3377,7 @@ class DemoShell {
             this.sharePublicSubtext.textContent = `使用 ${this.settings.publicDomain || 'prota.example.com'} 分享`;
         }
         if (this.shareStaticSubtext) {
-            this.shareStaticSubtext.textContent = `发布至 ${this.settings.staticDomain || 'share.example.com'}`;
+            this.shareStaticSubtext.textContent = this.settings.staticDomain ? `发布至 ${this.settings.staticDomain}` : '首次使用：配置分享地址';
         }
     }
 
@@ -3397,52 +3400,30 @@ class DemoShell {
         if (this.shareSettingsModal) this.shareSettingsModal.hidden = true;
     }
 
-    toggleHelp(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        this.settingsHelpOpen = !this.settingsHelpOpen;
-        const dialog = this.shareSettingsModal?.querySelector('.settings-modal__dialog');
-        if (dialog) {
-            dialog.classList.toggle('is-collapsed', !this.settingsHelpOpen);
-        }
+    toggleHelp(event) {
+        event?.preventDefault();
+        this.settingsHelpOpen = !this.settingsHelpPane?.open;
         this.updateHelpBannerText();
     }
 
-    expandHelp(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+    expandHelp(event) {
+        event?.preventDefault();
         this.settingsHelpOpen = true;
-        const dialog = this.shareSettingsModal?.querySelector('.settings-modal__dialog');
-        if (dialog) {
-            dialog.classList.remove('is-collapsed');
-        }
         this.updateHelpBannerText();
     }
 
     updateHelpBannerText() {
-        const textSpan = this.shareSettingsForm?.querySelector('.settings-form__help-banner span');
-        if (textSpan) {
-            if (this.settingsHelpOpen) {
-                textSpan.innerHTML = '配置指南已在右侧展开 <button type="button" id="settingsHelpLinkBtn" class="settings-form__help-link-btn">点击收起指南 ↙</button>';
-            } else {
-                textSpan.innerHTML = '需要了解如何配置吗？ <button type="button" id="settingsHelpLinkBtn" class="settings-form__help-link-btn">点击展开配置指南 ↗</button>';
-            }
-            // Re-bind the click event listener dynamically
-            this.settingsHelpLinkBtn = document.getElementById('settingsHelpLinkBtn');
-            this.settingsHelpLinkBtn?.addEventListener('click', (e) => this.toggleHelp(e));
-        }
+        if (this.settingsHelpPane) this.settingsHelpPane.open = !!this.settingsHelpOpen;
     }
 
     async saveSettings() {
         const publicDomain = this.publicDomainInput?.value?.trim() || 'prota.example.com';
-        const staticDomain = this.staticDomainInput?.value?.trim() || 'share.example.com';
-        const vercelAutoDeploy = this.gitAutoPushCheckbox ? this.gitAutoPushCheckbox.checked : true;
-
-        const payload = { ...this.settings, publicDomain, staticDomain, gitAutoPush: false, vercelAutoDeploy };
+        const shareMode = document.querySelector('[name=shareSetup]:checked')?.value === 'custom' ? 'custom' : 'vercel';
+        const customAddress = this.staticDomainInput?.value?.trim().replace(/^https?:\/\//, '').replace(/\/$/, '') || '';
+        const staticDomain = shareMode === 'custom' ? customAddress : this.settings?.staticDomain?.endsWith('.vercel.app') ? this.settings.staticDomain : '';
+        if (shareMode === 'custom' && staticDomain && !/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(staticDomain)) { this.unifiedSettings?.setFeedback('请填写有效域名，例如 share.example.com。', true); return false; }
+        const vercelAutoDeploy = true;
+        const payload = { ...this.settings, shareMode, publicDomain, staticDomain, gitAutoPush: false, vercelAutoDeploy };
 
         const saveBtn = this.shareSettingsForm?.querySelector('button[type="submit"]');
         const oldText = saveBtn ? saveBtn.textContent : '';
@@ -3484,7 +3465,16 @@ class DemoShell {
 
     // ── Share menu ──────────────────────────────────────────
 
-    openShareMenu() {
+    async ensureShareSetup() {
+        await this.loadSettings();
+        if (this.settings?.sharingConfigured) return true;
+        this.closeShareMenu();
+        await this.openSettingsModal();
+        return false;
+    }
+
+    async openShareMenu() {
+        if (!this.isShareMode && !await this.ensureShareSetup()) return;
         this.shareMenuOpen = true;
         if (this.shareMenu) this.shareMenu.hidden = false;
         this.shareMenuTrigger?.setAttribute('aria-expanded', 'true');
@@ -3536,6 +3526,7 @@ class DemoShell {
     }
 
     async createSharePage(shareType = 'local', triggerButton = null) {
+        if (shareType === 'static' && !await this.ensureShareSetup()) return;
         if (!this.activePageId || !this.activeVersion) {
             this.showToast('没有可分享的页面', true);
             return;
@@ -3548,7 +3539,7 @@ class DemoShell {
         }
 
         if (shareType === 'static') {
-            this.showToast('正在生成静态页并推送到 Git...');
+            this.showToast('正在生成分享页并发布到 Vercel…');
         } else {
             this.showToast('正在生成分享链接...');
         }
@@ -3626,6 +3617,7 @@ class DemoShell {
     }
 
     async createShareFolder(folderId, shareType = 'local') {
+        if (shareType === 'static' && !await this.ensureShareSetup()) return;
         const folder = (this.getProjectRecord()?.folders || []).find(f => f.id === folderId);
         if (!folder) {
             this.showToast('未找到该文件夹', true);
@@ -6895,41 +6887,9 @@ class DemoShell {
         this.agentInput?.focus();
     }
 
-    // 让 Prota 自动帮我完成 Vercel 静态云分享配置
+    // Browser authorization and setup run directly through the local service.
     async startVercelAutoConfig() {
-        if (this.agentRunState?.active) {
-            this.showToast('Prota 正在执行任务，请稍后再试。', true);
-            return;
-        }
-        this.closeSettingsModal();
-        this.openAgentWorkbench();
-        const reusableSessionId = this.findReusableAgentSessionId({ sessionScope: 'global' });
-        if (reusableSessionId) {
-            await this.switchAgentSession(reusableSessionId);
-        } else {
-            await this.createAgentSession({ switchTo: true, title: 'Vercel 配置', sessionScope: 'global' });
-        }
-        await this.applyAgentGlobalContext();
-        this.agentActiveSkill = null;
-        const staticDomain = this.staticDomainInput?.value?.trim() || this.settings?.staticDomain || 'share.你的域名.com';
-        const prompt = [
-            '请配置 Vercel 直接部署分享，沿用分享域名 ' + staticDomain + ' 和原分享路径；已配置的项目先检查状态，不重复创建。',
-            '先从系统运行上下文确定程序安装目录。当前 Agent 工作目录是独立的业务工作区，请使用程序安装目录内 scripts/configure-vercel.py 的绝对路径，以 python3 调用并传入 --domain ' + staticDomain + '。不要在业务工作区寻找这个脚本。',
-            '该脚本只关联已绑定域名的现有 Vercel 项目，不负责创建项目或配置 DNS。先确认本机 Vercel 账号、团队及域名所属项目。',
-            '确实没有分享项目时，在独立空目录创建仅包含空白 index.html 的引导项目，再通过上述产品 CLI 入口执行 deploy --cwd 加空白目录绝对路径创建分享项目（不可省略 --cwd）；禁止从产品目录或业务工作区直接部署。域名必须先在该项目绑定并按控制台提示配置 DNS，然后再执行关联脚本。',
-            '登录、初始化项目和版本检查一律使用产品安装目录内 scripts/vercel-cli.mjs 的绝对路径，以 node 调用，例如 node /产品安装目录/scripts/vercel-cli.mjs login；产品目录内也可使用 npm run vercel -- login。禁止调用全局 vercel 或任意 npx 缓存。安装产品依赖（npm ci 或 npm install）会自动安装当时最新版 Vercel CLI；CLI 缺失或需要更新时，在产品安装目录执行 npm run vercel:update。正常分享只使用已安装版本，不额外触发升级。',
-            '凭据失效时指导我使用上述产品入口重新登录；不得把 token 写入源码、工作区或聊天。不要要求把产品仓库导入 Vercel，不要把 Output Directory 设置为 shares。',
-            '分享通过独立 Build Output 目录直接部署，禁止 git add、commit、push，禁止上传完整工作区。保留已发布快照，叠加本次明确分享的页面，不同步其他页面的未分享修改。',
-            '开启 vercelAutoDeploy 并保存正确域名，使用经过确认的分享内容验证部署和原链接。不能把本地文件生成或部署失败当作线上成功。',
-            '完成直接部署验证后，仅在仍有关联的旧 Git 仓库时断开该关联，避免旧流程覆盖分享。',
-            '不要新建替代域名，不要删除已有分享或发布快照，不要在本次配置中清理历史部署。访问权限保持用户已选择的策略。'
-        ].join('\n');
-        if (this.agentInput) this.agentInput.value = prompt;
-        this.renderAgentWorkbench();
-        // 不自动发送：把指令填入输入框，由用户确认后再点发送
-        this.agentInput?.focus();
-        this.agentInput?.select();
-        this.showToast('已为你准备好配置指令，确认无误后点发送即可');
+        await this.vercelConnection?.start();
     }
 
     async startPrdGeneration() {

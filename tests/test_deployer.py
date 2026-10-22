@@ -95,7 +95,7 @@ class DirectPublishTests(unittest.TestCase):
         config = self.configure_publish()
         snapshot = self.write(self.root, 'data/published-static/old.html', 'previous public bytes')
         with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node'), patch('server.deployer.subprocess.run', return_value=SimpleNamespace(returncode=1, stdout='', stderr='missing dependency')) as command:
-            with self.assertRaisesRegex(ValueError, 'vercel:update'):
+            with self.assertRaisesRegex(ValueError, '双击 Prota'):
                 self.deployer.deploy(self.share)
             command.assert_called_once()
             self.assertEqual(command.call_args.args[0][-1], '--prota-check')

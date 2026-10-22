@@ -251,7 +251,7 @@
                                 </span>
                                 <span>
                                     <strong>静态云分享</strong>
-                                    <small id="shareStaticSubtext">发布至 share.example.com</small>
+                                    <small id="shareStaticSubtext">首次使用：配置分享地址</small>
                                 </span>
                             </button>
                             <div class="share-menu__divider"></div>
@@ -785,39 +785,42 @@
                 </header>
                 <form id="shareSettingsForm" class="settings-modal__form-wrapper">
                     <div class="settings-modal__body">
-                        <button type="button" id="vercelAutoConfigBtn" class="settings-form__auto-config-btn">
-                            <span class="settings-form__auto-config-icon" aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/>
-                                </svg>
-                            </span>
-                            <span class="settings-form__auto-config-text">
-                                <strong>让 Prota 帮我配置</strong>
-                                <small>不想手动配置？点这里，Prota 会一步步带着你完成</small>
-                            </span>
-                        </button>
-
-                        <div class="settings-form__help-banner">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex-shrink: 0;">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="16" x2="12" y2="12"></line>
-                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                            </svg>
-                            <span>需要了解如何配置吗？<button type="button" id="settingsHelpLinkBtn" class="settings-form__help-link-btn">点击展开配置指南 ↗</button></span>
+                        <fieldset class="us-share-options"><legend>分享地址</legend>
+                            <label><input type="radio" name="shareSetup" value="vercel" checked><span><strong>Vercel 地址</strong><small>无需购买域名，即连即用</small></span></label>
+                            <label><input type="radio" name="shareSetup" value="custom"><span><strong>自有域名</strong><small>品牌专属网址，需要设置解析</small></span></label>
+                        </fieldset>
+                        <div class="us-share-value"><strong id="shareChoiceTitle"></strong><p id="shareChoiceDescription"></p></div>
+                        <div class="settings-form__group" id="shareCustomDomainGroup" hidden>
+                            <label for="staticDomainInput" class="settings-form__label">自有域名</label>
+                            <input type="text" id="staticDomainInput" class="settings-form__input" placeholder="例如 share.example.com" disabled>
+                            <small class="settings-form__hint">填写你能管理解析记录的域名，支持任意域名服务商。</small>
                         </div>
-                        
-                        <div class="settings-form__group">
-                            <label for="staticDomainInput" class="settings-form__label">静态云托管域名 (Static Domain)</label>
-                            <input type="text" id="staticDomainInput" class="settings-form__input" placeholder="share.example.com" required>
-                            <small class="settings-form__hint">用于“静态云分享”模式下的自定义域名（需在 Vercel 绑定该域名）</small>
-                        </div>
-
-                        <div class="settings-form__group settings-form__group--checkbox">
-                            <label class="settings-form__checkbox-label">
-                                <input type="checkbox" id="gitAutoPushCheckbox">
-                                <span class="checkbox-text">生成后自动部署到 Vercel</span>
-                            </label>
-                            <small class="settings-form__hint">关闭后只在本地生成分享文件，分享不会提交或推送 Git。</small>
+                        <section id="vercelConnectionSummary" class="us-vercel-summary" aria-label="当前 Vercel 授权与发布状态">
+                            <header class="us-vercel-summary-heading"><strong>Vercel 连接</strong><span class="us-connection-badge" data-vc-badge role="status">正在检查</span></header>
+                            <dl class="us-connection-facts"><dt>账号授权</dt><dd data-vc-account>正在检查…</dd><dt>发布状态</dt><dd data-vc-effective>正在检查当前配置…</dd></dl>
+                            <div class="us-connection-address" data-vc-address-row hidden><span>生效地址</span><a data-vc-address target="_blank" rel="noopener noreferrer"></a></div>
+                            <p id="shareSetupHint" class="us-description" data-vc-summary-message aria-live="polite"></p>
+                            <div data-vc-progress-slot></div>
+                            <footer class="us-vercel-summary-actions"><button type="button" class="us-link" data-vc-check>检查状态</button><button type="button" id="vercelAutoConfigBtn" class="us-primary us-connect-action"><strong>连接 Vercel</strong><small hidden>在浏览器中授权，自动准备分享地址</small></button></footer>
+                        </section>
+                        <details id="settingsHelpPane" class="us-share-guide">
+                            <summary>连接与分享说明<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></summary>
+                            <div class="us-share-guide-content">
+                                <ol data-share-guide="vercel">
+                                    <li><strong>连接并授权</strong><p>点击「连接 Vercel」，在自动打开的浏览器中登录并授权。已有有效登录时会直接继续；页面未打开时，点击连接状态中的授权入口。</p></li>
+                                    <li><strong>等待显示「已生效」</strong><p>Prota 自动创建或沿用分享项目，获取固定地址并保存。首次连接只准备分享空间，不会发布你的原型。</p></li>
+                                    <li><strong>发布原型</strong><p>回到页面选择「静态云分享」，等待发布成功后复制链接。更新同一页面版本后重新分享，原链接即可查看新内容。</p></li>
+                                </ol>
+                                <ol data-share-guide="custom" hidden>
+                                    <li><strong>填写域名并连接</strong><p>在上方填写域名，点击「绑定域名并连接」。设置会自动保存，然后在浏览器中完成 Vercel 授权。</p></li>
+                                    <li><strong>添加解析记录</strong><p>Prota 会显示所需的 DNS 记录。到你使用的域名服务商处添加对应记录，再回到这里点击「重新检查 DNS」。</p></li>
+                                    <li><strong>验证成功后发布</strong><p>等待显示「已生效」，域名会自动保存。回到页面选择「静态云分享」，发布成功后即可发送链接；同一页面版本更新后链接保持不变。</p></li>
+                                </ol>
+                                <p class="us-share-guide-note">分享会包含所选版本、相关文档和引用素材。首次连接不会自动发布内容；电脑关闭后，已成功发布的链接仍可访问。</p>
+                            </div>
+                        </details>
+                        <div class="settings-form__group settings-form__group--checkbox" hidden>
+                            <label class="settings-form__checkbox-label"><input type="checkbox" id="gitAutoPushCheckbox" checked><span>生成后自动部署到 Vercel</span></label>
                         </div>
                     </div>
 
@@ -828,41 +831,7 @@
                 </form>
             </div>
             
-            <!-- Right Pane: Help Guide -->
-            <div id="settingsHelpPane" class="settings-modal__pane settings-modal__pane--help">
-                <header class="settings-modal__header">
-                    <h3 class="settings-modal__title">配置指南</h3>
-                </header>
-                <div class="settings-modal__help-content">
-                    <div class="settings-modal__help-section">
-                        <h4>静态云分享如何发布？</h4>
-                        <p>点击「静态云分享」后，本机从业务工作区生成分享页和资源包，再直接上传到 Vercel，返回可访问的链接。分享不会经过 GitHub。</p>
-                        <div class="settings-modal__help-alert settings-modal__help-alert--info">
-                            <strong>已配置过？</strong>继续使用原分享项目和域名即可，无需重复创建。只有登录过期或更换域名、账号、团队时才需要重新关联。
-                        </div>
-                    </div>
 
-                    <div class="settings-modal__help-section">
-                        <h4>配置 Vercel 直接部署</h4>
-                        <ol>
-                            <li><strong>登录本机账号。</strong>在产品安装目录执行 <code>npm ci</code> 安装产品依赖及当时最新版 Vercel CLI，再执行 <code>npm run vercel -- login</code>，按网页提示完成登录。已有有效登录可沿用。</li>
-                            <li><strong>选择分享项目。</strong>已有项目时直接沿用；首次使用时，在单独的空目录放一个空白 <code>index.html</code>，从产品安装目录执行 <code>npm run vercel -- deploy --cwd /绝对路径/空白分享目录</code>（<code>--cwd</code> 不可省略），按提示创建分享项目。不要从产品目录或业务工作区直接部署。</li>
-                            <li><strong>绑定域名。</strong>在该项目的 <strong>Settings → Domains</strong> 中添加分享域名，按控制台提供的 DNS 记录完成验证。无需导入 GitHub 仓库，也不需要把 Output Directory 设置为 <code>shares</code>。</li>
-                            <li><strong>关联到 Prota。</strong>从产品安装目录运行 <code>python3 scripts/configure-vercel.py --domain 你的分享域名</code>；从其他目录运行时，使用脚本的绝对路径。脚本只查找已绑定该域名的项目，不会创建项目或配置 DNS。</li>
-                            <li><strong>保存设置。</strong>在左侧填写相同域名，开启「生成后自动部署到 Vercel」并保存。关联信息保存在本机用户配置目录，不进入产品 Git 仓库。</li>
-                            <li><strong>验证分享。</strong>点击「静态云分享」，部署成功后再复制链接。原 <code>/shares/文件名.html</code> 与根目录兼容链接都保留；只生成本地文件、登录失败或部署失败，都不代表链接已经更新。</li>
-                            <li><strong>检查旧发布链路。</strong>直接部署验证通过后，若项目仍有关联的旧 Git 仓库，再断开该关联，避免旧部署覆盖。已经断开的项目无需重复处理。</li>
-                        </ol>
-                        <p><strong>工具安装与更新：</strong>执行 <code>npm ci</code> 或 <code>npm install</code> 安装产品依赖时，会自动下载当时最新版 Vercel CLI，存放在产品内部，无需全局安装。分享使用已安装版本；以后在产品安装目录执行 <code>npm run vercel:update</code> 可更新到当时最新版。</p>
-                        <p><strong>发布范围：</strong>上次成功发布的快照，加上本次选中的页面版本、页面文档和素材；单页分享还会生成包含该版本与文档的下载包。未选中的其他页面沿用旧快照，不自动同步本地修改。</p>
-                        <p><strong>数据边界：</strong>项目总索引、Agent 会话、原始上传附件目录、个人设置和模型连接配置不作为目录整体发布；原型中引用的素材及写入页面、文档的内容会随分享上传，不会自动脱敏。</p>
-                        <p>首次没有发布快照时，会导入工作区已生成的所有静态分享。每次发布会新建一个 Vercel 部署，历史部署需要按保留策略单独管理。</p>
-                        <div class="settings-modal__help-alert settings-modal__help-alert--info">
-                            <strong>需要协助？</strong>回到左侧顶部点「<strong>让 Prota 帮我配置</strong>」，确认生成的指令后发送。网页登录、域名验证等步骤需要你在自己的账号中完成。
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

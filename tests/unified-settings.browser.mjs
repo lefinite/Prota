@@ -51,8 +51,28 @@ try {
     page.on('pageerror', error => pageErrors.push(error.message));
     await page.route(/fonts\.google/, route => route.abort());
     await page.route(/http:\/\/(localhost|127\.0\.0\.1):8081\//, route => route.continue({ url: route.request().url().replace(/:8081\//, `:${agentPort}/`) }));
+    await page.route('**/api/workspace/choose', route => route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({error: '测试环境：请输入文件夹路径。'}) }));
+    let connectionFixture = {authState:'unauthorized',publishState:'unconfigured',message:'尚未授权 Vercel，请连接账号。'};
+    await page.route('**/api/vercel/connection', route => route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(connectionFixture)}));
     await page.goto(`${base}/portal/index.html`, { waitUntil: 'domcontentloaded' });
+    await page.locator('#globalSettingsBtn').waitFor();
+    assert.equal((await (await fetch(`${base}/api/settings`)).json()).sharingConfigured, false);
+    await page.evaluate(() => window.shell.openShareMenu());
+    await page.locator('#us-sharing').waitFor({state:'visible'});
+    assert.equal(await page.locator('#shareMenu').isVisible(), false);
+    await page.locator('[data-vc-badge]').filter({hasText:'未连接'}).waitFor();
+    assert.match(await page.locator('[data-vc-account]').innerText(), /未授权/);
+    assert.equal(await page.locator('#vercelConnectionSummary').isVisible(), true);
+    await page.locator('.us-close').click();
     await page.locator('#globalSettingsBtn').click();
+    assert.equal(await page.locator('#us-models').isVisible(), true);
+    const settingsBounds = await page.locator('.us-window').boundingBox();
+    const headingBounds = await page.locator('.us-heading').boundingBox();
+
+    assert.deepEqual(await page.locator('[data-us-tab]').evaluateAll(nodes => nodes.map(node => node.dataset.usTab)), ['models', 'storage', 'sharing']);
+    assert.equal(await page.locator('.provider-list-item').first().evaluate(node => getComputedStyle(node).backgroundImage), 'none');
+    await page.locator('.us-window').screenshot({ animations: 'disabled', path: '/tmp/prota-settings-models.png' });
+    await page.locator('[data-us-tab=storage]').click();
     assert.equal((await page.locator('#globalSettingsBtn').textContent()).trim(), '');
     assert.equal(await page.locator('#globalSettingsBtn').getAttribute('aria-label'), '设置');
     assert.equal(await page.locator('#globalSettingsBtn svg').count(), 1);
@@ -60,6 +80,37 @@ try {
     await page.locator('#usCurrentPath').filter({ hasText: source }).waitFor();
     assert.equal(await page.locator('.unified-settings [role=dialog]').count(), 1);
     await page.locator('[data-us-tab=sharing]').click();
+    assert.equal(await page.locator('[name=shareSetup][value=local]').count(), 0);
+    assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds, 'switching settings keeps the window fixed');
+    assert.deepEqual(await page.locator('.us-heading').boundingBox(), headingBounds, 'heading stays fixed');
+    assert.match(await page.locator('#shareChoiceDescription').innerText(), /固定.*链接不变/);
+
+    await page.locator('[name=shareSetup][value=vercel]').check();
+    assert.equal(await page.locator('#staticDomainInput').isVisible(), false);
+    assert.equal(await page.locator('#gitAutoPushCheckbox').isChecked(), true);
+    await page.locator('#shareSettingsForm button[type=submit]').click();
+    await wait(async () => (await (await fetch(`${base}/api/settings`)).json()).shareMode === 'vercel', 'save automatic Vercel mode');
+    assert.equal((await (await fetch(`${base}/api/settings`)).json()).staticDomain, '');
+    await wait(async () => await page.locator('#shareSettingsForm button[type=submit]').isEnabled(), 'share save completed');
+    assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds, 'save feedback keeps window fixed');
+    assert.deepEqual(await page.locator('.us-heading').boundingBox(), headingBounds, 'save feedback keeps heading fixed');
+    await page.locator('.us-window').screenshot({ animations: 'disabled', path: '/tmp/prota-settings-sharing.png' });
+    await page.locator('#settingsHelpPane summary').click();
+    assert.equal(await page.locator('[data-share-guide=vercel]').isVisible(), true);
+    assert.equal(await page.locator('[data-share-guide=custom]').isVisible(), false);
+    assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds, 'expanding instructions keeps the window fixed');
+    assert.doesNotMatch(await page.locator('#settingsHelpPane').innerText(), /npm|终端|Agent/);
+    await page.locator('[name=shareSetup][value=custom]').check();
+    assert.equal(await page.locator('#staticDomainInput').isVisible(), true);
+    assert.equal(await page.locator('[data-share-guide=custom]').isVisible(), true);
+    assert.equal(await page.locator('[data-share-guide=vercel]').isVisible(), false);
+    assert.ok(await page.locator('#staticDomainInput').evaluate(node => !!(node.compareDocumentPosition(document.querySelector('#vercelAutoConfigBtn')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'domain comes before connection');
+    assert.ok(await page.locator('#settingsHelpPane').evaluate(node => !!(node.compareDocumentPosition(document.querySelector('.settings-modal__actions')) & Node.DOCUMENT_POSITION_FOLLOWING)), 'instructions come before footer');
+    await page.locator('.us-share-guide-content').scrollIntoViewIfNeeded();
+    await page.locator('.us-window').screenshot({animations:'disabled',path:'/tmp/prota-settings-custom-guide.png'});
+    await page.locator('#settingsHelpPane summary').click();
+    assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds, 'sharing choices keep the window fixed');
+    assert.match(await page.locator('#shareChoiceDescription').innerText(), /品牌.*更换托管服务/);
     await page.locator('#staticDomainInput').fill('fixture.example.com');
     await page.locator('[data-us-tab=models]').click();
     assert.equal(await page.locator('#agentConfigModal').isVisible(), true);
@@ -70,7 +121,57 @@ try {
     await page.locator('[data-us-save-continue]').click();
     await page.locator('.unified-settings').waitFor({ state: 'hidden' });
     assert.equal((await fs.readFile(path.join(source, 'data/settings.json'), 'utf8')).includes('fixture.example.com'), true);
+    // The connection action saves and normalizes the sharing draft itself.
+    await page.evaluate(() => window.shell.openSettingsModal());
+    await page.locator('#staticDomainInput').fill('https://auto-save.example.net/');
+    let connectedDomain;
+    await page.route('**/api/vercel/connect', route => {
+        connectedDomain = route.request().postDataJSON().domain;
+        return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({state:'cancelled',message:'连接已取消。'})});
+    }, {times:1});
+    await page.locator('#vercelAutoConfigBtn').click();
+    await wait(async () => connectedDomain === 'auto-save.example.net', 'connection automatically saves normalized domain');
+    assert.equal(JSON.parse(await fs.readFile(path.join(source, 'data/settings.json'), 'utf8')).staticDomain, 'auto-save.example.net');
+    assert.equal(await page.locator('#usGuard').isVisible(), false);
+    await page.locator('.us-close').click();
+    await page.evaluate(() => window.shell.vercelConnection.panel.hidden = true);
+    // Saving an address is insufficient until the local publishing project is linked.
+    let shareRequests = 0;
+    const interceptPublish = route => { shareRequests++; return route.abort(); };
+    await page.route('**/api/share-page', interceptPublish);
+    await page.evaluate(() => window.shell.createSharePage('static'));
+    await page.locator('#us-sharing').waitFor({state: 'visible'});
+    assert.equal(shareRequests, 0, 'unconfigured share opens settings without attempting publication');
+    await page.locator('.us-close').click();
+    await page.unroute('**/api/share-page', interceptPublish);
+    await fs.writeFile(path.join(config, 'vercel.json'), JSON.stringify({projectId:'fixture-share-project',orgId:'fixture-team',staticDomain:'ready.vercel.app'}));
+    await fetch(`${base}/api/settings`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shareMode:'vercel',staticDomain:'ready.vercel.app',vercelAutoDeploy:true})});
+    assert.equal((await (await fetch(`${base}/api/settings`)).json()).sharingConfigured, true);
+    assert.equal(await page.evaluate(() => window.shell.ensureShareSetup()), true);
+    connectionFixture = {authState:'authorized',publishState:'ready',account:'sample-user',domain:'ready.vercel.app',projectName:'sample-share',message:'授权有效，当前分享地址已生效。'};
+    await page.evaluate(() => window.shell.openSettingsModal());
+    await page.locator('[data-vc-badge]').filter({hasText:'已生效'}).waitFor();
+    assert.match(await page.locator('[data-vc-account]').innerText(), /已授权.*sample-user/);
+    assert.equal(await page.locator('[data-vc-address]').getAttribute('href'), 'https://ready.vercel.app');
+    await page.locator('.us-window').screenshot({animations:'disabled',path:'/tmp/prota-settings-vercel-active.png'});
+    await page.locator('[name=shareSetup][value=custom]').check();
+    assert.equal(await page.locator('[data-vc-badge]').innerText(), '待应用');
+    assert.match(await page.locator('[data-vc-effective]').innerText(), /当前选择尚未应用/);
+    await page.locator('[name=shareSetup][value=vercel]').check();
+    await page.locator('.us-close').click();
+    connectionFixture = {authState:'expired',publishState:'unconfigured',message:'授权已失效，请重新授权。'};
+    await page.evaluate(() => window.shell.openSettingsModal());
+    await page.locator('[data-vc-badge]').filter({hasText:'需重新授权'}).waitFor();
+    assert.match(await page.locator('[data-vc-account]').innerText(), /授权需更新/);
+    assert.equal(await page.locator('[data-vc-address-row]').isVisible(), false);
+    assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds);
+    await page.locator('.us-close').click();
+    connectionFixture = {authState:'unauthorized',publishState:'unconfigured',message:'尚未授权 Vercel，请连接账号。'};
+
+    await fs.unlink(path.join(config, 'vercel.json'));
+
     await page.locator('#globalSettingsBtn').click();
+    await page.locator('[data-us-tab=storage]').click();
     await page.locator('[data-us-tab=models]').click();
     await page.locator('.provider-advanced summary').click();
     await page.locator('#agentProviderNameInput').fill('已修改的测试模型');
@@ -105,6 +206,7 @@ try {
     await page.keyboard.press('Escape');
     await page.locator('[data-us-discard]').click();
     await page.locator('#globalSettingsBtn').click();
+    await page.locator('[data-us-tab=storage]').click();
     // Legacy shortcuts route to this same window.
     await page.evaluate(() => window.shell.openSettingsModal());
     assert.equal(await page.locator('#us-sharing').isVisible(), true);
@@ -113,18 +215,36 @@ try {
     await page.locator('[data-us-tab=storage]').click();
     for (const width of [900, 680, 390]) {
         await page.setViewportSize({ width, height: 844 });
-        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `overflow at ${width}`);
+        for (const panel of ['storage','sharing','models']) {
+            await page.locator(`[data-us-tab=${panel}]`).click();
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `overflow at ${width} in ${panel}`);
+            assert.equal(await page.locator('.us-body').evaluate(node => node.scrollWidth > node.clientWidth + 1), false, `settings overflow at ${width} in ${panel}`);
+            if (width === 390) await page.locator('.us-window').screenshot({animations: 'disabled', path: `/tmp/prota-settings-${panel}-mobile.png`});
+        }
+        await page.locator('[data-us-tab=storage]').click();
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
+    assert.equal(await page.locator('.us-storage-details').count(), 0);
+    await page.locator('.us-window').screenshot({animations: 'disabled', path: '/tmp/prota-settings-storage-simple.png'});
+    assert.deepEqual(await page.locator('.us-path-buttons button').allTextContents(), ['迁移到', '更改']);
+    const occupied = path.join(temporary, 'occupied');
+    await fs.mkdir(occupied);
+    await fs.writeFile(path.join(occupied, '.hidden'), 'keep');
+    await page.route('**/api/workspace/choose', route => route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({path: occupied})}), {times: 1});
     await page.locator('[data-us-mode=migrate]').click();
-    await page.locator('#usTarget').fill(target);
-    await page.locator('[data-us-plan]').click();
+    await page.locator('#usStorageError').filter({hasText: '空文件夹'}).waitFor();
+    assert.equal(await page.locator('#usPlan').isVisible(), false);
+    assert.equal(await fs.readFile(path.join(occupied, '.hidden'), 'utf8'), 'keep');
+    assert.equal(JSON.parse(await fs.readFile(path.join(config, 'workspace.json'), 'utf8')).path, source);
+    await page.route('**/api/workspace/choose', route => route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({path: target})}), {times: 1});
+    await page.locator('[data-us-mode=migrate]').click();
     await page.locator('#usPlan').waitFor({ state: 'visible' });
     assert.match(await page.locator('#usContents').innerText(), /个文件/);
     await page.locator('[data-us-change]').click();
     await wait(async () => JSON.parse(await fs.readFile(path.join(config, 'workspace.json'), 'utf8')).path === target, 'migration commit');
     await page.locator('.unified-settings').waitFor({ state: 'hidden' });
     await page.locator('#globalSettingsBtn').click();
+    await page.locator('[data-us-tab=storage]').click();
     await page.locator('#usCurrentPath').filter({ hasText: target }).waitFor();
     assert.equal(await fs.readFile(path.join(target, 'src/pages/workspace-e2e/reader/docs/product.md'), 'utf8'), '# 产品文档\n迁移后保持可读');
     assert.match(await (await fetch(`${base}/src/pages/workspace-e2e/reader/v1/index.html`)).text(), /迁移验证/);
@@ -150,14 +270,15 @@ try {
     await fs.writeFile(path.join(second, 'workspace.json'), JSON.stringify({ id: 'second-workspace', formatVersion: 1 }));
     await fs.writeFile(path.join(second, 'src/pages/workspace-e2e/reader/v1/index.html'), '<h1>另一个工作区</h1>');
     async function openWorkspace(location) {
-        await page.locator('[data-us-mode=open]').click();
-        await page.locator('#usTarget').fill(location);
-        await page.locator('[data-us-plan]').click();
-        await page.locator('#usPlan').waitFor({ state: 'visible' });
+        await page.route('**/api/workspace/choose', route => route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({path: location})}), {times: 1});
+        await page.locator('[data-us-mode=switch]').click();
+        await page.locator('#usPlan').waitFor({state: 'visible'});
+        assert.match(await page.locator('#usContents').innerText(), /不迁移/);
         await page.locator('[data-us-change]').click();
         await wait(async () => JSON.parse(await fs.readFile(path.join(config, 'workspace.json'), 'utf8')).path === location, 'workspace switch');
-        await page.locator('.unified-settings').waitFor({ state: 'hidden' });
+        await page.locator('.unified-settings').waitFor({state: 'hidden'});
         await page.locator('#globalSettingsBtn').click();
+        await page.locator('[data-us-tab=storage]').click();
         await page.locator('#usCurrentPath').filter({ hasText: location }).waitFor();
     }
     await openWorkspace(second);
@@ -165,16 +286,16 @@ try {
     await openWorkspace(target);
     assert.match(await (await fetch(`${base}/src/pages/workspace-e2e/reader/v1/index.html`)).text(), /迁移验证/);
     const blank = path.join(temporary, 'blank');
-    await page.locator('[data-us-mode=new]').click();
-    await page.locator('#usTarget').fill(blank);
-    await page.locator('[data-us-plan]').click();
-    await page.locator('[data-us-change]').click();
-    await wait(async () => JSON.parse(await fs.readFile(path.join(config, 'workspace.json'), 'utf8')).path === blank, 'blank workspace initialization');
-    await page.locator('.unified-settings').waitFor({ state: 'hidden' });
+    await fs.mkdir(blank);
+    await openWorkspace(blank);
+    assert.equal(await fs.stat(path.join(blank, 'src/pages/workspace-e2e')).then(() => true, () => false), false);
+    assert.equal(JSON.parse(await fs.readFile(path.join(blank, 'data/projects.json'), 'utf8')).projects.length, 0);
+    await page.keyboard.press('Escape');
     const create = await fetch(`${base}/api/create-project`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectId: 'new-project', projectName: '新工作区项目' }) });
     assert.equal(create.ok, true, await create.clone().text());
     assert.equal((await fs.stat(path.join(blank, 'src/pages/new-project'))).isDirectory(), true);
     await page.locator('#globalSettingsBtn').click();
+    await page.locator('[data-us-tab=storage]').click();
     await openWorkspace(target);
     // An unavailable disk must offer recovery, never recreate assets in the app.
     await fs.rename(target, target + '-offline');

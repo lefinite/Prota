@@ -1,12 +1,4 @@
 #!/bin/bash
-
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR"
-
-/bin/bash scripts/run.sh
-
-echo ""
-echo "按 Enter 键关闭窗口..."
-read
+# Compatibility entry: the Finder app runs services without a terminal window.
+PRODUCT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec /usr/bin/open "$PRODUCT_DIR/Prota.app"

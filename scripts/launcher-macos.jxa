@@ -1,0 +1,43 @@
+ObjC.import('Cocoa');
+function run(args) {
+    const app = $.NSApplication.sharedApplication;
+    app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
+    const fm = $.NSFileManager.defaultManager;
+    const base = ObjC.unwrap($.NSHomeDirectory()) + '/Library/Caches/Prota';
+    fm.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(base, true, $.NSDictionary.dictionary, null);
+    const statusPath = base + '/launch-' + ObjC.unwrap($.NSUUID.UUID.UUIDString) + '.json';
+    const logPath = base + '/launcher.log';
+    fm.createFileAtPathContentsAttributes(logPath, $.NSData.data, $.NSDictionary.dictionary);
+    const log = $.NSFileHandle.fileHandleForWritingAtPath(logPath);
+    const window = $.NSWindow.alloc.initWithContentRectStyleMaskBackingDefer($.NSMakeRect(0, 0, 520, 255), $.NSWindowStyleMaskTitled, $.NSBackingStoreBuffered, false);
+    window.title = 'Prota'; window.center;
+    const title = $.NSTextField.labelWithString('正在准备 Prota'); title.frame = $.NSMakeRect(32, 191, 456, 30); title.font = $.NSFont.boldSystemFontOfSize(21);
+    const detail = $.NSTextField.wrappingLabelWithString(''); detail.frame = $.NSMakeRect(32, 118, 456, 55); detail.font = $.NSFont.systemFontOfSize(14);
+    const steps = $.NSTextField.labelWithString('运行环境  →  Python 环境  →  产品依赖  →  打开工作台'); steps.frame = $.NSMakeRect(32, 66, 456, 24); steps.font = $.NSFont.systemFontOfSize(12); steps.textColor = $.NSColor.secondaryLabelColor;
+    const progress = $.NSProgressIndicator.alloc.initWithFrame($.NSMakeRect(32, 100, 456, 6)); progress.indeterminate = true; progress.startAnimation(null);
+    [title, detail, steps, progress].forEach(view => window.contentView.addSubview(view));
+    while (true) {
+        fm.removeItemAtPathError(statusPath, null);
+        const worker = $.NSTask.alloc.init;
+        worker.launchPath = '/bin/bash'; worker.arguments = [args[0] + '/scripts/bootstrap-macos.sh', args[0], statusPath];
+        worker.standardOutput = log; worker.standardError = log; worker.launch;
+        let error = null;
+        while (worker.running) {
+            const raw = $.NSString.stringWithContentsOfFileEncodingError(statusPath, $.NSUTF8StringEncoding, null);
+            if (raw) {
+                try {
+                    const state = JSON.parse(ObjC.unwrap(raw));
+                    if (state.show) { title.stringValue = state.title || '正在准备 Prota'; detail.stringValue = state.detail || ''; window.makeKeyAndOrderFront(null); app.activateIgnoringOtherApps(true); }
+                    if (state.step) steps.stringValue = '第 ' + state.step + '/4 步 · 运行环境 → Python → 产品依赖 → 工作台';
+                    if (state.state === 'error') error = state.detail;
+                } catch (_) {}
+            }
+            const event = app.nextEventMatchingMaskUntilDateInModeDequeue($.NSEventMaskAny, $.NSDate.dateWithTimeIntervalSinceNow(.2), $.NSDefaultRunLoopMode, true);
+            if (event) app.sendEvent(event);
+        }
+        if (worker.terminationStatus === 0 && !error) { window.orderOut(null); fm.removeItemAtPathError(statusPath, null); return; }
+        const alert = $.NSAlert.alloc.init; alert.messageText = 'Prota 暂时无法启动'; alert.informativeText = (error || '请检查网络连接或文件夹权限后重试。') + '\n诊断日志保存在 Library/Caches/Prota/launcher.log。';
+        alert.addButtonWithTitle('重试'); alert.addButtonWithTitle('退出');
+        if (alert.runModal !== $.NSAlertFirstButtonReturn) return;
+    }
+}

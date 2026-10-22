@@ -103,6 +103,52 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(self.run_change(target, 'open')['state'], 'complete')
         self.assertEqual(workspace.workspace_root(), target)
 
+    def test_switch_initializes_empty_folder_and_reuses_existing_projects_without_copying(self):
+        target = self.base / 'switch-empty'
+        target.mkdir()
+        self.assertEqual(workspace.plan(str(target), 'switch')['mode'], 'new')
+        self.assertEqual(self.run_change(target, 'switch')['state'], 'complete')
+        self.assertEqual(json.loads((target / 'data/projects.json').read_text())['projects'], [])
+        self.assertFalse((target / 'src/pages/demo').exists())
+        self.assertTrue((self.source / 'src/pages/demo/reader/v1/index.html').exists())
+        workspace.atomic_json(target / 'data/projects.json', {'projects': [{'id': 'other', 'pages': []}]})
+        other = self.base / 'second-empty'
+        self.assertEqual(self.run_change(other, 'switch')['state'], 'complete')
+        before = {p.relative_to(target): p.read_bytes() for p in target.rglob('*') if p.is_file()}
+        self.assertEqual(workspace.plan(str(target), 'switch')['mode'], 'open')
+        self.assertEqual(self.run_change(target, 'switch')['state'], 'complete')
+        self.assertEqual(before, {p.relative_to(target): p.read_bytes() for p in target.rglob('*') if p.is_file()})
+
+    def test_migration_rejects_hidden_files_and_rechecks_before_start(self):
+        target = self.base / 'occupied-later'
+        target.mkdir()
+        workspace.plan(str(target), 'migrate')
+        (target / '.DS_Store').write_text('keep')
+        with self.assertRaisesRegex(ValueError, '空文件夹.*隐藏文件'):
+            workspace.start(str(target), 'migrate', str(self.source))
+        self.assertEqual(workspace.workspace_root(), self.source)
+        self.assertEqual((target / '.DS_Store').read_text(), 'keep')
+
+    def test_destination_populated_while_copying_is_not_overwritten(self):
+        target = self.base / 'race'
+        target.mkdir()
+        original_copy = workspace.shutil.copy2
+
+        def copy_and_populate(*args, **kwargs):
+            result = original_copy(*args, **kwargs)
+            (target / 'keep.txt').write_text('keep')
+            return result
+
+        with patch.object(workspace.shutil, 'copy2', side_effect=copy_and_populate):
+            result = self.run_change(target)
+        self.assertEqual(result['state'], 'failed')
+        self.assertIn('空文件夹', result['error'])
+        self.assertEqual(workspace.workspace_root(), self.source)
+        self.assertEqual(list(target.iterdir()), [target / 'keep.txt'])
+        self.assertEqual((target / 'keep.txt').read_text(), 'keep')
+        self.assertTrue((self.source / 'src/pages/demo/reader/v1/index.html').exists())
+        self.assertFalse(list(self.base.glob('.prota-migration-*')))
+
     def test_unavailable_workspace_does_not_fall_back_to_application(self):
         workspace.atomic_json(workspace.CONFIG_PATH, {'path': str(self.base / 'missing')})
         self.assertFalse(workspace.status()['available'])
