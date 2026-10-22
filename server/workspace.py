@@ -148,7 +148,7 @@ def native_directory():
         result = subprocess.run(['osascript', '-e', 'POSIX path of (choose folder with prompt "选择 Prota 项目存放位置")'], capture_output=True, text=True)
     elif sys.platform == 'win32':
         result = subprocess.run(['powershell', '-NoProfile', '-STA', '-Command',
-            'Add-Type -AssemblyName System.Windows.Forms; $picker=New-Object System.Windows.Forms.FolderBrowserDialog; if($picker.ShowDialog() -eq "OK"){$picker.SelectedPath}'], capture_output=True, text=True)
+            'Add-Type -AssemblyName System.Windows.Forms; $picker=New-Object System.Windows.Forms.FolderBrowserDialog; if($picker.ShowDialog() -eq "OK"){$picker.SelectedPath}'], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
     else:
         try:
             result = subprocess.run(['zenity', '--file-selection', '--directory', '--title=选择 Prota 项目存放位置'], capture_output=True, text=True)

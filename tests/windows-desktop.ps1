@@ -16,24 +16,25 @@ $cache=Join-Path $env:LOCALAPPDATA 'Prota'
 function Launch-And-Wait($cold) {
     $seen=New-Object 'Collections.Generic.HashSet[int]'
     $visible=$false
+    $windowSeen=$false
     $started=Get-Date
     $app=Start-Process -FilePath (Join-Path $product 'Prota.exe') -PassThru
     $null=$app.Handle
     while (!$app.HasExited) {
         if (((Get-Date)-$started).TotalMinutes -gt 15) { throw 'Desktop launch timed out' }
         foreach ($file in @(Get-ChildItem -LiteralPath $cache -Filter 'launch-*.json' -ErrorAction SilentlyContinue)) {
-            try {
-                $state=[IO.File]::ReadAllText($file.FullName) | ConvertFrom-Json
-                if ($state.show) { $visible=$true; [void]$seen.Add([int]$state.step) }
-                if ($state.state -eq 'error') { throw $state.detail }
-            } catch [ArgumentException] { }
+            try { $state=[IO.File]::ReadAllText($file.FullName) | ConvertFrom-Json } catch { continue }
+            if ($state.show) { $visible=$true; [void]$seen.Add([int]$state.step) }
+            if ($state.state -eq 'error') { throw $state.detail }
         }
+        if (!$windowSeen -and (Get-Process powershell -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -eq 'Prota' -and $_.MainWindowHandle -ne 0 })) { $windowSeen=$true }
         Start-Sleep -Milliseconds 100
         $app.Refresh()
     }
     $app.WaitForExit()
     if ($app.ExitCode -ne 0) { throw 'Desktop entry failed' }
     if ($cold -and (!$seen.Contains(1) -or !$seen.Contains(2) -or !$seen.Contains(3))) { throw "Missing preparation steps: $seen" }
+    if ($cold -and !$windowSeen) { throw 'The native preparation window was not shown' }
     if (!$cold -and $visible) { throw 'Healthy launch unexpectedly showed preparation UI' }
     $bridge=Invoke-RestMethod 'http://127.0.0.1:18080/api/product/health'
     $agent=Invoke-RestMethod 'http://127.0.0.1:18081/api/agent/health'
@@ -48,9 +49,18 @@ try {
     Launch-And-Wait $false
     if ((Get-FileHash -LiteralPath $projects).Hash -ne $hash) { throw 'Warm launch altered project metadata' }
     if ((Get-Item -LiteralPath (Join-Path $product 'node_modules\.prota-vercel\node_modules\vercel\package.json')).LastWriteTimeUtc -ne $before) { throw 'Warm launch reinstalled Vercel' }
+    $previousPid=(Get-NetTCPConnection -State Listen -LocalPort 18080 | Select-Object -First 1).OwningProcess
+    Add-Content -LiteralPath (Join-Path $product 'server\bridge.py') -Value "`n# isolated service update acceptance test"
+    Launch-And-Wait $false
+    $currentPid=(Get-NetTCPConnection -State Listen -LocalPort 18080 | Select-Object -First 1).OwningProcess
+    if ($previousPid -eq $currentPid) { throw 'Updated product service did not restart' }
+    if ((Get-FileHash -LiteralPath $projects).Hash -ne $hash) { throw 'Service reload altered project metadata' }
+    Write-Output 'Updated owned service restarted without changing workspace data.'
     $node=Join-Path $env:READIFY_CONFIG_DIR 'runtime\node\node.exe'
-    & $node --test (Join-Path $product 'tests\desktop-launcher.test.mjs') (Join-Path $product 'tests\vercel-cli.test.mjs')
+    & $node --test (Join-Path $product 'tests\desktop-launcher.test.mjs') (Join-Path $product 'tests\vercel-cli.test.mjs') (Join-Path $product 'tests\runtime-archive.test.mjs')
     if ($LASTEXITCODE) { throw 'Node regression tests failed' }
+    & $node (Join-Path $product 'scripts\vercel-cli.mjs') --version
+    if ($LASTEXITCODE) { throw 'Installed Vercel CLI did not run' }
     $python=Join-Path $env:READIFY_CONFIG_DIR 'runtime\python\python.exe'
     Push-Location $product
     try {
@@ -62,9 +72,18 @@ try {
     $unrelated=Start-Process $node -ArgumentList ('"'+(Join-Path $base 'listener.cjs')+'"') -PassThru -WindowStyle Hidden
     try {
         Start-Sleep -Seconds 1
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $product 'scripts\windows-ports.ps1') 18082 (Join-Path $product 'server\agent-server.mjs') 2>$null
-        if ($LASTEXITCODE -eq 0) { throw 'Unrelated listener was accepted as owned' }
+        $probe=New-Object Diagnostics.Process
+        $probe.StartInfo.FileName=Join-Path $PSHOME 'powershell.exe'
+        $probe.StartInfo.Arguments='-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "'+(Join-Path $product 'scripts\windows-ports.ps1')+'" 18082 "'+(Join-Path $product 'server\agent-server.mjs')+'"'
+        $probe.StartInfo.UseShellExecute=$false; $probe.StartInfo.CreateNoWindow=$true
+        $probe.StartInfo.RedirectStandardError=$true
+        [void]$probe.Start()
+        $diagnostic=$probe.StandardError.ReadToEnd()
+        $probe.WaitForExit()
+        if ($probe.ExitCode -eq 0) { throw 'Unrelated listener was accepted as owned' }
+        $probe.Dispose(); $unrelated.Refresh()
         if ($unrelated.HasExited) { throw 'Unrelated listener was terminated' }
+        Write-Output 'Unrelated listener was preserved.'
     } finally { Stop-Process -Id $unrelated.Id -ErrorAction SilentlyContinue }
 } finally {
     foreach ($port in @(18080,18081)) {

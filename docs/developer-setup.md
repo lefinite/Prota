@@ -25,3 +25,5 @@ Vercel 授权复用官方 CLI 设备授权流程，由本机服务在后台等�
 分发的 app 入口目前未附 Apple 开发者证书签名；需要无系统安全确认的正式分发时，维护者应使用自己的 Apple Developer 身份签名和公证，不能由源码自动替用户授予系统信任。
 
 Windows 入口也尚未附 Authenticode 发行证书。正式发行可由维护者签名以建立系统信任；源码中的自动准备流程不能替用户绕过组织设备策略。
+
+上游说明：[Windows PowerShell 启动参数](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_powershell_exe?view=powershell-5.1)、[Astral Python 发行结构](https://github.com/astral-sh/python-build-standalone/blob/main/docs/distributions.rst)、[Windows 11 ARM 应用兼容性](https://learn.microsoft.com/en-us/windows/arm/overview)。
