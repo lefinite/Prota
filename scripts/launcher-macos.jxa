@@ -1,6 +1,8 @@
 ObjC.import('Cocoa');
 function run(args) {
     const app = $.NSApplication.sharedApplication;
+    const icon = $.NSImage.alloc.initWithContentsOfFile(args[0] + '/Prota.app/Contents/Resources/Prota.icns');
+    if (icon) app.applicationIconImage = icon;
     app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
     const fm = $.NSFileManager.defaultManager;
     const base = ObjC.unwrap($.NSHomeDirectory()) + '/Library/Caches/Prota';
