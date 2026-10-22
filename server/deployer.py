@@ -48,6 +48,10 @@ def read_vercel_auth():
     team = os.environ.get('VERCEL_ORG_ID')
     candidates = [Path.home() / 'Library/Application Support/com.vercel.cli',
                   Path.home() / '.local/share/com.vercel.cli', Path.home() / '.config/com.vercel.cli']
+    if os.name == 'nt':
+        appdata = Path(os.environ.get('APPDATA', str(Path.home() / 'AppData/Roaming')))
+        candidates.insert(0, Path(os.environ.get('XDG_DATA_HOME', str(appdata / 'xdg.data'))) / 'com.vercel.cli')
+        candidates.insert(1, Path(os.environ.get('XDG_CONFIG_HOME', str(appdata / 'xdg.config'))) / 'com.vercel.cli')
     for directory in candidates:
         if not token and (directory / 'auth.json').is_file():
             token = json.loads((directory / 'auth.json').read_text()).get('token')
@@ -252,15 +256,17 @@ class VercelDeployer:
                 workspace.atomic_json(directory / '.vercel/project.json', {k: config[k] for k in ['projectId', 'orgId']})
                 node = shutil.which('node')
                 if not node:
-                    raise ValueError('未找到 Node.js，请安装 Node.js 并在产品安装目录执行 npm ci。')
+                    raise ValueError('运行环境尚未准备好，请关闭后重新双击 Prota，等待自动准备完成。')
                 command = [node, str(self.app / 'scripts/vercel-cli.mjs')]
                 env = {**deployment_environment(), 'NO_COLOR': '1', 'VERCEL_ORG_ID': config['orgId'], 'VERCEL_PROJECT_ID': config['projectId']}
                 dependency = subprocess.run([*command, '--prota-check'], env=env,
-                                            capture_output=True, text=True, timeout=15)
+                                            capture_output=True, text=True, timeout=15,
+                                            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
                 if dependency.returncode:
                     raise ValueError('分享工具尚未准备好，请关闭后重新双击 Prota，等待自动准备完成。')
                 result = subprocess.run([*command, 'deploy', '--prebuilt', '--prod', '--yes', '--cwd', str(directory)],
-                                        env=env, capture_output=True, text=True, timeout=300)
+                                        env=env, capture_output=True, text=True, timeout=300,
+                                        creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
                 if result.returncode:
                     # CLI output may contain private project details: keep it local.
                     workspace.atomic_json(root / 'last-error.json', {'message': result.stderr[-8000:]})

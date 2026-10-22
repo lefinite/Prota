@@ -95,11 +95,37 @@ def status():
             'error': error, 'job': dict(_job) if _job else None}
 
 
+def process_alive(pid):
+    if os.name != 'nt':
+        try:
+            os.kill(pid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+    # os.kill(pid, 0) can terminate a process on Windows. Query it instead.
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    handle = kernel.OpenProcess(0x1000, False, pid)
+    if not handle:
+        return ctypes.get_last_error() != 87  # Access denied is still a live process.
+    try:
+        code = wintypes.DWORD()
+        return not kernel.GetExitCodeProcess(handle, ctypes.byref(code)) or code.value == 259
+    finally:
+        kernel.CloseHandle(handle)
+
+
 def bridge_locked():
     if LOCK_PATH.exists():
         try:
             lease = json.loads(LOCK_PATH.read_text(encoding='utf-8'))
-            os.kill(int(lease['pid']), 0)
+            if not process_alive(int(lease['pid'])):
+                LOCK_PATH.unlink(missing_ok=True)
         except ProcessLookupError:
             LOCK_PATH.unlink(missing_ok=True)
         except (OSError, ValueError, KeyError):

@@ -106,7 +106,9 @@ def terminate(process):
             if os.name == 'posix':
                 os.killpg(process.pid, signal.SIGTERM)
             else:
-                process.terminate()
+                subprocess.run(['taskkill.exe', '/PID', str(process.pid), '/T', '/F'],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                               creationflags=subprocess.CREATE_NO_WINDOW)
         except ProcessLookupError:
             pass
 
@@ -129,7 +131,8 @@ def cli(args, timeout=120, **kwargs):
     process = subprocess.Popen([node, str(workspace.APP_ROOT / 'scripts/vercel-cli.mjs'), *args],
                                env={**deployment_environment(), 'CI': '1', 'NO_COLOR': '1', 'VERCEL_TELEMETRY_DISABLED': '1'},
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                               start_new_session=True, **kwargs)
+                               start_new_session=True,
+                               creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0, **kwargs)
     try:
         output, _ = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
@@ -163,7 +166,8 @@ def authenticate(cancelled):
     env = {**deployment_environment(), 'CI': '1', 'NO_COLOR': '1', 'VERCEL_TELEMETRY_DISABLED': '1'}
     process = subprocess.Popen([node, str(workspace.APP_ROOT / 'scripts/vercel-cli.mjs'), 'login'],
                                env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT, text=True, bufsize=1, start_new_session=True)
+                               stderr=subprocess.STDOUT, text=True, bufsize=1, start_new_session=True,
+                               creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
     with _lock:
         _process = process
     timer = threading.Timer(600, terminate, args=(process,))

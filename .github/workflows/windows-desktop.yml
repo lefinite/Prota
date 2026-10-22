@@ -1,0 +1,23 @@
+name: Windows desktop launcher
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cold install and warm GUI startup
+        shell: powershell
+        run: ./tests/windows-desktop.ps1
+      - name: Keep isolated test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-launcher-diagnostics
+          path: |
+            ${{ runner.temp }}/prota-test-logs
+            ${{ runner.temp }}/prota-service-logs
+          retention-days: 3

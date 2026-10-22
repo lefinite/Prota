@@ -7,6 +7,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolveVercelCLI } from '../server/vercel-cli.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+try { process.loadEnvFile(path.join(root, '.env')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+const windows = process.platform === 'win32';
+const powershell = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe');
 const config = process.env.READIFY_CONFIG_DIR || path.join(os.homedir(), '.config/prota');
 const runtime = path.join(config, 'runtime');
 const statusFile = process.argv[2];
@@ -15,6 +18,7 @@ const agentPort = Number(process.env.READIFY_AGENT_PORT || 8081);
 const bridgeBase = 'http://127.0.0.1:' + bridgePort;
 const agentBase = 'http://127.0.0.1:' + agentPort;
 let visible = false;
+let currentStep = 1;
 try { visible = Boolean(JSON.parse(fs.readFileSync(statusFile)).show); } catch {}
 export function fingerprint(directory) {
     return crypto.createHash('sha256').update(['package.json', 'package-lock.json', 'scripts/install-vercel-cli.mjs', 'tools/vercel-runtime/package.json'].map(file => fs.readFileSync(path.join(directory, file))).join('\n')).digest('hex');
@@ -31,6 +35,7 @@ export function dependenciesReady(directory, installedFingerprint) {
     } catch { return false; }
 }
 function status(step, title, detail, show = false, state = 'preparing') {
+    currentStep = step;
     visible ||= show;
     if (statusFile) {
         fs.writeFileSync(statusFile + '.next', JSON.stringify({ step, title, detail, show: visible, state }));
@@ -38,23 +43,31 @@ function status(step, title, detail, show = false, state = 'preparing') {
     }
 }
 function execute(command, args, options = {}) {
-    const result = spawnSync(command, args, { encoding: 'utf8', detached: true, maxBuffer: 8 * 1024 * 1024, ...options });
-    if (result.error?.code === 'ETIMEDOUT') { try { process.kill(-result.pid, 'SIGTERM'); } catch {} }
+    const result = spawnSync(command, args, { encoding: 'utf8', detached: !windows, windowsHide: true, maxBuffer: 8 * 1024 * 1024, ...options });
+    if (result.error?.code === 'ETIMEDOUT') {
+        if (windows) spawnSync('taskkill.exe', ['/PID', String(result.pid), '/T', '/F'], { windowsHide: true });
+        else { try { process.kill(-result.pid, 'SIGTERM'); } catch {} }
+    }
     if (result.error || result.status !== 0) throw Error('准备未完成。请检查网络，并确认产品文件夹可以写入后重试。');
     return result.stdout;
 }
 function download(url, target) {
-    execute('/usr/bin/curl', ['-fLsS', '--retry', '2', '--connect-timeout', '20', '--max-time', '600', url, '-o', target]);
+    execute(windows ? path.join(process.env.SystemRoot, 'System32/curl.exe') : '/usr/bin/curl', ['-fLsS', '--retry', '2', '--connect-timeout', '20', '--max-time', '600', url, '-o', target]);
 }
-export function selectPythonAsset(release, arch) {
+export function selectPythonAsset(release, arch, platform = process.platform) {
+    if (!['arm64', 'x64'].includes(arch) || !['darwin', 'win32'].includes(platform)) return undefined;
     const target = arch === 'arm64' ? 'aarch64' : 'x86_64';
-    return release.assets.find(asset => new RegExp(`^cpython-3\\.13\\.[0-9]+\\+.+-${target}-apple-darwin-install_only_stripped\\.tar\\.gz$`).test(asset.name));
+    const triple = platform === 'win32' ? 'pc-windows-msvc' : 'apple-darwin';
+    return release.assets.find(asset => new RegExp(`^cpython-3\\.13\\.[0-9]+\\+.+-${target}-${triple}-install_only_stripped\\.tar\\.gz$`).test(asset.name));
 }
-export async function pythonRuntime(candidates = [path.join(runtime, 'python/bin/python3'), '/opt/homebrew/bin/python3', '/usr/local/bin/python3']) {
+export function npmEntry(node, platform = process.platform) {
+    return path.resolve(path.dirname(node), platform === 'win32' ? 'node_modules/npm/bin/npm-cli.js' : '../lib/node_modules/npm/bin/npm-cli.js');
+}
+export async function pythonRuntime(candidates = windows ? [path.join(runtime, 'python/python.exe')] : [path.join(runtime, 'python/bin/python3'), '/opt/homebrew/bin/python3', '/usr/local/bin/python3']) {
     fs.mkdirSync(runtime, { recursive: true });
     for (const binary of candidates) {
         if (!fs.existsSync(binary)) continue;
-        const result = spawnSync(binary, ['-c', 'import sys;sys.exit(0 if sys.version_info >= (3,9) else 1)']);
+        const result = spawnSync(binary, ['-c', 'import ssl,http.server,sys;sys.exit(0 if sys.version_info >= (3,9) else 1)'], { windowsHide: true });
         if (result.status === 0) return binary;
     }
     status(2, '准备 Python 环境', '正在下载产品专用运行环境，不会修改系统 Python。', true);
@@ -64,7 +77,7 @@ export async function pythonRuntime(candidates = [path.join(runtime, 'python/bin
         download('https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest', metadata);
         const release = JSON.parse(fs.readFileSync(metadata));
         const asset = selectPythonAsset(release, process.arch);
-        if (!asset) throw Error('暂时没有适用于这台 Mac 的 Python 环境，请稍后重试。');
+        if (!asset) throw Error('暂时没有适用于这台电脑的 Python 环境，请稍后重试。');
         const archive = path.join(temporary, 'python.tar.gz'); download(asset.browser_download_url, archive);
         let expected = asset.digest?.replace(/^sha256:/, '');
         if (!expected) {
@@ -75,13 +88,14 @@ export async function pythonRuntime(candidates = [path.join(runtime, 'python/bin
         }
         const actual = crypto.createHash('sha256').update(fs.readFileSync(archive)).digest('hex');
         if (!/^[a-f0-9]{64}$/.test(expected) || actual !== expected) throw Error('Python 下载校验未通过，请重试。');
-        execute('/usr/bin/tar', ['-xzf', archive, '-C', temporary]);
-        const binary = path.join(temporary, 'python/bin/python3');
+        execute(windows ? path.join(process.env.SystemRoot, 'System32/tar.exe') : '/usr/bin/tar', ['-xzf', archive, '-C', temporary]);
+        const relativeBinary = windows ? 'python.exe' : 'bin/python3';
+        const binary = path.join(temporary, 'python', relativeBinary);
         execute(binary, ['-c', 'import ssl, http.server, sys;assert sys.version_info >= (3,9)']);
         const destination = path.join(runtime, 'python');
         if (fs.existsSync(destination)) fs.renameSync(destination, path.join(temporary, 'previous-python'));
         fs.renameSync(path.join(temporary, 'python'), destination);
-        return path.join(destination, 'bin/python3');
+        return path.join(destination, relativeBinary);
     } finally { fs.rmSync(temporary, { recursive: true, force: true }); }
 }
 async function request(url) {
@@ -89,10 +103,14 @@ async function request(url) {
 }
 function child(command, args, logFile, env) {
     const log = fs.openSync(logFile, 'a');
-    const process = spawn(command, args, { cwd: root, env, detached: true, stdio: ['ignore', log, log] });
+    const process = spawn(command, args, { cwd: root, env, detached: true, windowsHide: true, stdio: ['ignore', log, log] });
     process.unref(); fs.closeSync(log); return process.pid;
 }
 async function releaseOwnedPort(port, entry) {
+    if (windows) {
+        execute(powershell, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'scripts/windows-ports.ps1'), String(port), path.join(root, entry)]);
+        return;
+    }
     const listeners = spawnSync('/usr/sbin/lsof', ['-tiTCP:' + port, '-sTCP:LISTEN'], { encoding: 'utf8' }).stdout.trim().split(/\s+/).filter(Boolean);
     for (const pid of new Set(listeners)) {
         const cwd = spawnSync('/usr/sbin/lsof', ['-a', '-p', pid, '-d', 'cwd', '-Fn'], { encoding: 'utf8' }).stdout.split('\n').find(line => line.startsWith('n'))?.slice(1);
@@ -121,7 +139,8 @@ async function main() {
     try {
         const nodeDir = path.dirname(process.execPath);
         process.env.PATH = nodeDir + path.delimiter + process.env.PATH;
-        process.env.SSL_CERT_FILE ||= '/etc/ssl/cert.pem';
+        if (!windows) process.env.SSL_CERT_FILE ||= '/etc/ssl/cert.pem';
+        process.env.PYTHONUTF8 = '1';
         const python = await pythonRuntime();
         const installState = path.join(runtime, 'installation-' + crypto.createHash('sha256').update(root).digest('hex').slice(0, 16) + '.json');
         let previous; try { previous = JSON.parse(fs.readFileSync(installState)).fingerprint; } catch {}
@@ -129,7 +148,7 @@ async function main() {
             const activeAgent = await request(agentBase + '/api/agent/health');
             if (activeAgent?.activeRuns) throw Error('Prota 正在生成内容，请完成当前任务后再准备依赖。');
             status(3, '准备产品依赖', '自动安装所需组件和最新版分享工具，完成后继续打开工作台。', true);
-            execute(process.execPath, [path.join(nodeDir, '../lib/node_modules/npm/bin/npm-cli.js'), 'ci', '--no-audit', '--no-fund', '--fetch-retries=1', '--fetch-timeout=60000'], { cwd: root, env: process.env, stdio: 'inherit', timeout: 900000 });
+            execute(process.execPath, [npmEntry(process.execPath), 'ci', '--no-audit', '--no-fund', '--fetch-retries=1', '--fetch-timeout=60000'], { cwd: root, env: process.env, stdio: 'inherit', timeout: 900000 });
             if (!dependenciesReady(root)) throw Error('依赖安装不完整，请重试。');
         }
         fs.writeFileSync(installState, JSON.stringify({ fingerprint: fingerprint(root) }));
@@ -146,18 +165,21 @@ async function main() {
         if (health?.installation !== identity || health?.build !== bridgeBuild) {
             if (agent?.activeRuns) throw Error('Prota 正在生成内容，请完成当前任务后再重新启动。');
             await releaseOwnedPort(bridgePort, 'server/bridge.py');
-            child(python, ['server/bridge.py'], path.join(root, 'logs/bridge.log'), environment);
+            child(python, [path.join(root, 'server/bridge.py')], path.join(root, 'logs/bridge.log'), environment);
         }
         agent = await request(agentBase + '/api/agent/health');
         if (agent?.installation !== identity || agent?.build !== agentBuild) {
             if (agent?.activeRuns) throw Error('Prota 正在生成内容，请完成当前任务后再重新启动。');
             await releaseOwnedPort(agentPort, 'server/agent-server.mjs');
-            child(process.execPath, ['--env-file-if-exists=.env', 'server/agent-server.mjs'], path.join(root, 'logs/agent-server.log'), environment);
+            child(process.execPath, ['--env-file-if-exists=.env', path.join(root, 'server/agent-server.mjs')], path.join(root, 'logs/agent-server.log'), environment);
         }
         for (let attempt = 0; attempt < 60; attempt++) {
             const bridge = await request(bridgeBase + '/api/product/health');
             if (bridge?.installation === identity && await request(agentBase + '/api/agent/health')) {
-                if (!process.env.PROTA_NO_OPEN) spawnSync('/usr/bin/open', [bridgeBase + '/portal/index.html']);
+                if (!process.env.PROTA_NO_OPEN) {
+                    if (windows) execute(powershell, ['-NoProfile', '-NonInteractive', '-Command', 'Start-Process "' + bridgeBase + '/portal/index.html"']);
+                    else execute('/usr/bin/open', [bridgeBase + '/portal/index.html']);
+                }
                 status(4, '已就绪', '', false, 'ready'); return;
             }
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -165,4 +187,4 @@ async function main() {
         throw Error('本机服务未能启动，请重试；详细信息已保存到本机日志。');
     } finally { fs.rmSync(lock, { recursive: true, force: true }); }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) main().catch(error => { status(4, '启动未完成', error.message, true, 'error'); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) main().catch(error => { status(currentStep, '启动未完成', error.message, true, 'error'); process.exitCode = 1; });

@@ -13,8 +13,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from server import workspace
 
 ROOT = Path(__file__).resolve().parents[1]
-DIRECTORIES = ['Prota.app', '.githooks', 'portal', 'server', 'scripts', 'src/templates', 'tools', '.claude/skills', 'assets']
-FILES = ['package.json', 'package-lock.json', 'LICENSE', 'README.md', 'README.zh-CN.md', 'AGENTS.md', '.gitignore', 'start-portal.command',
+DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'src/templates', 'tools', '.claude/skills', 'assets']
+FILES = ['Prota.exe', 'package.json', 'package-lock.json', 'LICENSE', 'README.md', 'README.zh-CN.md', 'AGENTS.md', '.gitignore', 'start-portal.command',
          'data/agent-provider-presets.json', 'data/agent-sdk-extension.mjs', 'data/templates.json',
          'docs/workspace-and-publishing.md', 'docs/share-setup-guide.md', 'docs/sharing-flow.mmd', 'docs/sharing-flow.svg',
          'docs/developer-setup.md', 'docs/workspace-storage.md', 'docs/unified-settings-design.md', 'docs/provider-model-discovery.md']
@@ -91,7 +91,7 @@ def export(target):
             shutil.copy2(source, dest)
     # Generic regression suites; actual business-page tests stay in the private workspace.
     for source in (ROOT / 'tests').glob('*'):
-        if source.is_file() and source.suffix in {'.py', '.mjs'} and not source.name.startswith('readify-'):
+        if source.is_file() and source.suffix in {'.py', '.mjs', '.ps1'} and not source.name.startswith('readify-'):
             dest = target / 'tests' / source.name
             dest.parent.mkdir(exist_ok=True)
             shutil.copy2(source, dest)
