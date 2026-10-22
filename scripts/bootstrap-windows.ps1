@@ -23,6 +23,7 @@ function Write-State($step,$title,$detail,$state='preparing') {
     Move-Item -LiteralPath "$StatusFile.next" -Destination $StatusFile -Force
 }
 function Download($url,$dest) {
+    Write-Output ('Downloading ' + $url)
     for ($attempt=0; $attempt -lt 3; $attempt++) {
         try { Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $dest -TimeoutSec 600 -UserAgent 'Prota-Launcher' | Out-Null; return }
         catch { if ($attempt -eq 2) { throw }; Start-Sleep -Seconds 1 }
@@ -53,9 +54,12 @@ try {
         $stage=Join-Path $runtime ('node-download-'+[Guid]::NewGuid().ToString('N'))
         [IO.Directory]::CreateDirectory($stage) | Out-Null
         Download 'https://nodejs.org/dist/index.json' (Join-Path $stage 'index.json')
-        $release=Get-Content -LiteralPath (Join-Path $stage 'index.json') -Raw | ConvertFrom-Json | Where-Object { $_.lts -and [int]($_.version.TrimStart('v').Split('.')[0]) -ge 24 -and $_.files -contains "win-$arch-zip" } | Select-Object -First 1
+        $releases=Get-Content -LiteralPath (Join-Path $stage 'index.json') -Raw | ConvertFrom-Json
+        $release=$releases | Where-Object { $_.lts -and [int]($_.version.TrimStart('v').Split('.')[0]) -ge 24 -and $_.files -contains "win-$arch-zip" } | Select-Object -First 1
         if (!$release) { throw '暂时没有适用的 Node.js 运行环境。' }
-        $version=$release.version; $archive="node-$version-win-$arch.zip"
+        $version=[string]$release.version
+        if ($version -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Node.js 版本信息无效。' }
+        $archive="node-$version-win-$arch.zip"
         Download "https://nodejs.org/dist/$version/$archive" (Join-Path $stage $archive)
         Download "https://nodejs.org/dist/$version/SHASUMS256.txt" (Join-Path $stage 'checksums')
         $expected=$null
