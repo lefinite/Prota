@@ -1,120 +1,125 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Readify — AI 原型工作台，把 PRD 与自然语言变成可交互、可批注、一键分享的移动端 / Web 端 UI 原型">
+  <img src="./assets/readme/hero-en.png" width="100%" alt="Prota: an open-source AI agent that turns a one-sentence product idea into a clickable demo and a complete PRD">
 </p>
-
-> 一个跑在你自己电脑上的 **AI 原型工作台**。给它一段话、一份 PRD 或一张思维导图，它通过内置 Agent 直接生成可在手机框 / 浏览器里点击的原型，套用 **160 套现成设计系统**，按版本迭代，一键分享给同事评审。门户内代号 **Prota**。
-
----
-
-## 它能做什么
 
 <p align="center">
-  <img src="./assets/readme/design-systems.svg" width="100%" alt="Readify 内置 160 套设计系统，此处展示暗夜终端、编辑衬线、Apple、Stripe、极简黑白、粗野主义六张样本">
+  <b>English</b> · <a href="./README.zh-CN.md">简体中文</a>
 </p>
-
-Readify 是一个 **本地优先** 的原型工作台。它不只是一个画图工具——AI Agent 会读你的需求文档，直接写出能跑、能点的 HTML/CSS/JS 原型页面，并把每一版原型、对应的 PRD、思维导图、流程图、批注都按「项目 → 页面 → 版本」的结构管理起来。
-
-全新安装使用独立的空工作区，实际业务项目不会包含在产品仓库中。
-
-## 为什么用它
-
-| | 能力 | 说明 |
-| --- | --- | --- |
-| 🎨 | **160 套设计系统** | Apple、Stripe、Linear、Vercel、暗夜终端、编辑衬线、粗野主义……从 B 端到内容站，一键换肤 |
-| 🤖 | **AI Agent + 70+ 技能** | 基于 Open Agent SDK，自然语言 / PRD 直接生成原型；支持生成 PRD、设计评审、截图取证等技能 |
-| 📄 | **PRD 原生** | Markdown PRD 与原型双向绑定，页内可嵌 **XMind 思维导图** 与 **draw.io 流程图** |
-| 🔢 | **版本化迭代** | `v1 → v2 → v3`，每版完全自包含，旧版保留不动，可随时回看对比 |
-| 📱 | **双端** | `mobile` 手机端（手机外框模板）与 `web` B 端（Ant Design 风模板） |
-| 📝 | **页面级批注** | 在原型上直接打点批注、截图取证，评审时所见即所议 |
-| 🔗 | **两种分享** | Cloudflare 隧道（公网临时）/ 直接部署 Vercel（静态云） |
-| 🏠 | **本地优先** | 文件、PRD、原型全部存在你自己的磁盘上，不依赖云服务 |
-
-## 它是怎么工作的
 
 <p align="center">
-  <img src="./assets/readme/workflow.svg" width="100%" alt="Readify 工作流：需求输入 → Prota 工作台（Python Bridge :8080 + Node Agent :8081）→ 设计系统 × 版本 → 一键分享">
+  <a href="./assets/readme/video/prota-intro-en.mp4">
+    <img src="./assets/readme/video-poster-en.jpg" width="100%" alt="Watch the 77-second Prota product tour">
+  </a>
 </p>
+<!-- For inline playback on GitHub: drag assets/readme/video/prota-intro-en.mp4 into the GitHub web editor, then replace the block above with the generated https://github.com/user-attachments/assets/... link on its own line. -->
 
-三件套协同：
+## Got an idea?
 
-- **Prota Portal（浏览器）** —— 工作台前端，负责页面编排、版本切换、PRD / 思维导图 / 流程图编辑、批注与分享入口。
-- **Python Bridge `:8080`** —— 文件中枢。读写 `src/pages/`、管理 160 套设计系统模板、生成自包含静态分享页、独立静态发布。
-- **Node Agent Gateway `:8081`** —— AI 执行器。基于 `@codeany/open-agent-sdk` 运行 Agent，加载 70+ 技能，通过 SSE 流式返回生成过程，敏感操作需你在工作台里审批。
+**Prota is an AI agent built for product managers.** Describe a product idea in one sentence. Prota designs and builds the pages, gives you a working prototype in minutes, and then writes the complete PRD from what it built. Share it with one link, or hand it to your AI coding tool as context.
 
-一句话：**需求进 Portal → Agent 调技能写代码 → Bridge 落盘成版本化原型 → 一键分享**。
+It runs on your own computer and uses your own model API.
 
-## 快速开始
+```txt
+Idea  →  Clickable demo  →  Complete PRD  →  Share link  →  Hand-off to AI coding tools
+```
 
-**前置：** Node.js 22.9+、Python 3.9+、一个可用的 LLM（首次启动后在 Portal 里配置 provider）。
+## The tour, step by step
+
+### 1. Start from 160+ design templates
+
+Pick one of 159 design systems for mobile or one of 9 Web component frameworks (Ant Design, Arco, Chakra UI, Element Plus, Mantine, Material UI, Semi, shadcn, TDesign) and start building. Each design system comes with its own `DESIGN.md` and tokens, so the agent follows a real visual language instead of making one up.
+
+<img src="./assets/readme/en/tpl-grid.jpg" width="100%" alt="Template library with mobile design style previews">
+
+### 2. Built-in product skills
+
+The agent ships with skills for the PM workflow: **Product thinking** (Plan mode breaks the idea down before building), **Page design** (`create-new-page`), **Flowcharts** (`generate-flow-diagram`, editable draw.io) and **PRD generation** (`generate-prd`). There are also design-quality skills for frontend craft, minimalist UI, high-end visuals and redesigns. You can add, enable or remove skills from the home screen.
+
+<img src="./assets/readme/en/skills.jpg" width="100%" alt="Four built-in skills: product thinking, page design, flowcharts, PRD generation">
+
+### 3. One sentence in, a working prototype out
+
+Describe the idea. Prota plans, designs and writes the page (`index.html`, `styles.css`, `app.js`), checks the code, and shows the live result in a phone or Web frame. You can see every step it takes.
+
+<img src="./assets/readme/en/prototype.jpg" width="100%" alt="Prota Agent turns a one-sentence prompt into a working mobile prototype">
+
+### 4. Try bolder ideas: every version is kept
+
+Start a new version whenever you want to try a different direction. Versions are self-contained folders (`v1`, `v2`, …). Older ones are never overwritten, so you can switch back and compare at any time.
+
+<img src="./assets/readme/en/versions.jpg" width="100%" alt="Comparing V4 (swipe cards) with V5 (one-page trip board)">
+
+### 5. Circle it, leave a note, and only that part changes
+
+Turn on annotation mode, circle the element you don't like and write what you want. Prota edits only that area and leaves the rest of the page untouched.
+
+<img src="./assets/readme/en/annotate.jpg" width="100%" alt="An annotated button is changed while everything else stays the same">
+
+### 6. Generate the PRD in one click
+
+When you're happy with the prototype, Prota writes a PRD from your prompts, your annotations and the actual source code. It includes product logic and scope, feature specs and rules, a feature mind map, the core flowchart, and a screenshot for every feature.
+
+<img src="./assets/readme/en/prd.jpg" width="100%" alt="Generated PRD with scope, feature rules, mind map, flowchart and screenshots">
+
+### 7. Share with one link
+
+Share a page or a whole folder. Prota builds a static share page: teammates can try the demo and read the docs in the browser, and your computer doesn't need to stay online.
+
+<img src="./assets/readme/en/share-doc.jpg" width="100%" alt="Shared page with the live demo next to its PRD">
+
+### 8. Hand it to your AI coding tool
+
+From the share page, developers can download a ZIP of the prototype and the PRD and give it to their AI coding tool as context, so it knows exactly what to build.
+
+<img src="./assets/readme/en/handoff.jpg" width="100%" alt="The downloaded ZIP used as context in an AI coding tool">
+
+## How it works
+
+<img src="./assets/readme/how-it-works-en.png" width="100%" alt="Portal in the browser talks to a local Python bridge and a Node agent gateway; work is saved to a workspace on your disk and can be published as a share link or ZIP">
+
+| Part | What it does |
+| --- | --- |
+| `portal/` | The browser app: projects, pages, versions, annotations, PRD viewer, mind maps, draw.io diagrams and settings |
+| `server/bridge.py` | Local bridge: serves the Portal and reads or writes the workspace. Also handles screenshots, ZIP packaging and publishing |
+| `server/agent-server.mjs` | Agent gateway: runs agent sessions with skills, design templates and the model you configure |
+| `src/templates/` | Mobile and Web frames, 159 design systems and 9 Web framework templates |
+| `.claude/skills/` | The built-in skills listed above |
+
+Your projects live in a **workspace** separate from the app. By default it's `~/.config/prota/workspace`. You can move it or open another one in **Settings → Storage**, or set `READIFY_WORKSPACE`.
+
+## Quick start
+
+**Requirements:** macOS (the one-click launcher uses `open` and `lsof`), Node.js 22.9 or later, Python 3, and an API key for a model provider.
 
 ```bash
 git clone https://github.com/lefinite/Prota.git
 cd Prota
-npm ci                 # 安装产品依赖，并自动获取最新版 Vercel CLI
-bash scripts/run.sh    # 启动 Bridge(:8080) + Agent(:8081)，并自动打开工作台
+npm ci                 # installs dependencies and the latest Vercel CLI used for sharing
+bash scripts/run.sh    # or double-click start-portal.command
 ```
 
-macOS 用户也可以直接**双击 `start-portal.command`**。
+The Portal opens in your browser. Keep the terminal window open while you use it.
 
-启动后浏览器会打开 `http://localhost:8080/portal/index.html`：
+1. **Connect a model:** click the gear icon in the top-right of the project list and go to **Settings → Models**. Pick a preset or choose *OpenAI-compatible / custom*, then enter your API key. Both Anthropic Messages-style and OpenAI-compatible APIs are supported.
+2. **Create a project and a page** (mobile by default, Web if you ask for it), pick a design template, and describe your idea.
+3. **(Optional) Turn on sharing:** set up static sharing in **Settings → Sharing**. See [docs/share-setup-guide.md](./docs/share-setup-guide.md) for how publishing works and what gets uploaded.
 
-1. 在设置里配置 Agent 的 **LLM provider**（API Key 只存在本地，已被 `.gitignore` 忽略）。
-2. 新建项目 → 新建页面（选 `mobile` 或 `web`）。
-3. 把需求贴给 Agent，或写一份 PRD 让它照着做。
-4. 如需云分享，先按[分享配置教程](docs/share-setup-guide.md)登录自己的 Vercel 账号并关联域名，再点「分享」。
+## Good to know
 
-Vercel CLI 会在安装产品依赖时自动下载当时的最新版，存放在产品内部，无需全局安装。在产品目录使用 `npm run vercel -- login` 登录、`npm run vercel -- --version` 查看版本；以后执行 `npm run vercel:update` 可单独更新。分享使用已安装的版本，不会每次发布都升级。工作区、登录和原分享项目继续保留。
+- The Portal interface and the generated PRDs are currently in **Chinese**. The prototypes themselves can be in any language you ask for.
+- Shared pages include the selected versions and their documents, and nothing is redacted automatically. Check the content before you share.
+- Your model API key and personal settings stay on your machine and are never included in shares.
 
-> 只想公网临时演示？`bash scripts/start-public.sh` 会用 Cloudflare Tunnel 把本地 8080 映射到你的域名。这与静态云分享是两种发布方式。
+## Development
 
-## 项目结构
-
-```
-readifyapp/
-├── portal/                # 浏览器工作台（前端 shell + 文档模块）
-│   ├── agent/             #   Agent 客户端（SSE、provider 配置、会话）
-│   └── modules/           #   prd / drawio / mindmap 文档模块
-├── server/
-│   ├── bridge.py          # Python Bridge :8080（文件 / 模板 / 分享）
-│   └── agent-server.mjs   # Node Agent Gateway :8081（AI 生成）
-├── src/
-│   ├── pages/{项目}/{页面}/{版本}/   # 自包含原型：index.html + styles.css + app.js
-│   └── templates/                    # 160 套设计系统 + 手机框 / Web 框
-├── scripts/               # run.sh / start-public.sh / iterate.sh
-├── data/                  # projects.json · templates.json · provider 配置
-├── shares/                # 生成的自包含静态分享 HTML
-├── tools/                 # drawio 主题审计、PRD 截图取证
-└── docs/                  # 分享配置保姆级教程
+```bash
+npm run agent:check              # syntax-check the agent gateway
+node --test tests/*.test.mjs     # Node tests
+python3 -m unittest discover -s tests -p "test_*.py"   # Python tests
 ```
 
-## 核心概念
+Project conventions for agents (directory layout, versioning, page registration) are in [AGENTS.md](./AGENTS.md).
 
-- **自包含页面** —— 每个版本目录自带 `index.html / styles.css / app.js`，**严禁跨版本引用**，保证旧版本永远可复现。每个原型都跑在独立 `<iframe>` 里，样式互不污染。
-- **迭代版本** —— 说「迭代版本」时，系统复制当前最新版到下一版本号（`v2 → v3`），只在新版上改，旧版原样保留。命令行可用 `bash scripts/iterate.sh <project> <page> <new_version>`。
-- **设计系统** —— `src/templates/design-systems/` 下每套系统包含 `DESIGN.md`、design tokens、组件示例。Agent 生成时按你选的系统落地配色与排版。
-- **PRD 与原型绑定** —— PRD 存在页面层级的 `docs/` 目录，分享时会把当前 PRD、批注、相关文档一起打进静态页，评审者看到的是「带需求说明的原型」。
+---
 
-## 两种分享方式
-
-| 方式 | 原理 | 适合 |
-| --- | --- | --- |
-| **公网临时分享** | Cloudflare Tunnel 把本地 `:8080` 映射到你的域名 | 快速演示、不提交代码 |
-| **静态云分享** | 生成独立静态发布包，直接部署到 Vercel | 长期存档、发链接给客户 |
-
-分享页面内嵌所选 PRD 与批注，原型及必要资源随发布包部署。下载包可用于离线保存。
-
-## 技术栈
-
-- **前端** 原生 JS Shell + 模块化（PRD 渲染、draw.io 集成、React 19 思维导图编辑器，零运行时 CDN）
-- **AI** `@codeany/open-agent-sdk` + 自定义 70+ Agent 技能
-- **后端** Python（Bridge，文件与模板）+ Node.js（Agent Gateway，SSE 流式）
-- **分享** Cloudflare Tunnel / Vercel 直接部署
-- **思维导图** `@xiangfa/mindmap`（预览走纯函数 SVG，编辑器走预打包的 React bundle）
-
-## 状态
-
-个人 / 团队原型工作台，持续迭代中。业务内容与产品代码独立保存。
-
-## 工作区与开源发布
-
-业务页面、PRD、会话及附件独立于程序保存；静态分享通过 Vercel 直接部署，不推送业务数据到 GitHub。配置与迁移方法见 [工作区与直接分享部署](docs/workspace-and-publishing.md)。
+<p align="center">From idea to delivery. <b>Prota helps great ideas ship faster.</b></p>
