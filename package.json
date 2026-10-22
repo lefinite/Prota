@@ -11,12 +11,13 @@
     "public": "bash scripts/start-public.sh",
     "playwright:install": "npx playwright install chromium",
     "release:prepare": "python3 tools/public-release.py",
-    "vercel": "node scripts/vercel-cli.mjs"
+    "vercel": "node scripts/vercel-cli.mjs",
+    "postinstall": "node scripts/install-vercel-cli.mjs",
+    "vercel:update": "node scripts/install-vercel-cli.mjs"
   },
   "dependencies": {
     "@codeany/open-agent-sdk": "^0.2.1",
-    "playwright": "^1.60.0",
-    "vercel": "50.1.3"
+    "playwright": "^1.60.0"
   },
   "devDependencies": {
     "@xiangfa/mindmap": "^0.6.5",

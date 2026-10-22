@@ -21,7 +21,7 @@ echo "🚀 Starting Readify Portal..."
 mkdir -p logs
 
 if [ ! -d "node_modules/@codeany/open-agent-sdk" ] || ! node scripts/vercel-cli.mjs --prota-check >/dev/null 2>&1; then
-    echo "📦 Installing locked product dependencies (including Vercel CLI)..."
+    echo "📦 Installing product dependencies and the latest Vercel CLI..."
     npm ci
 fi
 node scripts/vercel-cli.mjs --prota-check

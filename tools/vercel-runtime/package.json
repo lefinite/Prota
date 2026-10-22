@@ -1,0 +1,7 @@
+{
+  "name": "prota-vercel-runtime",
+  "private": true,
+  "dependencies": {
+    "vercel": "latest"
+  }
+}

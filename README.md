@@ -50,7 +50,7 @@ Readify 是一个 **本地优先** 的原型工作台。它不只是一个画图
 ```bash
 git clone https://github.com/lefinite/Prota.git
 cd Prota
-npm ci                 # 按锁文件安装 Agent SDK、Vercel CLI 等依赖
+npm ci                 # 安装产品依赖，并自动获取最新版 Vercel CLI
 bash scripts/run.sh    # 启动 Bridge(:8080) + Agent(:8081)，并自动打开工作台
 ```
 
@@ -63,7 +63,7 @@ macOS 用户也可以直接**双击 `start-portal.command`**。
 3. 把需求贴给 Agent，或写一份 PRD 让它照着做。
 4. 如需云分享，先按[分享配置教程](docs/share-setup-guide.md)登录自己的 Vercel 账号并关联域名，再点「分享」。
 
-Vercel CLI 是产品锁定的本地依赖，无需全局安装。在产品目录使用 `npm run vercel -- login` 登录、`npm run vercel -- --version` 查看版本。更新产品后执行 `npm ci` 并重新启动，CLI 随产品统一更新；工作区、登录和原分享项目继续保留。
+Vercel CLI 会在安装产品依赖时自动下载当时的最新版，存放在产品内部，无需全局安装。在产品目录使用 `npm run vercel -- login` 登录、`npm run vercel -- --version` 查看版本；以后执行 `npm run vercel:update` 可单独更新。分享使用已安装的版本，不会每次发布都升级。工作区、登录和原分享项目继续保留。
 
 > 只想公网临时演示？`bash scripts/start-public.sh` 会用 Cloudflare Tunnel 把本地 8080 映射到你的域名。这与静态云分享是两种发布方式。
 

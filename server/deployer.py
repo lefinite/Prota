@@ -257,7 +257,7 @@ class VercelDeployer:
                 dependency = subprocess.run([*command, '--prota-check'], env=env,
                                             capture_output=True, text=True, timeout=15)
                 if dependency.returncode:
-                    raise ValueError('Vercel CLI 依赖缺失或版本不匹配，请在产品安装目录执行 npm ci 后重试。')
+                    raise ValueError('Vercel CLI 依赖缺失或安装不完整，请在产品安装目录执行 npm run vercel:update 后重试。')
                 result = subprocess.run([*command, 'deploy', '--prebuilt', '--prod', '--yes', '--cwd', str(directory)],
                                         env=env, capture_output=True, text=True, timeout=300)
                 if result.returncode:

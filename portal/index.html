@@ -845,7 +845,7 @@
                     <div class="settings-modal__help-section">
                         <h4>配置 Vercel 直接部署</h4>
                         <ol>
-                            <li><strong>登录本机账号。</strong>在产品安装目录执行 <code>npm ci</code> 安装锁定依赖，再执行 <code>npm run vercel -- login</code>，按网页提示完成登录。已有有效登录可沿用。</li>
+                            <li><strong>登录本机账号。</strong>在产品安装目录执行 <code>npm ci</code> 安装产品依赖及当时最新版 Vercel CLI，再执行 <code>npm run vercel -- login</code>，按网页提示完成登录。已有有效登录可沿用。</li>
                             <li><strong>选择分享项目。</strong>已有项目时直接沿用；首次使用时，在单独的空目录放一个空白 <code>index.html</code>，从产品安装目录执行 <code>npm run vercel -- deploy --cwd /绝对路径/空白分享目录</code>（<code>--cwd</code> 不可省略），按提示创建分享项目。不要从产品目录或业务工作区直接部署。</li>
                             <li><strong>绑定域名。</strong>在该项目的 <strong>Settings → Domains</strong> 中添加分享域名，按控制台提供的 DNS 记录完成验证。无需导入 GitHub 仓库，也不需要把 Output Directory 设置为 <code>shares</code>。</li>
                             <li><strong>关联到 Prota。</strong>从产品安装目录运行 <code>python3 scripts/configure-vercel.py --domain 你的分享域名</code>；从其他目录运行时，使用脚本的绝对路径。脚本只查找已绑定该域名的项目，不会创建项目或配置 DNS。</li>
@@ -853,7 +853,7 @@
                             <li><strong>验证分享。</strong>点击「静态云分享」，部署成功后再复制链接。原 <code>/shares/文件名.html</code> 与根目录兼容链接都保留；只生成本地文件、登录失败或部署失败，都不代表链接已经更新。</li>
                             <li><strong>检查旧发布链路。</strong>直接部署验证通过后，若项目仍有关联的旧 Git 仓库，再断开该关联，避免旧部署覆盖。已经断开的项目无需重复处理。</li>
                         </ol>
-                        <p><strong>工具安装与更新：</strong>Vercel CLI 由产品锁定版本，不需要全局安装。更新产品后，在产品安装目录执行 <code>npm ci</code> 并重新启动即可；不要单独升级到 <code>latest</code>。启动器发现 CLI 缺失或版本不符时会安装锁定依赖，分享时不会临时下载或自动升级。</p>
+                        <p><strong>工具安装与更新：</strong>执行 <code>npm ci</code> 或 <code>npm install</code> 安装产品依赖时，会自动下载当时最新版 Vercel CLI，存放在产品内部，无需全局安装。分享使用已安装版本；以后在产品安装目录执行 <code>npm run vercel:update</code> 可更新到当时最新版。</p>
                         <p><strong>发布范围：</strong>上次成功发布的快照，加上本次选中的页面版本、页面文档和素材；单页分享还会生成包含该版本与文档的下载包。未选中的其他页面沿用旧快照，不自动同步本地修改。</p>
                         <p><strong>数据边界：</strong>项目总索引、Agent 会话、原始上传附件目录、个人设置和模型连接配置不作为目录整体发布；原型中引用的素材及写入页面、文档的内容会随分享上传，不会自动脱敏。</p>
                         <p>首次没有发布快照时，会导入工作区已生成的所有静态分享。每次发布会新建一个 Vercel 部署，历史部署需要按保留策略单独管理。</p>
