@@ -6,7 +6,7 @@
   <a href="./README.md">English</a> · <b>简体中文</b>
 </p>
 
-https://github.com/user-attachments/assets/59b01f3c-72c1-432c-b82e-086f7889fe38
+https://github.com/user-attachments/assets/e0dc3442-8645-49b1-8a80-172a8d871f55
 
 ## 一个想法，怎样最快变成 Demo，再变成完整的交付物？
 

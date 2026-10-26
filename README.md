@@ -6,7 +6,7 @@
   <b>English</b> · <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
-https://github.com/user-attachments/assets/21d60f86-e12e-456d-b857-c80f1837dc50
+https://github.com/user-attachments/assets/da40f189-605c-4f6a-873c-5cc17df73118
 
 ## Got an idea?
 
