@@ -2436,6 +2436,22 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         clean_path = self.path.split('?')[0]
+        if clean_path in {'/api/canvas/save', '/api/canvas/upgrade'}:
+            if not self.workspace_local() or not self.headers.get('Content-Type', '').startswith('application/json'):
+                return self.workspace_reply(403, {'error': '只能在本机保存画布。'})
+            if workspace.bridge_locked():
+                return self.workspace_reply(423, {'error': '工作区正在切换。'})
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if length <= 0 or length > 24 * 1024 * 1024:
+                    return self.workspace_reply(413, {'error': '画布数据过大，请减少图片或使用本版本 assets 文件。'})
+                from server.canvas_store import save_canvas, upgrade_runtime
+                if clean_path == '/api/canvas/upgrade':
+                    return self.workspace_reply(200, upgrade_runtime(workspace.workspace_root(), json.loads(self.rfile.read(length)), Path(get_application_root()) / 'src/templates/infinite-canvas'))
+                code, result = save_canvas(workspace.workspace_root(), json.loads(self.rfile.read(length)))
+                return self.workspace_reply(code, result)
+            except (ValueError, OSError, TypeError) as error:
+                return self.workspace_reply(400, {'error': str(error)})
         if clean_path.startswith('/api/vercel/'):
             if not self.workspace_local() or not self.headers.get('Content-Type', '').startswith('application/json'):
                 return self.workspace_reply(403, {'error': '只能在本机产品界面管理分享账号。'})
@@ -3978,6 +3994,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'pageId': page_id,
                 'pageName': page_name,
                 'targetDevice': normalize_page_target_device(page.get('targetDevice')),
+                'pageMode': page.get('pageMode', 'standard'),
                 'version': version,
                 'shareType': share_type,
                 'includeAnnotations': include_annotations,
@@ -4008,6 +4025,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'pageId': page_id,
                 'pageName': page_name,
                 'targetDevice': normalize_page_target_device(page.get('targetDevice')),
+                'pageMode': page.get('pageMode', 'standard'),
                 'version': version,
                 'shareType': share_type,
                 'generatedAt': share_data['generatedAt'],
@@ -4193,6 +4211,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                     'id': str(page.get('id')),
                     'name': str(page.get('name') or page.get('id')),
                     'targetDevice': normalize_page_target_device(page.get('targetDevice')),
+                'pageMode': page.get('pageMode', 'standard'),
                     'version': str(version),
                     'parentId': str(page.get('parentId')),
                     'order': _safe_order(page.get('order')),

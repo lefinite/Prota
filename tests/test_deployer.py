@@ -43,6 +43,20 @@ class DirectPublishTests(unittest.TestCase):
             self.assertFalse((static/private).exists(), private)
         self.assertNotIn('private index',(static/'portal/shell.js').read_text())
 
+    def test_canvas_nested_boards_layout_and_assets_are_portable(self):
+        import io
+        import zipfile
+        from server.bridge import build_page_zip_bytes
+        prefix = 'src/pages/company/reader/v1/'
+        for name in ['canvas-data.js', 'boards/reader/index.html', 'boards/reader/styles.css', 'boards/reader/app.js', 'assets/reference.png']:
+            self.write(self.root, prefix + name, 'canvas fixture')
+        static = self.deployer.prepare(self.base/'release', [self.share])
+        for name in ['canvas-data.js', 'boards/reader/index.html', 'assets/reference.png']:
+            self.assertEqual((static/prefix/name).read_text(), 'canvas fixture')
+        archive = zipfile.ZipFile(io.BytesIO(build_page_zip_bytes(self.root, 'company', 'reader', 'v1')))
+        self.assertIn('v1/canvas-data.js', archive.namelist())
+        self.assertIn('v1/boards/reader/index.html', archive.namelist())
+
     def test_existing_public_snapshot_survives_without_publishing_new_edits_to_old_pages(self):
         self.write(self.root, 'data/published-static/src/pages/company/old/v1/index.html', 'previously published')
         self.write(self.root, 'src/pages/company/old/v1/index.html', 'new unshared changes')

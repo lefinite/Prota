@@ -23,13 +23,14 @@ const run = (command, args, env) => new Promise((resolve, reject) => {
 });
 
 try {
-    const pages = [{ id: 'legacy', name: '历史手机页' }, { id: 'website', name: 'Web 页面', targetDevice: 'web' }, { id: 'widget', name: '小组件画布', targetDevice: 'canvas' }]
+    const pages = [{ id: 'legacy', name: '历史手机页' }, { id: 'website', name: 'Web 页面', targetDevice: 'web' }, { id: 'widget', name: '小组件画布', targetDevice: 'canvas' }, { id: 'infinite', name: '无限画布', targetDevice: 'canvas', pageMode: 'infinite-canvas' }]
         .map(page => ({ ...page, versions: ['v1'], activeVersion: 'v1', parentId: 'examples' }));
     await write('workspace.json', JSON.stringify({ id: 'presentation-fixture', formatVersion: 1 }));
     await write('data/projects.json', JSON.stringify({ projects: [{ id: 'demo', name: '呈现方式验证', folders: [{ id: 'examples', name: '示例' }], pages }], activeProjectId: 'demo', activePageId: 'legacy' }));
     await fs.cp(path.join(app, 'src/templates/mobile-frame'), path.join(root, 'src/pages/demo/legacy/v1'), { recursive: true });
     await fs.cp(path.join(app, 'src/templates/web-frame'), path.join(root, 'src/pages/demo/website/v1'), { recursive: true });
     await fs.cp(path.join(app, 'src/templates/canvas-frame'), path.join(root, 'src/pages/demo/widget/v1'), { recursive: true });
+    await fs.cp(path.join(app, 'src/templates/infinite-canvas'), path.join(root, 'src/pages/demo/infinite/v1'), { recursive: true });
     // A local phone preview inside canvas must not activate whole-page mobile fitting.
     await write('src/pages/demo/widget/v1/index.html', '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="./styles.css"></head><body><main class="demo-stage"><label>标题 <input id="title" value="阅读进度"></label><section class="phone-shell"><div class="phone-screen"><h1 id="preview">阅读进度</h1></div></section></main><script src="./app.js"></script></body></html>');
     await write('src/pages/demo/widget/v1/styles.css', '*{box-sizing:border-box}body{margin:0;font-family:sans-serif}.demo-stage{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:32px;min-height:100vh}.phone-shell{background:#eee;padding:24px;border-radius:24px}.phone-screen{padding:16px}input{max-width:100%}@media(max-width:600px){.demo-stage{grid-template-columns:1fr}}');
@@ -95,7 +96,7 @@ try {
     await page.evaluate(() => window.shell.setNewPageFramework('ant-design-skill'));
     await mode.selectOption('auto');
     assert.equal(await page.locator('[data-new-page-style-toggle]').count(), 0);
-    for (const [value, hasPicker] of [['mobile', true], ['web', true], ['canvas', false], ['auto', false]]) {
+    for (const [value, hasPicker] of [['mobile', true], ['web', true], ['canvas', false], ['infinite-canvas', false], ['auto', false]]) {
         await mode.selectOption(value);
         assert.equal(await mode.inputValue(), value);
         assert.equal(await page.locator('[data-new-page-style-toggle]').count(), hasPicker ? 1 : 0);
@@ -103,6 +104,11 @@ try {
         if (value === 'auto' || value === 'canvas') assert.doesNotMatch(instructions, /framework-skills\/|design-systems\//);
         if (value === 'web') assert.match(instructions, /framework-skills\/ant-design-skill\/SKILL.md/);
     }
+    await mode.selectOption('infinite-canvas');
+    const infiniteInstructions = await page.evaluate(() => window.shell.getNewPageExecutionInstructions());
+    assert.match(infiniteInstructions, /pageMode: "infinite-canvas"/);
+    assert.match(infiniteInstructions, /src\/templates\/infinite-canvas/);
+    assert.doesNotMatch(infiniteInstructions, /targetDevice: "infinite-canvas"/);
     await page.locator('#agentInput').fill('做一个桌面小组件配置与实时预览工具');
     await mode.selectOption('canvas');
     assert.equal(await page.locator('#agentInput').inputValue(), '做一个桌面小组件配置与实时预览工具');
@@ -132,6 +138,40 @@ try {
     await page.screenshot({ path: '/tmp/prota-presentation-canvas.png' });
     await page.evaluate(() => window.shell.switchPage('legacy'));
     await wait(() => preview.locator('html').getAttribute('data-prota-frame-fit').then(value => value === 'desktop'), 'legacy phone fit');
+    await page.evaluate(() => window.shell.switchPage('infinite'));
+    await preview.locator('#stage').click({ button: 'right', position: { x: 300, y: 220 } });
+    await preview.getByRole('menuitem', { name: '文本', exact: true }).click();
+    await wait(() => page.evaluate(() => window.shell.getAgentContext().canvasSelection?.[0]?.type === 'text'), 'canvas selection reaches Agent');
+    await wait(() => preview.locator('#save-status').textContent().then(value => value === '已保存'), 'canvas save inside Portal');
+    // Real parent/child bridge and session routing; only the model stream is stubbed.
+    let canvasRun;
+    await page.route('**/api/agent/session/*/message', async route => {
+        canvasRun = route.request().postDataJSON();
+        const file = path.join(root, 'src/pages/demo/infinite/v1/canvas-data.js');
+        const document = JSON.parse((await fs.readFile(file, 'utf8')).trim().slice('window.PROTA_CANVAS = '.length).replace(/;$/, ''));
+        document.nodes[0].text = 'Agent 已更新选中文本';
+        await fs.writeFile(file, 'window.PROTA_CANVAS = ' + JSON.stringify(document) + ';');
+        await route.fulfill({ status: 200, contentType: 'text/event-stream', body: '' });
+    });
+    const currentSession = await page.evaluate(() => window.shell.agentSessionId);
+    await page.locator('#agentInput').fill('保留的输入草稿');
+    await preview.locator('#selection-tools [data-action=agent]').click();
+    await wait(() => page.evaluate(() => window.shell.agentWorkbenchOpen && window.shell.agentSessionContext?.pageId === 'infinite'), 'reuse current Agent');
+    assert.equal(await page.evaluate(() => window.shell.agentSessionId), currentSession, 'canvas must not create or switch Agent sessions');
+    assert.equal(await page.locator('#agentInput').inputValue(), '保留的输入草稿');
+    assert.equal(await preview.locator('#agent-composer,#agent-prompt').count(), 0);
+    await page.locator('#agentInput').fill('把选中文本改成更明确的标题');
+    await page.evaluate(() => window.shell.submitAgentMessage());
+    await wait(() => Boolean(canvasRun), 'canvas Agent request');
+    assert.equal(canvasRun.projectId, 'demo');
+    assert.equal(canvasRun.pageId, 'infinite');
+    assert.equal(canvasRun.pageMode, 'infinite-canvas');
+    assert.equal(canvasRun.canvasDirty, false);
+    assert.equal(canvasRun.canvasSelection[0].type, 'text');
+    assert.equal(canvasRun.message, '把选中文本改成更明确的标题');
+    await wait(() => preview.locator('.node.text .node-content').textContent().then(value => value === 'Agent 已更新选中文本'), 'Agent result refreshed without iframe reload');
+    await page.evaluate(() => { window.shell.closeAgentWorkbench(); return window.shell.switchPage('legacy'); });
+    await wait(() => preview.locator('html').getAttribute('data-prota-frame-fit').then(value => value === 'desktop'), 'return from canvas to phone');
     for (const item of pages) await post('/api/share-page', { projectId: 'demo', pageId: item.id, version: 'v1', shareType: 'local' });
     await post('/api/share-folder', { projectId: 'demo', folderId: 'examples', shareType: 'local' });
     for (const [filename, expected] of [['widget-v1-local.html', 'canvas'], ['website-v1-local.html', 'web'], ['legacy-v1-local.html', 'mobile'], ['demo-examples-folder-local.html', 'mobile']]) {
@@ -149,6 +189,10 @@ try {
             assert.equal(await page.frameLocator('#mainIframe').locator('html').getAttribute('data-prota-frame-fit'), null);
         }
     }
+    await page.goto(`${base}/shares/infinite-v1-local.html`, { waitUntil: 'domcontentloaded' });
+    await page.frameLocator('#mainIframe').locator('body.readonly').waitFor();
+    assert.equal(await page.evaluate(() => window.shell.getPageRecord().pageMode), 'infinite-canvas');
+    assert.equal(await page.frameLocator('#mainIframe').locator('#save').count(), 0);
     for (const [id, expectedWidth] of [['widget', 2880], ['website', 2880]]) {
         const result = await post('/api/capture-screenshot', { projectId: 'demo', pageId: id, version: 'v1', filename: 'presentation-shot' });
         const png = await fs.readFile(path.join(root, result.path));

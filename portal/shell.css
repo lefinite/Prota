@@ -11741,3 +11741,8 @@ body[data-top-view="page"] .top-tabs {
     }
 
 }
+
+/* Canvas focus fallback for hosts without the browser Fullscreen API. */
+body.canvas-focused #pageViewportContainer { position: fixed; inset: 0; z-index: 4000; width: 100vw; height: 100dvh; }
+body.canvas-focused #pageViewportContainer .viewport-stage { flex: 1; width: 100%; opacity: 1; pointer-events: auto; }
+body.canvas-focused #pageViewportContainer #annotationDrawer { display: none !important; }

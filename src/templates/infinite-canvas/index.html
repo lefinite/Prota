@@ -1,11 +1,30 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>无限画布</title><link rel="stylesheet" href="./styles.css"></head>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>无限画布</title><link rel="stylesheet" href="./styles.css"></head>
 <body>
-<header class="toolbar"><strong>无限画布</strong><span class="divider"></span>
-<select id="add-kind" aria-label="添加对象类型"><option value="mobile">手机画板</option><option value="web">Web 画板</option><option value="board">自由画板</option><option value="text">文本</option><option value="note">便签</option><option value="rect">矩形</option><option value="ellipse">圆形</option></select><button id="add">＋ 添加</button><button id="image">图片</button>
-<span class="divider"></span><button id="undo" title="⌘/Ctrl Z">撤销</button><button id="redo" title="⌘/Ctrl Shift Z">重做</button><span class="spacer"></span><span id="save-status" role="status">已保存</span><button id="export">导出布局</button><button id="save" class="primary">保存</button></header>
-<main id="stage" tabindex="0" aria-label="无限画布工作区"><div id="world"></div><div id="marquee" hidden></div><div id="empty"><span class="empty-icon">＋</span><h1>把想法放在一起</h1><p>添加画板，或拖入图片。文本、便签与界面，都可以自由摆放。</p><button id="first-board" class="primary">添加第一个画板</button></div></main>
-<aside id="inspector"><header><strong>对象属性</strong><span id="selection-count"></span></header><div id="properties"><p class="muted">选择对象以调整位置、尺寸与内容。<br><br>Shift 多选 · 空白处框选<br>空格拖动 · 滚轮平移<br>⌘ / Ctrl + 滚轮缩放<br>双击画板进入交互 · Esc 返回</p></div><h3>图层</h3><div id="layers"></div></aside>
-<footer class="navigation"><button id="zoom-out" aria-label="缩小">−</button><button id="zoom-reset">100%</button><button id="zoom-in" aria-label="放大">＋</button><span class="divider"></span><button id="fit">查看全部</button><button id="focus">聚焦选中</button><span id="interaction-hint"></span></footer>
+<main id="stage" tabindex="0" aria-label="无限画布工作区">
+  <div id="world"></div><div id="guides" aria-hidden="true"></div><div id="marquee" hidden></div>
+  <div id="selection-tools" class="floating-bar" role="toolbar" aria-label="选中对象操作" hidden></div>
+  <section id="property-popover" class="floating-panel" aria-label="对象样式与尺寸" hidden><div class="popover-heading"><strong id="property-title">调整对象</strong><button id="close-properties" data-icon="close" aria-label="关闭属性"></button></div><div id="properties"></div></section>
+  <div id="empty"><span class="empty-symbol" data-icon="frame"></span><h1>把想法放到画布上</h1><p>添加画板、文字或图片，自由摆放。<br>需要设计时，直接交给当前 Agent。</p><div class="empty-actions"><button id="first-board" class="primary" data-icon="plus">添加画板</button><button id="empty-agent" data-icon="agent">交给 Agent</button></div><span class="empty-tip">也可以在空白处右键添加</span></div>
+</main>
+<div class="canvas-identity"><span class="identity-icon" data-icon="canvas"></span><span id="document-name">无限画布</span><span id="save-status" class="save-status" role="status" title="更改自动保存到本地">已保存</span></div>
+<nav class="view-tools floating-bar" aria-label="视图操作"><button id="undo" data-icon="undo" title="撤销 · ⌘ / Ctrl Z" aria-label="撤销"></button><button id="redo" data-icon="redo" title="重做 · ⌘ / Ctrl Shift Z" aria-label="重做"></button><span class="divider"></span><button id="fullscreen" data-icon="expand">全屏</button></nav>
+<nav class="creation-tools floating-bar" aria-label="画布工具">
+  <button data-tool="select" data-icon="cursor" class="active" title="选择 · V" aria-label="选择工具"></button>
+  <button data-tool="hand" data-icon="hand" title="抓手 · H" aria-label="抓手工具"></button><span class="divider"></span>
+  <button id="add-board" data-icon="frame" title="添加画板" aria-haspopup="menu">画板</button>
+  <button data-tool="text" data-icon="text" title="文本 · T" aria-label="文本工具"></button>
+  <button id="add-shape" data-icon="shapes" title="添加形状" aria-label="形状" aria-haspopup="menu"></button>
+  <button id="add-note" data-icon="note" title="添加便签" aria-label="便签"></button>
+  <button id="image" data-icon="image" title="添加图片" aria-label="图片"></button>
+  <button id="add-component" data-icon="component" title="添加组件" aria-label="组件" aria-haspopup="menu"></button><span class="divider"></span>
+  <button id="ask-agent" data-icon="agent">Agent</button>
+</nav>
+<nav class="navigation floating-bar" aria-label="画布缩放"><button id="zoom-out" data-icon="minus" aria-label="缩小"></button><button id="zoom-reset" title="恢复 100%">100%</button><button id="zoom-in" data-icon="plus" aria-label="放大"></button><span class="divider"></span><button id="fit" data-icon="fit" title="查看全部" aria-label="查看全部"></button></nav>
+<div id="interaction-hint" class="interaction-hint" role="status"></div>
+<div id="notice" role="status" hidden><span id="notice-text"></span><button id="notice-action"></button><button id="notice-dismiss" data-icon="close" aria-label="关闭提示"></button></div>
+<div id="context-menu" class="floating-panel" role="menu" hidden></div>
 <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
-<script src="./canvas-data.js"></script><script src="./app.js"></script></body></html>
+<script src="./canvas-data.js"></script><script src="./canvas-core.js"></script><script src="./app.js"></script>
+</body></html>

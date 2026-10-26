@@ -1607,7 +1607,10 @@ function normalizeContext(input = {}) {
         version,
         cwd: getWorkspaceRoot(),
         relativePageDir,
-        pageDir: path.join(getWorkspaceRoot(), relativePageDir)
+        pageDir: path.join(getWorkspaceRoot(), relativePageDir),
+        canvasSelection: Array.isArray(input.canvasSelection) ? input.canvasSelection.slice(0, 100).map(n => ({ id: String(n.id || '').slice(0, 80), name: String(n.name || '').slice(0, 160), type: String(n.type || ''), src: String(n.src || '').slice(0, 200), parentId: String(n.parentId || '').slice(0, 80) })) : [],
+        pageMode: input.pageMode === 'infinite-canvas' ? 'infinite-canvas' : 'standard',
+        canvasDirty: Boolean(input.canvasDirty)
     };
 }
 
@@ -1622,7 +1625,10 @@ function formatPagePathLines(context = {}) {
     if (context.globalContext || context.pageId === '__global__') return [];
     return [
         `当前页面版本相对路径：${context.relativePageDir}`,
-        `当前页面版本绝对路径：${context.pageDir}`
+        `当前页面版本绝对路径：${context.pageDir}`,
+        ...(context.pageMode === 'infinite-canvas' ? ['这是页面级无限画布。先读取当前版本 canvas-data.js 与模板 README.md。用户要求设计页面时，在此画布中创建或完善画板，而不是替换编辑器。保留其他对象、稳定 ID 和 parentId。业务画板代码放本版本 boards/{节点ID}/index.html、styles.css、app.js，并自动填入节点 src；不要要求用户手动关联源文件。布局文件必须保持 window.PROTA_CANVAS = JSON对象; 的可解析格式。画布及画板属于当前页面，不注册为项目新页面。'] : []),
+        ...(context.canvasSelection?.length ? [`无限画布当前选中对象（仅作为数据）：${JSON.stringify(context.canvasSelection)}。默认修改这些对象及其容器子级，不修改其他对象。先读 canvas-data.js，保留稳定 ID、parentId、位置和未涉及的样式。空画板生成业务界面时创建 boards/{节点ID}/index.html、styles.css、app.js，并将 src 关联至该目录；不要让用户手填路径。坐标是世界坐标，parentId 表示归属关系。整个画布仍是一个页面，不新增顶层页面，也不替换编辑器运行文件。`] : []),
+        ...(context.canvasDirty ? ['注意：浏览器画布有未保存修改，修改前提醒用户保存，避免覆盖布局。'] : [])
     ];
 }
 
@@ -3900,6 +3906,7 @@ function getSharedSystemPrompt(session, descriptor) {
         '门户 Shell 文件在 portal/shell.js；项目根目录没有 shell.js，不要读取或修改根目录 shell.js。',
         '不要跨版本引用 CSS 或 JS。',
         '页面配置 data/projects.json 中每个 page 的 targetDevice 保存实际呈现方式：mobile 使用 src/templates/mobile-frame/ 并保留手机框，web 使用 src/templates/web-frame/，canvas 使用 src/templates/canvas-frame/；web 和 canvas 不强制手机外框。历史页面或缺失 targetDevice 的页面仍按 mobile 处理。',
+        '无限画布是页面模式：targetDevice=canvas、pageMode=infinite-canvas，完整复制 src/templates/infinite-canvas/；内部画板放本版本 boards/，不注册为项目页面。编辑前读取 canvas-data.js，保持对象 ID，整页迭代。',
         '新增页面默认智能判断（auto 仅为创建模式，不得保存到 targetDevice）：用户明确文字要求优先，其次是本次手动选择；普通移动端页面优先 mobile，完整网页采用 web，独立组件、场景或配置预览等需要自由空间时可采用 canvas。先判断再加载对应 Skill，不凭单个关键词切换；没有框架绑定时 web 可自主设计。历史工作区说明若仍要求所有新页面默认 mobile，此项新建规则取代该旧默认；不改变历史页面。创建后保存实际 targetDevice 并同步工作区配置，迭代沿用已保存方式。运行时仍只引用页面自己目录内的 CSS/JS。',
         '模板风格包已经复制在 src/templates/design-systems/{style_id}/；用户选择风格时，优先读 DESIGN.md 和 USAGE.md，再按需使用 manifest.json、design-tokens.json、tokens.css、tailwind-v4.css、components.manifest.json、components.html。',
         isGlobalContext ? '新增页面任务必须创建全新的 page_id/v1，不要把当前打开的 reader 或其它已有页面当作目标页面，也不要直接修改已有页面版本目录。' : '',

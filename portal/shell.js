@@ -617,6 +617,7 @@ class DemoShell {
             pageId,
             pageName: String(raw.pageName || params.get('pageName') || '').trim(),
             targetDevice: raw.targetDevice ? this.normalizePageTargetDevice(raw.targetDevice) : undefined,
+            pageMode: raw.pageMode === 'infinite-canvas' ? 'infinite-canvas' : undefined,
             version,
             folderId,
             folderName: String(raw.folderName || params.get('folderName') || '').trim(),
@@ -700,6 +701,7 @@ class DemoShell {
         const sharePage = {
             ...sourcePage,
             targetDevice: this.normalizePageTargetDevice(this.shareConfig.targetDevice ?? sourcePage.targetDevice),
+            pageMode: this.shareConfig.pageMode || sourcePage.pageMode,
             name: this.shareConfig.pageName || sourcePage.name || sourcePage.id,
             versions: [activeVersion],
             activeVersion,
@@ -758,6 +760,7 @@ class DemoShell {
             parentId: p.parentId ? String(p.parentId) : null,
             order: Number(p.order) || 0,
             targetDevice: this.normalizePageTargetDevice(p.targetDevice),
+            pageMode: p.pageMode || 'standard',
             _shareMeta: {
                 demoPath: p.demoPath,
                 annotations: Array.isArray(p.annotations) ? p.annotations : [],
@@ -924,11 +927,11 @@ class DemoShell {
 
     normalizeNewPageMode(value) {
         const normalized = String(value || '').trim().toLowerCase();
-        return ['mobile', 'web', 'canvas'].includes(normalized) ? normalized : 'auto';
+        return ['mobile', 'web', 'canvas', 'infinite-canvas'].includes(normalized) ? normalized : 'auto';
     }
 
     getPageDeviceLabel(value = this.newPageTargetDevice) {
-        return { auto: '智能判断', mobile: '手机页面', web: 'Web 页面', canvas: '自由画布' }[this.normalizeNewPageMode(value)];
+        return { auto: '智能判断', mobile: '手机页面', web: 'Web 页面', canvas: '自由画布', 'infinite-canvas': '无限画布' }[this.normalizeNewPageMode(value)];
     }
 
     normalizeProjectsData(data) {
@@ -2410,8 +2413,15 @@ class DemoShell {
             }
         });
 
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && document.body.classList.contains('canvas-focused')) {
+                document.body.classList.remove('canvas-focused');
+                this.mainIframe?.contentWindow?.postMessage({ type: 'prota:canvas-fullscreen-state', active: false }, location.origin);
+            }
+        });
         this.mainIframe.addEventListener('load', () => {
             this.handleIframeLoad();
+            this.upgradeCanvasEditorIfNeeded();
         });
 
         this.viewportStage?.addEventListener('contextmenu', (event) => {
@@ -2703,6 +2713,25 @@ class DemoShell {
         // Listen for messages from injected iframe scripts
         window.addEventListener('message', (e) => {
             if (!e.data || !e.data.type) return;
+            if (e.data.type === 'prota:canvas-selection') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== window.location.origin) return;
+                this.canvasSelection = { projectId: this.activeProjectId, pageId: this.activePageId, version: this.activeVersion, selected: Array.isArray(e.data.selected) ? e.data.selected.slice(0, 100) : [], dirty: Boolean(e.data.dirty) };
+                e.source.postMessage({ type: 'prota:canvas-config', readOnly: Boolean(this.isShareMode), pageName: this.getPageRecord()?.name || '' }, e.origin);
+                const documentKey = this.mainIframe.contentDocument;
+                if (this._canvasStatusDocument !== documentKey) { this._canvasStatusDocument = documentKey; this._canvasAgentStatusKey = null; this.syncCanvasAgentStatus(); }
+                return;
+            }
+            if (e.data.type === 'prota:canvas-open-agent') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
+                this.focusExistingCanvasAgent(e.source);
+                return;
+            }
+            if (e.data.type === 'prota:canvas-fullscreen') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin) return;
+                document.body.classList.toggle('canvas-focused', Boolean(e.data.active));
+                e.source.postMessage({ type: 'prota:canvas-fullscreen-state', active: Boolean(e.data.active) }, e.origin);
+                return;
+            }
             if (e.data.type === 'readify:close-dropdowns') {
                 this.closeAllDropdowns();
             } else if (e.data.type === 'readify:trigger-jump') {
@@ -4913,14 +4942,14 @@ class DemoShell {
     }
 
     getNewPagePickerOptions() {
-        if (['auto', 'canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return [];
+        if (['auto', 'canvas', 'infinite-canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return [];
         return this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
             ? this.getNewPageFrameworkOptions()
             : this.getNewPageStyleOptions();
     }
 
     getNewPageSelectedPickerOption() {
-        if (['auto', 'canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return null;
+        if (['auto', 'canvas', 'infinite-canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return null;
         return this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
             ? this.getNewPageSelectedFramework()
             : this.getNewPageSelectedStyle();
@@ -5195,6 +5224,9 @@ class DemoShell {
         if (normalizedTargetDevice === 'auto') {
             return `请在项目「${projectLabel}」中新建页面，根据需求判断最适合的呈现方式。`;
         }
+        if (normalizedTargetDevice === 'infinite-canvas') {
+            return `请在项目「${projectLabel}」中新建页面级无限画布，内部支持多个画板、文本和素材自由摆放。`;
+        }
         if (normalizedTargetDevice === 'canvas') {
             return `请在项目「${projectLabel}」中新建自由画布，按内容组织展示与交互。`;
         }
@@ -5238,6 +5270,12 @@ class DemoShell {
             '创建后在工作区 data/projects.json 中保存实际 targetDevice：mobile、web 或 canvas，并同步工作区 portal/shell.js 元数据快照；不要保存 auto。',
             '用一句话说明采用的呈现方式及原因后直接实现，无需额外确认；后续迭代沿用已保存的方式，除非用户明确要求改变。'
         ];
+        if (mode === 'infinite-canvas') {
+            lines.push('这是页面层级的无限画布，不是项目视图。保存 targetDevice: "canvas" 和 pageMode: "infinite-canvas"。',
+                '完整复制产品模板 src/templates/infinite-canvas/ 到当前页面版本目录，先阅读其中 README.md。保留编辑器功能；画板业务代码放在本版本 boards/{board_id}/，素材放 assets/。',
+                '使用 canvas-data.js 定义画板、文本、便签、形状、图片的位置与尺寸；子画板不注册为项目页面。整张画布作为一个页面迭代和分享。');
+            return lines.join('\n');
+        }
         if (mode === 'auto') {
             lines.push(
                 '当前为智能判断，用户没有指定设备外框、移动端风格或 Web 框架，不得把默认值或历史选择作为强制约束。',
@@ -6670,6 +6708,8 @@ class DemoShell {
             return;
         }
 
+        if (!this.confirmCanvasNavigation()) return;
+
         if (project?.id && project.id !== this.activeProjectId) {
             this.activeProjectId = project.id;
             if (this.projects) {
@@ -6693,10 +6733,18 @@ class DemoShell {
             link.classList.toggle('active', link.dataset.id === pageId);
         });
 
-        this.switchVersion(nextVersion || page.versions[0], { skipPrdDraftCheck: true });
+        this.switchVersion(nextVersion || page.versions[0], { skipPrdDraftCheck: true, skipCanvasPrompt: true });
     }
 
-    async switchVersion(version, { skipPrdDraftCheck = false } = {}) {
+    confirmCanvasNavigation() {
+        try {
+            if (this.mainIframe?.contentWindow?.protaCanvas?.isDirty()) return window.confirm('画布有未保存的修改。离开将丢失这些修改，是否继续？');
+        } catch {}
+        return true;
+    }
+
+    async switchVersion(version, { skipPrdDraftCheck = false, skipCanvasPrompt = false } = {}) {
+        if (!skipCanvasPrompt && version !== this.activeVersion && !this.confirmCanvasNavigation()) return;
         if (!skipPrdDraftCheck && this.activeVersion && version !== this.activeVersion && !(await this.confirmPrdDiscardIfDirty())) {
             return;
         }
@@ -7260,8 +7308,59 @@ class DemoShell {
         });
     }
 
+    async upgradeCanvasEditorIfNeeded() {
+        if (this.isShareMode || this.getPageRecord()?.pageMode !== 'infinite-canvas' || this._canvasUpgradePending) return;
+        try {
+            const editor = this.mainIframe?.contentWindow?.protaCanvas;
+            if (!editor || editor.runtimeVersion >= 3 || editor.isDirty()) return;
+            this._canvasUpgradePending = true;
+            const context = this.getAgentContext();
+            const response = await fetch('/api/canvas/upgrade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(context) });
+            if (!response.ok) throw new Error((await response.json()).error || '升级失败');
+            if (context.pageId === this.activePageId && context.version === this.activeVersion) this.mainIframe.contentWindow.location.reload();
+        } catch (error) {
+            this.showToast(`画布编辑器更新失败：${error.message}`, true);
+        } finally { this._canvasUpgradePending = false; }
+    }
+
+    async focusExistingCanvasAgent(source) {
+        try {
+            const context = this.getAgentContext();
+            if (!this.agentRunState?.active) {
+                if (source.protaCanvas?.isDirty() && !(await source.protaCanvas.save())) throw new Error('本地更改还未保存，请先处理画布提示。');
+                if (this.agentSessionId) await this.agentApi.setContext(this.agentSessionId, context);
+                this.agentSessionContext = context;
+                this.agentSessionScope = 'page';
+                this.agentActiveSkill = null;
+            }
+            // Reuse the current session, provider, input draft and workbench.
+            this.openAgentWorkbench();
+            this.updateAgentContextLabel();
+            this.agentInput?.focus();
+        } catch (error) {
+            source.postMessage({ type: 'prota:canvas-agent-error', error: error.message || '无法打开当前 Agent' }, location.origin);
+        }
+    }
+
+    syncCanvasAgentStatus() {
+        if (!this.canvasSelection || !this.mainIframe?.contentWindow) return;
+        const context = this.agentSessionContext || this.getAgentContext();
+        const belongs = context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion;
+        const state = { type: 'prota:canvas-agent-status', workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(belongs && this.agentRunState?.active), error: belongs ? String(this.agentRunState?.lastError || '') : '' };
+        const key = JSON.stringify([this.activeProjectId, this.activePageId, this.activeVersion, state]);
+        if (key === this._canvasAgentStatusKey) return;
+        this._canvasAgentStatusKey = key;
+        this.mainIframe.contentWindow.postMessage(state, location.origin);
+    }
+
     refreshCurrentDemo() {
         if (!this.mainIframe || !this.mainIframe.src) return;
+        try {
+            if (this.mainIframe.contentWindow.protaCanvas?.reloadFromDisk) {
+                this.mainIframe.contentWindow.protaCanvas.reloadFromDisk();
+                return;
+            }
+        } catch {}
         try {
             this.mainIframe.contentWindow.location.reload(true);
         } catch (err) {
@@ -12056,7 +12155,10 @@ class DemoShell {
         if (context?.globalContext || context?.pageId === '__global__') {
             return '工作区会话';
         }
-        return `${context.pageId} / ${context.version}${deletion.blocked ? ' · 已删除' : ''}`;
+        const canvas = this.canvasSelection;
+        const selected = canvas?.projectId === context.projectId && canvas?.pageId === context.pageId && canvas?.version === context.version ? canvas.selected : [];
+        const canvasLabel = selected?.length ? ` · 已选 ${selected.length} 个对象：${selected.map(n => n.name).join('、').slice(0, 80)}` : '';
+        return `${context.pageId} / ${context.version}${canvasLabel}${deletion.blocked ? ' · 已删除' : ''}`;
     }
 
     updateAgentContextLabel() {
@@ -12082,7 +12184,7 @@ class DemoShell {
                 this.agentStatusContext.innerHTML = `
                     <span class="new-page-config-control">
                         <select class="new-page-mode-select" data-new-page-mode aria-label="页面呈现方式" title="选择页面呈现方式">
-                            ${['auto', 'mobile', 'web', 'canvas'].map(mode => `<option value="${mode}">${this.getPageDeviceLabel(mode)}</option>`).join('')}
+                            ${['auto', 'mobile', 'web', 'canvas', 'infinite-canvas'].map(mode => `<option value="${mode}">${this.getPageDeviceLabel(mode)}</option>`).join('')}
                         </select>
                         <span class="new-page-presentation-options" data-new-page-presentation-options></span>
                     </span>
@@ -12308,7 +12410,9 @@ class DemoShell {
         return {
             projectId: this.activeProjectId || 'readify',
             pageId: this.activePageId || this.projects?.activePage || 'reader',
-            version: this.activeVersion || this.projects?.pages?.[0]?.activeVersion || 'v1'
+            version: this.activeVersion || this.projects?.pages?.[0]?.activeVersion || 'v1',
+            pageMode: this.getPageRecord()?.pageMode || 'standard',
+            ...(this.canvasSelection?.projectId === this.activeProjectId && this.canvasSelection?.pageId === this.activePageId && this.canvasSelection?.version === this.activeVersion ? { canvasSelection: this.canvasSelection.selected, canvasDirty: this.canvasSelection.dirty } : {})
         };
     }
 
@@ -16341,6 +16445,7 @@ class DemoShell {
     }
 
     renderAgentWorkbench({ deferHeavy = false } = {}) {
+        this.syncCanvasAgentStatus();
         this.renderAgentChrome();
         this.renderAgentConnectionResult();
         this.renderActiveAgentSkill();
@@ -17972,7 +18077,18 @@ class DemoShell {
             const globalRun = this.isAgentGlobalRun(kind, payload);
             let runContext = globalRun ? this.getAgentGlobalContext() : this.getAgentContext();
             if (!globalRun && this.agentSessionContext) {
-                runContext = this.agentSessionContext;
+                runContext = { ...this.agentSessionContext };
+                const canvas = this.canvasSelection;
+                if (canvas?.projectId === runContext.projectId && canvas?.pageId === runContext.pageId && canvas?.version === runContext.version) {
+                    runContext.canvasSelection = canvas.selected;
+                    runContext.canvasDirty = canvas.dirty;
+                }
+            }
+            if (!globalRun && runContext.projectId === this.activeProjectId && runContext.pageId === this.activePageId && runContext.version === this.activeVersion) {
+                const editor = this.mainIframe?.contentWindow?.protaCanvas;
+                editor?.setPreparing?.(true);
+                if (editor?.isDirty() && !(await editor.save())) throw new Error('画布保存未完成，请先处理保存问题。');
+                if (editor) runContext = { ...runContext, pageMode: 'infinite-canvas', canvasDirty: false };
             }
             const contextState = this.getAgentContextDeletionState(runContext, kind === 'skill' ? this.getAgentSkill(payload.skillId) : this.agentActiveSkill);
             if (contextState.blocked && !(kind === 'skill' && this.getAgentSkill(payload.skillId)?.globalContext)) {
@@ -18031,6 +18147,7 @@ class DemoShell {
             this.renderAgentWorkbench();
         } finally {
             this.agentEventStreamAbortController = null;
+            try { this.mainIframe?.contentWindow?.protaCanvas?.setPreparing?.(false); } catch {}
         }
     }
 

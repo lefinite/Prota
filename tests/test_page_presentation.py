@@ -18,7 +18,7 @@ class PagePresentationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='prota-presentation-') as temporary:
             root = Path(temporary)
             pages = [{'id': 'legacy'}, {'id': 'reader', 'targetDevice': 'mobile'},
-                     {'id': 'website', 'targetDevice': 'web'}, {'id': 'widget', 'targetDevice': 'canvas'}]
+                     {'id': 'website', 'targetDevice': 'web'}, {'id': 'widget', 'targetDevice': 'canvas', 'pageMode': 'infinite-canvas'}]
             originals = {}
             for page in pages:
                 page.update(versions=['v1', 'v2'], activeVersion='v2')
@@ -35,6 +35,7 @@ class PagePresentationTests(unittest.TestCase):
                 result = bridge.sync_projects()
                 result_again = bridge.sync_projects()
             self.assertEqual(result, result_again)
+            self.assertEqual(result['projects'][0]['pages'][-1]['pageMode'], 'infinite-canvas')
             self.assertEqual([page['targetDevice'] for page in result['projects'][0]['pages']], ['mobile', 'mobile', 'web', 'canvas'])
             self.assertEqual(result, json.loads((root/'data/projects.snapshot.json').read_text()))
             snapshot = (root/'portal/shell.js').read_text().split('const defaultData = ', 1)[1].split(';\n', 1)[0]
