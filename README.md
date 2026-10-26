@@ -20,21 +20,33 @@ Idea  →  Clickable demo  →  Complete PRD  →  Share link  →  Hand-off to 
 
 ## The tour, step by step
 
-### 1. Start from 160+ design templates
+### 1. Start from 150+ design styles and 9 Web frameworks
 
-Pick one of 159 design systems for mobile or one of 9 Web component frameworks (Ant Design, Arco, Chakra UI, Element Plus, Mantine, Material UI, Semi, shadcn, TDesign) and start building. Each design system comes with its own `DESIGN.md` and tokens, so the agent follows a real visual language instead of making one up.
+Browse 150+ mobile design styles or choose one of 9 Web component frameworks: Ant Design, Arco Design, Chakra UI, Element Plus, Mantine, MUI, Semi Design, shadcn/ui and TDesign. Design specifications and tokens give the agent a consistent visual direction. You can also let Prota choose a suitable presentation and design from your brief.
 
 <img src="./assets/readme/en/tpl-grid.jpg" width="100%" alt="Template library with mobile design style previews">
 
 ### 2. Built-in product skills
 
-The agent ships with skills for the PM workflow: **Product thinking** (Plan mode breaks the idea down before building), **Page design** (`create-new-page`), **Flowcharts** (`generate-flow-diagram`, editable draw.io) and **PRD generation** (`generate-prd`). There are also design-quality skills for frontend craft, minimalist UI, high-end visuals and redesigns. You can add, enable or remove skills from the home screen.
+The agent supports the PM workflow: **Product thinking** to analyze requirements and break down tasks, **Page design** (`create-new-page`), **Flowcharts** (`generate-flow-diagram`, editable draw.io) and **PRD generation** (`generate-prd`). There are also design-quality skills for frontend craft, minimalist UI, high-end visuals and redesigns. You can add, enable or remove skills from the home screen.
+
+Use your own model provider, fetch its available models or enter a model ID manually. For supported models and endpoints, the composer offers **thinking intensity** or a thinking on/off control. The available choices follow the selected model; otherwise Prota keeps the model default.
 
 <img src="./assets/readme/en/skills.jpg" width="100%" alt="Four built-in skills: product thinking, page design, flowcharts, PRD generation">
 
 ### 3. One sentence in, a working prototype out
 
-Describe the idea. Prota plans, designs and writes the page (`index.html`, `styles.css`, `app.js`), checks the code, and shows the live result in a phone or Web frame. You can see every step it takes.
+Describe the idea. Prota analyzes the task, designs and writes the page (`index.html`, `styles.css`, `app.js`), checks the code, and shows the live result. You can see its progress as it works.
+
+New pages default to **Auto**: Prota chooses a presentation for the task. You can also select it yourself, and explicit instructions in your prompt take priority.
+
+| Presentation | Best for |
+| --- | --- |
+| Mobile | App screens and mobile flows, displayed in a phone frame |
+| Web | Websites, dashboards and business applications with a responsive browser layout |
+| Free canvas | Standalone components, desktop widgets, state comparisons and configuration with live previews; no required device frame or UI framework |
+
+Later versions keep the page’s presentation unless you ask to change it.
 
 <img src="./assets/readme/en/prototype.jpg" width="100%" alt="Prota Agent turns a one-sentence prompt into a working mobile prototype">
 
@@ -52,13 +64,19 @@ Turn on annotation mode, circle the element you don't like and write what you wa
 
 ### 6. Generate the PRD in one click
 
-When you're happy with the prototype, Prota writes a PRD from your prompts, your annotations and the actual source code. It includes product logic and scope, feature specs and rules, a feature mind map, the core flowchart, and a screenshot for every feature.
+When you're happy with the prototype, ask for a PRD covering a feature, a module or the whole page. Prota combines your request, annotations and actual source behavior to describe the scope, feature rules, necessary edge cases and open questions, with real screenshots of the relevant feature states.
+
+Documents use a specific requirement name and live alongside the page, so different requirements can have separate documents. Flowcharts are added when they make complex logic easier to understand. Mind maps and editable draw.io diagrams remain available in the workbench.
 
 <img src="./assets/readme/en/prd.jpg" width="100%" alt="Generated PRD with scope, feature rules, mind map, flowchart and screenshots">
 
 ### 7. Share with one link
 
-Share a page or a whole folder. Prota builds a static share page: teammates can try the demo and read the docs in the browser, and your computer doesn't need to stay online.
+Share a page or a whole folder through Vercel. Choose **1 day, 7 days, 30 days or no expiry**; the default is 30 days. Add an optional access password, then copy the share text with the link, expiry and password together. Teammates can try the demo and read its documents in the browser while your computer is offline. Access checks cover the prototype, documents, assets and ZIP downloads.
+
+Open **Share management** from the share menu to search and filter records, check published, local-only, expired or withdrawn status, copy share details, add recipient notes, export a CSV list, and withdraw one or several shares. Withdrawal takes effect at the fixed share URL after publishing succeeds.
+
+Sharing the same page version or folder again updates its existing link. If publishing fails, the previous successful deployment stays available. Files already downloaded and independent URLs of older Vercel deployments are unaffected by expiry or withdrawal.
 
 <img src="./assets/readme/en/share-doc.jpg" width="100%" alt="Shared page with the live demo next to its PRD">
 
@@ -74,31 +92,34 @@ From the share page, developers can download a ZIP of the prototype and the PRD 
 
 | Part | What it does |
 | --- | --- |
-| `portal/` | The browser app: projects, pages, versions, annotations, PRD viewer, mind maps, draw.io diagrams and settings |
-| `server/bridge.py` | Local bridge: serves the Portal and reads or writes the workspace. Also handles screenshots, ZIP packaging and publishing |
+| `portal/` | The browser app: projects, page presentations, versions, annotations, PRD viewer, mind maps, draw.io diagrams, share management and settings |
+| `server/bridge.py` | Local bridge: serves the Portal, reads and writes the workspace, and handles screenshots, ZIP packaging, sharing and model configuration |
 | `server/agent-server.mjs` | Agent gateway: runs agent sessions with skills, design templates and the model you configure |
-| `src/templates/` | Mobile and Web frames, 159 design systems and 9 Web framework templates |
+| `src/templates/` | Mobile, Web and free-canvas templates, 150+ design styles and 9 Web framework templates |
 | `.claude/skills/` | The built-in skills listed above |
 
-Your projects live in a **workspace** separate from the app. By default it's `~/.config/prota/workspace`. You can move it or open another one in **Settings → Storage**, or set `READIFY_WORKSPACE`.
+Your projects live in a **workspace** separate from the app. By default it's `~/.config/prota/workspace`. You can move it or open another one in **Settings → Storage**, or set `READIFY_WORKSPACE`. Pages, versions, conversations, attachments and documents follow the workspace. Updating the product keeps this data separate. Sharing builds a separate deployment output and uploads it directly to Vercel; it does not publish business content through the product’s GitHub repository.
 
 ## Quick start
 
 Download and extract the complete product folder, then double-click **Prota.app on Mac** or **Prota.exe on Windows**. Keep the entry beside the source folders; do not run it inside the ZIP archive. Missing runtimes and dependencies are prepared automatically with a native progress window; when everything is ready, the Portal opens directly. No terminal commands or terminal window are needed. Supported systems: macOS, Windows 10/11 x64, and Windows 11 ARM64.
 
-For cloud sharing, click **Connect Vercel** in Settings and authorize in your browser. Prota creates or reuses the sharing project and saves its address automatically. Existing data and sharing links are retained. A custom domain is optional; DNS records at an external provider still require your action.
+For link sharing, click **Connect Vercel** in Settings and authorize in your browser. Prota creates or reuses the sharing project and saves its address automatically. Existing data and sharing links are retained. A custom domain is optional; DNS records at an external provider still require your action.
 
 [Startup and sharing guide](./docs/share-setup-guide.md) · [Developer setup](./docs/developer-setup.md)
 
 1. **Connect a model:** click the gear icon in the top-right of the project list and go to **Settings → Models**. Pick a preset or choose *OpenAI-compatible / custom*, then enter your API key. Both Anthropic Messages-style and OpenAI-compatible APIs are supported.
-2. **Create a project and a page** (mobile by default, Web if you ask for it), pick a design template, and describe your idea.
-3. **(Optional) Turn on sharing:** set up static sharing in **Settings → Sharing**. See [docs/share-setup-guide.md](./docs/share-setup-guide.md) for how publishing works and what gets uploaded.
+2. **Create a project and a page:** describe your idea with **Auto** selected, or choose **Mobile**, **Web** or **Free canvas** yourself. Select a style or framework when appropriate. For supported models, you can adjust thinking intensity in the composer.
+3. **Iterate and document:** try a new version, annotate changes, and generate a PRD for the requirement you want to hand off.
+4. **(Optional) Share:** connect Vercel in **Settings → Sharing**, set expiry and an optional password, and publish. Use **Share management** to manage or withdraw existing links. See [the startup and sharing guide](./docs/share-setup-guide.md) for publishing details.
 
 ## Good to know
 
 - The Portal interface and the generated PRDs are currently in **Chinese**. The prototypes themselves can be in any language you ask for.
 - Shared pages include the selected versions and their documents, and nothing is redacted automatically. Check the content before you share.
 - Your model API key and personal settings stay on your machine and are never included in shares.
+- Expiry and password protection apply to Vercel link sharing. Legacy local/public-server shares do not offer these controls. Previously published shares keep their original access policy until you share them again.
+- To update the product, replace its product files and launch again; Prota checks changed dependencies and reuses the existing workspace and settings.
 
 ## Development
 
