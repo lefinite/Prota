@@ -4,9 +4,14 @@ const icons = {
     storage: svg('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>'),
     sharing: svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-3.4m-6.6 6.1 6.6 3.4"/>'),
     models: svg('<rect x="5" y="5" width="14" height="14" rx="3"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3"/>'),
-    close: svg('<path d="m18 6-12 12M6 6l12 12"/>')
+    close: svg('<path d="m18 6-12 12M6 6l12 12"/>'),
+    about: svg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>')
 };
-const labels = { models: '模型配置', storage: '存储位置', sharing: '分享配置' };
+// Brand marks from GitHub's octicons are filled, so they bypass the stroke helper.
+const githubMark = '<svg width="21" height="21" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.66-.21-2.2.82a7.68 7.68 0 0 0-2.92 0C6.16 2.67 5.5 2.88 5.5 2.88c-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>';
+const starIcon = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>';
+const REPO_URL = 'https://github.com/lefinite/Prota';
+const labels = { models: '模型配置', storage: '存储位置', sharing: '分享配置', about: '关于' };
 
 export class UnifiedSettings {
     constructor(shell) {
@@ -17,7 +22,7 @@ export class UnifiedSettings {
         this.root = document.createElement('div');
         this.root.className = 'unified-settings';
         this.root.hidden = true;
-        this.root.innerHTML = `<div class="us-scrim" data-us-close></div><section class="us-window" role="dialog" aria-modal="true" aria-labelledby="usTitle" tabindex="-1"><aside class="us-sidebar"><h2 id="usTitle">设置</h2><nav aria-label="设置分类">${Object.entries(labels).map(([id,label]) => `<button type="button" data-us-tab="${id}" aria-controls="us-${id}">${icons[id]}<span>${label}</span><i aria-label="有未保存修改"></i></button>`).join('')}</nav></aside><main class="us-main"><header class="us-heading"><div><h3 id="usSectionTitle">存储位置</h3><p id="usSectionHint">选择独立文件夹，保存你的项目资产。</p><span id="usSaveFeedback" class="us-save-feedback" role="status"></span></div><button type="button" class="us-close" data-us-close aria-label="关闭设置">${icons.close}</button></header><div class="us-body"><section id="us-storage" class="us-storage"><div id="usSetup" class="us-callout" hidden><strong>给项目选择一个存放位置</strong><p>项目资产可独立于程序保存；已有项目可以完整迁移。</p><button type="button" class="us-link" data-us-keep>暂时使用原位置</button></div><div class="us-storage-label"><label class="us-field-label" for="usCurrentPath">保存文件夹</label><p>项目与聊天记录自动保存在这里。</p></div><div class="us-folder"><div class="us-folder-location"><span class="us-folder-icon">${icons.storage}</span><div class="us-folder-text"><strong id="usFolderName">正在读取…</strong><code id="usCurrentPath">正在读取…</code></div></div><div class="us-folder-footer"><span>本机存储</span><div class="us-path-buttons"><button type="button" class="us-secondary" data-us-mode="migrate" title="将现有内容复制到空文件夹，并切换保存位置">迁移到</button><button type="button" class="us-primary" data-us-mode="switch" title="只切换保存文件夹，不迁移现有内容">更改</button></div></div></div><span id="usAvailability" role="status"></span><section id="usLocationForm" class="us-location-form" hidden><h4 id="usLocationTitle">迁移当前工作区</h4><label for="usTarget">目标文件夹</label><div class="us-choose-row"><input id="usTarget" type="text" autocomplete="off" spellcheck="false" placeholder="点击右侧选择文件夹，也可粘贴完整路径"><button type="button" class="us-secondary" data-us-choose>选择文件夹</button></div><small id="usLocationHint">选择一个空文件夹，现有项目会自动复制过去。</small><div class="us-form-actions"><button type="button" class="us-secondary" data-us-location-cancel>取消</button><button type="button" class="us-primary" data-us-plan>继续</button></div></section><section id="usPlan" class="us-plan" hidden><h4 id="usPlanTitle">确认迁移</h4><dl><dt>来源</dt><dd id="usSource"></dd><dt>目标</dt><dd id="usDestination"></dd><dt>内容</dt><dd id="usContents"></dd></dl><p id="usPlanHint">复制并校验成功后才切换，原位置的文件会保留。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-plan-cancel>返回修改</button><button type="button" class="us-primary" data-us-change>确认迁移</button></div></section><div id="usProgress" class="us-callout" hidden role="status"></div><div id="usStorageError" class="us-error" role="alert"></div></section><section id="us-sharing" hidden></section><section id="us-models" hidden></section></div><div id="usGuard" class="us-guard" role="alertdialog" aria-modal="true" aria-labelledby="usGuardTitle" hidden><div><h3 id="usGuardTitle">有尚未保存的修改</h3><p>保存后继续，或放弃本次修改。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-guard-cancel>继续编辑</button><button type="button" class="us-secondary" data-us-discard>放弃修改</button><button type="button" class="us-primary" data-us-save-continue>保存并继续</button></div><div class="us-error" id="usGuardError" role="alert"></div></div></div></main></section>`;
+        this.root.innerHTML = `<div class="us-scrim" data-us-close></div><section class="us-window" role="dialog" aria-modal="true" aria-labelledby="usTitle" tabindex="-1"><aside class="us-sidebar"><h2 id="usTitle">设置</h2><nav aria-label="设置分类">${Object.entries(labels).map(([id,label]) => `<button type="button" data-us-tab="${id}" aria-controls="us-${id}">${icons[id]}<span>${label}</span><i aria-label="有未保存修改"></i></button>`).join('')}</nav></aside><main class="us-main"><header class="us-heading"><div><h3 id="usSectionTitle">存储位置</h3><p id="usSectionHint">选择独立文件夹，保存你的项目资产。</p><span id="usSaveFeedback" class="us-save-feedback" role="status"></span></div><button type="button" class="us-close" data-us-close aria-label="关闭设置">${icons.close}</button></header><div class="us-body"><section id="us-storage" class="us-storage"><div id="usSetup" class="us-callout" hidden><strong>给项目选择一个存放位置</strong><p>项目资产可独立于程序保存；已有项目可以完整迁移。</p><button type="button" class="us-link" data-us-keep>暂时使用原位置</button></div><div class="us-storage-label"><label class="us-field-label" for="usCurrentPath">保存文件夹</label><p>项目与聊天记录自动保存在这里。</p></div><div class="us-folder"><div class="us-folder-location"><span class="us-folder-icon">${icons.storage}</span><div class="us-folder-text"><strong id="usFolderName">正在读取…</strong><code id="usCurrentPath">正在读取…</code></div></div><div class="us-folder-footer"><span>本机存储</span><div class="us-path-buttons"><button type="button" class="us-secondary" data-us-mode="migrate" title="将现有内容复制到空文件夹，并切换保存位置">迁移到</button><button type="button" class="us-primary" data-us-mode="switch" title="只切换保存文件夹，不迁移现有内容">更改</button></div></div></div><span id="usAvailability" role="status"></span><section id="usLocationForm" class="us-location-form" hidden><h4 id="usLocationTitle">迁移当前工作区</h4><label for="usTarget">目标文件夹</label><div class="us-choose-row"><input id="usTarget" type="text" autocomplete="off" spellcheck="false" placeholder="点击右侧选择文件夹，也可粘贴完整路径"><button type="button" class="us-secondary" data-us-choose>选择文件夹</button></div><small id="usLocationHint">选择一个空文件夹，现有项目会自动复制过去。</small><div class="us-form-actions"><button type="button" class="us-secondary" data-us-location-cancel>取消</button><button type="button" class="us-primary" data-us-plan>继续</button></div></section><section id="usPlan" class="us-plan" hidden><h4 id="usPlanTitle">确认迁移</h4><dl><dt>来源</dt><dd id="usSource"></dd><dt>目标</dt><dd id="usDestination"></dd><dt>内容</dt><dd id="usContents"></dd></dl><p id="usPlanHint">复制并校验成功后才切换，原位置的文件会保留。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-plan-cancel>返回修改</button><button type="button" class="us-primary" data-us-change>确认迁移</button></div></section><div id="usProgress" class="us-callout" hidden role="status"></div><div id="usStorageError" class="us-error" role="alert"></div></section><section id="us-sharing" hidden></section><section id="us-models" hidden></section><section id="us-about" class="us-about" hidden><div class="us-about-intro"><strong>Prota 是为产品经理打造的开源 AI Agent</strong><p>一句话描述产品想法，它生成可点击的产品原型，再基于原型写出完整 PRD。全程在本机运行，使用你自己的模型 API。</p></div><div class="us-about-repo"><div class="us-about-repo-location"><span class="us-about-mark">${githubMark}</span><div class="us-about-text"><strong>lefinite/Prota</strong><code>github.com/lefinite/Prota</code></div></div><div class="us-about-repo-footer"><span>开源项目 · MIT License</span><div class="us-path-buttons"><a class="us-secondary" href="${REPO_URL}" target="_blank" rel="noopener noreferrer">查看源码</a><a class="us-about-star" href="${REPO_URL}" target="_blank" rel="noopener noreferrer">${starIcon}<span>在 GitHub 上 Star</span></a></div></div></div><p class="us-about-note">觉得好用就点个 Star 吧：这是对开源项目最直接的支持，也能让更多产品经理发现 Prota。</p></section></div><div id="usGuard" class="us-guard" role="alertdialog" aria-modal="true" aria-labelledby="usGuardTitle" hidden><div><h3 id="usGuardTitle">有尚未保存的修改</h3><p>保存后继续，或放弃本次修改。</p><div class="us-form-actions"><button type="button" class="us-secondary" data-us-guard-cancel>继续编辑</button><button type="button" class="us-secondary" data-us-discard>放弃修改</button><button type="button" class="us-primary" data-us-save-continue>保存并继续</button></div><div class="us-error" id="usGuardError" role="alert"></div></div></div></main></section>`;
         document.body.append(this.root);
         this.dialog = this.root.querySelector('.us-window');
         const trigger = document.createElement('button');
@@ -50,10 +55,25 @@ export class UnifiedSettings {
         // the single visible settings window, including the unsaved-change guard.
         document.addEventListener('keydown', event => {
             if (this.root.hidden) return;
+            // A product-level confirm (e.g. provider delete) floats above the
+            // settings window: Esc cancels it and Tab stays inside it.
+            const confirmOpen = this.shell.confirmModal && !this.shell.confirmModal.hidden;
+            if (confirmOpen) {
+                if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); this.shell._closeConfirm(false); return; }
+                if (event.key === 'Tab') {
+                    const scope = this.shell.confirmModal.querySelector('.confirm-modal__dialog');
+                    const items = [...scope.querySelectorAll('button:not(:disabled)')].filter(node => node.getClientRects().length);
+                    const first = items[0], last = items.at(-1);
+                    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+                    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+                    return;
+                }
+                return;
+            }
             if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); if (!this.busy) this.requestClose(); }
             if (event.key === 'Tab') {
                 const scope = this.q('#usGuard').hidden ? this.dialog : this.q('#usGuard');
-                const items = [...scope.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]')].filter(node => node.getClientRects().length);
+                const items = [...scope.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]')].filter(node => node.getClientRects().length);
                 const first = items[0], last = items.at(-1);
                 if (event.shiftKey && (document.activeElement === first || !items.includes(document.activeElement))) { event.preventDefault(); last?.focus(); }
                 else if (!event.shiftKey && (document.activeElement === last || !items.includes(document.activeElement))) { event.preventDefault(); first?.focus(); }
@@ -83,11 +103,12 @@ export class UnifiedSettings {
     }
     async open(tab = 'models') {
         const opening = this.root.hidden;
+        if (this.closing) { clearTimeout(this.closeTimer); this.closing = false; this.root.classList.remove('is-closing'); }
         if (opening) {
             this.returnFocus = document.activeElement;
             this.root.hidden = false;
             this.previousOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; document.body.classList.add('us-open');
-            this.background = [...document.body.children].filter(node => node !== this.root && node.tagName !== 'SCRIPT' && !node.inert);
+            this.background = [...document.body.children].filter(node => node !== this.root && node.tagName !== 'SCRIPT' && node.id !== 'confirmModal' && node.id !== 'toast' && !node.inert);
             this.background.forEach(node => node.inert = true);
         }
         this.setTab(tab);
@@ -114,7 +135,7 @@ export class UnifiedSettings {
         this.shell.shareSettingsOpen = tab === 'sharing'; this.shell.shareSettingsModal.hidden = tab !== 'sharing';
         this.shell.agentConfigModalOpen = tab === 'models'; this.shell.agentConfigModal.hidden = tab !== 'models';
         this.q('#usSectionTitle').textContent = labels[tab];
-        this.q('#usSectionHint').textContent = { storage: '选择项目在电脑上的保存位置。', sharing: '把原型发给别人看，先选择适合你的方式。', models: '选择服务商，填写 API Key，再选择要使用的模型。' }[tab];
+        this.q('#usSectionHint').textContent = { storage: '选择项目在电脑上的保存位置。', sharing: '把原型发给别人看，先选择适合你的方式。', models: '选择服务商，填写 API Key，再选择要使用的模型。', about: '了解 Prota 的开源信息，支持它的持续开发。' }[tab];
         for (const button of this.root.querySelectorAll('[data-us-tab]')) { button.classList.toggle('is-active', button.dataset.usTab === tab); button.setAttribute('aria-current', button.dataset.usTab === tab ? 'page' : 'false'); }
         this.refreshDirty();
         if (changed) this.q('.us-body').scrollTop = 0;
@@ -153,11 +174,20 @@ export class UnifiedSettings {
     guardModels(action) { return this.dirtyPanels().includes('models') ? this.guard(action, 'models') : false; }
     requestClose() { if (!this.root.hidden && !this.busy) this.guard(() => this.close()); }
     close() {
-        this.root.hidden = true; this.q('#usGuard').hidden = true; document.body.classList.remove('us-open');
-        this.shell.agentConfigModalOpen = false; this.shell.agentConfigModal.hidden = true;
-        this.shell.shareSettingsOpen = false; this.shell.shareSettingsModal.hidden = true;
-        this.background?.forEach(node => node.inert = false); document.body.style.overflow = this.previousOverflow || '';
-        this.returnFocus?.focus();
+        if (this.closing) return;
+        const finish = () => {
+            this.closing = false;
+            this.root.hidden = true; this.root.classList.remove('is-closing');
+            this.q('#usGuard').hidden = true; document.body.classList.remove('us-open');
+            this.shell.agentConfigModalOpen = false; this.shell.agentConfigModal.hidden = true;
+            this.shell.shareSettingsOpen = false; this.shell.shareSettingsModal.hidden = true;
+            this.background?.forEach(node => node.inert = false); document.body.style.overflow = this.previousOverflow || '';
+            this.returnFocus?.focus();
+        };
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+        this.closing = true;
+        this.root.classList.add('is-closing');
+        this.closeTimer = setTimeout(finish, 130);
     }
     renderWorkspace() {
         const data = this.workspace;

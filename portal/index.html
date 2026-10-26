@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="modules/settings/settings.css?v=20261021">
     <link rel="stylesheet" href="shell.css?v=20260909-roomy-page-selector">
     <link rel="stylesheet" href="modules/prd/prd.css?v=20260827-narrow-header-fix-v1">
+    <link rel="stylesheet" href="modules/sharing/dialog.css">
 </head>
 <body data-top-view="page">
     <div class="shell-container">
@@ -251,11 +252,20 @@
                                     </svg>
                                 </span>
                                 <span>
-                                    <strong>静态云分享</strong>
-                                    <small id="shareStaticSubtext">首次使用：配置分享地址</small>
+                                    <strong>链接分享</strong>
+                                    <small id="shareStaticSubtext">设置有效期与密码，分享给他人</small>
                                 </span>
                             </button>
                             <div class="share-menu__divider"></div>
+                            <button id="shareManagerBtn" class="share-menu__item" type="button" role="menuitem" aria-haspopup="dialog">
+                                <span class="share-menu__icon" aria-hidden="true">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="4" y="3" width="16" height="18" rx="2"></rect>
+                                        <path d="M8 8h8M8 12h8M8 16h5"></path>
+                                    </svg>
+                                </span>
+                                <span><strong>分享管理</strong><small>查看全部分享，管理与撤回链接</small></span>
+                            </button>
                             <button id="shareSettingsBtn" class="share-menu__item" type="button" role="menuitem">
                                 <span class="share-menu__icon" aria-hidden="true" style="color: #64748b;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -520,9 +530,14 @@
                                             </button>
                                             <div id="agentModelDropdown" class="agent-model-dropdown" hidden></div>
                                         </div>
-                                        <button id="agentPlanModeToggle" class="agent-plan-mode-toggle" type="button" title="开启 Plan 模式后，Agent 必须先设计实施计划再执行修改">
-                                            <span>Plan 模式</span>
-                                        </button>
+                                        <div class="agent-reasoning-anchor">
+                                            <button id="agentReasoningToggle" class="agent-reasoning-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="agentReasoningDropdown" aria-label="思考强度：模型默认">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M9 21h6M8.5 14.5a6 6 0 1 1 7 0c-.8.6-1 1.5-1 2.5h-5c0-1-.2-1.9-1-2.5Z"/></svg>
+                                                <span id="agentReasoningLabel">默认</span>
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                            </button>
+                                            <div id="agentReasoningDropdown" class="agent-reasoning-dropdown" role="menu" aria-label="思考强度" hidden></div>
+                                        </div>
                                         <div class="agent-permission-selector-anchor">
                                             <button id="agentPermissionToggle" class="agent-permission-toggle" type="button" title="切换权限模式">
                                                 <span id="agentPermissionLabel" class="agent-permission-toggle__label">权限: --</span>
@@ -810,12 +825,12 @@
                                 <ol data-share-guide="vercel">
                                     <li><strong>连接并授权</strong><p>点击「连接 Vercel」，在自动打开的浏览器中登录并授权。已有有效登录时会直接继续；页面未打开时，点击连接状态中的授权入口。</p></li>
                                     <li><strong>等待显示「已生效」</strong><p>Prota 自动创建或沿用分享项目，获取固定地址并保存。首次连接只准备分享空间，不会发布你的原型。</p></li>
-                                    <li><strong>发布原型</strong><p>回到页面选择「静态云分享」，等待发布成功后复制链接。更新同一页面版本后重新分享，原链接即可查看新内容。</p></li>
+                                    <li><strong>发布原型</strong><p>回到页面选择「链接分享」，等待发布成功后复制链接。更新同一页面版本后重新分享，原链接即可查看新内容。</p></li>
                                 </ol>
                                 <ol data-share-guide="custom" hidden>
                                     <li><strong>填写域名并连接</strong><p>在上方填写域名，点击「绑定域名并连接」。设置会自动保存，然后在浏览器中完成 Vercel 授权。</p></li>
                                     <li><strong>添加解析记录</strong><p>Prota 会显示所需的 DNS 记录。到你使用的域名服务商处添加对应记录，再回到这里点击「重新检查 DNS」。</p></li>
-                                    <li><strong>验证成功后发布</strong><p>等待显示「已生效」，域名会自动保存。回到页面选择「静态云分享」，发布成功后即可发送链接；同一页面版本更新后链接保持不变。</p></li>
+                                    <li><strong>验证成功后发布</strong><p>等待显示「已生效」，域名会自动保存。回到页面选择「链接分享」，发布成功后即可发送链接；同一页面版本更新后链接保持不变。</p></li>
                                 </ol>
                                 <p class="us-share-guide-note">分享会包含所选版本、相关文档和引用素材。首次连接不会自动发布内容；电脑关闭后，已成功发布的链接仍可访问。</p>
                             </div>

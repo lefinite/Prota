@@ -57,7 +57,7 @@ try {
     await page.goto(`${base}/portal/index.html`, { waitUntil: 'domcontentloaded' });
     await page.locator('#globalSettingsBtn').waitFor();
     assert.equal((await (await fetch(`${base}/api/settings`)).json()).sharingConfigured, false);
-    await page.evaluate(() => window.shell.openShareMenu());
+    await page.evaluate(() => window.shell.openSettingsModal());
     await page.locator('#us-sharing').waitFor({state:'visible'});
     assert.equal(await page.locator('#shareMenu').isVisible(), false);
     await page.locator('[data-vc-badge]').filter({hasText:'未连接'}).waitFor();
@@ -66,17 +66,18 @@ try {
     await page.locator('.us-close').click();
     await page.locator('#globalSettingsBtn').click();
     assert.equal(await page.locator('#us-models').isVisible(), true);
+    await page.waitForTimeout(260); // entry animation settles before geometry assertions
     const settingsBounds = await page.locator('.us-window').boundingBox();
     const headingBounds = await page.locator('.us-heading').boundingBox();
 
-    assert.deepEqual(await page.locator('[data-us-tab]').evaluateAll(nodes => nodes.map(node => node.dataset.usTab)), ['models', 'storage', 'sharing']);
+    assert.deepEqual(await page.locator('[data-us-tab]').evaluateAll(nodes => nodes.map(node => node.dataset.usTab)), ['models', 'storage', 'sharing', 'about']);
     assert.equal(await page.locator('.provider-list-item').first().evaluate(node => getComputedStyle(node).backgroundImage), 'none');
     await page.locator('.us-window').screenshot({ animations: 'disabled', path: '/tmp/prota-settings-models.png' });
     await page.locator('[data-us-tab=storage]').click();
     assert.equal((await page.locator('#globalSettingsBtn').textContent()).trim(), '');
     assert.equal(await page.locator('#globalSettingsBtn').getAttribute('aria-label'), '设置');
     assert.equal(await page.locator('#globalSettingsBtn svg').count(), 1);
-    assert.equal(await page.locator('.us-sidebar nav button svg').count(), 3);
+    assert.equal(await page.locator('.us-sidebar nav button svg').count(), 4);
     await page.locator('#usCurrentPath').filter({ hasText: source }).waitFor();
     assert.equal(await page.locator('.unified-settings [role=dialog]').count(), 1);
     await page.locator('[data-us-tab=sharing]').click();
@@ -85,6 +86,14 @@ try {
     assert.deepEqual(await page.locator('.us-heading').boundingBox(), headingBounds, 'heading stays fixed');
     assert.match(await page.locator('#shareChoiceDescription').innerText(), /固定.*链接不变/);
 
+    await page.locator('[data-us-tab=about]').click();
+    assert.equal(await page.locator('#us-about').isVisible(), true);
+    assert.match(await page.locator('#usSectionTitle').innerText(), /关于/);
+    await page.locator('.us-about-text').filter({ hasText: 'lefinite/Prota' }).waitFor();
+    assert.equal(await page.locator('.us-about-star').getAttribute('href'), 'https://github.com/lefinite/Prota');
+    assert.equal(await page.locator('.us-about-repo-footer > span').innerText(), '开源项目 · MIT License');
+
+    await page.locator('[data-us-tab=sharing]').click();
     await page.locator('[name=shareSetup][value=vercel]').check();
     assert.equal(await page.locator('#staticDomainInput').isVisible(), false);
     assert.equal(await page.locator('#gitAutoPushCheckbox').isChecked(), true);
@@ -162,6 +171,7 @@ try {
     connectionFixture = {authState:'expired',publishState:'unconfigured',message:'授权已失效，请重新授权。'};
     await page.evaluate(() => window.shell.openSettingsModal());
     await page.locator('[data-vc-badge]').filter({hasText:'需重新授权'}).waitFor();
+    await page.waitForTimeout(260); // entry animation settles before geometry assertions
     assert.match(await page.locator('[data-vc-account]').innerText(), /授权需更新/);
     assert.equal(await page.locator('[data-vc-address-row]').isVisible(), false);
     assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds);

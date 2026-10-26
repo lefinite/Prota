@@ -1,0 +1,86 @@
+.share-access-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    box-sizing: border-box;
+    width: min(440px, calc(100vw - 32px));
+    max-width: none;
+    max-height: calc(100dvh - 48px);
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    background: var(--bg-sidebar, #fff);
+    color: var(--text-primary, #1a1d24);
+    box-shadow: 0 16px 48px #18263b26;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.share-access-dialog::backdrop { background: #141c2b52; }
+.share-access-dialog:not([open]), .share-access-dialog [hidden] { display: none !important; }
+.share-access-dialog *, .share-access-dialog *::before, .share-access-dialog *::after { box-sizing: border-box; }
+.share-access-dialog :is(button, input) { font: inherit; }
+.share-access-dialog button { cursor: pointer; }
+.share-access-dialog p { margin: 0; }
+.share-access-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 24px 24px 20px; }
+.share-access-heading > div { min-width: 0; }
+.share-access-heading h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; line-height: 1.5; }
+.share-access-heading h2:focus { outline: none; }
+.share-access-heading [data-name] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary, #6b7280); font-size: 13px; }
+.share-access-dialog .share-access-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary, #6b7280); }
+.share-access-body { padding: 0 24px 24px; }
+.share-access-expiry { min-width: 0; margin: 0; padding: 0; border: 0; }
+.share-access-expiry legend { padding: 0; margin-bottom: 10px; font-size: 13px; font-weight: 500; }
+.share-access-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.share-access-options label { position: relative; min-width: 0; cursor: pointer; }
+.share-access-options input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.share-access-options span { display: flex; align-items: center; justify-content: center; min-height: 38px; border: 1px solid var(--border, #e5e7eb); border-radius: 7px; font-size: 13px; background: var(--bg-sidebar, #fff); }
+.share-access-options input:checked + span { border-color: var(--accent, #6366f1); background: var(--accent-glow, #6366f11a); color: var(--accent, #6366f1); font-weight: 500; }
+.share-access-dialog .share-access-hint { margin-top: 8px; color: var(--text-secondary, #6b7280); font-size: 12px; line-height: 1.7; }
+.share-access-security { padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--border, #e5e7eb); }
+.share-access-security-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.share-access-security-row label { display: grid; gap: 2px; cursor: pointer; }
+.share-access-security-row strong { font-size: 13px; font-weight: 500; }
+.share-access-security-row label span { color: var(--text-secondary, #6b7280); font-size: 12px; }
+.share-access-dialog .share-access-switch { position: relative; flex-shrink: 0; appearance: none; width: 34px; height: 20px; margin: 0; border: 1px solid #cbd0d9; border-radius: 12px; background: #d5d9e0; cursor: pointer; }
+.share-access-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.share-access-dialog .share-access-switch:checked { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); }
+.share-access-switch:checked::after { transform: translateX(14px); }
+.share-access-dialog [data-password] { margin-top: 16px; }
+.share-access-dialog [data-password] > label { display: block; margin-bottom: 8px; font-size: 13px; }
+.share-access-password-input { position: relative; }
+.share-access-password-input input { width: 100%; height: 40px; padding: 0 44px 0 12px; border: 1px solid var(--border, #e5e7eb); border-radius: 7px; background: var(--bg-sidebar, #fff); color: inherit; font-size: 13px; }
+.share-access-password-input input::placeholder { color: var(--text-secondary, #6b7280); }
+.share-access-password-input .share-access-icon { position: absolute; right: 4px; top: 4px; }
+.share-access-password-input input[aria-invalid=true] { border-color: #c53030; }
+.share-access-dialog .share-access-error { margin-top: 6px; color: #b42318; font-size: 12px; }
+.share-access-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px; border-top: 1px solid var(--border, #e5e7eb); }
+.share-access-actions button { min-height: 36px; padding: 7px 14px; border: 1px solid var(--border, #e5e7eb); border-radius: 7px; background: var(--bg-sidebar, #fff); color: inherit; font-size: 13px; font-weight: 500; }
+.share-access-actions button[type=submit] { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); color: #fff; }
+.share-access-dialog :is(button, input):focus-visible, .share-access-options input:focus-visible + span { outline: 3px solid #6366f138; outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) {
+    .share-access-dialog .share-access-icon:hover { background: var(--bg-main, #f8f9fb); color: var(--text-primary, #1a1d24); }
+    .share-access-options label:hover span { border-color: var(--accent, #6366f1); }
+    .share-access-actions button:hover { filter: brightness(.97); }
+}
+@media (max-width: 480px) {
+    .share-access-dialog { max-height: calc(100dvh - 32px); }
+    .share-access-heading { padding: 20px 20px 16px; }
+    .share-access-body { padding: 0 20px 20px; }
+    .share-access-actions { padding: 14px 20px; }
+}
+@media (forced-colors: active) {
+    .share-access-options input:checked + span { outline: 2px solid Highlight; }
+    .share-access-dialog .share-access-switch { appearance: auto; }
+    .share-access-switch::after { display: none; }
+}
+
+/* Inputs keep a single thin border while focused; other controls retain keyboard outlines. */
+.share-access-password-input input:focus {
+    border-color: var(--accent, #6366f1);
+    outline: 0;
+    outline-offset: 0;
+    box-shadow: none;
+}
+.share-access-password-input input[aria-invalid=true]:focus { border-color: #c53030; }

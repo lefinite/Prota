@@ -158,7 +158,7 @@ async function main() {
         const identity = crypto.createHash('sha256').update(fs.realpathSync(root)).digest('hex');
         const health = await request(bridgeBase + '/api/product/health');
         let agent = await request(agentBase + '/api/agent/health');
-        const bridgeBuild = crypto.createHash('sha256').update(Buffer.concat(['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py'].map(file => fs.readFileSync(path.join(root, file))))).digest('hex');
+        const bridgeBuild = crypto.createHash('sha256').update(Buffer.concat(['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py', 'server/share_security.py', 'server/share_gateway.mjs', 'server/share_gate_page.mjs', 'server/share_manager.py'].map(file => fs.readFileSync(path.join(root, file))))).digest('hex');
         const agentBuild = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'server/agent-server.mjs'))).digest('hex');
         const environment = { ...process.env, READIFY_AGENT_HOST: '127.0.0.1' };
         fs.mkdirSync(path.join(root, 'logs'), { recursive: true });

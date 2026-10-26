@@ -80,6 +80,10 @@ def normalize_agent_provider_config(data):
         sdk_options = raw.get('sdkOptions', {})
         if not isinstance(sdk_options, dict):
             sdk_options = {}
+        sdk_options = dict(sdk_options)
+        sdk_options.pop('planMode', None)
+        if sdk_options.get('permissionMode') == 'plan':
+            sdk_options['permissionMode'] = 'default'
         raw_models = raw.get('models', [])
         raw_endpoints = raw.get('endpointCandidates', [])
         providers.append({
@@ -901,7 +905,8 @@ def build_default_data_js(data):
 
 
 def normalize_page_target_device(value):
-    return 'web' if str(value or '').strip().lower() == 'web' else 'mobile'
+    normalized = str(value or '').strip().lower()
+    return normalized if normalized in ('web', 'canvas') else 'mobile'
 
 
 def normalize_page_meta(page, versions, fallback_target_device='mobile'):
@@ -1415,6 +1420,7 @@ def build_share_page_html(share_data):
     share_script = f'<script>window.__READIFY_SHARE__ = {data_json};</script>'
     html = html.replace('<script src="/workspace-data.js"></script>', '')
     html = html.replace('href="modules/settings/', 'href="/portal/modules/settings/')
+    html = html.replace('href="modules/sharing/', 'href="/portal/modules/sharing/')
 
     share_styles = '''
   <style>
@@ -2286,7 +2292,7 @@ def build_share_page_html(share_data):
 
 
 import hashlib
-_PRODUCT_BUILD = hashlib.sha256(b''.join((workspace.APP_ROOT / file).read_bytes() for file in ['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py'])).hexdigest()
+_PRODUCT_BUILD = hashlib.sha256(b''.join((workspace.APP_ROOT / file).read_bytes() for file in ['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py', 'server/share_security.py', 'server/share_gateway.mjs', 'server/share_gate_page.mjs', 'server/share_manager.py'])).hexdigest()
 
 
 class BridgeHandler(http.server.SimpleHTTPRequestHandler):
@@ -2308,6 +2314,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
     def workspace_reply(self, status, payload):
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Cache-Control', 'no-store')
         self.end_headers()
         self.wfile.write(json.dumps(payload, ensure_ascii=False).encode('utf-8'))
 
@@ -2359,6 +2366,14 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 workspace.workspace_root()
             except (ValueError, OSError) as error:
                 return self.workspace_reply(503, {'error': str(error)})
+        if clean_path == '/api/shares':
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机管理分享。'})
+            try:
+                from server.share_manager import inventory
+                return self.workspace_reply(200, {'items': inventory(get_project_root(), self.headers.get('Host', 'localhost:8080'))})
+            except Exception as error:
+                return self.workspace_reply(400, {'error': str(error)})
         if clean_path == '/api/prd-docs':
             self.handle_prd_docs()
             return
@@ -2467,6 +2482,20 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             workspace.workspace_root()
         except (ValueError, OSError) as error:
             return self.workspace_reply(503, {'error': str(error)})
+        if clean_path == '/api/shares/manage':
+            if not self.workspace_local() or not self.headers.get('Content-Type', '').startswith('application/json'):
+                return self.workspace_reply(403, {'error': '只能在本机产品界面管理分享。'})
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 32768:
+                    raise ValueError('请求大小无效。')
+                from server.share_manager import manage
+                params = json.loads(self.rfile.read(length))
+                if not isinstance(params, dict):
+                    raise ValueError('请求格式无效。')
+                return self.workspace_reply(200, manage(get_project_root(), params, self.headers.get('Host', 'localhost:8080')))
+            except Exception as error:
+                return self.workspace_reply(400, {'error': str(error)})
         if self.path.startswith('/api/iterate'):
             self.handle_iterate()
         elif self.path.startswith('/api/create-project'):
@@ -3925,6 +3954,13 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         try:
+            try:
+                from server.share_security import create_policy, save_policy, public_policy
+            except ImportError:
+                from share_security import create_policy, save_policy, public_policy
+            if share_type != 'static' and params.get('access') is not None:
+                raise ValueError('有效期和密码保护仅支持链接分享。')
+            access_policy = create_policy(params.get('access')) if share_type == 'static' else None
             root = get_project_root()
             sync_projects()
             version_dir = resolve_share_version_dir(root, project_id, page_id, version)
@@ -3941,6 +3977,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'projectId': project_id,
                 'pageId': page_id,
                 'pageName': page_name,
+                'targetDevice': normalize_page_target_device(page.get('targetDevice')),
                 'version': version,
                 'shareType': share_type,
                 'includeAnnotations': include_annotations,
@@ -3970,6 +4007,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'projectId': project_id,
                 'pageId': page_id,
                 'pageName': page_name,
+                'targetDevice': normalize_page_target_device(page.get('targetDevice')),
                 'version': version,
                 'shareType': share_type,
                 'generatedAt': share_data['generatedAt'],
@@ -4006,6 +4044,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             with open(share_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(build_share_page_html(shell_share_data))
 
+            if access_policy:
+                save_policy(root, filename, access_policy, (params.get('access') or {}).get('password', ''))
             settings = load_settings()
             static_domain = settings.get("staticDomain", "")
             public_domain = settings.get("publicDomain", "prota.example.com")
@@ -4041,6 +4081,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'shareType': share_type,
                 'annotationCount': len(share_data['annotations']),
                 'hasPrd': bool(share_data['prdContent']),
+                'access': public_policy(access_policy) if access_policy else None,
                 'deployWarning': deploy_warning
             }
             self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
@@ -4076,6 +4117,13 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         try:
+            try:
+                from server.share_security import create_policy, save_policy, public_policy
+            except ImportError:
+                from share_security import create_policy, save_policy, public_policy
+            if share_type != 'static' and params.get('access') is not None:
+                raise ValueError('有效期和密码保护仅支持链接分享。')
+            access_policy = create_policy(params.get('access')) if share_type == 'static' else None
             root = get_project_root()
             sync_projects()
             project = read_project_record(root, project_id) or {}
@@ -4144,6 +4192,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 pages_payload.append({
                     'id': str(page.get('id')),
                     'name': str(page.get('name') or page.get('id')),
+                    'targetDevice': normalize_page_target_device(page.get('targetDevice')),
                     'version': str(version),
                     'parentId': str(page.get('parentId')),
                     'order': _safe_order(page.get('order')),
@@ -4188,6 +4237,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             with open(share_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(build_share_page_html(share_payload))
 
+            if access_policy:
+                save_policy(root, filename, access_policy, (params.get('access') or {}).get('password', ''))
             settings = load_settings()
             static_domain = settings.get("staticDomain", "")
             public_domain = settings.get("publicDomain", "prota.example.com")
@@ -4223,6 +4274,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'folderId': folder_id,
                 'shareType': share_type,
                 'pageCount': len(pages_payload),
+                'access': public_policy(access_policy) if access_policy else None,
                 'deployWarning': deploy_warning,
             }
             self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))

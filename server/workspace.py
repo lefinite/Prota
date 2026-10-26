@@ -22,7 +22,7 @@ CONFIG_PATH = CONFIG_DIR / 'workspace.json'
 LOCK_PATH = CONFIG_DIR / 'workspace.lock'
 ASSET_PATHS = ('src/pages', 'assets', 'shares', 'data/projects.json', 'data/settings.json',
                'data/agent-sessions', 'data/agent-uploads', 'data/agent-checkpoints', 'data/active-prd-context.json',
-               'data/share-archive', 'data/published-static')
+               'data/share-archive', 'data/published-static', 'data/share-management.json')
 _job = None
 _mutex = threading.Lock()
 

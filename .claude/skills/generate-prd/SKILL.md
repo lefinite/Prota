@@ -201,9 +201,9 @@ npm --prefix .claude/skills/generate-prd run capture:confirm -- \
 - 描述“功能 1”就必须截“功能 1”的真实状态，不能用整页概览图或其他功能图替代。
 - 如果功能在菜单、tab、详情面板、弹窗、二级页面、选中态、输入态、空态或错误态中，必须先触发到该状态再截图；标注只标了入口时，入口和功能详情都要保留。
 - 命令在项目根目录运行，截图资产使用本需求及版本专属的子目录或文件名前缀，避免覆盖其他文档引用的图片。
-- Web 页面使用适合目标 Demo 的 `--viewport 1440x900 --capture-selector none`；手机端或缺少 `targetDevice` 时保留默认手机截图配置。
+- 截图工具按工作区页面元数据选择默认配置：Web / 自由画布使用桌面视口且不裁剪手机内屏，手机端或缺少 `targetDevice` 时保留手机截图配置。可用 `--viewport WIDTHxHEIGHT --capture-selector none` 明确覆盖。
 - 默认使用原始 viewport 截图。只有功能必须依赖长页面上下文时，才使用 `--full-page`。
-- 截图服务默认使用 `--device iphone-17`：先用稳定的门户手机模板尺寸渲染，再自动裁剪 `.phone-screen` 内屏，因此不截模板手机壳，也不会触发小屏全屏断点导致面板边距、圆角或位置偏移。只有明确需要验证其他尺寸时，才手动传入 `--viewport WIDTHxHEIGHT`、`--device` 或 `--capture-selector none`。
+- 手机页面截图默认使用 `--device iphone-17`：先用稳定的门户手机模板尺寸渲染，再自动裁剪 `.phone-screen` 内屏，因此不截模板手机壳，也不会触发小屏全屏断点导致面板边距、圆角或位置偏移。只有明确需要验证其他尺寸时，才手动传入 `--viewport WIDTHxHEIGHT`、`--device` 或 `--capture-selector none`。
 - 默认不得为了命中标注目标调用横向或纵向居中滚动；截图应保留用户刚触发功能后的自然位置。只有显式传入 `--clip-target`、`scroll:CSS selector` 或用户要求裁剪目标时，才允许调整滚动位置。
 - 不得把 `annotation-overview.png`、`prototype-overview.png`、DOM evidence 图、标注裁剪图、红框图作为功能截图插入 PRD。
 - 目标感知截图会同时生成 `{shot-name}.json` 元数据文件。普通截图插入 PRD 前必须检查其中的 `finalState.visible`、`target` 和 `discovery.path`；`--capture-entry-detail` 和 `--capture-steps` 截图必须检查 `images[].screenState`、`images[].finalState`、`target` 和 `explicitActions`，确认每张图确实属于目标功能的入口、详情或后续状态。

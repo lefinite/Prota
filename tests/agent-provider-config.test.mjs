@@ -104,3 +104,17 @@ test('已有旧模型列表不会遮蔽更新后的服务商模板', () => {
     assert.equal(provider.model, 'glm-4.7');
     assert.equal(store.buildProviderFromPreset(store.getPreset('zhipu-anthropic')).model, 'new-flagship');
 });
+
+
+test('旧 Plan 设置迁移为执行模式，思考强度保持独立持久化', () => {
+    const { store } = createStore();
+    store.replaceState({ providers: [{ id: 'legacy', model: 'glm-5.3', sdkOptions: { planMode: true, permissionMode: 'plan', reasoningEffort: 'high', maxTurns: 50 } }], activeProviderId: 'legacy' });
+    const options = store.buildConfig().sdkOptions;
+    assert.equal('planMode' in options, false);
+    assert.equal(options.permissionMode, 'default');
+    assert.equal(options.reasoningEffort, 'high');
+    assert.equal(options.maxTurns, 50);
+    const { store: reloaded } = createStore();
+    reloaded.replaceState(JSON.parse(JSON.stringify(store.exportState())));
+    assert.equal(reloaded.buildConfig().sdkOptions.reasoningEffort, 'high');
+});

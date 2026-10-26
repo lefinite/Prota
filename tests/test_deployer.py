@@ -82,7 +82,8 @@ class DirectPublishTests(unittest.TestCase):
             directory = Path(command[-1])
             self.assertTrue(directory.is_relative_to(config/'vercel-publish'))
             self.assertFalse((directory/'.vercel/output/static/data/projects.json').exists())
-            self.assertTrue((directory/'.vercel/output/static/shares/reader-v1-static.html').is_file())
+            self.assertFalse((directory/'.vercel/output/static/shares/reader-v1-static.html').exists())
+            self.assertTrue((directory/'.vercel/output/functions/share.func/content/shares/reader-v1-static.html').is_file())
             return SimpleNamespace(returncode=0, stdout='https://share.example.com\n', stderr='')
         with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node') as which, patch('server.deployer.subprocess.run', side_effect=run):
             self.assertEqual(self.deployer.deploy(self.share), 'https://share.example.com')

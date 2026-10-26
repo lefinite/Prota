@@ -8,6 +8,14 @@ from server import bridge
 
 
 class AgentProviderPersistenceTest(unittest.TestCase):
+    def test_plan_migration_preserves_reasoning_and_other_permissions(self):
+        source = {'providers': [{'id': 'test', 'sdkOptions': {'planMode': True, 'permissionMode': 'plan', 'reasoningEffort': 'high'}}]}
+        result = bridge.normalize_agent_provider_config(source)
+        self.assertEqual(result['providers'][0]['sdkOptions'], {'permissionMode': 'default', 'reasoningEffort': 'high'})
+        self.assertTrue(source['providers'][0]['sdkOptions']['planMode'])
+        source['providers'][0]['sdkOptions']['permissionMode'] = 'acceptEdits'
+        self.assertEqual(bridge.normalize_agent_provider_config(source)['providers'][0]['sdkOptions']['permissionMode'], 'acceptEdits')
+
     def test_round_trip_preserves_provider_and_active_selection(self):
         payload = {
             'providers': [{

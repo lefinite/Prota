@@ -3,7 +3,11 @@
  * Handles page/version switching and project management
  */
 
+import { getReasoningCapability, getReasoningSelection } from './agent/reasoning.js';
+import { ShareManager } from './modules/sharing/manager.js';
 import { UnifiedSettings } from './modules/settings/index.js';
+import { formatShareText, prepareShareDraft } from './modules/sharing/copy.js';
+import { requestShareOptions } from './modules/sharing/dialog.js';
 import { VercelConnection } from './modules/settings/vercel.js';
 import { PRDModule } from './modules/prd/index.js?v=20261013-auto-polish-v1';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
@@ -125,7 +129,7 @@ class DemoShell {
         this.skillSearchQuery = '';
         this.newPageStyleId = 'default';
         this.newPageFrameworkId = 'ant-design-skill';
-        this.newPageTargetDevice = 'mobile';
+        this.newPageTargetDevice = 'auto';
         this.newPageStyleDropdownOpen = false;
         this.newPageStyleMenuEl = null;
         this.newPageFrameworkZoomEl = null;
@@ -378,7 +382,9 @@ class DemoShell {
         this.agentModelLabel = document.getElementById('agentModelLabel');
         this.agentModelDropdown = document.getElementById('agentModelDropdown');
         this.agentModelDropdownOpen = false;
-        this.agentPlanModeToggle = document.getElementById('agentPlanModeToggle');
+        this.agentReasoningToggle = document.getElementById('agentReasoningToggle');
+        this.agentReasoningLabel = document.getElementById('agentReasoningLabel');
+        this.agentReasoningDropdown = document.getElementById('agentReasoningDropdown');
         this.agentPermissionToggle = document.getElementById('agentPermissionToggle');
         this.agentPermissionLabel = document.getElementById('agentPermissionLabel');
         this.agentPermissionDropdown = document.getElementById('agentPermissionDropdown');
@@ -545,6 +551,7 @@ class DemoShell {
         this.annotationLinkSaving = false;
 
         this.unifiedSettings = new UnifiedSettings(this);
+        if (!this.isShareMode) this.shareManager = new ShareManager(this);
         if (!this.isShareMode) this.vercelConnection = new VercelConnection(this);
         this.init();
     }
@@ -609,6 +616,7 @@ class DemoShell {
             projectName: String(raw.projectName || params.get('projectName') || '').trim(),
             pageId,
             pageName: String(raw.pageName || params.get('pageName') || '').trim(),
+            targetDevice: raw.targetDevice ? this.normalizePageTargetDevice(raw.targetDevice) : undefined,
             version,
             folderId,
             folderName: String(raw.folderName || params.get('folderName') || '').trim(),
@@ -691,6 +699,7 @@ class DemoShell {
         };
         const sharePage = {
             ...sourcePage,
+            targetDevice: this.normalizePageTargetDevice(this.shareConfig.targetDevice ?? sourcePage.targetDevice),
             name: this.shareConfig.pageName || sourcePage.name || sourcePage.id,
             versions: [activeVersion],
             activeVersion,
@@ -910,11 +919,16 @@ class DemoShell {
 
     normalizePageTargetDevice(value) {
         const normalized = String(value || '').trim().toLowerCase();
-        return normalized === 'web' ? 'web' : 'mobile';
+        return ['web', 'canvas'].includes(normalized) ? normalized : 'mobile';
+    }
+
+    normalizeNewPageMode(value) {
+        const normalized = String(value || '').trim().toLowerCase();
+        return ['mobile', 'web', 'canvas'].includes(normalized) ? normalized : 'auto';
     }
 
     getPageDeviceLabel(value = this.newPageTargetDevice) {
-        return this.normalizePageTargetDevice(value) === 'web' ? 'Web B 端' : '手机端';
+        return { auto: '智能判断', mobile: '手机页面', web: 'Web 页面', canvas: '自由画布' }[this.normalizeNewPageMode(value)];
     }
 
     normalizeProjectsData(data) {
@@ -1726,6 +1740,11 @@ class DemoShell {
     }
 
     closeAgentInlineDropdowns({ except = null } = {}) {
+        if (except !== 'reasoning' && this.agentReasoningDropdownOpen) {
+            this.agentReasoningDropdownOpen = false;
+            this.agentReasoningDropdown.hidden = true;
+            this.agentReasoningToggle.setAttribute('aria-expanded', 'false');
+        }
         if (except !== 'model' && this.agentModelDropdownOpen) {
             this.agentModelDropdownOpen = false;
             if (this.agentModelDropdown) this.agentModelDropdown.hidden = true;
@@ -1741,7 +1760,7 @@ class DemoShell {
         if (!target) return;
         const insideModel = Boolean(target.closest('.agent-model-selector-anchor'));
         const insidePermission = Boolean(target.closest('.agent-permission-selector-anchor'));
-        const except = insideModel ? 'model' : insidePermission ? 'permission' : null;
+        const except = target.closest('.agent-reasoning-anchor') ? 'reasoning' : insideModel ? 'model' : insidePermission ? 'permission' : null;
         this.closeAgentInlineDropdowns({ except });
     }
 
@@ -2761,9 +2780,32 @@ class DemoShell {
             }
         });
 
-        this.agentPlanModeToggle?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleAgentPlanMode();
+        window.addEventListener('resize', () => { if (this.agentReasoningDropdownOpen) this.positionAgentReasoningMenu(); });
+        this.agentReasoningToggle?.addEventListener('click', () => this.toggleAgentReasoningMenu());
+        this.agentReasoningToggle?.addEventListener('keydown', event => {
+            if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
+                event.preventDefault();
+                this.toggleAgentReasoningMenu(true, event.key === 'ArrowUp');
+            }
+        });
+        this.agentReasoningDropdown?.addEventListener('click', event => {
+            const option = event.target.closest('[data-reasoning-value]');
+            if (option) this.setAgentReasoning(option.dataset.reasoningValue);
+        });
+        this.agentReasoningDropdown?.addEventListener('keydown', event => {
+            const items = [...this.agentReasoningDropdown.querySelectorAll('[data-reasoning-value]')];
+            const index = items.indexOf(document.activeElement);
+            let next;
+            if (event.key === 'ArrowDown') next = (index + 1) % items.length;
+            if (event.key === 'ArrowUp') next = (index - 1 + items.length) % items.length;
+            if (event.key === 'Home') next = 0;
+            if (event.key === 'End') next = items.length - 1;
+            if (next !== undefined) { event.preventDefault(); items[next]?.focus(); }
+            if (event.key === 'Escape') {
+                event.preventDefault(); event.stopPropagation();
+                this.closeAgentInlineDropdowns(); this.agentReasoningToggle.focus();
+            }
+            if (event.key === 'Tab') this.closeAgentInlineDropdowns();
         });
 
         this.agentPermissionToggle?.addEventListener('click', (e) => {
@@ -3253,20 +3295,19 @@ class DemoShell {
             this.executeSlashCommandById(commandOption.dataset.agentCommandId || '');
         });
 
+        this.agentStatusContext?.addEventListener('change', (event) => {
+            if (this.agentRunState?.active || !event.target.matches('[data-new-page-mode]')) return;
+            this.setNewPageTargetDevice(event.target.value);
+            this.agentStatusContext.querySelector('[data-new-page-mode]')?.focus();
+        });
         this.agentStatusContext?.addEventListener('click', (event) => {
+            if (event.target.closest('[data-new-page-mode]')) return;
             if (this.agentRunState?.active) return;
             const styleToggle = event.target.closest('[data-new-page-style-toggle]');
             if (styleToggle) {
                 event.preventDefault();
                 event.stopPropagation();
                 this.toggleNewPageStyleMenu();
-                return;
-            }
-            const deviceToggle = event.target.closest('[data-new-page-device]');
-            if (deviceToggle) {
-                event.preventDefault();
-                event.stopPropagation();
-                this.setNewPageTargetDevice(deviceToggle.dataset.newPageDevice || 'mobile');
                 return;
             }
             if (this.isNewPageStylePickerActive()) return;
@@ -3283,6 +3324,7 @@ class DemoShell {
         });
         this.agentStatusContext?.addEventListener('keydown', (event) => {
             if (this.agentRunState?.active || !['Enter', ' '].includes(event.key)) return;
+            if (event.target.closest?.('[data-new-page-mode]')) return;
             if (event.target.closest?.('[data-new-page-style-toggle]')) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -3474,7 +3516,6 @@ class DemoShell {
     }
 
     async openShareMenu() {
-        if (!this.isShareMode && !await this.ensureShareSetup()) return;
         this.shareMenuOpen = true;
         if (this.shareMenu) this.shareMenu.hidden = false;
         this.shareMenuTrigger?.setAttribute('aria-expanded', 'true');
@@ -3491,7 +3532,7 @@ class DemoShell {
     }
 
     getShareTypeLabel(shareType = 'local') {
-        if (shareType === 'static') return '静态云';
+        if (shareType === 'static') return '链接';
         return shareType === 'public' ? '公网' : '本地';
     }
 
@@ -3517,9 +3558,9 @@ class DemoShell {
             textarea.style.opacity = '0';
             document.body.appendChild(textarea);
             textarea.select();
-            document.execCommand('copy');
+            const copied = document.execCommand('copy');
             document.body.removeChild(textarea);
-            return true;
+            return copied;
         } catch {
             return false;
         }
@@ -3533,6 +3574,10 @@ class DemoShell {
         }
 
         const page = this.getPageRecord();
+        this.closeShareMenu();
+        const shareTarget = { projectId: this.activeProjectId, pageId: this.activePageId, version: this.activeVersion, prdPath: this.getPreferredPrdPathForShare() };
+        let access = shareType === 'static' ? await requestShareOptions(page?.name || shareTarget.pageId) : null;
+        if (shareType === 'static' && !access) return;
         const previousContent = triggerButton?.innerHTML || '';
         if (triggerButton) {
             triggerButton.disabled = true;
@@ -3545,19 +3590,30 @@ class DemoShell {
         }
 
         let bridgeResponded = false;
+        let draft = null;
+        let copiedBeforePublish = false;
         try {
+            if (shareType === 'static') {
+                draft = prepareShareDraft({ domain: this.settings.staticDomain, projectId: shareTarget.projectId,
+                    pageId: shareTarget.pageId, version: shareTarget.version, access });
+                access = draft.access;
+                copiedBeforePublish = await this.copyTextToClipboard(draft.text);
+                if (!copiedBeforePublish) throw Error('无法复制分享信息，请允许剪贴板访问后重试。');
+                this.showToast('分享信息已复制，正在发布，完成后链接生效…');
+            }
             const normalizedShareType = ['public', 'static'].includes(shareType) ? shareType : 'local';
             const response = await fetch('http://localhost:8080/api/share-page', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    projectId: this.activeProjectId,
-                    pageId: this.activePageId,
-                    version: this.activeVersion,
+                    projectId: shareTarget.projectId,
+                    pageId: shareTarget.pageId,
+                    version: shareTarget.version,
                     shareType: normalizedShareType,
                     public: normalizedShareType === 'public',
-                    pageName: page?.name || this.activePageId,
-                    prdPath: this.getPreferredPrdPathForShare()
+                    ...(access ? { access } : {}),
+                    pageName: page?.name || shareTarget.pageId,
+                    prdPath: shareTarget.prdPath
                 }),
                 signal: AbortSignal.timeout(normalizedShareType === 'static' ? 330000 : 8000)
             });
@@ -3569,26 +3625,26 @@ class DemoShell {
 
             const result = await response.json();
             if (normalizedShareType === 'static' && result.deployWarning) {
-                throw new Error(`静态文件已生成到本地，但 Vercel 部署失败：${result.deployWarning}`);
+                throw new Error(`分享文件已生成到本地，但 Vercel 部署失败：${result.deployWarning}`);
             }
             const rawUrl = result.url || result.path || '';
             const shareUrl = /^https?:\/\//i.test(rawUrl)
                 ? rawUrl
                 : new URL(rawUrl, window.location.href).href;
-            const copied = await this.copyTextToClipboard(shareUrl);
+            const copied = draft ? copiedBeforePublish : await this.copyTextToClipboard(formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }));
             this.closeShareMenu();
-            this.showToast(copied ? '已生成分享页，链接已复制' : '已生成分享页');
+            this.showToast(copied ? '已生成分享页，分享信息已复制' : '已生成分享页');
             window.open(shareUrl, '_blank');
         } catch (error) {
             console.error('Share page generation failed:', error);
             const message = error instanceof Error ? error.message : String(error);
-            this.showToast(`生成分享页失败：${message}`, true);
+            this.showToast(`${draft ? '发布失败，本次分享信息尚未生效' : '生成分享页失败'}：${message}`, true);
             alert(
                 `无法生成${this.getShareTypeLabel(shareType)}分享页。\n\n` +
                 `错误原因：\n${message}\n\n` +
                 (bridgeResponded
                     ? `Bridge 服务已响应。若 Vercel 部署失败，请检查 Vercel 登录、网络及项目权限配置。`
-                    : `请求未完成，请检查 Bridge 服务是否启动；静态发布也可能因 Vercel 部署耗时而超时。`)
+                    : `请求未完成，请检查 Bridge 服务是否启动；发布也可能因 Vercel 部署耗时而超时。`)
             );
         } finally {
             if (triggerButton) {
@@ -3628,24 +3684,38 @@ class DemoShell {
             this.showToast('文件夹内没有可分享的页面', true);
             return;
         }
+        const shareTarget = { projectId: this.activeProjectId, pageId: this.activePageId, version: this.activeVersion, prdPath: this.getPreferredPrdPathForShare() };
+        let access = shareType === 'static' ? await requestShareOptions(folder.name) : null;
+        if (shareType === 'static' && !access) return;
         const normalizedShareType = ['public', 'static'].includes(shareType) ? shareType : 'local';
         if (normalizedShareType === 'static') {
-            this.showToast(`正在生成静态文件夹分享（${pageIds.length} 个页面）...`);
+            this.showToast(`正在生成文件夹分享（${pageIds.length} 个页面）...`);
         } else {
             this.showToast(`正在打包 ${pageIds.length} 个页面...`);
         }
         let bridgeResponded = false;
+        let draft = null;
+        let copiedBeforePublish = false;
         try {
+            if (shareType === 'static') {
+                draft = prepareShareDraft({ domain: this.settings.staticDomain, projectId: shareTarget.projectId,
+                    pageId: shareTarget.pageId, version: shareTarget.version, folderId, access });
+                access = draft.access;
+                copiedBeforePublish = await this.copyTextToClipboard(draft.text);
+                if (!copiedBeforePublish) throw Error('无法复制分享信息，请允许剪贴板访问后重试。');
+                this.showToast('分享信息已复制，正在发布，完成后链接生效…');
+            }
             const response = await fetch('http://localhost:8080/api/share-folder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    projectId: this.activeProjectId,
+                    projectId: shareTarget.projectId,
                     folderId,
                     folderName: folder.name,
+                    ...(access ? { access } : {}),
                     shareType: normalizedShareType,
                     public: normalizedShareType === 'public',
-                    prdPath: this.getPreferredPrdPathForShare()
+                    prdPath: shareTarget.prdPath
                 }),
                 signal: AbortSignal.timeout(normalizedShareType === 'static' ? 330000 : 30000)
             });
@@ -3655,28 +3725,28 @@ class DemoShell {
             }
             const result = await response.json();
             if (normalizedShareType === 'static' && result.deployWarning) {
-                throw new Error(`静态文件夹已生成到本地，但 Vercel 部署失败：${result.deployWarning}`);
+                throw new Error(`分享文件已生成到本地，但 Vercel 部署失败：${result.deployWarning}`);
             }
             const rawUrl = result.url || result.path || '';
             const shareUrl = /^https?:\/\//i.test(rawUrl)
                 ? rawUrl
                 : new URL(rawUrl, window.location.href).href;
-            const copied = await this.copyTextToClipboard(shareUrl);
+            const copied = draft ? copiedBeforePublish : await this.copyTextToClipboard(formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }));
             this.showToast(copied
-                ? `已生成文件夹分享（${result.pageCount || pageIds.length} 个页面），链接已复制`
+                ? `已生成文件夹分享（${result.pageCount || pageIds.length} 个页面），分享信息已复制`
                 : `已生成文件夹分享（${result.pageCount || pageIds.length} 个页面）`
             );
             window.open(shareUrl, '_blank');
         } catch (error) {
             console.error('Share folder generation failed:', error);
             const message = error instanceof Error ? error.message : String(error);
-            this.showToast(`生成文件夹分享失败：${message}`, true);
+            this.showToast(`${draft ? '发布失败，本次分享信息尚未生效' : '生成文件夹分享失败'}：${message}`, true);
             alert(
                 `无法生成${this.getShareTypeLabel(shareType)}文件夹分享。\n\n` +
                 `错误原因：\n${message}\n\n` +
                 (bridgeResponded
                     ? `Bridge 服务已响应。若 Vercel 部署失败，请检查 Vercel 登录、网络及项目权限配置。`
-                    : `请求未完成，请检查 Bridge 服务是否启动；静态发布也可能因 Vercel 部署耗时而超时。`)
+                    : `请求未完成，请检查 Bridge 服务是否启动；发布也可能因 Vercel 部署耗时而超时。`)
             );
         }
     }
@@ -4843,13 +4913,15 @@ class DemoShell {
     }
 
     getNewPagePickerOptions() {
-        return this.normalizePageTargetDevice(this.newPageTargetDevice) === 'web'
+        if (['auto', 'canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return [];
+        return this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
             ? this.getNewPageFrameworkOptions()
             : this.getNewPageStyleOptions();
     }
 
     getNewPageSelectedPickerOption() {
-        return this.normalizePageTargetDevice(this.newPageTargetDevice) === 'web'
+        if (['auto', 'canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return null;
+        return this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
             ? this.getNewPageSelectedFramework()
             : this.getNewPageSelectedStyle();
     }
@@ -4907,7 +4979,7 @@ class DemoShell {
     }
 
     renderNewPageStyleMenuItems() {
-        const isFrameworkPicker = this.normalizePageTargetDevice(this.newPageTargetDevice) === 'web';
+        const isFrameworkPicker = this.normalizeNewPageMode(this.newPageTargetDevice) === 'web';
         const selected = this.getNewPageSelectedPickerOption();
         return this.getNewPagePickerOptions().map((option) => {
             if (isFrameworkPicker) {
@@ -4958,7 +5030,7 @@ class DemoShell {
 
     getNewPageStyleMenuPosition() {
         const triggerRect = this.agentStatusContext?.querySelector('[data-new-page-style-toggle]')?.getBoundingClientRect();
-        const isFrameworkPicker = this.normalizePageTargetDevice(this.newPageTargetDevice) === 'web';
+        const isFrameworkPicker = this.normalizeNewPageMode(this.newPageTargetDevice) === 'web';
         const menuWidth = Math.min(isFrameworkPicker ? 440 : 360, window.innerWidth - 24);
         const menuMaxHeight = Math.min(430, window.innerHeight - 120);
         if (!triggerRect) {
@@ -4992,7 +5064,7 @@ class DemoShell {
                 if (!styleOption) return;
                 event.preventDefault();
                 event.stopPropagation();
-                if (this.normalizePageTargetDevice(this.newPageTargetDevice) === 'web') {
+                if (this.normalizeNewPageMode(this.newPageTargetDevice) === 'web') {
                     this.setNewPageFramework(styleOption.dataset.newPageStyleOption || 'ant-design-skill');
                 } else {
                     this.setNewPageStyle(styleOption.dataset.newPageStyleOption || 'default');
@@ -5029,12 +5101,18 @@ class DemoShell {
         }
         this.newPageStyleMenuEl.classList.toggle(
             'is-framework-picker',
-            this.normalizePageTargetDevice(this.newPageTargetDevice) === 'web'
+            this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
         );
         const position = this.getNewPageStyleMenuPosition();
         this.newPageStyleMenuEl.style.left = `${position.left}px`;
         this.newPageStyleMenuEl.style.top = `${position.top}px`;
-        this.newPageStyleMenuEl.innerHTML = this.renderNewPageStyleMenuItems();
+        const itemsMarkup = this.renderNewPageStyleMenuItems();
+        // The status ticker also renders this menu. Retain its options, focus and
+        // scroll position while the available choices and selection are unchanged.
+        if (this.newPageStyleMenuEl._protaItemsMarkup !== itemsMarkup) {
+            this.newPageStyleMenuEl.innerHTML = itemsMarkup;
+            this.newPageStyleMenuEl._protaItemsMarkup = itemsMarkup;
+        }
     }
 
     showFrameworkShotZoom(shotEl) {
@@ -5100,6 +5178,7 @@ class DemoShell {
     }
 
     toggleNewPageStyleMenu() {
+        if (!this.getNewPagePickerOptions().length) return;
         this.newPageStyleDropdownOpen = !this.newPageStyleDropdownOpen;
         if (!this.newPageStyleDropdownOpen && this.newPageStyleMenuEl) {
             this.newPageStyleMenuEl.remove();
@@ -5111,8 +5190,14 @@ class DemoShell {
     composeNewPageStarter({ templateId = this.newPageStyleId, frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = this.newPageTargetDevice } = {}) {
         const project = this.getProjectRecord(projectId);
         const projectLabel = project ? `${project.name || project.id}（${project.id}）` : (projectId || '当前项目');
-        const normalizedTargetDevice = this.normalizePageTargetDevice(targetDevice);
+        const normalizedTargetDevice = this.normalizeNewPageMode(targetDevice);
         const deviceLabel = this.getPageDeviceLabel(normalizedTargetDevice);
+        if (normalizedTargetDevice === 'auto') {
+            return `请在项目「${projectLabel}」中新建页面，根据需求判断最适合的呈现方式。`;
+        }
+        if (normalizedTargetDevice === 'canvas') {
+            return `请在项目「${projectLabel}」中新建自由画布，按内容组织展示与交互。`;
+        }
         if (normalizedTargetDevice === 'web') {
             const framework = this.getNewPageFrameworkOptions().find((item) => item.id === frameworkId)
                 || this.getNewPageFrameworkOptions()[0];
@@ -5140,49 +5225,45 @@ class DemoShell {
         const project = this.getProjectRecord(this.activeProjectId);
         const projectId = project?.id || this.activeProjectId || '';
         const projectName = project?.name || projectId;
-        const targetDevice = this.normalizePageTargetDevice(this.newPageTargetDevice);
-        const deviceLabel = this.getPageDeviceLabel(targetDevice);
+        const mode = this.normalizeNewPageMode(this.newPageTargetDevice);
         const lines = [
             '### 执行上下文',
-            '',
             `当前活动项目 ID：\`${projectId}\`。`,
             `当前活动项目名称：「${projectName}」。`,
             `新页面必须创建在当前工作区的 \`src/pages/${projectId}/{page_id}/v1/\`；不要从 data/projects.json 的 activeProjectId 重新推断项目。`,
             '',
-            '### 页面类型',
-            '',
-            `用户在顶部页面类型选择器中选择了「${deviceLabel}」。`,
-            `创建新页面时必须在 data/projects.json 的新 page 记录上写入 \`targetDevice: "${targetDevice}"\`。`,
-            targetDevice === 'web'
-                ? '必须从 `src/templates/web-frame/` 复制中性 `index.html`、`styles.css`、`app.js` 运行骨架作为 v1 起点，不要使用手机外框。'
-                : '必须从 `src/templates/mobile-frame/` 复制 `index.html`、`styles.css`、`app.js`、`frame-fit.js` 作为 v1 起点，并保留手机外框结构。',
-            targetDevice === 'web'
-                ? (() => {
-                    const framework = this.getNewPageSelectedFramework();
-                    return [
-                        '',
-                        '### 前端框架',
-                        '',
-                        `用户在顶部前端框架选择器中选择了「${framework.name}」（${framework.technology}）。`,
-                        `必须完整读取并使用对应 Skill：${framework.skillPath}`,
-                        `本次 Web Demo 的产品判断、页面结构、视觉语言、组件映射、Mock Data、交互和质量门槛均以 \`${framework.id}\` 为准。`
-                    ].join('\n');
-                })()
-                : (() => {
-                    const style = this.getNewPageSelectedStyle();
-                    if (!style || style.id === 'default') return '';
-                    return [
-                        '',
-                        '### 风格选择',
-                        '',
-                        `用户在顶部风格选择器中选择了「${style.name}」。`,
-                        `请在新建页面时读取并遵守这个设计规范文件：${style.filePath}`,
-                        this.formatTemplateFilesForPrompt(style),
-                        '不要在回复中反复询问或确认风格；它已经由顶部选择器绑定。'
-                    ].filter(Boolean).join('\n');
-                })()
-        ].filter(Boolean);
-        return lines.join('\n');
+            '### 页面呈现方式',
+            `创建模式：\`${mode}\`（${this.getPageDeviceLabel(mode)}）。`,
+            '先确定呈现方式，再读取对应模板与 Skill；用户本次明确的文字要求优先于选择器，默认值不是用户明确要求。',
+            '创建后在工作区 data/projects.json 中保存实际 targetDevice：mobile、web 或 canvas，并同步工作区 portal/shell.js 元数据快照；不要保存 auto。',
+            '用一句话说明采用的呈现方式及原因后直接实现，无需额外确认；后续迭代沿用已保存的方式，除非用户明确要求改变。'
+        ];
+        if (mode === 'auto') {
+            lines.push(
+                '当前为智能判断，用户没有指定设备外框、移动端风格或 Web 框架，不得把默认值或历史选择作为强制约束。',
+                '根据核心任务判断：普通 App 页面和移动端流程优先 mobile，保留手机框；完整网页或后台采用 web；独立组件、场景模拟、配置与实时预览、尺寸或状态对比等需要自由组织空间时采用 canvas。不要仅凭单个关键词判断。',
+                '需求不明确时结合项目上下文，普通移动端需求默认 mobile。设计对象属于手机，并不要求整个展示界面放进手机框。',
+                'mobile 复制 src/templates/mobile-frame/ 并保留手机框；web 复制 src/templates/web-frame/；canvas 复制 src/templates/canvas-frame/。后两者不强制设备外框或 UI 框架。'
+            );
+        } else {
+            lines.push(`用户在选择器中指定「${this.getPageDeviceLabel(mode)}」；没有相反的明确文字要求时，保存 targetDevice: "${mode}"。`);
+            if (mode === 'mobile') {
+                lines.push('从 src/templates/mobile-frame/ 复制 index.html、styles.css、app.js、frame-fit.js，并保留手机外框结构。');
+                const style = this.getNewPageSelectedStyle();
+                if (style && style.id !== 'default') {
+                    lines.push('### 风格选择', `手机页面使用「${style.name}」风格：${style.filePath}`, this.formatTemplateFilesForPrompt(style));
+                }
+            } else if (mode === 'web') {
+                lines.push('从 src/templates/web-frame/ 复制中性 index.html、styles.css、app.js 运行骨架，不使用手机外框。');
+                const framework = this.getNewPageSelectedFramework();
+                lines.push('### 前端框架', `用户在前端框架选择器中选择了「${framework.name}」（${framework.technology}）。`,
+                    `若最终采用 web，必须完整读取并使用对应 Skill：${framework.skillPath}；不混用其他框架。`);
+            } else {
+                lines.push('从 src/templates/canvas-frame/ 复制中性 index.html、styles.css、app.js；不强制手机框、后台结构或 UI 框架。',
+                    '围绕核心内容安排空间。需要设备场景时可在局部预览中使用设备外观；只有需求涉及可配置项时才增加配置面板，避免扩张任务。');
+            }
+        }
+        return lines.filter(Boolean).join('\n');
     }
 
     formatTemplateFilesForPrompt(style) {
@@ -5213,7 +5294,7 @@ class DemoShell {
                 window.localStorage.setItem(workspaceStorageKey('readify:pending-template'), this.newPageStyleId);
             }
         } catch {}
-        if (syncPrompt) this.syncNewPagePrompt({ force: true });
+        if (syncPrompt) this.syncNewPagePrompt();
         this.renderAgentStatusContextControl();
     }
 
@@ -5225,14 +5306,14 @@ class DemoShell {
         try {
             window.localStorage.setItem(workspaceStorageKey('readify:pending-framework'), this.newPageFrameworkId);
         } catch {}
-        if (syncPrompt) this.syncNewPagePrompt({ force: true });
+        if (syncPrompt) this.syncNewPagePrompt();
         this.renderAgentStatusContextControl();
     }
 
-    setNewPageTargetDevice(targetDevice = 'mobile', { syncPrompt = true } = {}) {
-        this.newPageTargetDevice = this.normalizePageTargetDevice(targetDevice);
+    setNewPageTargetDevice(targetDevice = 'auto', { syncPrompt = true } = {}) {
+        this.newPageTargetDevice = this.normalizeNewPageMode(targetDevice);
         this.closeNewPageStyleMenu({ renderControl: false });
-        if (syncPrompt) this.syncNewPagePrompt({ force: true });
+        if (syncPrompt) this.syncNewPagePrompt();
         this.renderAgentStatusContextControl();
     }
 
@@ -5323,7 +5404,7 @@ class DemoShell {
         if (shouldEnterProject) {
             this.enterProject(targetProjectId);
         }
-        this.openNewPageAgentFlow({ templateId, projectId: targetProjectId }).then(() => {
+        this.openNewPageAgentFlow({ templateId, projectId: targetProjectId, targetDevice: 'mobile' }).then(() => {
             this.showToast(`已选择「${tpl.name}」，请补充页面需求后发送`);
         });
     }
@@ -6823,7 +6904,7 @@ class DemoShell {
         }
     }
 
-    async openNewPageAgentFlow({ templateId = 'default', frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = 'mobile' } = {}) {
+    async openNewPageAgentFlow({ templateId = 'default', frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = 'auto' } = {}) {
         await this.loadTemplatesData();
         if (projectId) {
             this.activeProjectId = projectId;
@@ -6833,7 +6914,7 @@ class DemoShell {
         this.newPageFrameworkId = this.getNewPageFrameworkOptions().some((item) => item.id === frameworkId)
             ? frameworkId
             : 'ant-design-skill';
-        this.newPageTargetDevice = this.normalizePageTargetDevice(targetDevice);
+        this.newPageTargetDevice = this.normalizeNewPageMode(targetDevice);
         this.newPageStyleDropdownOpen = false;
         this.openAgentWorkbench();
         const reusableSessionId = this.findReusableAgentSessionId({ sessionScope: 'global' });
@@ -11816,6 +11897,7 @@ class DemoShell {
     }
 
     async activateProvider(id = this.selectedProviderId, { silent = false, confirmed = false } = {}) {
+        if (this._agentReasoningSaving) return;
         if (!confirmed && this.unifiedSettings?.guardModels(() => this.activateProvider(id, { silent, confirmed: true }))) return;
         this.newProviderDraft = null;
         this.editProviderDraft = null;
@@ -11918,9 +12000,25 @@ class DemoShell {
         }
     }
 
-    deleteProvider(id = this.selectedProviderId, confirmed = false) {
+    async deleteProvider(id = this.selectedProviderId, confirmed = false) {
         if (!confirmed && this.unifiedSettings?.guardModels(() => this.deleteProvider(id, true))) return;
-        if (!window.confirm('删除这项模型服务商配置？删除后需要重新填写连接信息。')) return;
+        if (!confirmed) {
+            const label = this.getSelectedProvider()?.label || '这项';
+            const returnFocus = document.activeElement;
+            const confirmPromise = this.showConfirm({
+                title: '删除模型服务商？',
+                message: `将删除「${label}」的配置，删除后需要重新填写连接信息。`,
+                okText: '删除'
+            });
+            this.confirmModalCancel?.focus();
+            const okToDelete = await confirmPromise;
+            if (!okToDelete) {
+                if (returnFocus?.isConnected) returnFocus.focus();
+                return;
+            }
+            this.deleteProvider(id, true);
+            return;
+        }
         this.newProviderDraft = null;
         this.editProviderDraft = null;
         this.unifiedSettings?.userTouched.delete('models');
@@ -11971,34 +12069,46 @@ class DemoShell {
         if (!this.agentStatusContext) return;
         if (this.isNewPageStylePickerActive()) {
             this.agentStatusContext.hidden = false;
-            const selectedDevice = this.normalizePageTargetDevice(this.newPageTargetDevice);
+            const selectedDevice = this.normalizeNewPageMode(this.newPageTargetDevice);
             const selected = this.getNewPageSelectedPickerOption();
             const pickerLabel = selectedDevice === 'web' ? '前端框架' : '风格';
             this.agentStatusContext.classList.add('is-clickable', 'is-style-picker');
             this.agentStatusContext.classList.remove('has-clear');
-            this.agentStatusContext.title = `选择新页面类型和${pickerLabel}`;
-            this.agentStatusContext.innerHTML = `
-                <span class="new-page-config-control">
-                    <span class="new-page-device-control" role="group" aria-label="新页面类型">
-                        <button type="button" class="new-page-device-control__btn${selectedDevice === 'mobile' ? ' is-active' : ''}" data-new-page-device="mobile" aria-pressed="${selectedDevice === 'mobile' ? 'true' : 'false'}" title="手机端页面">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect><path d="M10.5 18.5h3"></path></svg>
-                            <span>手机</span>
-                        </button>
-                        <button type="button" class="new-page-device-control__btn${selectedDevice === 'web' ? ' is-active' : ''}" data-new-page-device="web" aria-pressed="${selectedDevice === 'web' ? 'true' : 'false'}" title="Web B 端页面">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>
-                            <span>Web</span>
-                        </button>
+            this.agentStatusContext.title = selected ? `选择页面呈现方式和${pickerLabel}` : '选择页面呈现方式';
+            // Mount once: replacing a native select on the one-second status
+            // tick dismisses its popup and drops keyboard focus before selection.
+            let modeSelect = this.agentStatusContext.querySelector('[data-new-page-mode]');
+            if (!modeSelect) {
+                this.agentStatusContext.innerHTML = `
+                    <span class="new-page-config-control">
+                        <select class="new-page-mode-select" data-new-page-mode aria-label="页面呈现方式" title="选择页面呈现方式">
+                            ${['auto', 'mobile', 'web', 'canvas'].map(mode => `<option value="${mode}">${this.getPageDeviceLabel(mode)}</option>`).join('')}
+                        </select>
+                        <span class="new-page-presentation-options" data-new-page-presentation-options></span>
                     </span>
+                `;
+                modeSelect = this.agentStatusContext.querySelector('[data-new-page-mode]');
+            }
+            if (modeSelect.dataset.renderedMode !== selectedDevice) {
+                modeSelect.value = selectedDevice;
+                modeSelect.dataset.renderedMode = selectedDevice;
+            }
+            const optionsHost = this.agentStatusContext.querySelector('[data-new-page-presentation-options]');
+            const optionsKey = JSON.stringify([selectedDevice, selected?.id, selected?.name]);
+            if (optionsHost.dataset.renderKey !== optionsKey) {
+                optionsHost.innerHTML = selected ? `
                     <span class="new-page-style-control" data-new-page-style-root="1">
-                        <button type="button" class="new-page-style-control__trigger" data-new-page-style-toggle="1" aria-label="选择${pickerLabel}" aria-haspopup="listbox" aria-expanded="${this.newPageStyleDropdownOpen ? 'true' : 'false'}">
+                        <button type="button" class="new-page-style-control__trigger" data-new-page-style-toggle="1" aria-label="选择${pickerLabel}" aria-haspopup="listbox" aria-expanded="false">
                             <span class="new-page-style-control__text">
-                                <strong>${this.escapeHtml(selected?.name || (selectedDevice === 'web' ? 'Ant Design' : '默认风格'))}</strong>
+                                <strong>${this.escapeHtml(selected.name || (selectedDevice === 'web' ? 'Ant Design' : '默认风格'))}</strong>
                             </span>
                             <svg class="new-page-style-control__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
                     </span>
-                </span>
-            `;
+                ` : `<span class="new-page-mode-hint">${selectedDevice === 'auto' ? '按需求选择呈现方式' : '按内容自由组织'}</span>`;
+                optionsHost.dataset.renderKey = optionsKey;
+            }
+            optionsHost.querySelector('[data-new-page-style-toggle]')?.setAttribute('aria-expanded', String(this.newPageStyleDropdownOpen));
             this.renderNewPageStyleMenuPortal();
             return;
         }
@@ -12627,7 +12737,25 @@ class DemoShell {
             this.agentDeleteProviderBtn.hidden = Boolean(this.newProviderDraft) || this.selectedProviderId === null;
         }
         this.updateAgentConfigHint();
+        this.updateProviderSteps();
         if (this.unifiedSettings && !this.unifiedSettings.userTouched.has('models')) this.unifiedSettings.markSaved('models');
+    }
+
+    updateProviderSteps() {
+        const steps = document.querySelectorAll('#providerFormContent .provider-step');
+        if (!steps.length) return;
+        const selected = this.getSelectedProvider();
+        const presetValue = this.agentProviderPresetSelect?.dataset?.value || '';
+        const done = [
+            Boolean(this.newProviderDraft ? presetValue : selected),
+            Boolean(this.agentApiKeyInput?.value.trim()),
+            Boolean(this.getAgentModelFormValue())
+        ];
+        const current = done.findIndex(state => !state);
+        steps.forEach((step, index) => {
+            step.classList.toggle('is-done', done[index]);
+            step.classList.toggle('is-current', index === current);
+        });
     }
 
     handleAgentConfigInput() {
@@ -12658,6 +12786,7 @@ class DemoShell {
             this.renderAgentWorkbench();
         }
         this.updateAgentConfigHint();
+        this.updateProviderSteps();
     }
 
     handleAgentProviderChange() {
@@ -13433,6 +13562,7 @@ class DemoShell {
     selectAgentSkill(skillId) {
         const skill = this.getAgentSkill(skillId);
         if (!skill) return;
+        if (skill.id === 'create-new-page' && this.agentActiveSkill?.id !== skill.id) this.setNewPageTargetDevice('auto', { syncPrompt: false });
         this.agentActiveSkill = skill;
         this.agentSkillMenuOpen = false;
         this.renderAgentWorkbench();
@@ -13558,7 +13688,7 @@ class DemoShell {
             const isRunning = active && !answeringQuestion;
             this.agentSendBtn.classList.toggle('is-running', isRunning);
             this.agentSendBtn.disabled =
-                this.agentTestingConnection ||
+                this.agentTestingConnection || this._agentReasoningSaving ||
                 (contextBlocked && !this.agentActiveSkill?.globalContext) ||
                 (!isRunning && !answeringQuestion && !hasMessage && !hasAttachments && !hasPrdContext && !hasFeedback && !this.agentActiveSkill) ||
                 (!isRunning && !answeringQuestion && !hasMessage && !hasAttachments && !hasPrdContext && !hasFeedback && Boolean(this.agentActiveSkill?.requiresMessage) && !hasSkillStarter);
@@ -13600,41 +13730,95 @@ class DemoShell {
         ));
     }
 
-    async toggleAgentPlanMode() {
-        const active = this.getActiveProvider();
-        if (!active) return;
-        const currentMode = active.sdkOptions?.planMode || false;
-        const nextMode = !currentMode;
-        active.sdkOptions = {
-            ...(active.sdkOptions || {}),
-            planMode: nextMode
-        };
-        this.agentConfig = this.buildAgentConfigFromActiveProvider();
-        this.persistProviders();
-        this.syncAgentConfigForm();
-        
-        try {
-            const sessionId = await this.ensureCurrentAgentSession();
-            await this.agentApi.setProvider(sessionId, active);
-        } catch (error) {
-            console.warn('Failed to call agent.setProvider:', error);
+    toggleAgentReasoningMenu(open = !this.agentReasoningDropdownOpen, last = false) {
+        if (this.agentReasoningToggle.disabled) return;
+        this.closeAgentInlineDropdowns({ except: 'reasoning' });
+        if (open && this.agentSessionDrawerOpen && (window.innerWidth < 768 || this.agentWorkbench?.classList.contains('is-narrow'))) {
+            this.agentSessionDrawerOpen = false;
+            this.renderAgentChrome();
         }
-        
-        this.renderPlanModeToggle();
-        this.showToast(`Plan 模式已${nextMode ? '开启' : '关闭'}`);
+        this.agentReasoningDropdownOpen = open;
+        this.renderAgentReasoning();
+        if (open) {
+            const items = this.agentReasoningDropdown.querySelectorAll('[data-reasoning-value]');
+            (last ? items[items.length - 1] : this.agentReasoningDropdown.querySelector('[aria-checked="true"]'))?.focus();
+        }
     }
 
-    renderPlanModeToggle() {
-        if (!this.agentPlanModeToggle) return;
+    positionAgentReasoningMenu() {
+        const rect = this.agentReasoningToggle.getBoundingClientRect();
+        const width = Math.min(200, window.innerWidth - 24);
+        const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+        this.agentReasoningDropdown.style.width = `${width}px`;
+        this.agentReasoningDropdown.style.left = `${left - rect.left}px`;
+        this.agentReasoningDropdown.style.maxHeight = `${Math.max(120, Math.min(520, rect.top - 20))}px`;
+    }
+
+    async setAgentReasoning(value) {
         const active = this.getActiveProvider();
-        const planMode = active?.sdkOptions?.planMode || false;
-        if (planMode) {
-            this.agentPlanModeToggle.classList.add('is-active');
-            this.agentPlanModeToggle.title = "Plan 模式已开启：Agent 必须先设计实施计划再执行修改";
-        } else {
-            this.agentPlanModeToggle.classList.remove('is-active');
-            this.agentPlanModeToggle.title = "开启 Plan 模式后，Agent 必须先设计实施计划再执行修改";
+        if (!active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving) return;
+        if (!getReasoningCapability(active).options.some(option => option.value === value)) return;
+        this.closeAgentInlineDropdowns();
+        this.agentReasoningToggle.focus();
+        if (getReasoningSelection(active).value === value) return;
+        if (value === getReasoningCapability(active).defaultValue) value = 'default';
+        const previous = { ...(active.sdkOptions || {}) };
+        active.sdkOptions = { ...previous };
+        delete active.sdkOptions.planMode;
+        // A composer choice supersedes legacy raw thinking controls.
+        delete active.sdkOptions.effort;
+        delete active.sdkOptions.thinking;
+        delete active.sdkOptions.maxThinkingTokens;
+        if (value === 'default') delete active.sdkOptions.reasoningEffort;
+        else active.sdkOptions.reasoningEffort = value;
+        this._agentReasoningSaving = true;
+        this.agentConfig = this.buildAgentConfigFromActiveProvider();
+        this.renderAgentReasoning(); this.renderAgentControls();
+        try {
+            await this.persistAgentProviderConfig();
+            if (this.agentSessionId) await this.agentApi.setProvider(this.agentSessionId, this.agentConfig);
+            this.persistProviders();
+            this.syncAgentConfigForm();
+        } catch (error) {
+            active.sdkOptions = previous;
+            this.agentConfig = this.buildAgentConfigFromActiveProvider();
+            try { await this.persistAgentProviderConfig(); } catch {}
+            this.showToast('思考强度保存失败，已恢复原设置。请重试。', true);
+        } finally {
+            this._agentReasoningSaving = false;
+            this.renderAgentReasoning(); this.renderAgentControls();
         }
+    }
+
+    renderAgentReasoning() {
+        if (!this.agentReasoningToggle) return;
+        const active = this.getActiveProvider();
+        const capability = getReasoningCapability(active || {});
+        const selection = getReasoningSelection(active || {});
+        const locked = !active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving;
+        if (this.agentModelToggle) this.agentModelToggle.disabled = Boolean(this._agentReasoningSaving);
+        this.agentReasoningToggle.disabled = Boolean(locked);
+        const effectiveValue = selection.value === 'default' ? capability.defaultValue || 'default' : selection.value;
+        const effectiveSelection = capability.options.find(option => option.value === effectiveValue) || selection;
+        this.agentReasoningLabel.textContent = this._agentReasoningSaving ? '保存中' : effectiveSelection.label;
+        this.agentReasoningToggle.title = this.agentRunState.active ? '任务结束后可调整思考强度' : `思考强度：${effectiveSelection.label}${selection.value === 'default' ? '（模型默认）' : ''}`;
+        this.agentReasoningToggle.setAttribute('aria-label', `思考强度：${effectiveSelection.label}`);
+        this.agentReasoningToggle.classList.toggle('is-custom', selection.value !== 'default');
+        if (locked) this.agentReasoningDropdownOpen = false;
+        const open = Boolean(this.agentReasoningDropdownOpen);
+        this.agentReasoningToggle.setAttribute('aria-expanded', String(open));
+        this.agentReasoningDropdown.hidden = !open;
+        if (!open) return;
+        this.positionAgentReasoningMenu();
+        const key = JSON.stringify([active?.id, active?.model, selection.value, capability]);
+        // Status refresh must not replace focused menu items.
+        if (this.agentReasoningDropdown.dataset.renderKey === key) return;
+        this.agentReasoningDropdown.dataset.renderKey = key;
+        const check = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';
+        const options = capability.defaultValue ? capability.options.filter(option => option.value !== 'default') : capability.options;
+        this.agentReasoningDropdown.innerHTML = options.map(option => `<button type="button" role="menuitemradio" tabindex="-1" aria-checked="${option.value === effectiveValue}" data-reasoning-value="${option.value}" class="agent-reasoning-option" title="${this.escapeHtml(option.value === 'default' ? capability.hint : option.description)}">
+            <span>${option.label}</span>${option.value === capability.defaultValue ? '<span class="agent-reasoning-default">默认</span>' : ''}<span class="agent-reasoning-check">${option.value === effectiveValue ? check : ''}</span>
+        </button>`).join('');
     }
 
     renderPermissionLabel() {
@@ -14121,9 +14305,9 @@ class DemoShell {
         }
 
         this.agentConnectionTestResultEl.hidden = false;
-        const statusText = result.ok ? 'Succeeded' : 'Failed';
-        const statusColor = result.ok ? '#10b981' : '#ef4444';
-        const latencyText = result.latencyMs != null ? `${result.latencyMs} ms` : (result.ok ? '计算中...' : 'N/A');
+        const statusText = result.ok ? '连接成功' : '连接失败';
+        const statusColor = result.ok ? '#16845c' : '#c43d40';
+        const latencyText = result.latencyMs != null ? `${result.latencyMs} ms` : (result.ok ? '计算中…' : '暂无');
 
         this.agentConnectionTestResultEl.innerHTML = `
             <div class="agent-connection-result__item">
@@ -14135,9 +14319,9 @@ class DemoShell {
                 <div style="font-weight: 600; font-size: 0.88rem;">${this.escapeHtml(latencyText)}</div>
             </div>
             ${!result.ok && result.message ? `
-                <div class="agent-connection-result__item" style="grid-column: 1 / -1; border-top: 1px solid rgba(148, 163, 184, 0.12); padding-top: 10px; margin-top: 2px;">
+                <div class="agent-connection-result__item" style="grid-column: 1 / -1; border-top: 1px solid #e8e9ef; padding-top: 10px; margin-top: 2px;">
                     <label>失败原因</label>
-                    <div style="color: #ef4444; font-size: 0.78rem; line-height: 1.5; margin-top: 4px;">${this.escapeHtml(result.message)}</div>
+                    <div style="color: #c43d40; font-size: 0.78rem; line-height: 1.5; margin-top: 4px;">${this.escapeHtml(result.message)}</div>
                 </div>
             ` : ''}
         `;
@@ -16166,7 +16350,7 @@ class DemoShell {
         this.renderAgentCommandMenu();
         this.renderAgentControls();
         this.renderModelLabel();
-        this.renderPlanModeToggle();
+        this.renderAgentReasoning();
         this.renderPermissionLabel();
         this.resizeAgentInput();
         if (deferHeavy) {
@@ -17589,6 +17773,7 @@ class DemoShell {
 
         if (command.kind === 'skill' && command.skillId) {
             const skill = this.getAgentSkill(command.skillId);
+            if (skill?.id === 'create-new-page') this.setNewPageTargetDevice('auto', { syncPrompt: false });
             this.agentActiveSkill = skill || null;
             this.openAgentWorkbench();
 
@@ -17630,6 +17815,7 @@ class DemoShell {
     }
 
     async submitAgentMessage() {
+        if (this._agentReasoningSaving) return;
         const message = this.agentInput?.value.trim() || '';
         const contextState = this.getAgentContextDeletionState(this.agentSessionContext || this.getAgentContext(), this.agentActiveSkill);
         const attachmentPayloads = this.getAgentAttachmentPayloads();
@@ -17928,6 +18114,10 @@ class DemoShell {
             this.handleAgentConfigInput();
             this.agentTestingConnection = true;
             this.agentConnectionTestResult = null;
+            if (this.agentTestConnectionBtn) {
+                this.agentTestConnectionBtn.disabled = true;
+                this.agentTestConnectionBtn.textContent = '测试中…';
+            }
             if (this.miniTerminalContainer) {
                 this.miniTerminalContainer.innerHTML = '';
                 this.addMiniTerminalLine('[SYS] TEST CONN START');
@@ -17996,11 +18186,14 @@ class DemoShell {
             };
         } finally {
             this.agentTestingConnection = false;
+            if (this.agentTestConnectionBtn) {
+                this.agentTestConnectionBtn.textContent = '测试连接';
+            }
             this.renderAgentChrome();
             this.renderAgentWorkbench();
             if (this.agentConnectionTestResult) {
                 setTimeout(() => {
-                    this.agentConnectionTestResultEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    this.agentConnectionTestResultEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 50);
             }
         }
@@ -18011,6 +18204,10 @@ class DemoShell {
         if (!this.agentBalanceResultEl) return;
         try {
             this.agentCheckingBalance = true;
+            if (this.agentCheckBalanceBtn) {
+                this.agentCheckBalanceBtn.disabled = true;
+                this.agentCheckBalanceBtn.textContent = '查询中…';
+            }
             this.agentBalanceResultEl.hidden = false;
             this.agentBalanceResultEl.className = 'agent-balance-result';
             this.agentBalanceResultEl.innerHTML = '正在查询用量/余额...';
@@ -18029,8 +18226,12 @@ class DemoShell {
             this.agentBalanceResultEl.innerHTML = `<strong>查询出错：</strong>${this.escapeHtml(message)}`;
         } finally {
             this.agentCheckingBalance = false;
+            if (this.agentCheckBalanceBtn) {
+                this.agentCheckBalanceBtn.disabled = false;
+                this.agentCheckBalanceBtn.textContent = '查询余额';
+            }
             setTimeout(() => {
-                this.agentBalanceResultEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                this.agentBalanceResultEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 50);
         }
     }

@@ -1,6 +1,6 @@
 # 开发安装与维护
 
-普通用户在 Mac 双击 `Prota.app`，在 Windows 双击 `Prota.exe`，不需要以下命令。图形启动流程见[启动与云分享](share-setup-guide.md)。
+普通用户在 Mac 双击 `Prota.app`，在 Windows 双击 `Prota.exe`，不需要以下命令。图形启动流程见[启动与链接分享](share-setup-guide.md)。
 
 开发环境需要 Node.js 22.9+、Python 3.9+。开发者可以执行 `npm ci` 后运行 `bash scripts/run.sh`。后者保留前台日志，属于开发入口。
 

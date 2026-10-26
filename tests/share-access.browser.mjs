@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { chromium } from 'playwright';
+const server = createServer(async (req, res) => {
+    if (req.url === '/') {res.setHeader('Content-Type','text/html; charset=utf-8');return res.end('<meta charset="utf-8"><link rel="stylesheet" href="/shell.css"><link rel="stylesheet" href="/dialog.css"><button id="share">分享</button><script type="module">import {requestShareOptions} from "/dialog.js";document.querySelector("button").onclick=async()=>{window.result=await requestShareOptions("阅读器 V1");}</script>');}
+    const files = {'/dialog.js':'../portal/modules/sharing/dialog.js', '/dialog.css':'../portal/modules/sharing/dialog.css', '/shell.css':'../portal/shell.css'};
+    const file = files[req.url];
+    if (!file) { res.statusCode=404;return res.end(); }
+    res.setHeader('Content-Type', req.url.endsWith('.js') ? 'text/javascript' : 'text/css');
+    res.end(await readFile(new URL(file, import.meta.url)));
+});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const browser=await chromium.launch({headless:true});
+try {
+    const page=await browser.newPage({viewport:{width:1000,height:800}});
+    await page.goto(`http://127.0.0.1:${server.address().port}`);
+    await page.click('#share');
+    assert.equal(await page.locator('dialog').isVisible(),true);
+    assert.equal(await page.getByRole('radio',{name:'30 天',exact:true}).isChecked(),true);
+    const centered = await page.locator('dialog').evaluate(node=>{const r=node.getBoundingClientRect();return Math.abs(r.x+r.width/2-innerWidth/2)<2 && Math.abs(r.y+r.height/2-innerHeight/2)<2;});
+    assert.equal(centered,true,'Dialog must center despite the product global margin reset');
+    await page.getByLabel('设置访问密码').check();
+    assert.equal(await page.locator('#shareAccessDescription').count(),0);
+    const focusStyle = await page.locator('#sharePassword').evaluate(node=>{const s=getComputedStyle(node);return {border:s.borderWidth,outline:s.outlineWidth,shadow:s.boxShadow};});
+    assert.deepEqual(focusStyle,{border:'1px',outline:'0px',shadow:'none'});
+    assert.match(await page.locator('#sharePassword').inputValue(), /^[2-9A-HJ-NP-Z]{4}$/);
+    await page.locator('#sharePassword').fill('abc');
+    await page.getByRole('button',{name:'创建分享链接'}).click();
+    assert.equal(await page.locator('dialog').isVisible(),true);
+    assert.match(await page.locator('#sharePasswordError').textContent(),/4–128/);
+    await page.locator('#sharePassword').fill('a4B9');
+    await page.getByRole('button',{name:'显示密码',exact:true}).click();
+    assert.equal(await page.locator('#sharePassword').getAttribute('type'),'text');
+    await page.screenshot({path:'/tmp/prota-share-access-dialog.png'});
+    await page.getByRole('button',{name:'创建分享链接'}).click();
+    assert.deepEqual(await page.evaluate(()=>window.result),{expiresInDays:30,password:'a4B9'});
+    await page.click('#share');
+    await page.getByRole('radio',{name:'永久有效',exact:true}).check();
+    await page.getByRole('button',{name:'创建分享链接'}).click();
+    assert.deepEqual(await page.evaluate(()=>window.result),{expiresInDays:0,password:''});
+    await page.click('#share');await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(()=>window.result),null);
+    assert.equal(await page.locator('#share').evaluate(node=>node===document.activeElement),true);
+    await page.evaluate(async()=>{
+        const {requestShareOptions}=await import('/dialog.js');
+        const first=requestShareOptions('重复打开'); const second=requestShareOptions('重复打开');
+        window.singleRequest=first===second;first.then(value=>{window.result=value;});
+    });
+    assert.equal(await page.evaluate(()=>window.singleRequest),true);
+    assert.equal(await page.locator('dialog').count(),1);
+    await page.mouse.click(5,5);
+    assert.equal(await page.locator('dialog').count(),0);
+    await page.click('#share');
+    await page.getByLabel('设置访问密码').check();
+    await page.locator('#sharePassword').fill('a4B9');
+    await page.getByRole('button',{name:'显示密码',exact:true}).click();
+    await page.getByLabel('设置访问密码').uncheck();
+    await page.getByLabel('设置访问密码').check();
+    assert.match(await page.locator('#sharePassword').inputValue(),/^[2-9A-HJ-NP-Z]{4}$/);
+    assert.equal(await page.locator('#sharePassword').getAttribute('type'),'password');
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({width:375,height:740});await page.click('#share');
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth),true);
+    await page.screenshot({path:'/tmp/prota-share-access-mobile.png'});
+    await page.getByLabel('设置访问密码').check();
+    await page.setViewportSize({width:375,height:400});
+    assert.equal(await page.locator('dialog').evaluate(node=>{const r=node.getBoundingClientRect();return r.top>=0 && r.bottom<=innerHeight;}),true);
+    await page.getByRole('button',{name:'取消',exact:true}).click();
+    console.log('Share dialog: real product CSS, centering, radio options, inline errors, visibility reset, duplicate open, backdrop/Escape dismissal, focus and short/mobile layouts passed');
+} finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

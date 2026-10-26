@@ -2,9 +2,9 @@
 
 此目录用于初始化 `targetDevice: "web"` 页面的自包含文件，但它不再是页面设计模板，也不提供默认后台布局或业务组件组合。
 
-## 唯一框架 Skill 来源
+## 框架选择
 
-Web 页面必须执行顶部“前端框架”选择器绑定的项目级 Prototype Skill。可能是 Ant Design、Arco Design、Element Plus、Material UI、Chakra UI、Mantine、Semi Design、shadcn/ui 或 TDesign Web。
+Web 页面仅在本次顶部“前端框架”选择器明确绑定时执行对应项目级 Prototype Skill。智能判断选择 Web 且未绑定框架时，按需求自主设计，不默认套后台布局。以下步骤只适用于已绑定框架的页面。可能是 Ant Design、Arco Design、Element Plus、Material UI、Chakra UI、Mantine、Semi Design、shadcn/ui 或 TDesign Web。
 
 1. 完整读取选择器注入消息中指定的 `SKILL.md`。
 2. 按该 Skill 自己的流程读取页面 Recipe、视觉语言、组件映射、实现说明和质量门槛。

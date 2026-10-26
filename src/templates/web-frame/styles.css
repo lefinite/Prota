@@ -2,7 +2,7 @@
  * Web neutral runtime scaffold
  *
  * 此文件只提供浏览器重置和 iframe 运行边界，不提供布局、组件或视觉建议。
- * 创建页面时必须依据顶部选择器绑定的框架 Skill，将实际需要的 Design Token、工具类和
+ * 创建页面时按需求设计（有绑定框架时遵守对应 Skill），将实际需要的 Design Token、工具类和
  * 组件样式写入新页面自己的 styles.css，并删除本注释。
  */
 

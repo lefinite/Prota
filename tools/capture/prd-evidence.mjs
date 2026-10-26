@@ -8,6 +8,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPO_ROOT = getWorkspaceRoot();
 const DEVICE_PROFILES = {
+  desktop: {
+    label: 'Desktop canvas',
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 2,
+    isMobile: false,
+    hasTouch: false,
+    captureSelector: '',
+  },
   'iphone-17': {
     label: 'iPhone 17 inner screen',
     viewport: { width: 490, height: 900 },
@@ -897,7 +905,15 @@ const htmlFile = args['html-file'] || 'index.html';
 const indexPath = path.join(pageDir, htmlFile);
 const annotationsPath = path.join(pageDir, 'annotations.json');
 const outDir = args.out ? resolveFromRepoRoot(args.out) : defaultOutDir(pageDir);
-const deviceProfile = getDeviceProfile(args.device);
+// Resolve from the actual workspace index; legacy/missing metadata keeps the phone profile.
+const projectsData = await readJson(path.join(REPO_ROOT, 'data/projects.json'), {});
+const pageParts = path.relative(path.join(REPO_ROOT, 'src/pages'), pageDir).split(path.sep);
+const pageMeta = pageParts.length === 3
+  ? projectsData.projects?.find(project => project.id === pageParts[0])?.pages?.find(page => page.id === pageParts[1])
+  : null;
+const savedDevice = String(pageMeta?.targetDevice || '').trim().toLowerCase();
+const deviceName = args.device || (['web', 'canvas'].includes(savedDevice) ? 'desktop' : 'iphone-17');
+const deviceProfile = getDeviceProfile(deviceName);
 const viewport = parseViewport(args.viewport, deviceProfile.viewport);
 const confirmBeforeShot = Boolean(args['confirm-before-shot'] || args.confirm);
 const fullPage = Boolean(args['full-page']);
@@ -1096,7 +1112,7 @@ if (evidenceMode) {
       generatedAt: new Date().toISOString(),
       viewport,
       device: {
-        name: args.device || 'iphone-17',
+        name: deviceName,
         label: deviceProfile.label,
         deviceScaleFactor: Number.parseFloat(args['device-scale-factor'] || '') || deviceProfile.deviceScaleFactor || 2,
         isMobile: deviceProfile.isMobile,
@@ -1113,7 +1129,7 @@ if (evidenceMode) {
   console.log(`Wrote ${path.relative(process.cwd(), path.join(outDir, 'annotation-evidence.json'))}`);
 } else {
   const deviceMetadata = {
-    name: args.device || 'iphone-17',
+    name: deviceName,
     label: deviceProfile.label,
     deviceScaleFactor: Number.parseFloat(args['device-scale-factor'] || '') || deviceProfile.deviceScaleFactor || 2,
     isMobile: deviceProfile.isMobile,

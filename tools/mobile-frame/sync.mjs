@@ -8,7 +8,7 @@ const data = JSON.parse(readFileSync(resolve(root, 'data/projects.json'), 'utf8'
 const dirs = [resolve(applicationRoot, 'src/templates/mobile-frame')];
 for (const project of data.projects) {
   for (const page of project.pages || []) {
-    if (page.targetDevice === 'web') continue;
+    if (['web', 'canvas'].includes(String(page.targetDevice || '').trim().toLowerCase())) continue;
     for (const version of page.versions || []) {
       const dir = resolve(root, 'src/pages', project.id, page.id, version);
       const index = resolve(dir, 'index.html');

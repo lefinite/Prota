@@ -1,4 +1,4 @@
-"""Publish an allowlisted static snapshot directly to Vercel, never through Git."""
+"""Publish allowlisted snapshots behind a private Vercel access gateway, without Git."""
 import json
 import logging
 import os
@@ -19,7 +19,7 @@ except ImportError:
     import workspace
 
 logger = logging.getLogger('readify.deployer')
-_publish_lock = threading.Lock()
+_publish_lock = threading.RLock()
 EMPTY_DATA = {'projects': [], 'activeProjectId': None, 'activePageId': None}
 
 
@@ -33,6 +33,43 @@ def share_payload(file):
     if match:
         return json.loads(match.group(1))
     raise ValueError(f'分享元数据无法识别，请重新生成：{Path(file).name}')
+
+
+def withdraw_snapshot(static, filenames):
+    """Remove both link layouts, downloads and page resources no remaining share uses."""
+    static = Path(static)
+    removed, remaining = [], []
+    for file in (static / 'shares').glob('*.html'):
+        payload = share_payload(file)
+        (removed if file.name in filenames else remaining).append(payload)
+    def pages(payloads):
+        result = set()
+        for payload in payloads:
+            for page in (payload.get('pages') or []) if payload.get('mode') == 'folder' else [payload]:
+                project = payload.get('projectId')
+                page_id = page.get('pageId') or page.get('id')
+                version = page.get('version')
+                if not all(isinstance(value, str) and re.fullmatch(r'[A-Za-z0-9_-]+', value) for value in [project, page_id]) or not re.fullmatch(r'v\d+', str(version)):
+                    raise ValueError('历史分享页面标识无效，请先修复再撤回。')
+                result.add(f'src/pages/{project}/{page_id}/{version}')
+        return result
+    kept = pages(remaining)
+    for relative in pages(removed) - kept:
+        shutil.rmtree(static / relative, ignore_errors=True)
+        page_dir = relative.rsplit('/', 1)[0]
+        if not any(path.startswith(page_dir + '/') for path in kept):
+            shutil.rmtree(static / page_dir / 'docs', ignore_errors=True)
+    kept_zips = {item.get('zipFilename') for item in remaining}
+    for filename in filenames:
+        if Path(filename).name != filename or not filename.endswith('.html'):
+            raise ValueError('分享文件名无效。')
+        for relative in [filename, 'shares/' + filename]:
+            (static / relative).unlink(missing_ok=True)
+    for payload in removed:
+        zipped = payload.get('zipFilename')
+        if zipped and zipped not in kept_zips and Path(zipped).name == zipped:
+            for relative in [zipped, 'shares/' + zipped]:
+                (static / relative).unlink(missing_ok=True)
 
 
 def safe_relative(value):
@@ -234,7 +271,56 @@ class VercelDeployer:
         workspace.atomic_json(directory / 'share-manifest.json', {'shares': shared})
         return static
 
-    def deploy(self, file_path=None, project_id=None, page_id=None, version=None, page_versions=None, extra_files=None):
+    def prepare_gateway(self, directory, static, selected_files):
+        """Keep all published bytes private; emit exact resource grants per link."""
+        try:
+            from server.share_security import create_policy
+        except ImportError:
+            from share_security import create_policy
+        directory, static = Path(directory), Path(static)
+        policy_file = static / '.share-access.json'
+        policies = json.loads(policy_file.read_text()) if policy_file.is_file() else {}
+        pending_file = self.root / 'data/share-access.json'
+        pending = json.loads(pending_file.read_text()) if pending_file.is_file() else {}
+        for file in selected_files:
+            name = Path(file).name
+            if name in pending:
+                policies[name] = pending[name]
+        function = directory / '.vercel/output/functions/share.func'
+        function.mkdir(parents=True)
+        shutil.copy2(Path(__file__).with_name('share_gateway.mjs'), function / 'handler.mjs')
+        shutil.copy2(Path(__file__).with_name('share_gate_page.mjs'), function / 'share_gate_page.mjs')
+        brand = function / 'brand'
+        for relative in ['prota-logo-light.svg', 'pet/share-guardian.webp', 'pet/disconnected.webp', 'pet/failed.webp']:
+            source = workspace.APP_ROOT / 'portal/assets/prota' / relative
+            destination = brand / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+        shutil.copytree(static, function / 'content', ignore=shutil.ignore_patterns('.share-access.json'))
+        grants = []
+        # Rebuild each allowlist from the published snapshot, never unpublished edits.
+        for file in sorted((static / 'shares').glob('*-static.html')):
+            if file.name not in policies:
+                policies[file.name] = create_policy({'expiresInDays': 0})
+            policy = policies[file.name]
+            with tempfile.TemporaryDirectory(prefix='share-grant-', dir=directory) as temporary:
+                isolated = VercelDeployer(static, self.app).prepare(temporary, [file])
+                files = sorted('/' + path.relative_to(isolated).as_posix()
+                               for path in isolated.rglob('*') if path.is_file())
+            grants.append({**policy, 'entries': ['/shares/' + file.name, '/' + file.name], 'files': files})
+        workspace.atomic_json(function / 'access.json', {'shares': grants})
+        workspace.atomic_json(function / '.vc-config.json', {
+            'runtime': 'nodejs22.x', 'handler': 'handler.mjs', 'launcherType': 'Nodejs',
+            'supportsResponseStreaming': True, 'maxDuration': 60})
+        workspace.atomic_json(directory / '.vercel/output/config.json', {
+            'version': 3, 'routes': [{'src': '/(.*)', 'dest': '/share'}]})
+        # Retained only in the local snapshot, never in public static output.
+        workspace.atomic_json(directory / 'published-access.json', policies)
+        shutil.rmtree(static)
+        static.mkdir()
+        return function / 'content'
+
+    def deploy(self, file_path=None, project_id=None, page_id=None, version=None, page_versions=None, extra_files=None, revoke_files=None):
         if not self.settings.get('vercelAutoDeploy', True):
             raise ValueError('自动部署已关闭，文件已保存在本地；开启 Vercel 自动部署后再发布。')
         with _publish_lock:
@@ -249,10 +335,13 @@ class VercelDeployer:
             root.mkdir(parents=True, exist_ok=True)
             # Previously shared static pages remain available on each deployment.
             previous = self.root / 'data/published-static'
-            share_files = ([Path(file_path)] if file_path else []) if previous.is_dir() else sorted((self.root / 'shares').glob('*-static.html'))
+            share_files = [] if revoke_files else (([Path(file_path)] if file_path else []) if previous.is_dir() else sorted((self.root / 'shares').glob('*-static.html')))
             with tempfile.TemporaryDirectory(prefix='release-', dir=root) as temporary:
                 directory = Path(temporary)
                 static = self.prepare(directory, share_files)
+                if revoke_files:
+                    withdraw_snapshot(static, revoke_files)
+                static = self.prepare_gateway(directory, static, share_files)
                 workspace.atomic_json(directory / '.vercel/project.json', {k: config[k] for k in ['projectId', 'orgId']})
                 node = shutil.which('node')
                 if not node:
@@ -275,6 +364,7 @@ class VercelDeployer:
                 if saved.exists():
                     shutil.rmtree(saved)
                 shutil.copytree(static, saved)
+                shutil.copy2(directory / 'published-access.json', saved / '.share-access.json')
                 old = self.root / 'data/published-static-old'
                 if old.exists():
                     shutil.rmtree(old)

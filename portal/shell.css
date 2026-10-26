@@ -4166,53 +4166,39 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
     max-width: 100%;
 }
 
-.new-page-device-control {
+.new-page-presentation-options {
     display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    height: 30px;
-    padding: 2px;
-    border: 1px solid rgba(125, 211, 252, 0.16);
-    border-radius: 10px;
-    background: rgba(15, 23, 42, 0.54);
+    min-width: 0;
+    max-width: 100%;
 }
 
-.new-page-device-control__btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 24px;
-    padding: 0 7px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: #94a3b8;
+.new-page-mode-select {
+    flex: 0 0 auto;
+    max-width: 140px;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid rgba(125, 211, 252, 0.18);
+    border-radius: 10px;
+    background: #0f172a;
+    color: #e2e8f0;
+    color-scheme: dark;
     cursor: pointer;
     font: inherit;
+    font-size: 0.75rem;
+}
+
+.new-page-mode-select:focus-visible {
+    outline: 2px solid #5eead4;
+    outline-offset: 2px;
+}
+
+.new-page-mode-hint {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #94a3b8;
     font-size: 0.72rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.new-page-device-control__btn:hover {
-    color: #e2e8f0;
-    background: rgba(148, 163, 184, 0.12);
-}
-
-.new-page-device-control__btn.is-active {
-    color: #f8fafc;
-    background: rgba(20, 184, 166, 0.24);
-}
-
-.new-page-device-control__btn svg {
-    width: 13px;
-    height: 13px;
-    flex: 0 0 13px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.1;
-    stroke-linecap: round;
-    stroke-linejoin: round;
 }
 
 .new-page-style-control {
@@ -4268,15 +4254,7 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
 }
 
 @media (max-width: 680px) {
-    .new-page-device-control__btn span {
-        display: none;
-    }
-
-    .new-page-device-control__btn {
-        width: 28px;
-        justify-content: center;
-        padding: 0;
-    }
+    .new-page-mode-hint { display: none; }
 }
 
 .new-page-style-preview,
@@ -7679,7 +7657,8 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
     text-overflow: ellipsis;
 }
 
-.agent-model-dropdown {
+.agent-model-dropdown,
+.agent-reasoning-dropdown {
     position: absolute;
     left: 0;
     bottom: calc(100% + 8px);
@@ -7694,7 +7673,8 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
     z-index: 10;
 }
 
-.agent-model-dropdown__item {
+.agent-model-dropdown__item,
+.agent-reasoning-option {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -7712,16 +7692,19 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
     margin-bottom: 3px;
 }
 
-.agent-model-dropdown__item:last-child {
+.agent-model-dropdown__item:last-child,
+.agent-reasoning-option:last-child {
     margin-bottom: 0;
 }
 
-.agent-model-dropdown__item:hover {
+.agent-model-dropdown__item:hover,
+.agent-reasoning-option:hover {
     background: rgba(14, 165, 233, 0.08);
     color: #67e8f9;
 }
 
-.agent-model-dropdown__item.is-active {
+.agent-model-dropdown__item.is-active,
+.agent-reasoning-option[aria-checked="true"] {
     color: #7dd3fc;
     background: rgba(14, 165, 233, 0.05);
 }
@@ -7750,53 +7733,29 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
     color: #94a3b8;
 }
 
-/* Plan Mode & Permission Selector Styles */
-.agent-plan-mode-toggle {
-    height: 28px;
-    padding: 0 8px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    background: transparent;
-    color: #ccfbf1;
-    font-family: inherit;
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.16s ease;
-    white-space: nowrap;
+/* Model-aware reasoning control; uses the existing dark composer palette. */
+.agent-reasoning-anchor { position: relative; flex-shrink: 0; }
+.agent-reasoning-toggle {
+    height: 28px; padding: 0 7px; border: 0; border-radius: 8px;
+    background: rgba(15, 23, 42, .6); color: #ccfbf1;
+    font-family: inherit; font-size: .72rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap;
+    transition: background 160ms ease, color 160ms ease;
 }
-
-.agent-plan-mode-toggle:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #67e8f9;
+.agent-reasoning-toggle.is-custom { color: #ccfbf1; }
+.agent-reasoning-toggle:disabled { opacity: .5; cursor: default; }
+.agent-reasoning-toggle:focus-visible, .agent-model-dropdown__item:focus-visible, .agent-reasoning-option:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+.agent-reasoning-dropdown {
+    width: 200px;
+    max-width: calc(100vw - 32px); max-height: min(520px, 65dvh); overflow-y: auto;
+    z-index: 12;
 }
-
-.agent-plan-mode-toggle.is-active {
-    border-color: transparent;
-    color: #67e8f9;
-    background: transparent;
-    text-shadow: 0 0 8px rgba(103, 232, 249, 0.4);
-    box-shadow: none;
+.agent-reasoning-default { padding: 1px 5px; border-radius: 4px; background: rgba(148, 163, 184, .1); color: #94a3b8; font-size: 11px; }
+.agent-reasoning-check { display: inline-flex; width: 14px; margin-left: auto; flex-shrink: 0; }
+@media (hover: hover) and (pointer: fine) {
+    .agent-reasoning-toggle:hover:not(:disabled) { background: rgba(125, 211, 252, .08); }
 }
-
-.agent-plan-mode-toggle::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(204, 251, 241, 0.35);
-    margin-right: 4px;
-    transition: all 0.16s ease;
-}
-
-.agent-plan-mode-toggle.is-active::before {
-    background: #67e8f9;
-    box-shadow: 0 0 6px #67e8f9;
-}
+@media (prefers-reduced-motion: reduce) { .agent-reasoning-toggle { transition: none; } }
 
 .agent-permission-toggle {
     height: 28px;
@@ -8157,9 +8116,8 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
 }
 
 @container agent-composer-controls (max-width: 300px) {
-    .agent-plan-mode-toggle {
-        display: none;
-    }
+    .agent-reasoning-toggle { gap: 3px; padding-inline: 5px; }
+    .agent-reasoning-toggle > svg:first-child { display: none; }
 }
 
 @container agent-composer-controls (max-width: 250px) {

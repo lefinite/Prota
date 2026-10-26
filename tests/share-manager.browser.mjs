@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+const browser=await chromium.launch({headless:true});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ const items=[{id:'reader-v1-static.html',name:'阅读器 · 产品评审',projectId:'readify',projectName:'悦读 Readify',scope:'page',version:'v1',pageCount:1,shareType:'static',status:'active',url:'https://sample.vercel.app/shares/reader-v1-static.html',updatedAt:'2026-10-23T09:00:00Z',expiresAt:Date.now()+86400000,passwordRequired:true}, {id:'folder.html',name:'迭代方案',projectId:'demo',projectName:'设计协作',scope:'folder',pageCount:4,shareType:'local',status:'local',url:'http://localhost/shares/folder.html',updatedAt:'2026-10-22T09:00:00Z'}, {id:'old.html',name:'旧版交互',projectId:'readify',projectName:'悦读 Readify',scope:'page',version:'v1',shareType:'static',status:'revoked',updatedAt:'2026-10-20T09:00:00Z'}];
+ let fail=false;
+ await page.route(/\/api\/shares(?:\/manage)?$/,async route=>{
+  const body=route.request().postDataJSON();
+  if(body?.action==='copy') { const item=items.find(item=>item.id===body.ids[0]);return route.fulfill({contentType:'application/json',body:JSON.stringify({share:{url:item.url,expiresAt:item.expiresAt,password:item.passwordRequired?'a4B9':''}})}); }
+  if(body && fail) return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'部署失败，请重试'})});
+  if(body?.action==='revoke') for(const item of items) if(body.ids.includes(item.id)) item.status='revoked';
+  if(body?.action==='annotate') items.find(item=>item.id===body.ids[0]).note=body.note;
+  return route.fulfill({contentType:'application/json',body:JSON.stringify({items})});
+ });
+ await page.goto(`${process.env.PROTA_TEST_ORIGIN || 'http://127.0.0.1:8080'}/api/product/health`);
+ await page.setContent('<link rel="stylesheet" href="/portal/shell.css"><header class="content-header"><div id="shareMenu"><button id="shareManagerBtn">分享管理</button></div></header>');
+ await page.evaluate(async()=>{const {ShareManager}=await import('/portal/modules/sharing/manager.js'); window.manager=new ShareManager({copyTextToClipboard:async text=>{window.copiedShare=text;return true;}});});
+ await page.click('#shareManagerBtn'); await page.waitForSelector('tbody tr');
+ assert.equal(await page.locator('tbody tr').count(),3);
+ await page.locator('[data-copy="reader-v1-static.html"]').click();
+ await page.waitForFunction(()=>window.copiedShare?.includes('密码：a4B9'));
+ assert.match(await page.evaluate(()=>window.copiedShare),/有效期：截至/);
+ await page.locator('[data-copy="folder.html"]').click();
+ await page.waitForFunction(()=>window.copiedShare==='链接：http://localhost/shares/folder.html');
+ assert.equal(await page.locator('.sm-stats').count(),0);
+ assert.equal(await page.locator('.sm-batch').isVisible(),false);
+ assert.equal(await page.locator('[data-project]').isVisible(),false);
+ assert.equal(await page.locator('.sm-selection').first().isVisible(),false);
+ await page.screenshot({path:'/tmp/prota-share-manager-simple.png'});
+ await page.locator('[data-filter-toggle]').click();
+ await page.locator('[data-project]').selectOption('readify');
+ assert.equal(await page.locator('tbody tr').count(),2);
+ await page.click('[data-reset-filters]');
+ await page.locator('[data-filter-toggle]').click();
+ await page.locator('[data-search]').fill('悦读'); assert.equal(await page.locator('tbody tr').count(),2);
+ await page.locator('[data-search]').fill('');
+ await page.locator('tbody tr').first().locator('.sm-menu summary').click();
+ await page.locator('tbody tr').first().getByRole('menuitem',{name:'查看详情',exact:true}).click();
+ assert.equal(await page.locator('.sm-list-view').isVisible(),false);
+ await page.locator('#smNote').fill('<img src=x onerror=alert(1)> 评审组'); await page.locator('[data-note-save]').click();
+ await page.getByText('备注已保存。',{exact:true}).waitFor(); assert.equal(await page.locator('.sm-detail img').count(),0);
+ await page.locator('[data-back]').click();
+ await page.locator('.sm-global-menu summary').click();
+ await page.click('[data-batch-mode]');
+ await page.locator('[data-select="reader-v1-static.html"]').check();
+ await page.screenshot({path:'/tmp/prota-share-manager.png'});
+ await page.click('[data-revoke-selected]'); await page.click('[data-cancel]'); assert.equal(items[0].status,'active');
+ await page.click('[data-revoke-selected]'); fail=true; await page.click('[data-confirm]'); await page.getByText('部署失败，请重试',{exact:true}).waitFor();
+ assert.equal(items[0].status,'active'); assert.equal(await page.locator('[data-confirm]').isEnabled(),true);
+ fail=false; await page.click('[data-confirm]'); await page.getByText('所选分享已撤回。',{exact:true}).waitFor();
+ assert.equal(items[0].status,'revoked'); assert.equal(await page.locator('[data-copy="reader-v1-static.html"]').isDisabled(),true);
+ await page.locator('[data-status]').selectOption('revoked'); assert.equal(await page.locator('tbody tr').count(),2);
+ await page.locator('[data-search]').fill('不存在'); assert.match(await page.locator('tbody').textContent(),/没有匹配/);
+ await page.setViewportSize({width:390,height:844}); await page.locator('[data-search]').fill(''); await page.screenshot({path:'/tmp/prota-share-manager-mobile.png'});
+ await page.keyboard.press('Escape'); assert.equal(await page.locator('dialog').isVisible(),false);
+ console.log('Share management: filtering, safe notes, selection, cancellation, failed revoke retry, success, empty state, mobile and keyboard passed');
+}finally{await browser.close();}

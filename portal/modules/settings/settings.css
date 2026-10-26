@@ -17,7 +17,16 @@ body:not([data-top-view="projects"]) .global-settings-trigger,body.is-share-mode
     width:min(1000px,100%);height:min(720px,calc(100dvh - 56px));overflow:hidden;
     background:#fff;border:1px solid rgba(255,255,255,.8);border-radius:16px;
     box-shadow:0 24px 80px #1c20332b,0 4px 16px #1c20330a;
+    animation:us-window-in 200ms cubic-bezier(0.23,1,0.32,1);
 }
+@keyframes us-window-in{from{opacity:0;transform:scale(.97) translateY(10px)}to{opacity:1;transform:none}}
+.unified-settings.is-closing{pointer-events:none}
+.unified-settings.is-closing .us-window{animation:us-window-out 130ms cubic-bezier(0.4,0,1,1) forwards}
+@keyframes us-window-out{from{opacity:1;transform:none}to{opacity:0;transform:scale(.98) translateY(6px)}}
+.unified-settings.is-closing .us-scrim{animation:us-scrim-out 130ms ease forwards}
+@keyframes us-scrim-out{from{opacity:1}to{opacity:0}}
+/* Product-level confirm dialogs (provider delete) float above the settings window. */
+body.us-open .confirm-modal{z-index:400}
 .us-sidebar{padding:28px 12px;background:var(--us-surface);border-right:1px solid var(--us-line)}
 .us-sidebar h2{margin:0 14px 28px;font-size:20px;line-height:28px;letter-spacing:-.5px;font-weight:600}
 .us-sidebar nav{display:grid;gap:6px}
@@ -40,7 +49,7 @@ body:not([data-top-view="projects"]) .global-settings-trigger,body.is-share-mode
 .us-secondary{background:#fff;color:var(--text-primary);box-shadow:0 1px 2px #20203804}
 .unified-settings .us-link{height:auto;padding:0;border:0;background:transparent;color:var(--us-muted);box-shadow:none}
 .unified-settings button:disabled{opacity:.5;cursor:default}
-.unified-settings :is(button,input,textarea,select,summary):focus-visible{outline:3px solid #6366f138;outline-offset:3px}
+.unified-settings :is(button,input,textarea,select,summary,a[href]):focus-visible{outline:3px solid #6366f138;outline-offset:3px}
 .unified-settings button:active:not(:disabled){transform:translateY(1px)}
 
 /* Storage: one readable location, with its two actions on a separate baseline. */
@@ -76,6 +85,25 @@ body:not([data-top-view="projects"]) .global-settings-trigger,body.is-share-mode
 .us-error:empty{display:none}
 .us-guard{position:absolute;inset:0;z-index:5;background:#ffffffed;display:grid;place-items:center;padding:32px}
 .us-guard>div{max-width:430px}.us-guard h3{font-size:19px;margin:0 0 8px}.us-guard p{color:var(--us-muted);font-size:13px}
+
+/* About: the open-source story plus a GitHub star CTA. */
+.us-about{padding:28px var(--us-space) 32px}
+.us-about-intro{display:grid;gap:4px;margin-bottom:18px}
+.us-about-intro strong{font-size:14px;font-weight:500;line-height:22px}
+.us-about-intro p{margin:0;color:var(--us-muted);font-size:12px;line-height:20px}
+.us-about-repo{border:1px solid var(--us-line);border-radius:11px;overflow:hidden;background:#fff}
+.us-about-repo-location{display:flex;align-items:center;gap:14px;padding:22px 20px}
+.us-about-mark{display:grid;place-items:center;width:40px;height:40px;border:1px solid #e7e6f6;border-radius:10px;background:#f5f4fd;color:#24292f;flex-shrink:0}
+.us-about-mark svg{width:21px;height:21px}
+.us-about-text{min-width:0;display:grid;gap:5px}
+.us-about-text strong{font-size:14px;font-weight:500;line-height:22px;overflow-wrap:anywhere}
+.us-about-text code{color:var(--us-muted);font:12px/1.7 ui-monospace,"SFMono-Regular",Consolas,"PingFang SC",monospace;overflow-wrap:anywhere}
+.us-about-repo-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 20px;border-top:1px solid var(--us-line);background:#fbfbfd}
+.us-about-repo-footer>span{font-size:12px;color:var(--us-muted)}
+.us-about .us-secondary{text-decoration:none}
+.us-about-star{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 16px;border:1px solid #24292f;border-radius:7px;background:#24292f;color:#fff;font:inherit;font-size:13px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;text-decoration:none;transition:background-color 140ms,border-color 140ms}
+.us-about-star svg{width:14px;height:14px;flex-shrink:0}
+.us-about-note{margin:16px 0 0;color:var(--us-muted);font-size:12px;line-height:20px}
 
 /* Existing forms keep their IDs and handlers; only the shared presentation changes. */
 .unified-settings :is(.settings-modal,.agent-config-modal){position:static;inset:auto;z-index:auto;display:block;padding:0;background:none;width:100%}
@@ -154,12 +182,26 @@ body:not([data-top-view="projects"]) .global-settings-trigger,body.is-share-mode
 .unified-settings .provider-advanced summary small{font-size:11px;color:var(--us-muted)}
 .unified-settings .provider-advanced__body{padding:16px 14px;gap:16px;border-top:1px solid var(--us-line)}
 .unified-settings .agent-config-panel__actions{display:flex;align-items:center;gap:8px;padding:16px 0 0;margin:0;border-top:1px solid var(--us-line);position:sticky;bottom:0;background:#fff;z-index:1}
+/* Status results render above the sticky action bar, in the light settings theme. */
+.unified-settings .agent-connection-result{order:1;margin:0;border:1px solid var(--us-line);border-radius:8px;background:#fff;padding:14px 16px}
+.unified-settings .agent-connection-result__item{flex-direction:column;align-items:flex-start;gap:4px}
+.unified-settings .agent-connection-result__item label{font-size:11px;color:var(--us-muted)}
+.unified-settings .agent-connection-result__item div{color:var(--text-primary)}
+.unified-settings .agent-balance-result{order:2;margin:0;border-radius:8px;font-size:12px}
+.unified-settings #agentDebugTools{order:3}
+.unified-settings .agent-config-panel__actions{order:4}
+/* Setup steps track actual form progress: done steps take the accent, the next one is solid. */
+.unified-settings .provider-step.is-done span{background:var(--accent-glow);color:var(--accent)}
+.unified-settings .provider-step.is-done strong{color:var(--text-primary)}
+.unified-settings .provider-step.is-current span{background:var(--accent);color:#fff}
+.unified-settings .provider-step.is-current strong{color:var(--text-primary)}
 .unified-settings #agentSaveProviderBtn{order:2;margin-left:auto;padding:0 20px;background:var(--accent);color:#fff;border-color:var(--accent)}
 .unified-settings #agentDeleteProviderBtn{order:1;border-color:transparent;background:transparent;color:#c43d40}
 .unified-settings .agent-icon-btn{background:#fff;color:var(--text-primary);border-color:var(--us-line)}
 
 @media(hover:hover) and (pointer:fine){
     .us-primary:hover{background:#5754dc}.us-secondary:hover,.us-close:hover{background:#f2f3f7}.us-link:hover{color:var(--accent)}
+    .us-about-star:hover{background:#32383f;border-color:#32383f}
     .us-sidebar button:hover{background:#eeeff4}.us-sidebar button.is-active:hover{background:var(--accent-glow)}
     .unified-settings .settings-form__auto-config-btn:hover{border-color:#c5c2ee;background:#fcfbff}
     .unified-settings :is(.provider-list-item:hover,.agent-custom-select__option:hover){background:var(--accent-glow);color:var(--text-primary)}
@@ -177,11 +219,14 @@ body:not([data-top-view="projects"]) .global-settings-trigger,body.is-share-mode
     .unified-settings .us-window{width:100%;height:calc(100dvh - 24px);grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);border-radius:12px}
     .us-sidebar{padding:18px 12px 12px;border-right:0;border-bottom:1px solid var(--us-line)}
     .us-sidebar h2{margin:0 8px 14px;font-size:18px;line-height:24px}
-    .us-sidebar nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+    .us-sidebar nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
     .us-sidebar button{justify-content:center;height:38px;padding:0 6px;gap:6px;font-size:12px}
     .us-sidebar svg{width:15px;height:15px}
     .us-heading{padding:20px var(--us-space)}.us-heading h3{font-size:17px;line-height:24px}
     .us-storage{padding-top:24px}.us-folder-location{padding:18px 16px;gap:12px;align-items:flex-start}
+    .us-about{padding-top:24px}.us-about-repo-location{padding:18px 16px;gap:12px}
+    .us-about-repo-footer{padding:12px 16px;gap:8px}.us-about .us-path-buttons{gap:6px;flex-wrap:wrap}
+    .us-about .us-path-buttons a{padding:0 12px}
     .us-folder-footer{padding:12px 16px;gap:8px}.us-folder-icon{width:34px;height:34px;border-radius:8px}
     .us-folder-text strong{font-size:13px}.us-folder-text code{font-size:11px}.us-path-buttons{gap:6px}
     .unified-settings .us-path-buttons button{padding:0 12px}

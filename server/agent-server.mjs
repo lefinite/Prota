@@ -1,4 +1,5 @@
 import http from 'http';
+import { patchProviderReasoning } from './provider-reasoning.mjs';
 import { discoverProviderModels } from './provider-models.mjs';
 import { configDirectory, getWorkspaceRoot, workspaceLocked } from './workspace.mjs';
 import fs from 'fs/promises';
@@ -132,6 +133,7 @@ const SDK_JSON_OPTION_KEYS = new Set([
     'hooks',
     'maxTokens',
     'effort',
+    'reasoningEffort',
     'fallbackModel',
     'continue',
     'resume',
@@ -185,6 +187,7 @@ const SDK_QUERY_OPTION_KEYS = new Set([
     'hooks',
     'maxTokens',
     'effort',
+    'reasoningEffort',
     'fallbackModel',
     'includePartialMessages',
     'abortController',
@@ -2058,6 +2061,7 @@ function resolveSdkOptions(input = {}, allowedKeys = SDK_JSON_OPTION_KEYS) {
         pickSdkOptions(input.agentOptions, allowedKeys),
         pickSdkOptions(input.options, allowedKeys)
     );
+    if (options.permissionMode === 'plan') options.permissionMode = 'default';
     for (const key of SDK_FUNCTION_OPTION_KEYS) {
         delete options[key];
     }
@@ -3856,6 +3860,7 @@ function applyAgentProviderTimeout(session, agent) {
             }
         }
     }
+    patchProviderReasoning(provider, () => session.providerConfig);
     const originalCreateMessage = provider.createMessage?.bind(provider);
     if (typeof originalCreateMessage === 'function') {
         provider.createMessage = async (...args) => {
@@ -3894,8 +3899,8 @@ function getSharedSystemPrompt(session, descriptor) {
         isGlobalContext ? '' : `当前页面只能使用 ${session.context.relativePageDir} 作为版本目录；不要使用缺少项目名的旧路径 src/pages/${session.context.pageId}/${session.context.version}/。`,
         '门户 Shell 文件在 portal/shell.js；项目根目录没有 shell.js，不要读取或修改根目录 shell.js。',
         '不要跨版本引用 CSS 或 JS。',
-        '页面配置 data/projects.json 中每个 page 的 targetDevice 决定页面模板：mobile 使用 src/templates/mobile-frame/，web 使用 src/templates/web-frame/；历史页面或缺失 targetDevice 的页面按 mobile 处理。',
-        '新增页面默认 targetDevice 为 mobile，除非用户明确要求 Web B 端；创建后必须把 targetDevice 写到新 page 记录上，再复制对应模板的 index.html、styles.css、app.js 作为起点；运行时仍只引用页面自己目录内的 CSS/JS。',
+        '页面配置 data/projects.json 中每个 page 的 targetDevice 保存实际呈现方式：mobile 使用 src/templates/mobile-frame/ 并保留手机框，web 使用 src/templates/web-frame/，canvas 使用 src/templates/canvas-frame/；web 和 canvas 不强制手机外框。历史页面或缺失 targetDevice 的页面仍按 mobile 处理。',
+        '新增页面默认智能判断（auto 仅为创建模式，不得保存到 targetDevice）：用户明确文字要求优先，其次是本次手动选择；普通移动端页面优先 mobile，完整网页采用 web，独立组件、场景或配置预览等需要自由空间时可采用 canvas。先判断再加载对应 Skill，不凭单个关键词切换；没有框架绑定时 web 可自主设计。历史工作区说明若仍要求所有新页面默认 mobile，此项新建规则取代该旧默认；不改变历史页面。创建后保存实际 targetDevice 并同步工作区配置，迭代沿用已保存方式。运行时仍只引用页面自己目录内的 CSS/JS。',
         '模板风格包已经复制在 src/templates/design-systems/{style_id}/；用户选择风格时，优先读 DESIGN.md 和 USAGE.md，再按需使用 manifest.json、design-tokens.json、tokens.css、tailwind-v4.css、components.manifest.json、components.html。',
         isGlobalContext ? '新增页面任务必须创建全新的 page_id/v1，不要把当前打开的 reader 或其它已有页面当作目标页面，也不要直接修改已有页面版本目录。' : '',
         '如果用户明确要求“迭代版本”，需要复制当前版本目录到下一个版本，并同步更新当前工作区的 data/projects.json 与 portal/shell.js 中的 defaultData。外部工作区的 portal/shell.js 是元数据快照，不要修改程序安装目录中的同名源码文件。',
@@ -3908,10 +3913,7 @@ function getSharedSystemPrompt(session, descriptor) {
                 ? '当前目标是基于 skill 规范推进页面原型。优先分析当前版本和注解，再做克制且有方向的改动。'
                 : command?.systemHint
                     || skill?.systemHint
-                    || '请保持持续状态反馈：在思考、工具执行、等待用户补充时，都明确表达当前进展。',
-        session.providerConfig?.sdkOptions?.planMode
-            ? '【重要提示】你当前处于 Plan 模式（即规划模式）。在执行任何具体的写文件、编辑文件、执行 shell 命令等修改操作前，你必须首先研究并设计一份实施计划。你应当调用 EnterPlanMode 工具进入计划模式，在实现方案中记录规划，并主动解释你的方案给用户以获取批准。在你调用 ExitPlanMode 退出计划模式并得到批准前，请勿进行任何实际的破坏性或修改性更改。'
-            : ''
+                    || '请保持持续状态反馈：在思考、工具执行、等待用户补充时，都明确表达当前进展。'
     ].filter(Boolean).join('\n');
 }
 

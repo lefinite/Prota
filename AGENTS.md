@@ -14,10 +14,12 @@
 
 - `data/projects.json` 中每个 page 记录必须有 `targetDevice`：
   - `mobile`：手机端页面，使用 `src/templates/mobile-frame/`
-  - `web`：Web B 端页面，使用框架无关的 `src/templates/web-frame/`
+  - `web`：Web 页面，使用框架无关的 `src/templates/web-frame/`
+  - `canvas`：自由画布，使用中性的 `src/templates/canvas-frame/`；不强制设备外框或 UI 框架
 - 历史页面、缺失 `targetDevice` 的页面一律视为 `mobile`，同步配置时需要补上该属性。
 - 创建项目时不选择端类型。
-- 创建页面时默认使用 `mobile`；只有用户明确要求 Web B 端时，才把新 page 记录写成 `targetDevice: "web"`。
+- 创建页面默认“智能判断”（`auto` 仅为创建模式，不写入页面元数据），保留手机、Web、自由画布手动选择。先判断呈现方式再加载对应 Skill；用户本次明确文字要求优先于选择器默认值。普通移动端页面仍采用手机框；根据核心任务选择网页或自由画布，不凭单个关键词切换。
+- 创建后保存实际 `targetDevice` 为 `mobile`、`web` 或 `canvas`；后续迭代沿用该方式，除非用户明确要求改变。历史页面不重新推断或批量改写。
 
 ## 3. 迭代版本（用户说“迭代版本”时）
 
@@ -34,6 +36,7 @@
 2. 根据页面 `targetDevice` 复制对应模板并编写基础 Demo 代码：
    - `mobile`：复制 `src/templates/mobile-frame/`
    - `web`：复制 `src/templates/web-frame/`
+   - `canvas`：复制 `src/templates/canvas-frame/`
 3. 同时在 `projects.json` 和 `portal/shell.js` 的 `defaultData` 中注册新页面
 
 ## 5. UI 交互规则

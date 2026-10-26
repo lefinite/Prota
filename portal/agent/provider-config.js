@@ -471,6 +471,8 @@ class AgentProviderConfigStore {
             usedIds.add(id);
             normalized.id = id;
             normalized.sdkOptions = cloneAgentProviderValue(normalized.sdkOptions, {});
+            delete normalized.sdkOptions.planMode;
+            if (normalized.sdkOptions.permissionMode === 'plan') normalized.sdkOptions.permissionMode = 'default';
             normalized.models = Array.isArray(normalized.models) ? [...normalized.models] : [];
             normalized.endpointCandidates = Array.isArray(normalized.endpointCandidates) ? [...normalized.endpointCandidates] : [];
             return normalized;
