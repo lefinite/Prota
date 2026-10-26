@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>无限画布</title><link rel="stylesheet" href="./styles.css"></head>
+<body>
+<header class="toolbar"><strong>无限画布</strong><span class="divider"></span>
+<select id="add-kind" aria-label="添加对象类型"><option value="mobile">手机画板</option><option value="web">Web 画板</option><option value="board">自由画板</option><option value="text">文本</option><option value="note">便签</option><option value="rect">矩形</option><option value="ellipse">圆形</option></select><button id="add">＋ 添加</button><button id="image">图片</button>
+<span class="divider"></span><button id="undo" title="⌘/Ctrl Z">撤销</button><button id="redo" title="⌘/Ctrl Shift Z">重做</button><span class="spacer"></span><span id="save-status" role="status">已保存</span><button id="export">导出布局</button><button id="save" class="primary">保存</button></header>
+<main id="stage" tabindex="0" aria-label="无限画布工作区"><div id="world"></div><div id="marquee" hidden></div><div id="empty"><span class="empty-icon">＋</span><h1>把想法放在一起</h1><p>添加画板，或拖入图片。文本、便签与界面，都可以自由摆放。</p><button id="first-board" class="primary">添加第一个画板</button></div></main>
+<aside id="inspector"><header><strong>对象属性</strong><span id="selection-count"></span></header><div id="properties"><p class="muted">选择对象以调整位置、尺寸与内容。<br><br>Shift 多选 · 空白处框选<br>空格拖动 · 滚轮平移<br>⌘ / Ctrl + 滚轮缩放<br>双击画板进入交互 · Esc 返回</p></div><h3>图层</h3><div id="layers"></div></aside>
+<footer class="navigation"><button id="zoom-out" aria-label="缩小">−</button><button id="zoom-reset">100%</button><button id="zoom-in" aria-label="放大">＋</button><span class="divider"></span><button id="fit">查看全部</button><button id="focus">聚焦选中</button><span id="interaction-hint"></span></footer>
+<input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+<script src="./canvas-data.js"></script><script src="./app.js"></script></body></html>
