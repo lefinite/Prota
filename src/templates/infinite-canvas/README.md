@@ -64,3 +64,9 @@ Portal 检测旧运行时（< 4）或不完整的编辑器资源后，修复当�
 这是一套面向 Agent 原型工作流的页面编辑器，不是完整的 Figma 文件兼容实现。暂不支持实时多人协作、矢量路径编辑、约束 / Auto Layout、跨文档组件实例同步、画板内部任意 DOM 的可视化拖拽。父子关系支持整体移动和组织，不提供子内容裁切或响应式约束。批注仍针对外层画布对象，内嵌 DOM 批注与分画板 PRD 尚未适配。
 
 测试：`tests/canvas-core.test.mjs`、`tests/test_canvas_store.py`、`tests/infinite-canvas.browser.mjs`、`tests/page-presentation.browser.mjs`。Portal 测试使用真实会话 API 与 iframe 消息链，只替换模型响应，不产生模型费用。
+
+## Schema v2 兼容数据内核（S1）
+
+编辑器先同步启动，再通过本机 `/api/canvas/features` 读取工作区迁移开关（默认关闭）。启用后，v1 只在内存补齐稳定 boardId 与空 boardRevisionId，首次编辑保存才在同次提交中备份原文件到 `.canvas-migrations/` 并写 v2。boardRevisionId 为 null 表示尚无正式业务快照，不等同于自动保存 revision。关闭开关后仍完整读写既有 v2，禁止旧客户端降级覆盖。
+
+`canvas-domain.js` 是 v1/v2 校验、迁移注册表与节点/父子/逻辑画板索引的纯数据层，必须与 canvas-core.js 一起复制。迁移跨 vN 保持逻辑身份；独立复制生成新 boardId 并保留 originBoardId。未知可选字段及 edges 在保存/恢复时保留。HTML、修复资源清单和 Portal 健康判断均检查此依赖。完整契约与验证见产品文档 `docs/canvas-upgrade/s1-domain.md`。

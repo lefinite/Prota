@@ -1,0 +1,300 @@
+{
+  "recordedAt": "2026-10-27T03:54:18.268Z",
+  "commit": "ed9a52cb488e6ac2cb6458ca14446bc2f53f5600",
+  "runtimeSource": "working-tree",
+  "backendSource": "working-tree; --runtime-ref selects only the frontend template",
+  "dirtyFiles": [
+    "M package.json",
+    " M portal/index.html",
+    " M portal/modules/prd/index.js",
+    " M portal/modules/prd/manager.js",
+    " M portal/modules/prd/prd.css",
+    " M portal/modules/prd/renderer.js",
+    " M portal/modules/settings/index.js",
+    " M portal/shell.js",
+    " M server/agent-server.mjs",
+    " M server/bridge.py",
+    " M server/canvas_store.py",
+    " M src/templates/infinite-canvas/README.md",
+    " M src/templates/infinite-canvas/app.js",
+    " M src/templates/infinite-canvas/canvas-core.js",
+    " M src/templates/infinite-canvas/index.html",
+    " M src/templates/infinite-canvas/styles.css",
+    " M tests/infinite-canvas.browser.mjs",
+    " M tests/page-presentation.browser.mjs",
+    " M tests/test_canvas_store.py",
+    "?? docs/canvas-upgrade/",
+    "?? docs/progressive-preview.md",
+    "?? portal/preview/",
+    "?? server/canvas-features.mjs",
+    "?? server/canvas_domain.py",
+    "?? server/preview/",
+    "?? server/preview_http.py",
+    "?? src/templates/infinite-canvas/LICENSE.marked",
+    "?? src/templates/infinite-canvas/canvas-domain.js",
+    "?? src/templates/infinite-canvas/markdown.js",
+    "?? src/templates/infinite-canvas/marked.js",
+    "?? tests/canvas-baseline.test.mjs",
+    "?? tests/canvas-performance.browser.mjs",
+    "?? tests/canvas-version-browser.mjs",
+    "?? tests/canvas-version-model.test.mjs",
+    "?? tests/fixtures/",
+    "?? tests/prd-history.browser.mjs",
+    "?? tests/prd-manager.test.mjs",
+    "?? tests/preview-observer.test.mjs",
+    "?? tests/preview-snapshot.test.mjs",
+    "?? tests/preview-state.test.mjs",
+    "?? tests/preview-validator.test.mjs",
+    "?? tests/progressive-preview.browser.mjs",
+    "?? tests/test_canvas_baseline.py",
+    "?? tests/test_canvas_export_versions.py",
+    "?? tests/test_canvas_versions.py",
+    "?? tests/test_prd_documents.py"
+  ],
+  "machine": {
+    "platform": "darwin",
+    "release": "24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M4",
+    "cores": 10,
+    "memoryBytes": 17179869184,
+    "node": "v24.16.0"
+  },
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "methodology": {
+    "ready": "navigation start to runtime API ready plus two animation frames; excludes loading offscreen lazy iframes",
+    "frame": "requestAnimationFrame intervals during 48 pan and 48 Ctrl-wheel inputs; includes automation scheduling",
+    "input": "browser event timestamp to next animation frame; not OS-to-photon latency",
+    "memory": "largest sampled Performance.getMetrics JSHeapUsedSize for main page; not total browser/process peak",
+    "save": "five real /api/canvas/save round trips including layout history; excludes 300ms debounce",
+    "refresh": "reloadFromDisk(false, {targetIds:[id]}) through existing Agent completion path; asserts other iframe element identity",
+    "capacity": "3000 nodes must be rejected by v4; not a successful performance measurement"
+  },
+  "scenarios": [
+    {
+      "count": 50,
+      "boards": 0,
+      "readyMs": 138.20000004768372,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 27.199999999999932,
+          "inputP95Ms": 40.09999990463257,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 26.899999999999977,
+          "inputP95Ms": 34.200000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 27.09999999999991,
+          "inputP95Ms": 37,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 331.8693750000002,
+      "dragMs": 302.83808399999907,
+      "mountedIframes": 0,
+      "loadedIframes": 0,
+      "saveP95Ms": 5.380167000001165,
+      "sampledMainPageHeapPeakBytes": 6347172
+    },
+    {
+      "count": 200,
+      "boards": 0,
+      "readyMs": 59.700000047683716,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 27.099999999999966,
+          "inputP95Ms": 36.5,
+          "frameSamples": 195,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 27.100000000000023,
+          "inputP95Ms": 38.09999990463257,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 27.100000000000023,
+          "inputP95Ms": 35.5,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 333.6144170000007,
+      "dragMs": 298.3506669999988,
+      "mountedIframes": 0,
+      "loadedIframes": 0,
+      "saveP95Ms": 5.007290999998077,
+      "sampledMainPageHeapPeakBytes": 7379356
+    },
+    {
+      "count": 1000,
+      "boards": 0,
+      "readyMs": 91.09999990463257,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 27.199999999999932,
+          "inputP95Ms": 39.80000019073486,
+          "frameSamples": 194,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 22.399999999999977,
+          "inputP95Ms": 41.700000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 27.09999999999991,
+          "inputP95Ms": 38.59999990463257,
+          "frameSamples": 197,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 258.0900840000031,
+      "dragMs": 289.0798750000031,
+      "mountedIframes": 0,
+      "loadedIframes": 0,
+      "saveP95Ms": 10.265833999997994,
+      "sampledMainPageHeapPeakBytes": 6055336
+    },
+    {
+      "count": 3000,
+      "boards": 0,
+      "readyMs": 54.5,
+      "status": "capacity-rejected",
+      "saveStatus": 400
+    },
+    {
+      "count": 50,
+      "boards": 5,
+      "readyMs": 70,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 27.099999999999966,
+          "inputP95Ms": 35.700000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 27.09999999999991,
+          "inputP95Ms": 35,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 27.09999999999991,
+          "inputP95Ms": 34.700000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 291.35425000000396,
+      "dragMs": 293.6117079999967,
+      "localRefreshMs": 11.639750000002095,
+      "mountedIframes": 5,
+      "loadedIframes": 5,
+      "saveP95Ms": 2.489291999998386,
+      "sampledMainPageHeapPeakBytes": 16860848
+    },
+    {
+      "count": 200,
+      "boards": 20,
+      "readyMs": 103.20000004768372,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 27.100000000000364,
+          "inputP95Ms": 40.5,
+          "frameSamples": 195,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 27.100000000000364,
+          "inputP95Ms": 36.59999990463257,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 27.100000000000136,
+          "inputP95Ms": 36,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 302.4886670000051,
+      "dragMs": 297.55637499999284,
+      "localRefreshMs": 12.917624999994587,
+      "mountedIframes": 20,
+      "loadedIframes": 20,
+      "saveP95Ms": 3.661041999999725,
+      "sampledMainPageHeapPeakBytes": 35168120
+    },
+    {
+      "count": 1000,
+      "boards": 50,
+      "readyMs": 168.59999990463257,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 17.700000000000273,
+          "inputP95Ms": 35.09999990463257,
+          "frameSamples": 194,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 17.100000000000364,
+          "inputP95Ms": 35,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 27.199999999999818,
+          "inputP95Ms": 43.5,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 455.2792079999999,
+      "dragMs": 349.6682080000028,
+      "localRefreshMs": 14.204083999997238,
+      "mountedIframes": 50,
+      "loadedIframes": 50,
+      "saveP95Ms": 11.672624999999243,
+      "sampledMainPageHeapPeakBytes": 46206692
+    }
+  ],
+  "browser": "148.0.7778.96",
+  "status": "complete"
+}

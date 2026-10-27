@@ -48,7 +48,7 @@
     }
   });
   window.__protaCanvasStartupComplete = () => {
-    const missing = !window.CanvasCore ? 'canvas-core.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
+    const missing = !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasCore ? 'canvas-core.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
     if (!missing) { document.documentElement.dataset.protaCanvasReady = 'true'; return; }
     panel.hidden = false; panel.style.display = 'grid';
     detail.textContent = '未能加载 ' + missing + '。布局和业务画板未被修改，可重新加载或在 Prota 内修复编辑器。';
@@ -57,6 +57,6 @@
   };
 })();
 </script>
-<script src="./canvas-data.js"></script><script src="./canvas-core.js"></script><script src="./icons.js"></script><script src="./app.js"></script>
+<script src="./canvas-data.js"></script><script src="./canvas-domain.js"></script><script src="./canvas-core.js"></script><script src="./icons.js"></script><script src="./app.js"></script>
 <script>window.__protaCanvasStartupComplete();</script>
 </body></html>

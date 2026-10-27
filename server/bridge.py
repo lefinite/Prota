@@ -2366,6 +2366,11 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 workspace.workspace_root()
             except (ValueError, OSError) as error:
                 return self.workspace_reply(503, {'error': str(error)})
+        if clean_path == '/api/canvas/features':
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机读取画布开关。'})
+            from server.canvas_domain import schema_enabled
+            return self.workspace_reply(200, {'canvasSchemaV2': schema_enabled(workspace.workspace_root())})
         if clean_path == '/api/shares':
             if not self.workspace_local():
                 return self.workspace_reply(403, {'error': '只能在本机管理分享。'})
