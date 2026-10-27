@@ -1,6 +1,11 @@
 (() => {
   "use strict";
-  const C = window.CanvasCore;
+  const C = window.CanvasCore, D = window.CanvasDomain;
+  const route = decodeURI(location.pathname).match(/\/src\/pages\/([^/]+)\/([^/]+)\/(v\d+)\//);
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) && Boolean(route);
+  const identityScope = route ? { projectId: route[1], pageId: route[2] } : { projectId: "", pageId: location.pathname.replace(/\/v\d+\/.*$/, "") };
+  let schemaEnabled = false;
+  const materialize = (document, force = schemaEnabled) => D.load(document, identityScope, { migrate: force || document.schemaVersion === 2 });
   const AUTOSAVE_DELAY = 300;
   const $ = (s) => document.querySelector(s), clone = (value) => JSON.parse(JSON.stringify(value));
   let startupError = null;
@@ -10,14 +15,18 @@
     startupError = error;
   }
   const initialDocument = startupError ? { schemaVersion: 1, revision: 0, nodes: [], viewport: { x: 100, y: 80, zoom: 1 } } : window.PROTA_CANVAS;
-  let state = clone(initialDocument), baseline = clone(state), selected = /* @__PURE__ */ new Set(), history = [], future = [], dirty = false, saving = false, readOnly = Boolean(startupError), space = false, gesture = null, interacting = null;
+  let prepared;
+  try { prepared = materialize(initialDocument); }
+  catch (error) { startupError = error; prepared = { schemaVersion: 1, revision: 0, nodes: [], viewport: { x: 100, y: 80, zoom: 1 } }; }
+  let state = prepared, baseline = clone(initialDocument), selected = /* @__PURE__ */ new Set(), history = [], future = [], dirty = false, saving = false, readOnly = Boolean(startupError), space = false, gesture = null, interacting = null;
   const stage = $("#stage"), world = $("#world"), properties = $("#properties");
   let propertyEdit = null, propertiesSelection = "", menuInvoker = null, fullscreenFallback = false, imageInsertionPoint = null, imageReplaceTarget = null, groupContext = null, paletteIndex = 0, paletteItems = [], renderFrame = 0, viewAnim = 0;
   let tool = "select", autoTimer, savePromise = null, conflict = false, agentBusy = false, agentPending = false, clipboard = null, editing = null, panelKey = "";
   const nodeEls = /* @__PURE__ */ new Map(), touches = /* @__PURE__ */ new Map(), boardStamps = /* @__PURE__ */ new Map();
   let agentTargets = /* @__PURE__ */ new Set(), pasteTimer = null;
   const draftKey = "prota-canvas-draft:" + location.pathname, clipboardKey = "prota-canvas-clipboard";
-  const effectiveLocked = (n) => C.locked(state.nodes, n);
+  let nodeIndex = D.createIndex(state.nodes);
+  const effectiveLocked = (n) => C.locked(state.nodes, n, nodeIndex);
   const selectedRoots = () => C.roots(state.nodes, selected);
   const movable = () => {
     const roots = selectedRoots().filter((n) => !effectiveLocked(n));
@@ -25,8 +34,7 @@
     return state.nodes.filter((n) => ids.has(n.id));
   };
   const canEdit = () => !readOnly && !agentBusy && !agentPending;
-  const route = decodeURI(location.pathname).match(/\/src\/pages\/([^/]+)\/([^/]+)\/(v\d+)\//);
-  const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) && Boolean(route);
+
   const names = { group: "分组", board: "画板", text: "文本", note: "便签", rect: "矩形", ellipse: "圆形", image: "图片" };
   const uid = () => "n_" + crypto.randomUUID().replaceAll("-", "");
   function status(text, kind = "") {
@@ -41,6 +49,10 @@
     future = [];
   }
   function changed({ panels = true } = {}) {
+    if (state.schemaVersion === 2) for (const node of state.nodes) if (node.type === "board" && !node.boardId) {
+      node.boardId = "b_" + crypto.randomUUID().replaceAll("-", "");
+      node.boardRevisionId = null;
+    }
     updateGroupBounds();
     dirty = true;
     status(local ? "等待保存…" : "已暂存在当前浏览器", "busy");
@@ -260,6 +272,7 @@
     renderNow(options);
   }
   function renderNow({ panels = true } = {}) {
+    nodeIndex = D.createIndex(state.nodes);
     const previous = new Map([...world.querySelectorAll(".node")].map((el) => [el.dataset.id, el]));
     const contextMembers = groupContext ? C.descendants(state.nodes, [groupContext]) : null;
     for (const [index, n] of state.nodes.entries()) {
@@ -1478,7 +1491,9 @@
       if (!backup?.state) throw Error("未找到本机备份");
       const disk = await fetchDiskDocument();
       C.validate(backup.state);
-      const merged = C.mergeDocuments(backup.baseline || baseline, backup.state, disk);
+      const useV2 = schemaEnabled || state.schemaVersion === 2 || backup.state.schemaVersion === 2 || disk.schemaVersion === 2;
+      const [before, ours, theirs] = await Promise.all([backup.baseline || baseline, backup.state, disk].map(doc => materialize(doc, useV2)));
+      const merged = C.mergeDocuments(before, ours, theirs);
       const apply = () => {
         checkpoint();
         try {
@@ -1879,7 +1894,7 @@
     try {
       const next = await fetchDiskDocument();
       const viewport = clone(state.viewport), previousIds = new Set(state.nodes.map((n) => n.id));
-      state = next;
+      state = materialize(next, schemaEnabled || state.schemaVersion === 2);
       baseline = clone(next);
       state.viewport = viewport;
       selected = new Set([...selected].filter((id) => state.nodes.some((n) => n.id === id)));
@@ -2040,7 +2055,7 @@
   }
   try {
     const draft = JSON.parse(localStorage.getItem(draftKey) || "null");
-    if (draft && !readOnly && JSON.stringify(draft.state.nodes) !== JSON.stringify(state.nodes)) notice("找到未保存的本机修改。", [{ label: "恢复修改", primary: true, run: () => {
+    if (draft && !readOnly && JSON.stringify(draft.state.nodes) !== JSON.stringify(state.nodes)) notice("找到未保存的本机修改。", [{ label: "恢复修改", primary: true, run: async () => {
       C.validate(draft.state);
       if (JSON.stringify(draft.baseline) !== JSON.stringify(window.PROTA_CANVAS)) {
         try {
@@ -2053,7 +2068,7 @@
         return;
       }
       checkpoint();
-      state = draft.state;
+      state = materialize(draft.state, schemaEnabled || state.schemaVersion === 2);
       baseline = draft.baseline;
       conflict = false;
       changed();
@@ -2076,4 +2091,18 @@
     panelKey = "";
     renderInspector();
   } };
+  window.protaCanvasSchemaReady = (async () => {
+    if (!local || startupError) return;
+    try {
+      const response = await fetch("/api/canvas/features", { cache: "no-store", signal: AbortSignal.timeout(2000) });
+      if (!response.ok || (await response.json()).canvasSchemaV2 !== true) return;
+      const prepared = materialize(state, true);
+      const past = history.map(doc => materialize(doc, true)), next = future.map(doc => materialize(doc, true));
+      state = prepared; history = past; future = next; schemaEnabled = true;
+      render();
+    } catch (error) {
+      // Configuration unavailability falls back to v1; invalid migration never replaces state.
+      if (!(error instanceof TypeError) && error.name !== "TimeoutError") notice("画布迁移未应用：" + error.message);
+    }
+  })();
 })();

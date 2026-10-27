@@ -1,6 +1,5 @@
 """Page-owned infinite canvas persistence. No writes outside an existing version."""
 import json
-import math
 import re
 import threading
 import shutil
@@ -12,66 +11,40 @@ from server import workspace
 
 LOCK = threading.Lock()
 PREFIX = 'window.PROTA_CANVAS = '
-TYPES = {'group', 'board', 'text', 'note', 'rect', 'ellipse', 'image'}
 
 
-def validate_state(state):
-    if not isinstance(state, dict) or state.get('schemaVersion') != 1:
-        raise ValueError('不支持的画布格式')
-    viewport = state.get('viewport')
-    if not isinstance(viewport, dict):
-        raise ValueError('缺少画布视角')
-    for key in ('x', 'y', 'zoom'):
-        value = viewport.get(key)
-        if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value) or abs(value) > 10000000:
-            raise ValueError('画布视角无效')
-    if not .05 <= viewport['zoom'] <= 4:
-        raise ValueError('缩放范围无效')
-    nodes = state.get('nodes')
-    if not isinstance(nodes, list) or len(nodes) > 1000:
-        raise ValueError('画布最多容纳 1000 个对象')
-    ids = set()
-    for node in nodes:
-        if not isinstance(node, dict) or node.get('type') not in TYPES:
-            raise ValueError('未知画布对象')
-        identity = node.get('id', '')
-        if not isinstance(identity, str) or not re.fullmatch(r'[a-zA-Z0-9_-]{1,80}', identity) or identity in ids:
-            raise ValueError('对象 ID 无效或重复')
-        ids.add(identity)
-        for key in ('x', 'y', 'width', 'height'):
-            value = node.get(key)
-            if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value) or abs(value) > 10000000:
-                raise ValueError('对象尺寸或位置无效')
-            if key in ('width', 'height') and value < 16:
-                raise ValueError('对象尺寸过小')
-        for key in ('text', 'name', 'src', 'color'):
-            if key in node and not isinstance(node[key], str):
-                raise ValueError('对象属性无效')
-        src = node.get('src', '')
-        if node['type'] == 'board' and src and not re.fullmatch(r'boards/[a-zA-Z0-9_-]+/index\.html', src):
-            raise ValueError('画板只能引用本版本 boards 目录')
-        if node['type'] == 'image' and src and not (re.match(r'^data:image/(png|jpeg|webp|gif);base64,', src) or re.fullmatch(r'assets/[a-zA-Z0-9_.-]+', src)):
-            raise ValueError('图片必须保存在当前版本或嵌入画布')
-    by_id = {node['id']: node for node in nodes}
-    for node in nodes:
-        for key, low, high in [('opacity', 0, 1), ('radius', 0, 1000), ('fontSize', 8, 400), ('fontWeight',100,900), ('padding',0,10000)]:
-            if key in node and (not isinstance(node[key], (float, int)) or not math.isfinite(node[key]) or not low <= node[key] <= high):
-                raise ValueError('样式属性无效')
-        if 'textAlign' in node and node['textAlign'] not in {'left','center','right','justify'}:
-            raise ValueError('文字对齐属性无效')
-        seen = set()
-        parent = node
-        while parent.get('parentId'):
-            if parent['id'] in seen:
-                raise ValueError('画布层级不能循环')
-            seen.add(parent['id'])
-            parent = by_id.get(parent['parentId'])
-            if not parent or parent['type'] not in {'board', 'group'}:
-                raise ValueError('画布容器无效')
-        clone_from = node.get('cloneFrom')
-        if clone_from and (node['type'] != 'board' or not isinstance(clone_from, str) or not re.fullmatch(r'boards/[a-zA-Z0-9_-]+/index\.html', clone_from)):
-            raise ValueError('复制画板来源无效')
-    return state
+# Public compatibility alias; v1 and v2 share the pure validator.
+from server.canvas_domain import validate_document as validate_state
+
+
+def migration_backup(directory, original):
+    """Durable, byte-exact v1 source kept outside rotating layout history."""
+    import os
+    import uuid
+    backup = directory / '.canvas-migrations'
+    if backup.is_symlink():
+        raise ValueError('迁移备份目录不能是符号链接')
+    backup.mkdir(exist_ok=True)
+    target = backup / ('v1-' + hashlib.sha256(original).hexdigest() + '.js')
+    if target.is_symlink():
+        raise ValueError('迁移备份不能是符号链接')
+    if target.exists():
+        if target.read_bytes() != original:
+            raise ValueError('迁移备份校验失败')
+        return
+    temporary = backup / (uuid.uuid4().hex + '.tmp')
+    try:
+        temporary.write_bytes(original)
+        with temporary.open('rb') as stream:
+            os.fsync(stream.fileno())
+        temporary.replace(target)
+        descriptor = os.open(backup, os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def save_canvas(root, params):
@@ -85,9 +58,11 @@ def save_canvas(root, params):
     file = directory / 'canvas-data.js'
     if file.is_symlink() or not file.is_file():
         raise ValueError('该页面不是无限画布')
-    state = validate_state(params.get('state'))
+    import copy
+    state = copy.deepcopy(validate_state(params.get('state')))
     with LOCK:
-        raw = file.read_text(encoding='utf-8').strip()
+        original_bytes = file.read_bytes()
+        raw = original_bytes.decode('utf-8').strip()
         if not raw.startswith(PREFIX):
             raise ValueError('无法识别画布文件')
         current = json.loads(raw[len(PREFIX):].removesuffix(';'))
@@ -96,6 +71,23 @@ def save_canvas(root, params):
         # Compare the full original document as well: agents may keep its revision unchanged.
         if params.get('baseline') != current:
             return 409, {'error': '画布文件已有外部修改。请导出备份后刷新。'}
+        validate_state(current)
+        if current['schemaVersion'] == 2 and state['schemaVersion'] != 2:
+            return 409, {'error': '当前画布已升级为 Schema v2，请更新编辑器后重试，不能降级覆盖。'}
+        if current['schemaVersion'] == 2:
+            boards = {n['id']: n for n in current['nodes'] if n['type'] == 'board'}
+            for node in state['nodes']:
+                if node['type'] == 'board' and node['id'] in boards and node['boardId'] != boards[node['id']]['boardId']:
+                    raise ValueError('既有画板的逻辑身份不能在保存时改变')
+        migrating = current['schemaVersion'] == 1 and state['schemaVersion'] == 2
+        if migrating:
+            from server.canvas_domain import schema_enabled, migrate_document
+            if not schema_enabled(root):
+                return 409, {'error': '当前工作区尚未启用 Schema v2 迁移；已存在的 v2 数据仍可继续编辑。'}
+            expected = {n['id']: n for n in migrate_document(current, parts[0], parts[1])['nodes'] if n['type'] == 'board'}
+            for node in state['nodes']:
+                if node['type'] == 'board' and node['id'] in expected and node['boardId'] != expected[node['id']]['boardId']:
+                    raise ValueError('迁移不能改变既有画板身份')
         assets = []
         for node in state['nodes']:
             if node['type'] != 'image' or not node.get('src', '').startswith('data:'):
@@ -157,7 +149,15 @@ def save_canvas(root, params):
         if file.read_text(encoding='utf-8').strip() != raw:
             temporary.unlink(missing_ok=True)
             return 409, {'error': '保存期间出现外部更新，本机修改已保留，请选择恢复或读取最新版本。'}
-        temporary.replace(file)
+        try:
+            if migrating:
+                migration_backup(directory, original_bytes)
+            # Backup preparation can also race an external Agent write.
+            if file.read_bytes() != original_bytes:
+                return 409, {'error': '迁移期间出现外部更新，原文件与本机草稿均已保留。'}
+            temporary.replace(file)
+        finally:
+            temporary.unlink(missing_ok=True)
     return 200, {'revision': state['revision'], **({'assets': assets} if assets else {})}
 
 
@@ -175,7 +175,7 @@ def upgrade_runtime(root, params, template):
         if backup.is_symlink():
             raise ValueError('备份目录无效')
         backup.mkdir(exist_ok=True)
-        filenames = ['icons.js', 'LICENSE.lucide', 'canvas-core.js', 'styles.css', 'app.js', 'README.md', 'index.html']
+        filenames = ['icons.js', 'LICENSE.lucide', 'canvas-domain.js', 'canvas-core.js', 'styles.css', 'app.js', 'README.md', 'index.html']
         template = Path(template)
         # Validate the whole editor bundle before changing any installed resource.
         for filename in filenames:

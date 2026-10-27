@@ -7332,7 +7332,7 @@ class DemoShell {
             if (editor?.isDirty?.()) return;
             // A partial installation may fail before publishing protaCanvas. Do not require
             // the broken editor to initialize before allowing its resources to be repaired.
-            const healthy = editor?.runtimeVersion >= 4 && frame.CanvasCore && frame.ProtaCanvasIcons
+            const healthy = editor?.runtimeVersion >= 4 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasCore && frame.ProtaCanvasIcons
                 && doc.querySelector('link[href*="styles.css"]')?.sheet;
             if (healthy && !force) return;
             const key = `${context.projectId}/${context.pageId}/${context.version}`;
