@@ -4,27 +4,59 @@
 <body>
 <main id="stage" tabindex="0" aria-label="无限画布工作区">
   <div id="world"></div><div id="guides" aria-hidden="true"></div><div id="marquee" hidden></div>
-  <div id="selection-tools" class="floating-bar" role="toolbar" aria-label="选中对象操作" hidden></div>
-  <section id="property-popover" class="floating-panel" aria-label="对象样式与尺寸" hidden><div class="popover-heading"><strong id="property-title">调整对象</strong><button id="close-properties" data-icon="close" aria-label="关闭属性"></button></div><div id="properties"></div></section>
-  <div id="empty"><span class="empty-symbol" data-icon="frame"></span><h1>把想法放到画布上</h1><p>添加画板、文字或图片，自由摆放。<br>需要设计时，直接交给当前 Agent。</p><div class="empty-actions"><button id="first-board" class="primary" data-icon="plus">添加画板</button><button id="empty-agent" data-icon="agent">交给 Agent</button></div><span class="empty-tip">也可以在空白处右键添加</span></div>
+  <div id="selection-frame" aria-hidden="true" hidden><i data-handle="nw"></i><i data-handle="n"></i><i data-handle="ne"></i><i data-handle="e"></i><i data-handle="se"></i><i data-handle="s"></i><i data-handle="sw"></i><i data-handle="w"></i></div>
+  <div id="selection-tools" class="floating" role="toolbar" aria-label="选中对象操作" hidden></div>
+  <section id="property-popover" class="floating" aria-label="对象样式与尺寸" hidden><div class="popover-heading"><strong id="property-title">调整对象</strong><button id="close-properties" data-icon="x" aria-label="关闭属性"></button></div><div id="properties"></div></section>
+  <div id="empty"><span class="empty-symbol" data-icon="frame"></span><h1>把想法放到画布上</h1><p>添加画板、文字或图片，自由摆放。<br>需要设计时，直接交给当前 Agent。</p><div class="empty-actions"><button id="first-board" class="primary" data-icon="plus">添加画板</button><button id="empty-agent" data-icon="sparkles">交给 Agent</button></div><span class="empty-tip">也可以在空白处右键添加 · ⌘K 打开命令面板</span></div>
 </main>
-<div class="canvas-identity"><span class="identity-icon" data-icon="canvas"></span><span id="document-name">无限画布</span><span id="save-status" class="save-status" role="status" title="更改自动保存到本地">已保存</span></div>
-<nav class="view-tools floating-bar" aria-label="视图操作"><button id="undo" data-icon="undo" title="撤销 · ⌘ / Ctrl Z" aria-label="撤销"></button><button id="redo" data-icon="redo" title="重做 · ⌘ / Ctrl Shift Z" aria-label="重做"></button><span class="divider"></span><button id="fullscreen" data-icon="expand">全屏</button></nav>
-<nav class="creation-tools floating-bar" aria-label="画布工具">
-  <button data-tool="select" data-icon="cursor" class="active" title="选择 · V" aria-label="选择工具"></button>
-  <button data-tool="hand" data-icon="hand" title="抓手 · H" aria-label="抓手工具"></button><span class="divider"></span>
-  <button id="add-board" data-icon="frame" title="添加画板" aria-haspopup="menu">画板</button>
-  <button data-tool="text" data-icon="text" title="文本 · T" aria-label="文本工具"></button>
-  <button id="add-shape" data-icon="shapes" title="添加形状" aria-label="形状" aria-haspopup="menu"></button>
-  <button id="add-note" data-icon="note" title="添加便签" aria-label="便签"></button>
-  <button id="image" data-icon="image" title="添加图片" aria-label="图片"></button>
-  <button id="add-component" data-icon="component" title="添加组件" aria-label="组件" aria-haspopup="menu"></button><span class="divider"></span>
-  <button id="ask-agent" data-icon="agent">Agent</button>
+<div class="canvas-identity"><span class="identity-icon" data-icon="canvas"></span><span id="document-name" title="画布名称">无限画布</span><span id="save-status" class="save-status" role="status" title="更改自动保存到本地">已保存</span></div>
+<nav class="view-tools floating" aria-label="视图操作"><button id="undo" data-icon="undo-2" data-tip="撤销 · ⌘Z" aria-label="撤销"></button><button id="redo" data-icon="redo-2" data-tip="重做 · ⌘⇧Z" aria-label="重做"></button><span class="divider"></span><button id="fullscreen" data-icon="maximize-2">全屏</button></nav>
+<nav class="creation-tools floating" aria-label="画布工具">
+  <button data-tool="select" data-icon="mouse-pointer-2" data-tip="选择 · V" class="active" aria-label="选择工具"></button>
+  <button data-tool="hand" data-icon="hand" data-tip="抓手 · H" aria-label="抓手工具"></button><span class="divider"></span>
+  <button id="add-board" data-icon="frame" data-tip="添加画板" aria-haspopup="menu" aria-label="添加画板"></button>
+  <button data-tool="text" data-icon="type" data-tip="文字 · T" aria-label="文本工具"></button>
+  <button id="add-shape" data-icon="shapes" data-tip="添加形状" aria-label="形状" aria-haspopup="menu"></button>
+  <button id="add-note" data-icon="sticky-note" data-tip="添加便签" aria-label="便签"></button>
+  <button id="image" data-icon="image-plus" data-tip="插入图片" aria-label="图片"></button>
+  <button id="add-component" data-icon="component" data-tip="添加组件" aria-label="组件" aria-haspopup="menu"></button><span class="divider"></span>
+  <button id="more-tools" data-icon="ellipsis" data-tip="更多工具" aria-label="更多工具" aria-haspopup="menu"></button>
+  <button id="ask-agent" class="agent" data-icon="sparkles" data-tip="交给当前 Agent" aria-label="Agent"></button>
 </nav>
-<nav class="navigation floating-bar" aria-label="画布缩放"><button id="zoom-out" data-icon="minus" aria-label="缩小"></button><button id="zoom-reset" title="恢复 100%">100%</button><button id="zoom-in" data-icon="plus" aria-label="放大"></button><span class="divider"></span><button id="fit" data-icon="fit" title="查看全部" aria-label="查看全部"></button></nav>
+<nav class="zoom-tools floating" aria-label="画布缩放"><button id="zoom-out" data-icon="zoom-out" data-tip="缩小" aria-label="缩小"></button><button id="zoom-reset" data-tip="缩放比例" title="缩放比例">100%</button><button id="zoom-in" data-icon="zoom-in" data-tip="放大" aria-label="放大"></button><span class="divider"></span><button id="fit" data-icon="scan" data-tip="查看全部" aria-label="查看全部"></button><button id="focus-selection" data-icon="focus" data-tip="聚焦选中" aria-label="聚焦选中"></button></nav>
+<div id="command-palette" class="floating" role="dialog" aria-label="命令面板" hidden><div class="command-input-row"><span data-icon="command"></span><input id="command-input" type="text" placeholder="搜索命令：添加画板、对齐、缩放、Agent…" autocomplete="off" spellcheck="false"></div><div id="command-list" role="listbox"></div><div class="command-hint"><span>↑↓ 选择</span><span>↵ 执行</span><span>esc 关闭</span></div></div>
 <div id="interaction-hint" class="interaction-hint" role="status"></div>
-<div id="notice" role="status" hidden><span id="notice-text"></span><button id="notice-action"></button><button id="notice-dismiss" data-icon="close" aria-label="关闭提示"></button></div>
-<div id="context-menu" class="floating-panel" role="menu" hidden></div>
+<div id="notice" role="status" hidden><span id="notice-text"></span><span id="notice-actions"></span><button id="notice-dismiss" data-icon="x" aria-label="关闭提示"></button></div>
+<div id="context-menu" class="floating" role="menu" hidden></div>
 <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
-<script src="./canvas-data.js"></script><script src="./canvas-core.js"></script><script src="./app.js"></script>
+<section id="canvas-startup-error" role="alert" hidden style="position:fixed;inset:0;z-index:100;background:#f7f8fa;place-content:center;text-align:center;font:14px/1.8 sans-serif;padding:32px;color:#424650">
+  <h2 style="font-size:20px;font-weight:500">画布编辑器未能加载</h2>
+  <p id="canvas-startup-detail">编辑器资源可能未完整安装。你的布局与业务画板仍保留在本地。</p>
+  <div style="display:flex;justify-content:center;gap:10px;margin-top:18px"><button id="canvas-startup-retry" type="button" style="padding:8px 16px;border:1px solid #e3e6ed;background:white;border-radius:8px;cursor:pointer">重新加载</button><button id="canvas-startup-repair" type="button" style="padding:8px 16px;border:0;background:#5765ce;color:white;border-radius:8px;cursor:pointer">修复编辑器</button></div>
+</section>
+<script>
+(() => {
+  const panel = document.getElementById('canvas-startup-error');
+  const detail = document.getElementById('canvas-startup-detail');
+  const post = type => { if (parent !== window) parent.postMessage({ type }, location.origin === 'null' ? '*' : location.origin); };
+  document.getElementById('canvas-startup-retry').onclick = () => location.reload();
+  document.getElementById('canvas-startup-repair').onclick = () => post('prota:canvas-repair-runtime');
+  try { if (parent === window || parent.shell?.isShareMode) document.getElementById('canvas-startup-repair').hidden = true; } catch { document.getElementById('canvas-startup-repair').hidden = true; }
+  window.addEventListener('message', event => {
+    if (event.source === parent && event.origin === location.origin && event.data?.type === 'prota:canvas-repair-failed') {
+      detail.textContent = event.data.error || '修复暂时失败，请重新加载后重试。';
+    }
+  });
+  window.__protaCanvasStartupComplete = () => {
+    const missing = !window.CanvasCore ? 'canvas-core.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
+    if (!missing) { document.documentElement.dataset.protaCanvasReady = 'true'; return; }
+    panel.hidden = false; panel.style.display = 'grid';
+    detail.textContent = '未能加载 ' + missing + '。布局和业务画板未被修改，可重新加载或在 Prota 内修复编辑器。';
+    document.documentElement.dataset.protaCanvasReady = 'false';
+    post('prota:canvas-startup-failed');
+  };
+})();
+</script>
+<script src="./canvas-data.js"></script><script src="./canvas-core.js"></script><script src="./icons.js"></script><script src="./app.js"></script>
+<script>window.__protaCanvasStartupComplete();</script>
 </body></html>

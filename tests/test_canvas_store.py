@@ -71,5 +71,52 @@ class CanvasStoreTests(unittest.TestCase):
         self.assertEqual(self.file.read_bytes(), original)
         self.assertEqual((self.directory/'.canvas-runtime-backup/app.js').read_text(), '// old editor')
         self.assertTrue((self.directory/'canvas-core.js').is_file())
+        self.assertTrue((self.directory/'icons.js').is_file())
+        self.assertIn('Lucide', (self.directory/'LICENSE.lucide').read_text())
+
+    def test_v3_upgrade_retains_nodes_board_code_assets_and_metadata(self):
+        from server.canvas_store import upgrade_runtime
+        metadata = self.root/'data/projects.json'
+        metadata.parent.mkdir()
+        metadata.write_text('{"projects":[{"id":"demo","pages":[{"id":"design","pageMode":"infinite-canvas","versions":["v1"]}]}]}')
+        (self.directory/'app.js').write_text('window.protaCanvas={runtimeVersion:3};')
+        (self.directory/'boards/reader').mkdir(parents=True)
+        (self.directory/'assets').mkdir()
+        (self.directory/'boards/reader/index.html').write_text('<h1>Keep this business prototype</h1>')
+        (self.directory/'assets/reference.png').write_bytes(b'original asset')
+        files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png']
+        original={file:file.read_bytes() for file in files}
+        template=Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas'
+        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':4})
+        self.assertTrue(all(file.read_bytes()==data for file,data in original.items()))
+        self.assertIn('runtimeVersion:3',(self.directory/'.canvas-runtime-backup/app.js').read_text())
+
+    def test_agent_write_during_save_is_not_replaced(self):
+        from unittest.mock import patch
+        original_write = Path.write_text
+        external = copy.deepcopy(self.state)
+        external['viewport']['x'] = 800
+        def interleaved_write(path, content, *args, **kwargs):
+            result = original_write(path, content, *args, **kwargs)
+            if path.resolve() == self.file.with_suffix('.js.tmp').resolve():
+                original_write(self.file, PREFIX + json.dumps(external) + ';\n', encoding='utf-8')
+            return result
+        with patch.object(Path, 'write_text', interleaved_write):
+            status, _ = save_canvas(self.root, self.params())
+        self.assertEqual(status, 409)
+        self.assertEqual(json.loads(self.file.read_text()[len(PREFIX):].strip().removesuffix(';')), external)
+
+    def test_incomplete_editor_template_cannot_partially_overwrite_runtime(self):
+        from server.canvas_store import upgrade_runtime
+        import shutil
+        template = self.root/'broken-template'
+        shutil.copytree(Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas', template)
+        (template/'icons.js').unlink()
+        (self.directory/'index.html').write_text('<h1>Existing editor entry</h1>')
+        (self.directory/'app.js').write_text('// existing editor')
+        before={file:file.read_bytes() for file in [self.directory/'index.html',self.directory/'app.js',self.file]}
+        with self.assertRaisesRegex(ValueError, 'icons.js'):
+            upgrade_runtime(self.root,self.params(),template)
+        self.assertTrue(all(file.read_bytes()==content for file,content in before.items()))
 
 if __name__ == '__main__': unittest.main()

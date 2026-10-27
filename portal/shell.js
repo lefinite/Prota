@@ -2721,9 +2721,20 @@ class DemoShell {
                 if (this._canvasStatusDocument !== documentKey) { this._canvasStatusDocument = documentKey; this._canvasAgentStatusKey = null; this.syncCanvasAgentStatus(); }
                 return;
             }
+            if (e.data.type === 'prota:canvas-startup-failed' || e.data.type === 'prota:canvas-repair-runtime') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
+                // The iframe load handler also checks this after document parsing completes.
+                this.upgradeCanvasEditorIfNeeded({ force: e.data.type === 'prota:canvas-repair-runtime' });
+                return;
+            }
             if (e.data.type === 'prota:canvas-open-agent') {
                 if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
                 this.focusExistingCanvasAgent(e.source);
+                return;
+            }
+            if (e.data.type === 'prota:canvas-rename') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
+                this.renameCanvasPage(e.data,e.source);
                 return;
             }
             if (e.data.type === 'prota:canvas-fullscreen') {
@@ -7166,7 +7177,7 @@ class DemoShell {
 
         const script = iframeDoc.createElement('script');
         script.id = '__readify_shortcut_bridge';
-        const enableAnnotationShortcuts = !this.isShareMode;
+        const enableAnnotationShortcuts = !this.isShareMode && this.getPageRecord()?.pageMode !== 'infinite-canvas';
         script.textContent = `(function() {
             var enableAnnotationShortcuts = ${enableAnnotationShortcuts ? 'true' : 'false'};
             window.__readifyAnnotationRightClick = null;
@@ -7308,19 +7319,55 @@ class DemoShell {
         });
     }
 
-    async upgradeCanvasEditorIfNeeded() {
+    async upgradeCanvasEditorIfNeeded({ force = false } = {}) {
         if (this.isShareMode || this.getPageRecord()?.pageMode !== 'infinite-canvas' || this._canvasUpgradePending) return;
+        let context;
         try {
-            const editor = this.mainIframe?.contentWindow?.protaCanvas;
-            if (!editor || editor.runtimeVersion >= 3 || editor.isDirty()) return;
+            const frame = this.mainIframe?.contentWindow;
+            const doc = frame?.document;
+            context = this.getAgentContext();
+            const expected = `/src/pages/${context.projectId}/${context.pageId}/${context.version}/index.html`;
+            if (!frame || decodeURI(frame.location.pathname) !== expected || doc.readyState === 'loading') return;
+            const editor = frame.protaCanvas;
+            if (editor?.isDirty?.()) return;
+            // A partial installation may fail before publishing protaCanvas. Do not require
+            // the broken editor to initialize before allowing its resources to be repaired.
+            const healthy = editor?.runtimeVersion >= 4 && frame.CanvasCore && frame.ProtaCanvasIcons
+                && doc.querySelector('link[href*="styles.css"]')?.sheet;
+            if (healthy && !force) return;
+            const key = `${context.projectId}/${context.pageId}/${context.version}`;
+            this._canvasUpgradeAttempts ||= new Set();
+            if (!force && this._canvasUpgradeAttempts.has(key)) return;
+            this._canvasUpgradeAttempts.add(key);
             this._canvasUpgradePending = true;
-            const context = this.getAgentContext();
-            const response = await fetch('/api/canvas/upgrade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(context) });
-            if (!response.ok) throw new Error((await response.json()).error || '升级失败');
-            if (context.pageId === this.activePageId && context.version === this.activeVersion) this.mainIframe.contentWindow.location.reload();
+            const response = await fetch('/api/canvas/upgrade', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(context)
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || '修复失败');
+            if (Number(result.runtimeVersion) < 4) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            if (context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion) {
+                this.mainIframe.contentWindow.location.reload();
+            }
         } catch (error) {
-            this.showToast(`画布编辑器更新失败：${error.message}`, true);
-        } finally { this._canvasUpgradePending = false; }
+            this.showToast(`画布编辑器修复失败：${error.message}`, true);
+            this.mainIframe?.contentWindow?.postMessage({ type: 'prota:canvas-repair-failed', error: error.message }, location.origin);
+        } finally {
+            this._canvasUpgradePending = false;
+        }
+    }
+
+    async renameCanvasPage(data,source) {
+        const {projectId,pageId}=this.getAgentContext();
+        if(data.projectId!==projectId||data.pageId!==pageId)return;
+        const name=String(data.name||'').trim().slice(0,120);if(!name)return;
+        try {
+            const response=await fetch('/api/rename-page',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,pageId,newName:name})});
+            if(!response.ok)throw new Error('画布重命名失败，请重试。');
+            const page=this.getPageRecord(pageId);if(page)page.name=name;
+            this.renderSidebar();if(this.activePageId===pageId&&this.currentPageNameEl)this.currentPageNameEl.textContent=name;
+            source.postMessage({type:'prota:canvas-rename-result',name},location.origin);
+        } catch(error){source.postMessage({type:'prota:canvas-rename-result',name:data.previous,error:error.message},location.origin);}
     }
 
     async focusExistingCanvasAgent(source) {
@@ -7346,7 +7393,7 @@ class DemoShell {
         if (!this.canvasSelection || !this.mainIframe?.contentWindow) return;
         const context = this.agentSessionContext || this.getAgentContext();
         const belongs = context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion;
-        const state = { type: 'prota:canvas-agent-status', workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(belongs && this.agentRunState?.active), error: belongs ? String(this.agentRunState?.lastError || '') : '' };
+        const state = { type: 'prota:canvas-agent-status', targetIds: belongs && this.agentRunState?.active ? (this._canvasRunScope?.canvasSelection || context.canvasSelection || []).map(n=>n.id) : [], workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(belongs && this.agentRunState?.active), error: belongs ? String(this.agentRunState?.lastError || '') : '' };
         const key = JSON.stringify([this.activeProjectId, this.activePageId, this.activeVersion, state]);
         if (key === this._canvasAgentStatusKey) return;
         this._canvasAgentStatusKey = key;
@@ -12156,7 +12203,7 @@ class DemoShell {
             return '工作区会话';
         }
         const canvas = this.canvasSelection;
-        const selected = canvas?.projectId === context.projectId && canvas?.pageId === context.pageId && canvas?.version === context.version ? canvas.selected : [];
+        const selected = this.agentRunState?.active && this._canvasRunScope?.projectId === context.projectId && this._canvasRunScope?.pageId === context.pageId && this._canvasRunScope?.version === context.version ? this._canvasRunScope.canvasSelection : canvas?.projectId === context.projectId && canvas?.pageId === context.pageId && canvas?.version === context.version ? canvas.selected : [];
         const canvasLabel = selected?.length ? ` · 已选 ${selected.length} 个对象：${selected.map(n => n.name).join('、').slice(0, 80)}` : '';
         return `${context.pageId} / ${context.version}${canvasLabel}${deletion.blocked ? ' · 已删除' : ''}`;
     }
@@ -18088,7 +18135,7 @@ class DemoShell {
                 const editor = this.mainIframe?.contentWindow?.protaCanvas;
                 editor?.setPreparing?.(true);
                 if (editor?.isDirty() && !(await editor.save())) throw new Error('画布保存未完成，请先处理保存问题。');
-                if (editor) runContext = { ...runContext, pageMode: 'infinite-canvas', canvasDirty: false };
+                if (editor) { runContext = { ...runContext, pageMode: 'infinite-canvas', canvasDirty: false }; this._canvasRunScope = JSON.parse(JSON.stringify(runContext)); }
             }
             const contextState = this.getAgentContextDeletionState(runContext, kind === 'skill' ? this.getAgentSkill(payload.skillId) : this.agentActiveSkill);
             if (contextState.blocked && !(kind === 'skill' && this.getAgentSkill(payload.skillId)?.globalContext)) {

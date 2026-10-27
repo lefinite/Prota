@@ -63,6 +63,7 @@
   }
   function validate(state) {
     if (!state || state.schemaVersion !== 1 || !Array.isArray(state.nodes) || state.nodes.length > 1e3) throw Error("画布格式不正确");
+    if (!state.viewport || !["x", "y", "zoom"].every((key) => Number.isFinite(state.viewport[key])) || state.viewport.zoom < 0.05 || state.viewport.zoom > 4) throw Error("画布视角无效");
     const map = /* @__PURE__ */ new Map();
     for (const n of state.nodes) {
       if (!n || typeof n.id !== "string" || !/^[a-zA-Z0-9_-]{1,80}$/.test(n.id) || map.has(n.id) || !["group", "board", "text", "note", "rect", "ellipse", "image"].includes(n.type)) throw Error("画布对象无效");
@@ -82,7 +83,98 @@
     }
     return state;
   }
-  const api = { copy, uid, descendants, roots, locked, bounds, duplicate, reparent, validate };
+  function resizeSelection(base, items, handle, dx, dy, keepRatio = false) {
+    if (!base || !items.length || base.width <= 0 || base.height <= 0) throw Error("选区尺寸无效");
+    let sx = handle.includes("e") ? 1 + dx / base.width : handle.includes("w") ? 1 - dx / base.width : 1;
+    let sy = handle.includes("s") ? 1 + dy / base.height : handle.includes("n") ? 1 - dy / base.height : 1;
+    const minX = Math.max(...items.map((n) => 16 / n.width));
+    const minY = Math.max(...items.map((n) => 16 / n.height));
+    if (keepRatio) {
+      const scale = handle.length === 1 ? ["e", "w"].includes(handle) ? sx : sy : Math.abs(sx - 1) >= Math.abs(sy - 1) ? sx : sy;
+      sx = sy = Math.max(minX, minY, scale);
+    } else {
+      sx = Math.max(minX, sx);
+      sy = Math.max(minY, sy);
+    }
+    const width = base.width * sx, height = base.height * sy;
+    const x = handle.includes("w") ? base.x + base.width - width : handle.includes("e") ? base.x : base.x + (base.width - width) / 2;
+    const y = handle.includes("n") ? base.y + base.height - height : handle.includes("s") ? base.y : base.y + (base.height - height) / 2;
+    return items.map((n) => ({ id: n.id, x: x + (n.x - base.x) * sx, y: y + (n.y - base.y) * sy, width: n.width * sx, height: n.height * sy }));
+  }
+  function placeOverlay({ anchor, width, height, viewport, obstacles = [], placement = "toolbar", margin = 12, gap = 18 }) {
+    const limitX = Math.max(margin, viewport.width - width - margin), limitY = Math.max(margin, viewport.height - height - margin);
+    const clamp = (x, y) => ({ x: Math.max(margin, Math.min(limitX, x)), y: Math.max(margin, Math.min(limitY, y)), width, height });
+    const cx = anchor.x + (anchor.width - width) / 2, cy = anchor.y + (anchor.height - height) / 2;
+    const candidates = { above: clamp(cx, anchor.y - height - gap - 20), below: clamp(cx, anchor.y + anchor.height + gap), left: clamp(anchor.x - width - gap, cy), right: clamp(anchor.x + anchor.width + gap, cy) };
+    const overlap = (a, b) => Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
+    const padded = { x: anchor.x - 7, y: anchor.y - 25, width: anchor.width + 14, height: anchor.height + 32 };
+    let best = null, score = Infinity;
+    for (const name of placement === "popover" ? ["right", "left", "below", "above"] : ["above", "below", "left", "right"]) {
+      const rect = candidates[name], cost = overlap(rect, padded) * 3 + obstacles.reduce((sum, item) => {
+        const area = overlap(rect, item);
+        return sum + (area ? 1e9 + area : 0);
+      }, 0);
+      if (cost < score) {
+        score = cost;
+        best = { ...rect, placement: name };
+      }
+      if (cost === 0) break;
+    }
+    if (score > 0) {
+      const xs = [margin, (viewport.width - width) / 2, limitX];
+      const ys = [margin, 70, (viewport.height - height) / 2, viewport.height - height - 92, ...obstacles.flatMap((o) => [o.y - height - gap, o.y + o.height + gap])];
+      for (const x of xs) for (const y of ys) {
+        const rect = clamp(x, y), cost = overlap(rect, padded) * 3 + obstacles.reduce((sum, item) => {
+          const area = overlap(rect, item);
+          return sum + (area ? 1e9 + area : 0);
+        }, 0);
+        if (cost < score) {
+          score = cost;
+          best = { ...rect, placement: "viewport" };
+        }
+      }
+    }
+    return best;
+  }
+  function mergeDocuments(base, local, remote) {
+    const byId = (doc) => new Map(doc.nodes.map((n) => [n.id, n]));
+    const b = byId(base), l = byId(local), r = byId(remote), merged = /* @__PURE__ */ new Map(), conflicts = [];
+    const normalize = (value) => Array.isArray(value) ? value.map(normalize) : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, normalize(value[key])])) : value;
+    const equal = (a, b2) => JSON.stringify(normalize(a)) === JSON.stringify(normalize(b2));
+    for (const id of /* @__PURE__ */ new Set([...r.keys(), ...l.keys(), ...b.keys()])) {
+      const original = b.get(id), ours = l.get(id), theirs = r.get(id);
+      let next;
+      if (equal(ours, original)) next = theirs;
+      else if (equal(theirs, original) || equal(ours, theirs)) next = ours;
+      else if (ours && theirs) {
+        next = {};
+        let disputed = false;
+        for (const key of /* @__PURE__ */ new Set([...Object.keys(ours), ...Object.keys(theirs), ...Object.keys(original || {})])) {
+          const before = original?.[key], a = ours[key], b2 = theirs[key];
+          let value;
+          if (equal(a, before)) value = b2;
+          else if (equal(b2, before) || equal(a, b2)) value = a;
+          else {
+            disputed = true;
+            value = a;
+          }
+          if (value !== void 0) next[key] = copy(value);
+        }
+        if (disputed) conflicts.push(id);
+      } else {
+        conflicts.push(id);
+        next = ours;
+      }
+      if (next) merged.set(id, copy(next));
+    }
+    const order = equal(local.nodes.map((n) => n.id), base.nodes.map((n) => n.id)) ? remote.nodes : local.nodes;
+    const nodes = [...order.map((n) => n.id), ...merged.keys()].filter((id, i, all) => all.indexOf(id) === i && merged.has(id)).map((id) => merged.get(id));
+    for (const n of nodes) if (n.parentId && !merged.has(n.parentId)) n.parentId = null;
+    const result = { ...copy(remote), nodes, viewport: copy(local.viewport) };
+    validate(result);
+    return { state: result, conflicts };
+  }
+  const api = { copy, uid, descendants, roots, locked, bounds, duplicate, reparent, validate, resizeSelection, placeOverlay, mergeDocuments };
   root.CanvasCore = api;
   if (typeof module !== "undefined") module.exports = api;
 })(globalThis);

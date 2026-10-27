@@ -54,9 +54,11 @@ def validate_state(state):
             raise ValueError('图片必须保存在当前版本或嵌入画布')
     by_id = {node['id']: node for node in nodes}
     for node in nodes:
-        for key, low, high in [('opacity', 0, 1), ('radius', 0, 1000), ('fontSize', 8, 400)]:
+        for key, low, high in [('opacity', 0, 1), ('radius', 0, 1000), ('fontSize', 8, 400), ('fontWeight',100,900), ('padding',0,10000)]:
             if key in node and (not isinstance(node[key], (float, int)) or not math.isfinite(node[key]) or not low <= node[key] <= high):
                 raise ValueError('样式属性无效')
+        if 'textAlign' in node and node['textAlign'] not in {'left','center','right','justify'}:
+            raise ValueError('文字对齐属性无效')
         seen = set()
         parent = node
         while parent.get('parentId'):
@@ -150,6 +152,11 @@ def save_canvas(root, params):
         if temporary.is_symlink():
             raise ValueError('无效的临时文件')
         temporary.write_text(PREFIX + serialized + ';\n', encoding='utf-8')
+        # Asset / board copies can take time. Recheck immediately before replacing the layout,
+        # since external Agent writes do not participate in this process's lock.
+        if file.read_text(encoding='utf-8').strip() != raw:
+            temporary.unlink(missing_ok=True)
+            return 409, {'error': '保存期间出现外部更新，本机修改已保留，请选择恢复或读取最新版本。'}
         temporary.replace(file)
     return 200, {'revision': state['revision'], **({'assets': assets} if assets else {})}
 
@@ -168,17 +175,27 @@ def upgrade_runtime(root, params, template):
         if backup.is_symlink():
             raise ValueError('备份目录无效')
         backup.mkdir(exist_ok=True)
-        for filename in ['index.html', 'styles.css', 'app.js', 'canvas-core.js', 'README.md']:
+        filenames = ['icons.js', 'LICENSE.lucide', 'canvas-core.js', 'styles.css', 'app.js', 'README.md', 'index.html']
+        template = Path(template)
+        # Validate the whole editor bundle before changing any installed resource.
+        for filename in filenames:
+            if not (template/filename).is_file():
+                raise ValueError(f'编辑器安装包不完整，缺少 {filename}')
+        for filename in filenames:
             target = directory/filename
             if target.is_symlink():
                 raise ValueError('编辑器文件不能是符号链接')
             if target.exists() and not (backup/filename).exists():
                 shutil.copy2(target, backup/filename)
-        for filename in ['index.html', 'styles.css', 'app.js', 'canvas-core.js', 'README.md']:
+        staged = []
+        for filename in filenames:
             target = directory/filename
             temporary = directory/(filename+'.upgrade.tmp')
             if temporary.is_symlink():
                 raise ValueError('临时文件无效')
-            shutil.copyfile(Path(template)/filename, temporary)
+            shutil.copyfile(template/filename, temporary)
+            staged.append((temporary,target))
+        # Dependencies first, HTML entry last. No partial bundle is installed if staging fails.
+        for temporary,target in staged:
             temporary.replace(target)
-    return {'runtimeVersion': 3}
+    return {'runtimeVersion': 4}

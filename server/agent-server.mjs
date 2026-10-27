@@ -1608,7 +1608,9 @@ function normalizeContext(input = {}) {
         cwd: getWorkspaceRoot(),
         relativePageDir,
         pageDir: path.join(getWorkspaceRoot(), relativePageDir),
-        canvasSelection: Array.isArray(input.canvasSelection) ? input.canvasSelection.slice(0, 100).map(n => ({ id: String(n.id || '').slice(0, 80), name: String(n.name || '').slice(0, 160), type: String(n.type || ''), src: String(n.src || '').slice(0, 200), parentId: String(n.parentId || '').slice(0, 80) })) : [],
+        canvasSelection: Array.isArray(input.canvasSelection) ? input.canvasSelection.slice(0, 100).map(n => ({ id: String(n.id || '').slice(0, 80), name: String(n.name || '').slice(0, 160), type: String(n.type || ''), src: String(n.src || '').slice(0, 200), parentId: String(n.parentId || '').slice(0, 80),
+            bounds: n.bounds && ['x','y','width','height'].every(key => Number.isFinite(n.bounds[key])) ? { x:n.bounds.x,y:n.bounds.y,width:n.bounds.width,height:n.bounds.height } : undefined,
+            attributes: n.attributes ? { text:String(n.attributes.text || '').slice(0,1000),color:String(n.attributes.color || '').slice(0,32),fontSize:Number(n.attributes.fontSize) || 20,locked:Boolean(n.attributes.locked) } : undefined })) : [],
         pageMode: input.pageMode === 'infinite-canvas' ? 'infinite-canvas' : 'standard',
         canvasDirty: Boolean(input.canvasDirty)
     };
