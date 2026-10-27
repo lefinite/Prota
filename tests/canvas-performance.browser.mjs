@@ -12,6 +12,7 @@ const app = process.cwd();
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'prota-canvas-performance-'));
 const root = path.join(temp, 'workspace');
 const output = path.resolve(process.argv.find(arg => arg.startsWith('--output='))?.slice(9) || path.join(temp, 'report.json'));
+const scenarioFilter = process.argv.find(arg => arg.startsWith('--scenario='))?.slice(11);
 const runtimeRef = process.argv.find(arg => arg.startsWith('--runtime-ref='))?.slice(14);
 const runtimeSource = path.join(temp, 'runtime');
 const percentile = values => [...values].sort((a, b) => a - b)[Math.max(0, Math.ceil(values.length * .95) - 1)];
@@ -29,6 +30,7 @@ const report = {
   dirtyFiles: execFileSync('git', ['status', '--short'], { cwd: app, encoding: 'utf8' }).trim().split('\n').filter(Boolean),
   machine: { platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model, cores: os.cpus().length, memoryBytes: os.totalmem(), node: process.version },
   viewport: { width: 1440, height: 1000 },
+  scenarioFilter: scenarioFilter || null,
   methodology: {
     ready: 'navigation start to runtime API ready plus two animation frames; excludes loading offscreen lazy iframes',
     frame: 'requestAnimationFrame intervals during 48 pan and 48 Ctrl-wheel inputs; includes automation scheduling',
@@ -66,6 +68,7 @@ try {
   browser = await chromium.launch({ headless: true });
   report.browser = browser.version();
   for (const [count, boards] of [[50, 0], [200, 0], [1000, 0], [3000, 0], [50, 5], [200, 20], [1000, 50]]) {
+    if (scenarioFilter && scenarioFilter !== `${count}:${boards}`) continue;
     const id = `nodes_${count}_boards_${boards}`;
     const directory = path.join(root, 'src/pages/baseline', id, 'v1');
     await fs.cp(runtimeRef ? runtimeSource : path.join(app, 'src/templates/infinite-canvas'), directory, { recursive: true });
@@ -161,6 +164,7 @@ try {
     assert.deepEqual(errors, []); report.scenarios.push(row);
     console.log(JSON.stringify(row)); await context.close();
   }
+  assert.ok(report.scenarios.length, 'No matching scenario; use --scenario=<nodes>:<boards>');
   report.status = 'complete';
 } catch (error) {
   report.status = 'failed'; report.error = error.stack; throw error;

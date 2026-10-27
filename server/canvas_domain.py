@@ -104,7 +104,7 @@ def migrate_document(document, project_id='', page_id=''):
     return validate_document(result)
 
 
-def schema_enabled(root):
+def feature_enabled(root, name):
     """Explicit workspace opt-in; malformed or absent configuration stays off."""
     from pathlib import Path
     root = Path(root)
@@ -113,6 +113,10 @@ def schema_enabled(root):
         configuration = json.loads((root / 'data/canvas-features.json').read_text())
         workspace_id = workspace.get('id')
         allowed = configuration.get('testWorkspaceIds', [])
-        return isinstance(workspace_id, str) and bool(workspace_id) and isinstance(allowed, list) and workspace_id in allowed and configuration.get('overrides', {}).get('canvasSchemaV2') is True
+        return isinstance(workspace_id, str) and bool(workspace_id) and isinstance(allowed, list) and workspace_id in allowed and configuration.get('overrides', {}).get(name) is True
     except (OSError, ValueError, TypeError, AttributeError):
         return False
+
+
+def schema_enabled(root):
+    return feature_enabled(root, 'canvasSchemaV2')
