@@ -70,3 +70,9 @@ Portal 检测旧运行时（< 4）或不完整的编辑器资源后，修复当�
 编辑器先同步启动，再通过本机 `/api/canvas/features` 读取工作区迁移开关（默认关闭）。启用后，v1 只在内存补齐稳定 boardId 与空 boardRevisionId，首次编辑保存才在同次提交中备份原文件到 `.canvas-migrations/` 并写 v2。boardRevisionId 为 null 表示尚无正式业务快照，不等同于自动保存 revision。关闭开关后仍完整读写既有 v2，禁止旧客户端降级覆盖。
 
 `canvas-domain.js` 是 v1/v2 校验、迁移注册表与节点/父子/逻辑画板索引的纯数据层，必须与 canvas-core.js 一起复制。迁移跨 vN 保持逻辑身份；独立复制生成新 boardId 并保留 originBoardId。未知可选字段及 edges 在保存/恢复时保留。HTML、修复资源清单和 Portal 健康判断均检查此依赖。完整契约与验证见产品文档 `docs/canvas-upgrade/s1-domain.md`。
+
+## 画板业务版本存储（S2）
+
+显式测试工作区启用 boardRevisions 后，可通过本机画板版本 API 保存完整代码/素材快照、按父版本分支并恢复旧版。正式历史位于页面根目录 board-history/，不随每次复制 vN 重复拷贝；工作副本路径保持不变。恢复前保留当前恢复点，损坏草稿单独保留在事务回收站，不能冒充正式版本。
+
+保存、复制、图片写入和业务版本操作共用页面文件锁与事务日志；中断恢复和显式冲突回滚先保留原始材料，.board-trash/ 不自动删除。普通自动保存不产生 BoardRevision。历史 UI、比较与 Agent 完成后自动提交由 S3 接入。契约、开关、API、测试和限制见产品文档 docs/canvas-upgrade/s2-revisions.md。

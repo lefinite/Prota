@@ -2334,6 +2334,9 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             resolved = (root / clean).resolve()
             if resolved != root and root not in resolved.parents:
                 return str(workspace.CONFIG_DIR / '__denied__')
+            parts = resolved.relative_to(root).parts
+            if len(parts) >= 5 and parts[:2] == ('src', 'pages') and parts[4] in {'board-history', '.board-transactions', '.board-trash'}:
+                return str(workspace.CONFIG_DIR / '__denied__')
             return str(resolved)
         if any(part.startswith('.') for part in Path(clean).parts) or clean.startswith(('server/', 'scripts/', 'tests/', 'logs/')) or (clean.startswith('data/') and clean not in {'data/templates.json', 'data/template-states.json', 'data/agent-provider-presets.json'}):
             return str(workspace.CONFIG_DIR / '__denied__')
@@ -2366,11 +2369,19 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 workspace.workspace_root()
             except (ValueError, OSError) as error:
                 return self.workspace_reply(503, {'error': str(error)})
+        import posixpath
+        resource_parts = posixpath.normpath(urllib.parse.unquote(clean_path)).strip('/').split('/')
+        if len(resource_parts) >= 5 and resource_parts[:2] == ['src', 'pages'] and resource_parts[4] in {'board-history', '.board-transactions', '.board-trash'}:
+            return self.workspace_reply(404, {'error': '历史与恢复材料仅通过受校验接口访问'})
+        if clean_path.startswith('/__prota_board_history/') or clean_path in {'/api/boards/versions', '/api/boards/versions/preview', '/api/boards/transactions'}:
+            from server.board_http import read
+            return read(self, workspace)
         if clean_path == '/api/canvas/features':
             if not self.workspace_local():
                 return self.workspace_reply(403, {'error': '只能在本机读取画布开关。'})
-            from server.canvas_domain import schema_enabled
-            return self.workspace_reply(200, {'canvasSchemaV2': schema_enabled(workspace.workspace_root())})
+            from server.canvas_domain import feature_enabled
+            root = workspace.workspace_root()
+            return self.workspace_reply(200, {key: feature_enabled(root, key) for key in ('canvasSchemaV2', 'boardRevisions')})
         if clean_path == '/api/shares':
             if not self.workspace_local():
                 return self.workspace_reply(403, {'error': '只能在本机管理分享。'})
@@ -2441,6 +2452,9 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         clean_path = self.path.split('?')[0]
+        if clean_path in {'/api/boards/versions/create', '/api/boards/versions/restore', '/api/boards/transactions/recover'}:
+            from server.board_http import mutate
+            return mutate(self, workspace)
         if clean_path in {'/api/canvas/save', '/api/canvas/upgrade'}:
             if not self.workspace_local() or not self.headers.get('Content-Type', '').startswith('application/json'):
                 return self.workspace_reply(403, {'error': '只能在本机保存画布。'})
@@ -4655,7 +4669,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
         # The browser might block the request if this header is duplicated.
         # SimpleHTTPRequestHandler.end_headers() is where we inject our CORS headers.
         # We don't call super() until after we have sent our custom headers.
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', 'null' if getattr(self, '_board_history_cors', False) else '*')
+        self._board_history_cors = False
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         # Disable caching so the browser always loads the latest file versions
