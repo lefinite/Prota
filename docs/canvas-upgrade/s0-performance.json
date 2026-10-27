@@ -1,0 +1,282 @@
+{
+  "recordedAt": "2026-10-27T03:27:31.089Z",
+  "commit": "ed9a52cb488e6ac2cb6458ca14446bc2f53f5600",
+  "runtimeSource": "ed9a52cb488e6ac2cb6458ca14446bc2f53f5600",
+  "dirtyFiles": [
+    "M package.json",
+    " M portal/modules/prd/index.js",
+    " M portal/modules/prd/manager.js",
+    " M portal/modules/prd/prd.css",
+    " M portal/modules/prd/renderer.js",
+    " M portal/shell.js",
+    " M server/agent-server.mjs",
+    " M server/bridge.py",
+    " M src/templates/infinite-canvas/README.md",
+    " M src/templates/infinite-canvas/app.js",
+    " M tests/infinite-canvas.browser.mjs",
+    "?? docs/progressive-preview.md",
+    "?? portal/preview/",
+    "?? server/canvas-features.mjs",
+    "?? server/preview/",
+    "?? server/preview_http.py",
+    "?? tests/canvas-baseline.test.mjs",
+    "?? tests/canvas-performance.browser.mjs",
+    "?? tests/fixtures/",
+    "?? tests/prd-history.browser.mjs",
+    "?? tests/prd-manager.test.mjs",
+    "?? tests/preview-observer.test.mjs",
+    "?? tests/preview-snapshot.test.mjs",
+    "?? tests/preview-state.test.mjs",
+    "?? tests/preview-validator.test.mjs",
+    "?? tests/progressive-preview.browser.mjs",
+    "?? tests/test_canvas_baseline.py",
+    "?? tests/test_prd_documents.py"
+  ],
+  "machine": {
+    "platform": "darwin",
+    "release": "24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M4",
+    "cores": 10,
+    "memoryBytes": 17179869184,
+    "node": "v24.16.0"
+  },
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "methodology": {
+    "ready": "navigation start to runtime API ready plus two animation frames; excludes loading offscreen lazy iframes",
+    "frame": "requestAnimationFrame intervals during 48 pan and 48 Ctrl-wheel inputs; includes automation scheduling",
+    "input": "browser event timestamp to next animation frame; not OS-to-photon latency",
+    "memory": "largest sampled Performance.getMetrics JSHeapUsedSize for main page; not total browser/process peak",
+    "save": "five real /api/canvas/save round trips including layout history; excludes 300ms debounce",
+    "refresh": "reloadFromDisk(false, {targetIds:[id]}) through existing Agent completion path; asserts other iframe element identity",
+    "capacity": "3000 nodes must be rejected by v4; not a successful performance measurement"
+  },
+  "scenarios": [
+    {
+      "count": 50,
+      "boards": 0,
+      "readyMs": 160.40000009536743,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 26.100000000000136,
+          "inputP95Ms": 39.80000019073486,
+          "frameSamples": 228,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 26.100000000000023,
+          "inputP95Ms": 36.09999990463257,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 26.09999999999991,
+          "inputP95Ms": 38.5,
+          "frameSamples": 201,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 394.61670799999956,
+      "dragMs": 370.85954200000015,
+      "mountedIframes": 0,
+      "loadedIframes": 0,
+      "saveP95Ms": 8.825208000000202,
+      "sampledMainPageHeapPeakBytes": 6291896
+    },
+    {
+      "count": 200,
+      "boards": 0,
+      "readyMs": 59,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 26.09999999999991,
+          "inputP95Ms": 37.90000009536743,
+          "frameSamples": 200,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 18.800000000000182,
+          "inputP95Ms": 37.200000047683716,
+          "frameSamples": 194,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 26.100000000000023,
+          "inputP95Ms": 37.5,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 315.8107090000012,
+      "dragMs": 327.51958300000115,
+      "mountedIframes": 0,
+      "loadedIframes": 0,
+      "saveP95Ms": 3.7006670000009763,
+      "sampledMainPageHeapPeakBytes": 6991508
+    },
+    {
+      "count": 1000,
+      "boards": 0,
+      "readyMs": 83.70000004768372,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 26.100000000000136,
+          "inputP95Ms": 38.59999990463257,
+          "frameSamples": 194,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 26.100000000000023,
+          "inputP95Ms": 35.40000009536743,
+          "frameSamples": 212,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 26.199999999999818,
+          "inputP95Ms": 42,
+          "frameSamples": 199,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 447.25845800000025,
+      "dragMs": 341.98425000000134,
+      "mountedIframes": 0,
+      "loadedIframes": 0,
+      "saveP95Ms": 7.842625000001135,
+      "sampledMainPageHeapPeakBytes": 5431004
+    },
+    {
+      "count": 3000,
+      "boards": 0,
+      "readyMs": 66.70000004768372,
+      "status": "capacity-rejected",
+      "saveStatus": 400
+    },
+    {
+      "count": 50,
+      "boards": 5,
+      "readyMs": 88.19999980926514,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 26.100000000000023,
+          "inputP95Ms": 34.200000047683716,
+          "frameSamples": 196,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 26.199999999999932,
+          "inputP95Ms": 36.700000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 26.09999999999991,
+          "inputP95Ms": 35.200000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 310.2646670000031,
+      "dragMs": 284.3868749999965,
+      "localRefreshMs": 9.673625000003085,
+      "mountedIframes": 5,
+      "loadedIframes": 5,
+      "saveP95Ms": 3.159665999999561,
+      "sampledMainPageHeapPeakBytes": 16437584
+    },
+    {
+      "count": 200,
+      "boards": 20,
+      "readyMs": 110.70000004768372,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 26.100000000000023,
+          "inputP95Ms": 35.69999980926514,
+          "frameSamples": 194,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 26.100000000000023,
+          "inputP95Ms": 38.39999985694885,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 26.09999999999991,
+          "inputP95Ms": 38.200000047683716,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 308.32816699999967,
+      "dragMs": 365.41304200000013,
+      "localRefreshMs": 13.68779099999665,
+      "mountedIframes": 20,
+      "loadedIframes": 20,
+      "saveP95Ms": 3.790832999999111,
+      "sampledMainPageHeapPeakBytes": 45638984
+    },
+    {
+      "count": 1000,
+      "boards": 50,
+      "readyMs": 163.89999985694885,
+      "status": "measured",
+      "zooms": [
+        {
+          "zoom": 0.1,
+          "frameP95Ms": 26.199999999999818,
+          "inputP95Ms": 42.60000014305115,
+          "frameSamples": 195,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 1,
+          "frameP95Ms": 26.100000000000136,
+          "inputP95Ms": 40.30000019073486,
+          "frameSamples": 193,
+          "inputSamples": 96
+        },
+        {
+          "zoom": 2,
+          "frameP95Ms": 26.100000000000136,
+          "inputP95Ms": 39.90000009536743,
+          "frameSamples": 193,
+          "inputSamples": 96
+        }
+      ],
+      "marqueeMs": 624.478375000006,
+      "dragMs": 323.46633300000394,
+      "localRefreshMs": 14.301834000005329,
+      "mountedIframes": 50,
+      "loadedIframes": 50,
+      "saveP95Ms": 6.1976250000006985,
+      "sampledMainPageHeapPeakBytes": 43965592
+    }
+  ],
+  "browser": "148.0.7778.96",
+  "status": "complete",
+  "backendSource": "working-tree; --runtime-ref selected only the frontend template"
+}
