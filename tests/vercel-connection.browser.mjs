@@ -23,6 +23,7 @@ try {
         const shell={vercelAutoConfigBtn:document.querySelector('#vercelAutoConfigBtn'),staticDomainInput:document.querySelector('#domain'),shareSettingsForm:document.querySelector('form'),settings:{staticDomain:''},unifiedSettings:{guardModels:()=>false,dirtyPanels:()=>[],markSaved:()=>window.saved++},loadSettings:async()=>window.loads++};
         window.connection=new VercelConnection(shell);
         document.querySelector('#vercelAutoConfigBtn').onclick=()=>window.connection.start();
+        await window.connection.refresh();
     });
     await page.click('#vercelAutoConfigBtn');
     await page.locator('[data-vc-authorize]').waitFor({state:'visible'});

@@ -7,25 +7,65 @@ import argparse
 import json
 import re
 import shutil
+import subprocess
+import os
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from server import workspace
 
 ROOT = Path(__file__).resolve().parents[1]
-DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'src/templates', 'tools', '.claude/skills', 'assets']
+DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'integrations/pi', 'src/templates', 'tools', '.claude/skills', 'assets']
 FILES = ['Prota.exe', 'package.json', 'package-lock.json', 'LICENSE', 'README.md', 'README.zh-CN.md', 'AGENTS.md', '.gitignore', 'start-portal.command',
          'data/agent-provider-presets.json', 'data/agent-sdk-extension.mjs', 'data/templates.json',
          'docs/workspace-and-publishing.md', 'docs/share-setup-guide.md', 'docs/sharing-flow.mmd', 'docs/sharing-flow.svg',
-         'docs/developer-setup.md', 'docs/workspace-storage.md', 'docs/unified-settings-design.md', 'docs/provider-model-discovery.md']
+         'docs/developer-setup.md', 'docs/workspace-storage.md', 'docs/unified-settings-design.md', 'docs/provider-model-discovery.md',
+         '.gitmodules', 'pi-version.json', 'THIRD_PARTY_NOTICES.md', 'docs/agent-pi-architecture.md', 'docs/agent-pi-upgrade.md']
 PRIVATE_PARTS = {'node_modules', '__pycache__', '.git', '.DS_Store', 'user-preferences.md', '.readify-skills.json', 'skill-backups'}
 SIGNALS = [r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',
            r'gh[pousr]_[A-Za-z0-9]{25,}', r'sk-[A-Za-z0-9_-]{24,}']
 
 
+def copy_pi_runtime(target):
+    """Export only the verified, built runtime; never a developer checkout/cache."""
+    subprocess.run(['node', str(ROOT / 'scripts/verify-pi.mjs')], cwd=ROOT, check=True,
+                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
+    source = ROOT / 'runtime/pi'
+    manifest = json.loads((source / 'manifest.json').read_text())
+    destination = target / 'runtime/pi'
+    for name, record in {**manifest['files'], 'manifest.json': {}}.items():
+        relative = Path(name)
+        if relative.is_absolute() or '..' in relative.parts:
+            raise ValueError('Pi runtime manifest has an invalid path')
+        file = source / relative
+        dest = destination / relative
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if 'link' in record:
+            os.symlink(record['link'], dest, target_is_directory=file.resolve().is_dir())
+        else:
+            shutil.copy2(file, dest)
+
+
+def verified_runtime_links(directory):
+    """Internal npm links are allowed only when declared by a verified inventory."""
+    runtime = directory / 'runtime/pi'
+    manifest_file = runtime / 'manifest.json'
+    if not manifest_file.is_file():
+        return set()
+    subprocess.run(['node', str(directory / 'scripts/verify-pi.mjs')], cwd=directory,
+                   check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
+    manifest = json.loads(manifest_file.read_text())
+    return {'runtime/pi/' + name for name, record in manifest['files'].items() if 'link' in record}
+
+
 
 def audit(directory):
     findings = []
+    try:
+        runtime_links = verified_runtime_links(directory)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        findings.append({'file': 'runtime/pi', 'reason': 'Pi runtime verification failed'})
+        runtime_links = set()
     signals = list(SIGNALS)
     try:
         projects = json.loads((workspace.workspace_root() / 'data/projects.json').read_text()).get('projects', [])
@@ -48,11 +88,12 @@ def audit(directory):
     for file in directory.rglob('*'):
         relative = file.relative_to(directory).as_posix()
         if file.is_symlink():
-            findings.append({'file': relative, 'reason': 'symbolic link'})
+            if relative not in runtime_links:
+                findings.append({'file': relative, 'reason': 'symbolic link'})
             continue
         if not file.is_file():
             continue
-        if relative.startswith(('src/pages/', 'shares/', 'data/agent-sessions/', 'data/agent-uploads/')) or file.name == '.env':
+        if relative.startswith(('src/pages/', 'shares/', 'data/agent-sessions/', 'data/pi-sessions/', 'data/agent-uploads/')) or file.name == '.env':
             findings.append({'file': relative, 'reason': 'business/runtime file'})
         content = file.read_bytes()
         if any(s.encode() in content for s in secret_values):
@@ -89,12 +130,20 @@ def export(target):
             dest = target / relative
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, dest)
+    copy_pi_runtime(target)
     # Generic regression suites; actual business-page tests stay in the private workspace.
     for source in (ROOT / 'tests').glob('*'):
         if source.is_file() and source.suffix in {'.py', '.mjs', '.ps1'} and not source.name.startswith('readify-'):
             dest = target / 'tests' / source.name
             dest.parent.mkdir(exist_ok=True)
             shutil.copy2(source, dest)
+    # Generic RPC child fixture; never export private business-page fixtures.
+    for fixture_name in ['pi-rpc-child.mjs', 'pi-mcp-server.mjs']:
+        fixture = ROOT / 'tests/fixtures' / fixture_name
+        if fixture.is_file():
+            dest = target / 'tests/fixtures' / fixture_name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(fixture, dest)
     (target / 'src/pages').mkdir(parents=True)
     (target / 'data/projects.json').write_text(json.dumps({'projects': [], 'activeProjectId': None, 'activePageId': None}, indent=2)+'\n')
     findings = audit(target)

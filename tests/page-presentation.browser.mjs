@@ -63,7 +63,7 @@ try {
     await wait(() => page.evaluate(() => Boolean(window.shell?.projects?.projects?.length && window.shell?.getAgentSkill('create-new-page'))), 'shell metadata and skills');
     await page.evaluate(() => window.shell.openNewPageAgentFlow({ projectId: 'demo' }));
     const mode = page.getByRole('combobox', { name: '页面呈现方式' });
-    assert.equal(await mode.inputValue(), 'auto');
+    assert.equal(await mode.inputValue(), 'infinite-canvas');
     // The status ticker runs every second. A user may keep the native menu open
     // across several ticks; replacing the select loses its popup and keyboard focus.
     await mode.focus();
@@ -120,7 +120,7 @@ try {
     assert.match(sent.internalInstructions, /targetDevice: "canvas"/);
     assert.doesNotMatch(sent.message, /执行上下文/);
     await page.evaluate(async () => { window.shell.agentRunState.active = false; await window.shell.openNewPageAgentFlow({ projectId: 'demo' }); });
-    assert.equal(await mode.inputValue(), 'auto', 'new creation resets to intelligent mode');
+    assert.equal(await mode.inputValue(), 'infinite-canvas', 'new creation resets to infinite canvas mode');
     await page.locator('#agentStatusContext').screenshot({ path: '/tmp/prota-presentation-picker.png' });
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await mode.isVisible(), true);
@@ -156,8 +156,8 @@ try {
         await route.fulfill({ status: 200, contentType: 'text/event-stream', body: '' });
     });
     await preview.locator('#selection-tools [data-action=edit-text]').click();
-    await preview.locator('[contenteditable=true]').fill('未保存的局部修改');
-    await preview.locator('[contenteditable=true]').press('Tab');
+    await preview.locator('.node.editing .node-content').fill('未保存的局部修改');
+    await preview.locator('.node.editing .node-content').press('Tab');
     const viewBeforeAgent = await preview.locator('#stage').evaluate(() => window.protaCanvas.getState().viewport);
     const selectionBeforeAgent = await preview.locator('#stage').evaluate(() => window.protaCanvas.getSelection());
     const currentSession = await page.evaluate(() => window.shell.agentSessionId);

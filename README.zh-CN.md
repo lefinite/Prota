@@ -125,6 +125,8 @@ Agent 支持产品经理工作流：**产品思考**（分析需求与拆解任�
 
 ```bash
 npm run agent:check                                   # 检查 Agent 网关语法
+npm run pi:build                                      # 从固定的上游源码构建开发用 Pi 运行时
+npm run pi:verify                                     # 校验运行时完整性与 RPC 启动
 node --test tests/*.test.mjs                          # Node 测试
 python3 -m unittest discover -s tests -p "test_*.py"  # Python 测试
 ```

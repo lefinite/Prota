@@ -99,12 +99,30 @@ class DirectPublishTests(unittest.TestCase):
             self.assertFalse((directory/'.vercel/output/static/shares/reader-v1-static.html').exists())
             self.assertTrue((directory/'.vercel/output/functions/share.func/content/shares/reader-v1-static.html').is_file())
             return SimpleNamespace(returncode=0, stdout='https://share.example.com\n', stderr='')
-        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node') as which, patch('server.deployer.subprocess.run', side_effect=run):
+        def api(endpoint, token, team=None, method='GET', data=None, timeout=30):
+            seen.append((endpoint, method, data))
+            return {}
+        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node') as which, patch('server.deployer.subprocess.run', side_effect=run), \
+                patch('server.deployer.read_vercel_auth', return_value=('fixture-token', 'fixture-team')), patch('server.deployer.vercel_api', side_effect=api):
             self.assertEqual(self.deployer.deploy(self.share), 'https://share.example.com')
             which.assert_called_once_with('node')
-        self.assertEqual(len(seen), 2)
+        self.assertIn(('/v10/projects/fixture-project/env?upsert=true', 'POST',
+                       {'key': 'VERCEL_SUPPORT_LARGE_FUNCTIONS', 'value': '1', 'type': 'plain',
+                        'target': ['production', 'preview']}), seen)
+        self.assertEqual(len(seen), 3)
         self.assertTrue((self.root/'data/published-static/reader-v1-static.html').is_file())
         self.assertTrue((self.root/'data/published-static/shares/reader-v1-static.html').is_file())
+
+    def test_large_functions_opt_in_failure_does_not_block_deployment(self):
+        config = self.configure_publish()
+        def run(command, **kwargs):
+            if command[-1] == '--prota-check':
+                return SimpleNamespace(returncode=0, stdout='', stderr='')
+            return SimpleNamespace(returncode=0, stdout='https://share.example.com\n', stderr='')
+        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.shutil.which', return_value='/fixture/node'), patch('server.deployer.subprocess.run', side_effect=run), \
+                patch('server.deployer.read_vercel_auth', return_value=('fixture-token', 'fixture-team')), \
+                patch('server.deployer.vercel_api', side_effect=ValueError('Vercel 登录已失效，请在「设置 → 分享配置」中重新连接。')):
+            self.assertEqual(self.deployer.deploy(self.share), 'https://share.example.com')
 
     def test_missing_cli_stops_before_upload_and_preserves_previous_snapshot(self):
         config = self.configure_publish()

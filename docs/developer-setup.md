@@ -2,7 +2,7 @@
 
 普通用户在 Mac 双击 `Prota.app`，在 Windows 双击 `Prota.exe`，不需要以下命令。图形启动流程见[启动与链接分享](share-setup-guide.md)。
 
-开发环境需要 Node.js 22.9+、Python 3.9+。开发者可以执行 `npm ci` 后运行 `bash scripts/run.sh`。后者保留前台日志，属于开发入口。
+开发环境需要 Node.js 22.19+、Python 3.9+。开发者先运行 `git submodule update --init --recursive`、`npm ci` 和 `npm run pi:build`，通过 `npm run pi:verify` 后运行 `bash scripts/run.sh`。后者保留前台日志，属于开发入口。普通用户使用已经包含 Pi 运行时的发布包，不需要克隆或编译 Pi。详细流程见 [Pi 构建与升级](agent-pi-upgrade.md)。
 
 `npm ci` 或 `npm install` 的 postinstall 会在独立的 `node_modules/.prota-vercel/` 中安装 `vercel@latest`。此工具依赖与产品锁文件分开，安装时显式查询 latest，正常启动及分享不会升级。
 

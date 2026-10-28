@@ -135,8 +135,10 @@ def vercel_api(endpoint, token, team=None, method='GET', data=None, timeout=30):
         with opener.open(request, timeout=timeout) as response:
             return json.load(response)
     except urllib.error.HTTPError as exc:
-        if exc.code in {401, 403}:
-            raise ValueError('Vercel 登录已失效或没有项目权限，请在「设置 → 分享配置」中重新连接。') from None
+        if exc.code == 401:
+            raise ValueError('Vercel 登录已失效，请在「设置 → 分享配置」中重新连接。') from None
+        if exc.code == 403:
+            raise ValueError('当前 Vercel 账号没有访问权限，请检查账号、团队及项目权限。') from None
         raise ValueError(f'Vercel 请求失败（HTTP {exc.code}），请检查项目配置。') from None
 
 
@@ -164,6 +166,18 @@ def configure_vercel(domain, project_id=None):
               'projectName': selected['name'], 'staticDomain': domain}
     workspace.atomic_json(workspace.CONFIG_DIR / 'vercel.json', config)
     return config
+
+
+def opt_in_large_functions():
+    """Raise Vercel's 250mb function ceiling; gateway content grows with every share."""
+    try:
+        token, team = read_vercel_auth()
+        config = json.loads((workspace.CONFIG_DIR / 'vercel.json').read_text())
+        vercel_api(f"/v10/projects/{config['projectId']}/env?upsert=true", token, team, method='POST',
+                   data={'key': 'VERCEL_SUPPORT_LARGE_FUNCTIONS', 'value': '1', 'type': 'plain',
+                         'target': ['production', 'preview']})
+    except Exception as error:
+        logger.warning('未能开启 Vercel 大函数支持，整体分享内容超过 250mb 时部署将失败：%s', error)
 
 
 class VercelDeployer:
@@ -347,18 +361,21 @@ class VercelDeployer:
                 if not node:
                     raise ValueError('运行环境尚未准备好，请关闭后重新双击 Prota，等待自动准备完成。')
                 command = [node, str(self.app / 'scripts/vercel-cli.mjs')]
-                env = {**deployment_environment(), 'NO_COLOR': '1', 'VERCEL_ORG_ID': config['orgId'], 'VERCEL_PROJECT_ID': config['projectId']}
+                env = {**deployment_environment(), 'NO_COLOR': '1', 'VERCEL_ORG_ID': config['orgId'], 'VERCEL_PROJECT_ID': config['projectId'], 'VERCEL_SUPPORT_LARGE_FUNCTIONS': '1'}
                 dependency = subprocess.run([*command, '--prota-check'], env=env,
                                             capture_output=True, text=True, timeout=15,
                                             creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
                 if dependency.returncode:
                     raise ValueError('分享工具尚未准备好，请关闭后重新双击 Prota，等待自动准备完成。')
+                opt_in_large_functions()
                 result = subprocess.run([*command, 'deploy', '--prebuilt', '--prod', '--yes', '--cwd', str(directory)],
                                         env=env, capture_output=True, text=True, timeout=300,
                                         creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
                 if result.returncode:
                     # CLI output may contain private project details: keep it local.
                     workspace.atomic_json(root / 'last-error.json', {'message': result.stderr[-8000:]})
+                    if 'exceeds the maximum uncompressed size limit' in result.stderr:
+                        raise RuntimeError('分享内容超过 Vercel 函数体积限制：大函数支持未开启成功，请在 Vercel 项目的环境变量设置中添加 VERCEL_SUPPORT_LARGE_FUNCTIONS=1 后重试。')
                     raise RuntimeError('Vercel 部署失败，请检查本机登录和项目权限；本地数据未改变。诊断见本机配置目录 vercel-publish/last-error.json。')
                 saved = self.root / 'data/published-static-next'
                 if saved.exists():

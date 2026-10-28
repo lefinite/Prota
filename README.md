@@ -125,6 +125,8 @@ For link sharing, click **Connect Vercel** in Settings and authorize in your bro
 
 ```bash
 npm run agent:check              # syntax-check the agent gateway
+npm run pi:build                 # build the pinned upstream Pi runtime for development
+npm run pi:verify                # verify runtime integrity and RPC startup
 node --test tests/*.test.mjs     # Node tests
 python3 -m unittest discover -s tests -p "test_*.py"   # Python tests
 ```

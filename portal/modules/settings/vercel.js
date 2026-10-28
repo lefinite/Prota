@@ -32,7 +32,12 @@ export class VercelConnection {
     }
     updateSummary() {
         const connection = this.connection || {};
-        const job = this.job || {};
+        const currentJob = this.job || {};
+        const selectedMode = document.querySelector('[name=shareSetup]:checked')?.value || 'vercel';
+        const selectedDomain = this.shell.staticDomainInput.value.trim().replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+        const relevant = !currentJob.domain || (selectedMode === 'custom' ? currentJob.domain === selectedDomain : currentJob.domain.endsWith('.vercel.app'));
+        const job = relevant ? currentJob : {};
+        this.panel.hidden = !relevant || ['idle', 'ready'].includes(currentJob.state || 'idle');
         const active = ['running', 'authorizing'].includes(job.state);
         const mode = document.querySelector('[name=shareSetup]:checked')?.value || 'vercel';
         const draft = this.shell.staticDomainInput.value.trim().replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
@@ -46,10 +51,12 @@ export class VercelConnection {
         else if (ready && matches) { state = 'ready'; label = '已生效'; }
         else if (connection.authState === 'expired') { state = 'warning'; label = '需重新授权'; }
         else if (['dns_required','error','cancelled'].includes(job.state)) { state = job.state === 'cancelled' ? 'pending' : 'warning'; label = job.state === 'dns_required' ? '待验证域名' : job.state === 'error' ? '连接需处理' : '连接已取消'; message = job.message; }
-        else if (ready) { label = '待应用'; message = '仅选择方式不会更改当前分享地址，完成连接后才会生效。'; }
+        else if (ready) { label = '待应用'; message = mode === 'custom' ? '账号授权可继续使用。填写自有域名后，绑定域名并验证 DNS；原分享地址在切换成功前仍然有效。' : '账号授权可继续使用。启用 Vercel 默认地址后即可分享，无需购买域名或设置 DNS。'; }
         else if (connection.authState === 'unknown' || connection.publishState === 'unknown') { state = 'warning'; label = '无法验证'; }
         else if (connection.authState === 'authorized') { state = connection.publishState === 'unconfigured' ? 'pending' : 'warning'; label = connection.publishState === 'unconfigured' ? '已授权，待连接' : '配置需处理'; }
         this.summary.dataset.state = state;
+        this.summary.dataset.mode = mode;
+        this.summary.querySelector('.us-vercel-summary-heading > strong').textContent = mode === 'custom' ? '域名绑定与验证' : 'Vercel 发布服务';
         const badge = this.summary.querySelector('[data-vc-badge]'); badge.textContent = label;
         const auth = {authorized:`已授权 · ${connection.account || 'Vercel 账号'}`,unauthorized:'未授权',expired:'授权需更新，请重新授权',unknown:'暂时无法验证'}[connection.authState] || '正在检查…';
         this.summary.querySelector('[data-vc-account]').textContent = job.state === 'authorizing' ? '等待浏览器授权' : auth;
@@ -61,10 +68,14 @@ export class VercelConnection {
         if (ready && /^(?:[a-z0-9-]+\.)+[a-z]{2,}$/i.test(connection.domain || '')) address.href = 'https://' + connection.domain;
         this.summary.querySelector('[data-vc-summary-message]').textContent = message;
         const check = this.summary.querySelector('[data-vc-check]'); check.disabled = this.checking || active;
-        this.shell.vercelAutoConfigBtn.disabled = active;
-        this.shell.vercelAutoConfigBtn.querySelector('strong').textContent = active ? (job.state === 'authorizing' ? '等待授权…' : '正在连接…') : connection.authState === 'expired' ? '重新授权' : ready && matches ? '重新连接' : mode === 'custom' ? '绑定域名并连接' : '连接 Vercel';
+        const action = this.shell.vercelAutoConfigBtn;
+        action.hidden = ready && matches && !active && !this.checking;
+        action.disabled = active || this.checking || (mode === 'custom' && !draft);
+        action.querySelector('strong').textContent = this.checking ? '正在检查…' : active ? (job.state === 'authorizing' ? '等待授权…' : '正在连接…') : connection.authState === 'unknown' || !connection.authState ? '重新检查连接' : connection.authState === 'expired' ? '重新授权' : connection.authState === 'authorized' ? (mode === 'custom' ? '绑定并验证域名' : '启用 Vercel 地址') : '连接 Vercel';
     }
     async start() {
+        if (this.checking) return;
+        if (!this.connection || this.connection.authState === 'unknown') { await this.refresh(); return; }
         if (this.shell.unifiedSettings?.guardModels(() => this.start())) return;
         const custom = document.querySelector('[name=shareSetup]:checked')?.value === 'custom';
         if (custom && !this.shell.staticDomainInput.value.trim()) {
@@ -88,7 +99,7 @@ export class VercelConnection {
         clearTimeout(this.timer); this.job = data; this.panel.hidden = ['idle','ready'].includes(data.state);
         const active = ['running', 'authorizing'].includes(data.state);
         if (active && !this.blockedInputs) {
-            this.blockedInputs = new Map([...this.shell.shareSettingsForm.querySelectorAll('[name=shareSetup], #staticDomainInput, button[type=submit]')].map(input => [input, input.disabled]));
+            this.blockedInputs = new Map([...new Set([...this.shell.shareSettingsForm.querySelectorAll('[name=shareSetup], #staticDomainInput'), ...this.shell.shareSettingsForm.elements].filter(input => input.matches('[name=shareSetup], #staticDomainInput, button[type=submit]')))].map(input => [input, input.disabled]));
             for (const input of this.blockedInputs.keys()) input.disabled = true;
         } else if (!active && this.blockedInputs) {
             for (const [input, disabled] of this.blockedInputs) input.disabled = disabled;

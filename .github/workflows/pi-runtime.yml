@@ -1,0 +1,45 @@
+name: Pi runtime compatibility
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'scripts/**'
+      - 'integrations/pi/**'
+      - 'vendor/pi'
+      - 'pi-version.json'
+      - 'package*.json'
+      - 'tests/pi-*'
+      - '.github/workflows/pi-*.yml'
+permissions:
+  contents: read
+jobs:
+  compatibility:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run pi:build
+      - run: npm run pi:verify
+      - run: npm run agent:test
+      - run: node --test tests/desktop-launcher.test.mjs tests/runtime-archive.test.mjs
+      - name: Archive runtime without losing executable modes or internal links
+        shell: bash
+        run: tar -czf "$RUNNER_TEMP/pi-runtime.tar.gz" -C runtime pi
+      - name: Preserve verified runtime for platform release packaging
+        uses: actions/upload-artifact@v6
+        with:
+          name: pi-runtime-${{ runner.os }}-${{ runner.arch }}
+          path: ${{ runner.temp }}/pi-runtime.tar.gz
+          retention-days: 7

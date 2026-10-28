@@ -19,6 +19,22 @@ class CanvasStoreTests(unittest.TestCase):
     def params(self):
         return {'projectId':'demo','pageId':'design','version':'v1','revision':0,'baseline':copy.deepcopy(self.state),'state':copy.deepcopy(self.state)}
 
+    def test_native_edges_round_trip_and_validation_on_v1(self):
+        params = self.params()
+        params['state']['nodes'] = [dict(id=id, type='board', x=x, y=0, width=200, height=300) for id, x in [('a', 0), ('b', 500)]]
+        params['state']['edges'] = [{'id': 'e', 'fromInstanceId': 'a', 'toInstanceId': 'b', 'label': '验证码通过', 'kind': 'main', 'fromPort': 'auto', 'toPort': 'left'}]
+        status, _ = save_canvas(self.root, params)
+        self.assertEqual(status, 200)
+        persisted = json.loads(self.file.read_text()[len(PREFIX):].strip().removesuffix(';'))
+        self.assertEqual(persisted['edges'], params['state']['edges'])
+        invalid = dict(params['state']['edges'][0], label='x' * 201)
+        from server.canvas_domain import validate_document
+        with self.assertRaises(ValueError):
+            validate_document(dict(params['state'], edges=[invalid]))
+        invalid['label'] = 'valid'; invalid['fromPort'] = 'bad-side'
+        with self.assertRaises(ValueError):
+            validate_document(dict(params['state'], edges=[invalid]))
+
     def test_save_and_conflict(self):
         params = self.params()
         params['state']['nodes'] = [{'id':'text_1','type':'text','x':-100,'y':10,'width':200,'height':100,'text':'<script>文本</script>'}]
@@ -72,24 +88,27 @@ class CanvasStoreTests(unittest.TestCase):
         self.assertEqual((self.directory/'.canvas-runtime-backup/app.js').read_text(), '// old editor')
         self.assertTrue((self.directory/'canvas-core.js').is_file())
         self.assertTrue((self.directory/'icons.js').is_file())
+        for filename in ['marked.js', 'markdown.js', 'LICENSE.marked']:
+            self.assertEqual((self.directory/filename).read_bytes(), (template/filename).read_bytes())
         self.assertIn('Lucide', (self.directory/'LICENSE.lucide').read_text())
 
-    def test_v3_upgrade_retains_nodes_board_code_assets_and_metadata(self):
+    def test_v4_upgrade_retains_nodes_board_code_assets_annotations_and_metadata(self):
         from server.canvas_store import upgrade_runtime
         metadata = self.root/'data/projects.json'
         metadata.parent.mkdir()
         metadata.write_text('{"projects":[{"id":"demo","pages":[{"id":"design","pageMode":"infinite-canvas","versions":["v1"]}]}]}')
-        (self.directory/'app.js').write_text('window.protaCanvas={runtimeVersion:3};')
+        (self.directory/'app.js').write_text('window.protaCanvas={runtimeVersion:4};')
         (self.directory/'boards/reader').mkdir(parents=True)
         (self.directory/'assets').mkdir()
         (self.directory/'boards/reader/index.html').write_text('<h1>Keep this business prototype</h1>')
         (self.directory/'assets/reference.png').write_bytes(b'original asset')
-        files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png']
+        (self.directory/'annotations.json').write_text('[{"target":{"type":"canvas-board","boardId":"reader"},"selector":"h1","description":"Keep annotation"}]')
+        files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png',self.directory/'annotations.json']
         original={file:file.read_bytes() for file in files}
         template=Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas'
-        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':4})
+        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':8})
         self.assertTrue(all(file.read_bytes()==data for file,data in original.items()))
-        self.assertIn('runtimeVersion:3',(self.directory/'.canvas-runtime-backup/app.js').read_text())
+        self.assertIn('runtimeVersion:4',(self.directory/'.canvas-runtime-backup/app.js').read_text())
 
     def test_agent_write_during_save_is_not_replaced(self):
         from unittest.mock import patch

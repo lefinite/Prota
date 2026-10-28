@@ -1679,3 +1679,22 @@ body.is-resizing-prd-drawer .prd-drawer-resize-handle::after {
         animation: none;
     }
 }
+
+/* Page document history stays within the existing metadata row. */
+.prd-meta__history {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 180px;
+}
+.prd-dropdown-footer {
+    display: grid;
+    gap: 6px;
+}
+.prd-dropdown-create-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}

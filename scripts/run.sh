@@ -20,14 +20,17 @@ python3 -c 'from server.workspace import workspace_root; workspace_root()'
 echo "🚀 Starting Readify Portal..."
 mkdir -p logs
 
-if [ ! -d "node_modules/@codeany/open-agent-sdk" ] || ! node scripts/vercel-cli.mjs --prota-check >/dev/null 2>&1; then
+if [ ! -d "node_modules/playwright" ] || ! node scripts/vercel-cli.mjs --prota-check >/dev/null 2>&1; then
     echo "📦 Installing product dependencies and the latest Vercel CLI..."
     npm ci
 fi
 node scripts/vercel-cli.mjs --prota-check
+node scripts/verify-pi.mjs
 
-lsof -ti :8080 | xargs kill -9 2>/dev/null || true
-lsof -ti :8081 | xargs kill -9 2>/dev/null || true
+if lsof -tiTCP:8080 -sTCP:LISTEN >/dev/null 2>&1 || lsof -tiTCP:8081 -sTCP:LISTEN >/dev/null 2>&1; then
+    echo "Ports 8080/8081 are already in use. Stop the existing services before starting the foreground development launcher."
+    exit 1
+fi
 
 python3 server/bridge.py > logs/bridge.log 2>&1 &
 BRIDGE_PID=$!

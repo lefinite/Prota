@@ -28,6 +28,21 @@ function createStore() {
     return { store, presets };
 }
 
+test('Pi 模型能力和模型目录传入运行配置并可持久化恢复', () => {
+    const { store } = createStore();
+    store.createBlank();
+    const capabilities = { input: ['text', 'image'], contextWindow: 64000, maxTokens: 4096 };
+    store.updateSelectedProvider({ model: 'custom-vision', models: ['custom-other'], modelCapabilities: capabilities });
+    capabilities.input.pop();
+    const config = store.buildConfig();
+    assert.deepEqual(config.modelCapabilities.input, ['text', 'image']);
+    assert.ok(config.models.includes('custom-other'));
+    assert.ok(config.models.includes('custom-vision'));
+    const { store: restored } = createStore();
+    restored.replaceState(JSON.parse(JSON.stringify(store.exportState())));
+    assert.deepEqual(restored.buildConfig().modelCapabilities, config.modelCapabilities);
+});
+
 test('同一服务商模板可以保存为多个独立模型配置', () => {
     const { store } = createStore();
     const first = store.createFromPreset('zhipu-anthropic');

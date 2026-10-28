@@ -23,7 +23,7 @@ trap cleanup EXIT
 status() { printf '%s\n' "$1" > "$STATUS_FILE.next"; mv "$STATUS_FILE.next" "$STATUS_FILE"; }
 failed() { status '{"state":"error","show":true,"title":"准备未完成","detail":"请检查网络连接，然后点击重试。已有项目与配置已保留。"}'; }
 trap failed ERR
-if ! command -v node >/dev/null || ! node -e 'const [a,b]=process.versions.node.split(".").map(Number);const npm=require("path").resolve(require("path").dirname(process.execPath),"../lib/node_modules/npm/bin/npm-cli.js");process.exit((a>22||a===22&&b>=9)&&require("fs").existsSync(npm)?0:1)' >/dev/null 2>&1; then
+if ! command -v node >/dev/null || ! node -e 'const [a,b]=process.versions.node.split(".").map(Number);const npm=require("path").resolve(require("path").dirname(process.execPath),"../lib/node_modules/npm/bin/npm-cli.js");process.exit((a>22||a===22&&b>=19)&&require("fs").existsSync(npm)?0:1)' >/dev/null 2>&1; then
     status '{"state":"preparing","show":true,"step":1,"title":"准备运行环境","detail":"正在下载 Node.js，首次启动需要一些时间。"}'
     NODE_STAGE_DIR="$(mktemp -d "$RUNTIME_DIR/node-download.XXXXXX")"
     /usr/bin/curl -fLsS --retry 2 --connect-timeout 20 --max-time 90 https://nodejs.org/dist/index.json -o "$NODE_STAGE_DIR/index.json"

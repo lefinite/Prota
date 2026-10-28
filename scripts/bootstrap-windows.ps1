@@ -43,7 +43,7 @@ try {
         $versionOutput=& $node --version
         $npm=Join-Path (Split-Path -Parent $node) 'node_modules\npm\bin\npm-cli.js'
         if ($LASTEXITCODE -eq 0 -and $versionOutput -match '^v(\d+)\.(\d+)\.') {
-            $ready=([int]$Matches[1] -gt 22 -or ([int]$Matches[1] -eq 22 -and [int]$Matches[2] -ge 9)) -and (Test-Path -LiteralPath $npm)
+            $ready=([int]$Matches[1] -gt 22 -or ([int]$Matches[1] -eq 22 -and [int]$Matches[2] -ge 19)) -and (Test-Path -LiteralPath $npm)
         }
     }
     if (!$ready) {

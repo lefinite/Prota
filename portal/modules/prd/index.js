@@ -3,8 +3,8 @@
  * Orchestrates PRDManager, PRDRenderer and PRDScrollSync to deliver high-quality PRD experiences.
  */
 
-import { PRDManager } from './manager.js?v=20260808-task-list-v2';
-import { PRDRenderer } from './renderer.js?v=20261013-auto-polish-v1';
+import { PRDManager } from './manager.js?v=20261027-page-docs-v1';
+import { PRDRenderer } from './renderer.js?v=20261027-page-docs-v1';
 import { PRDScrollSync } from './scroll-sync.js?v=20261013-stable-edit-scroll-v1';
 
 export class PRDModule {
@@ -106,7 +106,7 @@ export class PRDModule {
      */
     ensureStylesheet() {
         const isShare = window.__READIFY_SHARE__ || window.location.pathname.includes('/shares/');
-        const href = isShare ? '/portal/modules/prd/prd.css?v=20261013-direction-viewer-v1' : 'modules/prd/prd.css?v=20261013-direction-viewer-v1';
+        const href = isShare ? '/portal/modules/prd/prd.css?v=20261027-page-docs-v1' : 'modules/prd/prd.css?v=20261027-page-docs-v1';
 
         const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
             .find((link) => (link.getAttribute('href') || '').includes('prd.css'));
@@ -128,8 +128,11 @@ export class PRDModule {
      * Entry: Called by DemoSell when active workspace context (page/version) is changed
      */
     async switchContext(pageId, version, preferredPath = '') {
+        const pageKey = `${this.host.activeProjectId}:${pageId}`;
+        const currentPath = this._pageKey === pageKey ? this.manager.state.path : '';
+        this._pageKey = pageKey;
         this.manager.resetState();
-        await this.manager.loadDocument({ force: true, path: preferredPath });
+        await this.manager.loadDocument({ force: true, path: preferredPath || currentPath });
     }
 
     /**
@@ -352,7 +355,7 @@ export class PRDModule {
         if (state.status === 'empty') {
             body.innerHTML = `
                 <div class="annotation-drawer__empty prd-empty">
-                    <strong>当前版本还没有 PRD</strong>
+                    <strong>当前页面还没有 PRD</strong>
                     <p>可以先补充交互标注，让 Prota 生成一份 PRD。</p>
                     <button class="prd-empty__action" type="button" data-generate-prd="1">生成 PRD</button>
                 </div>
@@ -1534,7 +1537,7 @@ export class PRDModule {
         // Bind switch document events
         const switchItems = metaEl.querySelectorAll('[data-prd-switch-path]');
         switchItems.forEach(item => {
-            item.addEventListener('click', (e) => {
+            item.addEventListener('click', async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (dropdown) {
@@ -1543,6 +1546,7 @@ export class PRDModule {
                 }
                 const path = item.dataset.prdSwitchPath;
                 if (path && path !== this.manager.state.path) {
+                    if (!(await this.canNavigate())) return;
                     this.manager.loadDocument({ force: true, path });
                 }
             });
@@ -1558,6 +1562,12 @@ export class PRDModule {
                 const filename = btn.dataset.prdDeleteFilename || '';
                 await this.deleteDocumentFlow(path, filename);
             });
+        });
+
+        metaEl.querySelector('[data-prd-revise-document]')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (!(await this.canNavigate())) return;
+            await this.manager.createNewDocument({ derivedFrom: this.manager.state.path });
         });
 
         const createBtn = metaEl.querySelector('[data-prd-create-document]');

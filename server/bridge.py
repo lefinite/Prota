@@ -652,52 +652,74 @@ def is_prd_doc_filename(filename, is_in_docs_dir=False):
     return lower.endswith('.md')
 
 
+def prd_page_directory(root, project_id, page_id):
+    for value in (project_id, page_id):
+        if not isinstance(value, str) or not value or value in ('.', '..') or re.search(r'[/\\]', value):
+            raise ValueError('Invalid page path')
+    pages_root = os.path.realpath(os.path.join(root, 'src', 'pages'))
+    directory = os.path.realpath(os.path.join(pages_root, project_id, page_id))
+    if not directory.startswith(pages_root + os.sep):
+        raise ValueError('Invalid page path')
+    return directory
+
+
+def read_prd_index(root, project_id, page_id):
+    path = os.path.join(prd_page_directory(root, project_id, page_id), 'docs', 'prd-index.json')
+    try:
+        with open(path, encoding='utf-8') as handle:
+            index = json.load(handle)
+        if not isinstance(index, dict) or not isinstance(index.get('documents', {}), dict):
+            raise ValueError('Invalid PRD index')
+        return index
+    except FileNotFoundError:
+        return {'schemaVersion': 1, 'documents': {}}
+
+
+def update_prd_index(root, project_id, page_id, path='', metadata=None, last_opened=False):
+    index = read_prd_index(root, project_id, page_id)
+    if metadata is not None:
+        index.setdefault('documents', {}).setdefault(path, {}).update(metadata)
+    if last_opened:
+        index['lastOpenedPath'] = path
+    directory = os.path.join(prd_page_directory(root, project_id, page_id), 'docs')
+    os.makedirs(directory, exist_ok=True)
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=directory, delete=False) as handle:
+        json.dump(index, handle, ensure_ascii=False, indent=2)
+        temporary = handle.name
+    os.replace(temporary, os.path.join(directory, 'prd-index.json'))
+
+
 def list_prd_documents(root, project_id, page_id, version):
-    """List PRD-like markdown documents under the page level docs folder (preferred) and version folder (legacy)."""
-    docs_dir = os.path.normpath(os.path.join(root, 'src', 'pages', project_id, page_id, 'docs'))
-    version_dir = os.path.normpath(os.path.join(root, 'src', 'pages', project_id, page_id, version))
-    pages_root = os.path.normpath(os.path.join(root, 'src', 'pages'))
-
+    """Discover page documents and every legacy version without filename deduplication."""
+    page_dir = prd_page_directory(root, project_id, page_id)
+    if not os.path.isdir(page_dir):
+        return []
+    index = read_prd_index(root, project_id, page_id)
+    directories = ['docs'] + sorted(name for name in os.listdir(page_dir) if re.fullmatch(r'v\d+', name))
     documents = []
-    seen_filenames = set()
-
-    # Scan directories in order of preference: docs/ then version/
-    for base_dir in [docs_dir, version_dir]:
-        if not os.path.isdir(base_dir):
+    for name in directories:
+        base_dir = os.path.join(page_dir, name)
+        if not os.path.isdir(base_dir) or os.path.islink(base_dir):
             continue
-
         for filename in sorted(os.listdir(base_dir)):
-            if filename in seen_filenames:
-                continue
             path = os.path.join(base_dir, filename)
-            if not os.path.isfile(path):
+            if not is_prd_doc_filename(filename) or not os.path.isfile(path) or os.path.islink(path):
                 continue
-            if not filename.lower().endswith('.md'):
-                continue
-            if not is_prd_doc_filename(filename, is_in_docs_dir=(base_dir == docs_dir)):
-                continue
-            
-            # Determine relative path for shell loading (must be absolute from root)
-            if base_dir == docs_dir:
-                rel_path = f'/src/pages/{project_id}/{page_id}/docs/{filename}'
-            else:
-                rel_path = f'/src/pages/{project_id}/{page_id}/{version}/{filename}'
+            rel_path = f'/src/pages/{project_id}/{page_id}/{name}/{filename}'
             stat = os.stat(path)
-
+            inferred = re.search(r'-(v\d+)-prd', filename, re.IGNORECASE)
+            prototype_version = name if name != 'docs' else inferred.group(1).lower() if inferred else None
+            metadata = index.get('documents', {}).get(rel_path, {})
             documents.append({
-                'path': rel_path,
-                'filename': filename,
-                'label': filename,
+                **metadata,
+                'path': rel_path, 'filename': filename, 'label': filename,
+                'prototypeVersion': metadata.get('prototypeVersion') or prototype_version,
+                'revision': metadata.get('revision'), 'derivedFrom': metadata.get('derivedFrom'),
                 'updatedAt': datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
-                'updatedAtMs': stat.st_mtime * 1000,
-                'size': stat.st_size
+                'updatedAtMs': stat.st_mtime * 1000, 'size': stat.st_size
             })
-            seen_filenames.add(filename)
-
-    documents.sort(key=lambda item: (
-        -(item.get('updatedAtMs') or 0),
-        item['filename']
-    ))
+    documents.sort(key=lambda item: (-(item.get('updatedAtMs') or 0), item['path']))
     return documents
 
 
@@ -741,33 +763,26 @@ def build_new_prd_document_content(page_name, page_id, version, document_version
 
 def resolve_prd_document_path(root, project_id, page_id, version, requested_path=''):
     """Resolve a PRD markdown path. Prefers src/pages/{projectId}/{pageId}/docs/ for new writes."""
-    pages_root = os.path.normpath(os.path.join(root, 'src', 'pages'))
-    version_dir = os.path.normpath(os.path.join(pages_root, project_id, page_id, version))
-    docs_dir = os.path.normpath(os.path.join(pages_root, project_id, page_id, 'docs'))
-
-    if not version_dir.startswith(pages_root + os.sep):
-        raise ValueError('Invalid page path')
-    
-    # We require the version directory to exist to ensure it's a valid page/version
-    if not os.path.isdir(version_dir):
+    page_dir = prd_page_directory(root, project_id, page_id)
+    if not re.fullmatch(r'v\d+', str(version or '')) or not os.path.isdir(os.path.join(page_dir, version)):
         raise ValueError('Version directory not found')
-
     raw_path = urllib.parse.unquote(str(requested_path or ''))
-    filename = os.path.basename(raw_path) or 'product-doc.md'
-    if not filename.lower().endswith('.md'):
-        raise ValueError('Only markdown files can be saved')
-
-    # If requested path explicitly points to version dir or legacy structure
-    if requested_path and f'/{version}/' in requested_path and '/docs/' not in requested_path:
-        document_path = os.path.normpath(os.path.join(version_dir, filename))
-        if not document_path.startswith(version_dir + os.sep):
-            raise ValueError('Invalid PRD document path')
+    prefix = f'/src/pages/{project_id}/{page_id}/'
+    if not raw_path or '/' not in raw_path:
+        relative = 'docs/' + (raw_path or 'product-doc.md')
     else:
-        # Default to docs dir
-        document_path = os.path.normpath(os.path.join(docs_dir, filename))
-        if not document_path.startswith(docs_dir + os.sep):
+        if not raw_path.startswith(prefix):
             raise ValueError('Invalid PRD document path')
-
+        relative = raw_path[len(prefix):]
+    parts = relative.split('/')
+    if len(parts) != 2 or not (parts[0] == 'docs' or re.fullmatch(r'v\d+', parts[0])):
+        raise ValueError('Invalid PRD document path')
+    filename = parts[1]
+    if not filename.lower().endswith('.md') or '\\' in filename:
+        raise ValueError('Only markdown files can be saved')
+    document_path = os.path.join(page_dir, *parts)
+    if os.path.realpath(document_path) != document_path:
+        raise ValueError('Invalid PRD document path')
     return document_path, filename
 
 
@@ -1211,7 +1226,7 @@ def read_share_prd(root, project_id, page_id, version, requested_path=''):
                 content = f.read()
             
             # Determine correct relative path for the client
-            rel_path = os.path.relpath(document_path, root).replace('\\', '/')
+            rel_path = os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace('\\', '/')
 
             return {
                 'content': content,
@@ -2334,14 +2349,29 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             resolved = (root / clean).resolve()
             if resolved != root and root not in resolved.parents:
                 return str(workspace.CONFIG_DIR / '__denied__')
+            parts = resolved.relative_to(root).parts
+            if len(parts) >= 5 and parts[:2] == ('src', 'pages') and parts[4] in {'board-history', '.board-transactions', '.board-trash'}:
+                return str(workspace.CONFIG_DIR / '__denied__')
             return str(resolved)
         if any(part.startswith('.') for part in Path(clean).parts) or clean.startswith(('server/', 'scripts/', 'tests/', 'logs/')) or (clean.startswith('data/') and clean not in {'data/templates.json', 'data/template-states.json', 'data/agent-provider-presets.json'}):
             return str(workspace.CONFIG_DIR / '__denied__')
         resolved = (workspace.APP_ROOT / clean).resolve()
         return str(resolved) if resolved == workspace.APP_ROOT or workspace.APP_ROOT in resolved.parents else str(workspace.CONFIG_DIR / '__denied__')
 
+    def do_HEAD(self):
+        if urllib.parse.urlsplit(self.path).path.startswith('/__prota_preview/'):
+            from server.preview_http import serve
+            return serve(self, workspace)
+        return super().do_HEAD()
+
     def do_GET(self):
         clean_path = self.path.split('?')[0]
+        if clean_path == '/api/preview/config':
+            from server.preview_http import configuration
+            return configuration(self, workspace, update=False)
+        if clean_path.startswith('/__prota_preview/'):
+            from server.preview_http import serve
+            return serve(self, workspace)
         if clean_path == '/api/product/health':
             import hashlib
             return self.workspace_reply(200, {'product': 'prota', 'installation': hashlib.sha256(str(workspace.APP_ROOT.resolve()).encode()).hexdigest(), 'build': _PRODUCT_BUILD})
@@ -2366,6 +2396,19 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 workspace.workspace_root()
             except (ValueError, OSError) as error:
                 return self.workspace_reply(503, {'error': str(error)})
+        import posixpath
+        resource_parts = posixpath.normpath(urllib.parse.unquote(clean_path)).strip('/').split('/')
+        if len(resource_parts) >= 5 and resource_parts[:2] == ['src', 'pages'] and resource_parts[4] in {'board-history', '.board-transactions', '.board-trash'}:
+            return self.workspace_reply(404, {'error': '历史与恢复材料仅通过受校验接口访问'})
+        if clean_path.startswith('/__prota_board_history/') or clean_path in {'/api/boards/versions', '/api/boards/versions/preview', '/api/boards/transactions'}:
+            from server.board_http import read
+            return read(self, workspace)
+        if clean_path == '/api/canvas/features':
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机读取画布开关。'})
+            from server.canvas_domain import feature_enabled
+            root = workspace.workspace_root()
+            return self.workspace_reply(200, {key: feature_enabled(root, key) for key in ('canvasSchemaV2', 'boardRevisions')})
         if clean_path == '/api/shares':
             if not self.workspace_local():
                 return self.workspace_reply(403, {'error': '只能在本机管理分享。'})
@@ -2436,6 +2479,12 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         clean_path = self.path.split('?')[0]
+        if clean_path == '/api/preview/config':
+            from server.preview_http import configuration
+            return configuration(self, workspace, update=True)
+        if clean_path in {'/api/boards/versions/create', '/api/boards/versions/restore', '/api/boards/transactions/recover'}:
+            from server.board_http import mutate
+            return mutate(self, workspace)
         if clean_path in {'/api/canvas/save', '/api/canvas/upgrade'}:
             if not self.workspace_local() or not self.headers.get('Content-Type', '').startswith('application/json'):
                 return self.workspace_reply(403, {'error': '只能在本机保存画布。'})
@@ -3575,15 +3624,19 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             root = get_project_root()
             document_path, filename = resolve_prd_document_path(root, project_id, page_id, version, requested_path)
 
+            existing = next((doc for doc in list_prd_documents(root, project_id, page_id, version)
+                             if doc['path'] == '/' + os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), '/')), None)
             os.makedirs(os.path.dirname(document_path), exist_ok=True)
             with open(document_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(content)
 
             stat = os.stat(document_path)
-            if '/docs/' in document_path:
-                relative_path = f'/src/pages/{project_id}/{page_id}/docs/{filename}'
-            else:
-                relative_path = f'/src/pages/{project_id}/{page_id}/{version}/{filename}'
+            relative_path = '/' + os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), '/')
+            update_prd_index(root, project_id, page_id, relative_path, {
+                'prototypeVersion': existing.get('prototypeVersion') if existing else version,
+                'revision': (existing.get('revision') or 1) if existing else 1,
+                'derivedFrom': existing.get('derivedFrom') if existing else None
+            })
 
             # Reclaim disk space: drop prd-assets images no longer cited by any
             # PRD document (e.g. when the user removed an image line before saving).
@@ -3651,7 +3704,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             document_path, _ = resolve_prd_document_path(root, project_id, page_id, version, requested_path)
             if not os.path.isfile(document_path):
                 raise ValueError('PRD document not found')
-            relative_path = f'/{os.path.relpath(document_path, root).replace(chr(92), "/")}'
+            relative_path = f'/{os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), "/")}'
             context = {
                 'projectId': project_id,
                 'pageId': page_id,
@@ -3659,6 +3712,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'path': relative_path,
                 'updatedAt': datetime.now(timezone.utc).isoformat()
             }
+            update_prd_index(root, project_id, page_id, relative_path, last_opened=True)
             context_path = os.path.join(root, 'data', 'active-prd-context.json')
             os.makedirs(os.path.dirname(context_path), exist_ok=True)
             with open(context_path, 'w', encoding='utf-8', newline='\n') as f:
@@ -3695,26 +3749,33 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
         try:
             root = get_project_root()
-            version_dir = os.path.normpath(os.path.join(root, 'src', 'pages', project_id, page_id, version))
-            pages_root = os.path.normpath(os.path.join(root, 'src', 'pages'))
-            if not version_dir.startswith(pages_root + os.sep):
-                raise ValueError('Invalid page path')
-            if not os.path.isdir(version_dir):
-                raise ValueError('Version directory not found')
-
-            docs_dir = os.path.normpath(os.path.join(root, 'src', 'pages', project_id, page_id, 'docs'))
             filename, document_version = get_next_prd_document_filename(root, project_id, page_id, version)
-            document_path = os.path.normpath(os.path.join(docs_dir, filename))
-            if not document_path.startswith(docs_dir + os.sep):
-                raise ValueError('Invalid PRD document path')
+            document_path, _ = resolve_prd_document_path(root, project_id, page_id, version, filename)
+            docs_dir = os.path.dirname(document_path)
 
-            content = build_new_prd_document_content(page_name, page_id, version, document_version)
+            source_path = params.get('derivedFrom') or ''
+            revision = 1
+            if source_path:
+                source, _ = resolve_prd_document_path(root, project_id, page_id, version, source_path)
+                source_doc = next((doc for doc in list_prd_documents(root, project_id, page_id, version) if doc['path'] == source_path), None)
+                if not source_doc:
+                    raise ValueError('Source PRD not found')
+                revision = int(source_doc.get('revision') or 1) + 1
+                with open(source, encoding='utf-8', newline='') as handle:
+                    content = handle.read()
+                # Keep legacy copies beside their source so Markdown, HTML and reference links stay intact.
+                document_path = os.path.join(os.path.dirname(source), filename)
+            else:
+                content = build_new_prd_document_content(page_name, page_id, version, document_version)
             os.makedirs(docs_dir, exist_ok=True)
             with open(document_path, 'x', encoding='utf-8', newline='\n') as f:
                 f.write(content)
 
             stat = os.stat(document_path)
-            relative_path = f'/src/pages/{project_id}/{page_id}/docs/{filename}'
+            relative_path = '/' + os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), '/')
+            update_prd_index(root, project_id, page_id, relative_path, {
+                'prototypeVersion': version, 'revision': revision, 'derivedFrom': source_path or None
+            }, last_opened=True)
             documents = list_prd_documents(root, project_id, page_id, version)
 
             self.send_response(200)
@@ -4401,7 +4462,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'projectId': project_id,
                 'pageId': page_id,
                 'version': version,
-                'documents': documents
+                'documents': documents,
+                'lastOpenedPath': read_prd_index(root, project_id, page_id).get('lastOpenedPath', '')
             }, ensure_ascii=False).encode('utf-8'))
         except ValueError as e:
             self.send_response(400)
@@ -4650,7 +4712,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
         # The browser might block the request if this header is duplicated.
         # SimpleHTTPRequestHandler.end_headers() is where we inject our CORS headers.
         # We don't call super() until after we have sent our custom headers.
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', 'null' if getattr(self, '_board_history_cors', False) else '*')
+        self._board_history_cors = False
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         # Disable caching so the browser always loads the latest file versions

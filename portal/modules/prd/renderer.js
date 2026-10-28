@@ -606,6 +606,10 @@ export class PRDRenderer {
         const dirtyLabel = state?.dirty ? '<span class="prd-meta__dirty">未保存</span>' : '';
         const documents = Array.isArray(state?.documents) ? state.documents : [];
         
+        const activeDoc = documents.find(doc => doc.path === state.path);
+        const association = activeDoc?.prototypeVersion;
+        const historyLabel = association && association !== this.manager.host.activeVersion
+            ? `正在查看关联 ${association.toUpperCase()} 的历史文档` : '';
         const dropdownItemsHtml = documents.map(doc => {
             const isActive = doc.path === state.path;
             const timeLabel = this.formatDocDate(doc);
@@ -629,7 +633,7 @@ export class PRDRenderer {
                         <div class="prd-dropdown-item__name-row">
                             <span class="prd-dropdown-item__name" title="${this.escapeHtml(doc.filename)}">${this.escapeHtml(doc.label || doc.filename)}</span>
                         </div>
-                        ${timeLabel ? `<div class="prd-dropdown-item__details"><span>${timeLabel}</span></div>` : ''}
+                        <div class="prd-dropdown-item__details"><span>${this.escapeHtml(doc.prototypeVersion ? `原型 ${doc.prototypeVersion.toUpperCase()}` : '原型版本未记录')}${doc.revision ? ` · 修订 ${this.escapeHtml(doc.revision)}` : ''}${timeLabel ? ` · ${timeLabel}` : ''}</span></div>
                     </div>
                     ${actionsHtml}
                 </li>
@@ -658,6 +662,7 @@ export class PRDRenderer {
                         </ul>
                         ${isShareMode ? '' : `
                         <div class="prd-dropdown-footer">
+                            ${state.path && state.status === 'ready' ? `<button type="button" class="prd-dropdown-create-btn" data-prd-revise-document ${state.saving ? 'disabled' : ''}>基于此文档迭代</button>` : ''}
                             <button type="button" class="prd-dropdown-create-btn" data-prd-create-document>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M12 5v14"></path>
@@ -669,6 +674,7 @@ export class PRDRenderer {
                         `}
                     </div>
                 </div>
+                ${historyLabel ? `<span class="prd-meta__history" title="${this.escapeHtml(historyLabel)}">${this.escapeHtml(historyLabel)}</span>` : ''}
                 ${dirtyLabel}
             </div>
         `;

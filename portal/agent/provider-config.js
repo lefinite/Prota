@@ -699,6 +699,7 @@ class AgentProviderConfigStore {
         provider.baseURL = has('baseURL') ? draft.baseURL : (provider.baseURL || '');
         provider.apiKey = has('apiKey') ? draft.apiKey : (provider.apiKey || '');
         provider.sdkOptions = has('sdkOptions') ? (draft.sdkOptions || {}) : (provider.sdkOptions || {});
+        if (has('modelCapabilities')) provider.modelCapabilities = JSON.parse(JSON.stringify(draft.modelCapabilities || {}));
         provider.endpointCandidates = this.getEndpointCandidates(provider);
         provider.updatedAt = Date.now();
         this.persist();
@@ -715,6 +716,8 @@ class AgentProviderConfigStore {
             baseURL: provider.baseURL || '',
             apiKey: provider.apiKey || '',
             sdkOptions: provider.sdkOptions || {},
+            models: this.getModelOptions(provider),
+            modelCapabilities: JSON.parse(JSON.stringify(provider.modelCapabilities || {})),
             endpointCandidates: this.getEndpointCandidates(provider)
         };
     }

@@ -1,4 +1,4 @@
-# 页面级无限画布 · 编辑器运行时 4
+# 页面级无限画布 · 编辑器运行时 5
 
 完整复制本目录到工作区 `src/pages/{projectId}/{pageId}/{version}/`。注册一个顶层页面：`targetDevice: "canvas"`、`pageMode: "infinite-canvas"`。旧的 canvas-frame 保持不变。
 
@@ -6,7 +6,7 @@
 
 ## 页面与画板
 
-画布是页面，不是项目总览。内部画板、组件、素材不注册为顶层页面。业务界面位于本版本 `boards/{节点ID}/index.html`、`styles.css`、`app.js`，在画板节点的 src 中关联。Agent 负责自动创建和关联，不要求用户填写文件路径。index.html、styles.css、app.js、canvas-core.js、icons.js 是编辑器运行文件，不要改成业务页面。
+画布是页面，不是项目总览。内部画板、组件、素材不注册为顶层页面。业务界面位于本版本 `boards/{节点ID}/index.html`、`styles.css`、`app.js`，在画板节点的 src 中关联。Agent 负责自动创建和关联，不要求用户填写文件路径。index.html、styles.css、app.js、canvas-core.js、icons.js、marked.js、markdown.js 是编辑器运行文件，不要改成业务页面。
 
 `canvas-data.js` 是布局源文件：`window.PROTA_CANVAS = { ... };`，支持 file:// 和静态分享，不需要构建。顶层含 schemaVersion=1、revision、nodes、viewport。保持文件为纯 JSON 赋值，不加入执行逻辑。
 
@@ -18,6 +18,8 @@
 
 ## 统一操作与上下文
 
+右键菜单、「更多」菜单、属性气泡和命令面板互斥；打开任一面板时收起选中工具栏，关闭后根据有效选择恢复。选区刷新或视角变化不能让工具栏在菜单背后重新出现，关闭菜单不清空选择。
+
 浮动工具栏、右键菜单、命令面板和快捷键共用同一套 Action 定义（id、名称、图标、快捷键、可用条件、执行）。单选文本 / 便签 / 形状 / 图片 / 未生成画板 / 已生成画板 / 分组、多选、锁定对象分别展示对应的主要操作（4–6 个 Icon + 文案按钮），其余进入「更多」菜单。已锁定对象只显示解锁与聚焦。多选时显示「已选 N 个」，共用一个选择框与一套操作。
 
 选区变换是统一的：单选与多选共享一个选区框和 8 向手柄，多选按选区整体比例同时变换成员位置与尺寸，Shift 保持比例与对侧锚点。Alt 单击不复制；超过 3 CSS px 拖拽阈值后才创建副本，副本不产生额外偏移。一条连续拖拽只占一条撤销记录；Esc、Pointer Cancel 与捕获丢失均回滚未完成操作，包括新建对象、Alt 副本、选择、撤销 / 重做栈和本机草稿。
@@ -25,12 +27,14 @@
 ## 编辑操作
 
 - V 选择、H 抓手、T 文本、R 矩形、O 圆形、F 自由画板。绘制工具可拖出尺寸，或使用添加菜单。
-- 空格拖动 / 中键平移，滚轮平移，Ctrl / Cmd + 滚轮缩放；触屏双指缩放。缩放范围 5%–400%，缩放条点击百分比可弹比例菜单（50–200% 与适配全部），适配 / 聚焦带平滑过渡。
+- 空格拖动 / 中键平移，Shift + 滚轮平移，普通滚轮或 Ctrl / Cmd + 滚轮以鼠标位置为中心缩放；缩放按钮和比例菜单沿用鼠标最后所在的画布点，触屏双指缩放。缩放范围 5%–400%，缩放条点击百分比可弹比例菜单（50–200% 与适配全部），适配 / 聚焦带平滑过渡。
 - 框选与 Shift 多选，Shift 保持宽高比 / 移动方向，Alt 拖动复制与暂时关闭吸附。
 - 对齐辅助线、对齐与等距分布菜单、方向键移动（Shift 步长 10）、图层排序、锁定、F2 重命名。
 - 右键空白处：「添加到这里」分组创建菜单（画板子菜单、文本、便签、形状、图片）、粘贴、查看全部，新对象出现在右键位置；右键对象（含多选之一）显示该类型对应操作。
 - Ctrl / Cmd + G 分组，Shift + Ctrl / Cmd + G 取消分组；Ctrl / Cmd + D 复制；Ctrl / Cmd + C/V 复制粘贴，剪贴板持久化到本机，文本 / 基础组件可跨画布粘贴并重映射 ID；含业务文件或 assets 引用的跨画布粘贴会明确提示暂不支持，避免生成失效引用。
 - Ctrl / Cmd + K 命令面板：搜索创建、对齐、缩放、全屏、Agent 等命令；↑↓ 选择、Enter 执行、Esc 关闭。
+- 选择模式下双击空白处，在点击位置新增文本并立即编辑；抓手、空格平移、只读或 Agent 执行时不创建。
+- 文本框支持 Markdown（标题、粗斜体、删除线、列表、任务列表、引用、代码块、链接、图片、表格）。双击编辑源文，失焦显示排版，Esc 恢复原文；原始 HTML 作为文字显示，不执行。解析器 Marked v16.4.1 随版本本地打包（MIT，见 LICENSE.marked），无需网络。
 - 文本、便签双击原位编辑，Esc 取消当前文本编辑；画板双击进入业务交互，Esc 回到画布；双击分组进入组内编辑（其余对象淡化），Esc 返回组外。完整的多层选择路径仍待完善。
 - Esc 优先级：关闭菜单 / 面板 → 取消拖拽 → 结束文本编辑 → 退出预览或分组 → 取消选择。
 - 便签有色板，文本有排版（字重 / 对齐），画板有设备预设，图片可替换与适应比例。
@@ -64,3 +68,35 @@ Portal 检测旧运行时（< 4）或不完整的编辑器资源后，修复当�
 这是一套面向 Agent 原型工作流的页面编辑器，不是完整的 Figma 文件兼容实现。暂不支持实时多人协作、矢量路径编辑、约束 / Auto Layout、跨文档组件实例同步、画板内部任意 DOM 的可视化拖拽。父子关系支持整体移动和组织，不提供子内容裁切或响应式约束。批注仍针对外层画布对象，内嵌 DOM 批注与分画板 PRD 尚未适配。
 
 测试：`tests/canvas-core.test.mjs`、`tests/test_canvas_store.py`、`tests/infinite-canvas.browser.mjs`、`tests/page-presentation.browser.mjs`。Portal 测试使用真实会话 API 与 iframe 消息链，只替换模型响应，不产生模型费用。
+
+## Schema v2 兼容数据内核（S1）
+
+编辑器先同步启动，再通过本机 `/api/canvas/features` 读取工作区迁移开关（默认关闭）。启用后，v1 只在内存补齐稳定 boardId 与空 boardRevisionId，首次编辑保存才在同次提交中备份原文件到 `.canvas-migrations/` 并写 v2。boardRevisionId 为 null 表示尚无正式业务快照，不等同于自动保存 revision。关闭开关后仍完整读写既有 v2，禁止旧客户端降级覆盖。
+
+`canvas-domain.js` 是 v1/v2 校验、迁移注册表与节点/父子/逻辑画板索引的纯数据层，必须与 canvas-core.js 一起复制。迁移跨 vN 保持逻辑身份；独立复制生成新 boardId 并保留 originBoardId。未知可选字段及 edges 在保存/恢复时保留。HTML、修复资源清单和 Portal 健康判断均检查此依赖。完整契约与验证见产品文档 `docs/canvas-upgrade/s1-domain.md`。
+
+## 画板业务版本存储（S2）
+
+显式测试工作区启用 boardRevisions 后，可通过本机画板版本 API 保存完整代码/素材快照、按父版本分支并恢复旧版。正式历史位于页面根目录 board-history/，不随每次复制 vN 重复拷贝；工作副本路径保持不变。恢复前保留当前恢复点，损坏草稿单独保留在事务回收站，不能冒充正式版本。
+
+保存、复制、图片写入和业务版本操作共用页面文件锁与事务日志；中断恢复和显式冲突回滚先保留原始材料，.board-trash/ 不自动删除。普通自动保存不产生 BoardRevision。历史 UI、比较与 Agent 完成后自动提交由 S3 接入。契约、开关、API、测试和限制见产品文档 docs/canvas-upgrade/s2-revisions.md。
+
+## 原生连线与自动寻路
+
+`canvas-connections.js` 是编辑器依赖，必须与运行时一起复制。使用底部「连线」或 L，然后点击两个对象，也可从起点拖到终点；Esc / Pointer Cancel 取消未完成连线。选中连线可编辑文案、切换主流程 / 可选路径 / 异常分支、反向和删除；两端圆形手柄可拖到其他对象重连。端点默认自动，也可固定在上下左右一侧。操作共用画布的撤销、保存、冲突恢复与只读权限。
+
+连线保存为文档 `edges`，适用于 v1 与 v2：`{ id, fromInstanceId, toInstanceId, label, kind, fromPort, toPort }`。`kind` 为 `main` / `secondary` / `exception`，端点为 `auto` / `left` / `right` / `top` / `bottom`。不保存手写折点。移动、缩放对象后，运行时重新计算连接边与正交路线：避开画板、标题、文本和卡片；容纳其他对象的矩形背景不挡路；用长度、转弯和交叉代价选择路径。标签按可用通道换行，避开对象与其他标签。对象完全重叠而无可用路径时显示“连接被遮挡”，不强行穿过界面。
+
+删除对象会删除相连边，撤销一并恢复；复制多个对象、复制分组、Alt 拖动和剪贴板粘贴会重建所复制范围内的内部连线 ID。单独复制一个端点不复制跨范围关系。缺失端点的历史数据保留身份而不绘制虚假连线。
+
+可选 `sections: [{ id, label, nodeIds }]` 自动生成区域导航；`initialFocusNodeIds` 定义首次打开聚焦的主流程，`focusAlignment: "top"` 可用于流程概览。已有浏览器会话视角继续保留。通用 API：`protaCanvas.connections.create(fromId, toId, options)`、`update(edgeId, changes)`、`getRoutes()`；`protaCanvas.focus(nodeIds)` 聚焦指定对象。布局源与关系保存在同一份 `canvas-data.js`，分享、下载、修复均使用相同原生功能。
+
+验证：`node --test tests/canvas-connections.test.mjs`、`node tests/canvas-connections.browser.mjs`，并保留原画布全流程浏览器回归。
+
+### 连线交互版本 2
+
+端点仅使用对象上下左右四边的准确中点；自动寻路选择哪一侧，但不再偏移端点。选中和悬停只更新视觉状态，不重建连线 DOM；每次画板重绘均同步背景层级，避免点击后连线被分区背景遮住。
+
+双击连线任意位置或文字可直接原位编辑，空文案同样支持。Enter 保存，Shift+Enter 换行，Esc 取消，点击外部保存；支持中文组合输入。选中连线后 Enter / F2 也可编辑，同一次文字修改只产生一条撤销记录。工具栏提供编辑入口与类型、端点方向等设置。
+
+连线工具下悬停对象显示四个中点连接点；拖动时高亮可用目标并显示吸附预览，端点重连保留原连线身份。取消拖动不会改变关系。`CanvasConnections.editorVersion >= 2` 用于 Portal 检查与自动升级。

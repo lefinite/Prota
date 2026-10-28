@@ -5,7 +5,10 @@ function run(args) {
     if (icon) app.applicationIconImage = icon;
     app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
     const fm = $.NSFileManager.defaultManager;
-    const base = ObjC.unwrap($.NSHomeDirectory()) + '/Library/Caches/Prota';
+    const environment = $.NSProcessInfo.processInfo.environment;
+    const cacheOverride = environment.objectForKey('PROTA_LAUNCHER_CACHE_DIR');
+    const testUi = ObjC.unwrap(environment.objectForKey('PROTA_LAUNCHER_TEST_UI')) === '1';
+    const base = cacheOverride ? ObjC.unwrap(cacheOverride) : ObjC.unwrap($.NSHomeDirectory()) + '/Library/Caches/Prota';
     fm.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(base, true, $.NSDictionary.dictionary, null);
     const statusPath = base + '/launch-' + ObjC.unwrap($.NSUUID.UUID.UUIDString) + '.json';
     const logPath = base + '/launcher.log';
@@ -29,7 +32,11 @@ function run(args) {
             if (raw) {
                 try {
                     const state = JSON.parse(ObjC.unwrap(raw));
-                    if (state.show) { title.stringValue = state.title || '正在准备 Prota'; detail.stringValue = state.detail || ''; window.makeKeyAndOrderFront(null); app.activateIgnoringOtherApps(true); }
+                    if (state.show) {
+                        title.stringValue = state.title || '正在准备 Prota'; detail.stringValue = state.detail || '';
+                        window.makeKeyAndOrderFront(null); app.activateIgnoringOtherApps(true);
+                        if (testUi && window.visible) fm.copyItemAtPathToPathError(statusPath, statusPath + '.ui', null);
+                    }
                     if (state.step) steps.stringValue = '第 ' + state.step + '/4 步 · 运行环境 → Python → 产品依赖 → 工作台';
                     if (state.state === 'error') error = state.detail;
                 } catch (_) {}
@@ -37,7 +44,9 @@ function run(args) {
             const event = app.nextEventMatchingMaskUntilDateInModeDequeue($.NSEventMaskAny, $.NSDate.dateWithTimeIntervalSinceNow(.2), $.NSDefaultRunLoopMode, true);
             if (event) app.sendEvent(event);
         }
+        if (testUi) fm.copyItemAtPathToPathError(statusPath, statusPath + '.result', null);
         if (worker.terminationStatus === 0 && !error) { window.orderOut(null); fm.removeItemAtPathError(statusPath, null); return; }
+        if (testUi) throw new Error(error || 'Prota preparation worker exited ' + worker.terminationStatus);
         const alert = $.NSAlert.alloc.init; alert.messageText = 'Prota 暂时无法启动'; alert.informativeText = (error || '请检查网络连接或文件夹权限后重试。') + '\n诊断日志保存在 Library/Caches/Prota/launcher.log。';
         alert.addButtonWithTitle('重试'); alert.addButtonWithTitle('退出');
         if (alert.runModal !== $.NSAlertFirstButtonReturn) return;

@@ -6,6 +6,9 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolveVercelCLI } from '../server/vercel-cli.mjs';
 import { extractRuntime } from './runtime-archive.mjs';
+import { verifyPi } from './verify-pi.mjs';
+import { assertNodeVersion } from './pi-paths.mjs';
+import { agentBuild } from '../server/agent-build.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 try { process.loadEnvFile(path.join(root, '.env')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
@@ -27,7 +30,7 @@ export function fingerprint(directory) {
 export function dependenciesReady(directory, installedFingerprint) {
     try {
         const lock = JSON.parse(fs.readFileSync(path.join(directory, 'package-lock.json')));
-        for (const name of ['@codeany/open-agent-sdk', 'playwright']) {
+        for (const name of ['playwright']) {
             const installed = JSON.parse(fs.readFileSync(path.join(directory, 'node_modules', name, 'package.json')));
             if (installed.version !== lock.packages['node_modules/' + name].version) return false;
         }
@@ -130,6 +133,7 @@ async function releaseOwnedPort(port, entry) {
 }
 
 async function main() {
+    assertNodeVersion();
     fs.mkdirSync(runtime, { recursive: true });
     // A directory lock serializes double clicks without touching business files.
     const lock = path.join(runtime, 'launch.lock');
@@ -139,6 +143,9 @@ async function main() {
         catch { fs.rmSync(lock, { recursive: true, force: true }); fs.mkdirSync(lock); fs.writeFileSync(path.join(lock, 'pid'), String(process.pid)); }
     }
     try {
+        status(1, '检查运行环境', '正在校验内置 Pi 运行时。');
+        try { await verifyPi(path.join(root, 'runtime/pi'), { smoke: false }); }
+        catch { throw Error('产品内置 Pi 运行时缺失或校验失败。请重新安装完整发布包；源码开发请运行 npm run pi:build。'); }
         const nodeDir = path.dirname(process.execPath);
         process.env.PATH = nodeDir + path.delimiter + process.env.PATH;
         if (!windows) process.env.SSL_CERT_FILE ||= '/etc/ssl/cert.pem';
@@ -159,7 +166,7 @@ async function main() {
         const health = await request(bridgeBase + '/api/product/health');
         let agent = await request(agentBase + '/api/agent/health');
         const bridgeBuild = crypto.createHash('sha256').update(Buffer.concat(['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py', 'server/share_security.py', 'server/share_gateway.mjs', 'server/share_gate_page.mjs', 'server/share_manager.py'].map(file => fs.readFileSync(path.join(root, file))))).digest('hex');
-        const agentBuild = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'server/agent-server.mjs'))).digest('hex');
+        const expectedAgentBuild = agentBuild(root);
         const environment = { ...process.env, READIFY_AGENT_HOST: '127.0.0.1' };
         fs.mkdirSync(path.join(root, 'logs'), { recursive: true });
         // Initialize once before Python and Node can both create a new workspace.
@@ -170,14 +177,15 @@ async function main() {
             child(python, [path.join(root, 'server/bridge.py')], path.join(root, 'logs/bridge.log'), environment);
         }
         agent = await request(agentBase + '/api/agent/health');
-        if (agent?.installation !== identity || agent?.build !== agentBuild) {
+        if (agent?.installation !== identity || agent?.build !== expectedAgentBuild) {
             if (agent?.activeRuns) throw Error('Prota 正在生成内容，请完成当前任务后再重新启动。');
             await releaseOwnedPort(agentPort, 'server/agent-server.mjs');
             child(process.execPath, ['--env-file-if-exists=.env', path.join(root, 'server/agent-server.mjs')], path.join(root, 'logs/agent-server.log'), environment);
         }
         for (let attempt = 0; attempt < 60; attempt++) {
             const bridge = await request(bridgeBase + '/api/product/health');
-            if (bridge?.installation === identity && await request(agentBase + '/api/agent/health')) {
+            const runningAgent = await request(agentBase + '/api/agent/health');
+            if (bridge?.installation === identity && runningAgent?.installation === identity && runningAgent?.build === expectedAgentBuild) {
                 if (!process.env.PROTA_NO_OPEN) {
                     if (windows) execute(powershell, ['-NoProfile', '-NonInteractive', '-Command', 'Start-Process "' + bridgeBase + '/portal/index.html"']);
                     else execute('/usr/bin/open', [bridgeBase + '/portal/index.html']);

@@ -16,6 +16,7 @@ from server import workspace
 from server.deployer import read_vercel_auth, deployment_environment, vercel_api, configure_vercel
 
 _lock = threading.RLock()
+_auth_refresh_lock = threading.Lock()
 _job = None
 _process = None
 _cancel = threading.Event()
@@ -48,8 +49,19 @@ def inspect_connection():
             if '登录已失效' not in str(error):
                 result.update(authState='unknown', publishState='unknown', message='暂时无法验证授权，请检查网络后重试。')
                 return result
-            result.update(authState='expired', message='授权已失效或无法验证，请重新授权。')
-            return result
+            # OAuth access tokens can expire while the CLI login remains valid.
+            # Refresh that existing login before asking the user to authorize again.
+            try:
+                with _auth_refresh_lock:
+                    cli(['whoami'], timeout=30)
+                    token, team = read_vercel_auth()
+                    user = vercel_api('/v2/user', token, timeout=8).get('user', {})
+            except (ValueError, OSError, subprocess.TimeoutExpired) as refresh_error:
+                if isinstance(refresh_error, (OSError, subprocess.TimeoutExpired)):
+                    result.update(authState='unknown', publishState='unknown', message='暂时无法刷新已有登录，请检查网络后重新检查连接。')
+                else:
+                    result.update(authState='expired', message='已有登录无法恢复，请重新授权 Vercel。')
+                return result
         result.update(authState='authorized', account=user.get('username') or user.get('name') or 'Vercel 账号')
         if not config.get('projectId') or not config.get('orgId'):
             result['message'] = '账号已授权，尚未关联分享项目。'
@@ -150,7 +162,10 @@ def authenticate(cancelled):
         token, team = read_vercel_auth()
         vercel_api('/v2/user', token)
         return token, team
-    except ValueError:
+    except ValueError as error:
+        # Permissions and network failures must never trigger a new browser login.
+        if '登录已失效' not in str(error) and '连接 Vercel' not in str(error):
+            raise
         # Let the official CLI refresh its existing OAuth token before logging in.
         try:
             cli(['whoami'], timeout=30)

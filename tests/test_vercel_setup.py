@@ -24,6 +24,7 @@ class VercelSetupTests(unittest.TestCase):
         self.addCleanup(setattr, setup, '_process', None)
         for target, value in [('CONFIG_DIR',self.config),('workspace_root',lambda:self.root),('bridge_locked',lambda:False)]:
             manager=patch.object(setup.workspace,target,value);manager.start();self.addCleanup(manager.stop)
+        self._authenticate_original = setup.authenticate
         manager=patch.object(setup,'authenticate',return_value=('fixture-auth','fixture-team'));manager.start();self.addCleanup(manager.stop)
 
     def save_existing(self):
@@ -135,6 +136,37 @@ class VercelSetupTests(unittest.TestCase):
         self.assertEqual(self.settings.read_bytes(), before)
         self.assertNotIn('fixture-auth', json.dumps(result))
 
+    def test_inspection_refreshes_existing_cli_login_before_requesting_authorization(self):
+        self.save_existing()
+        calls = 0
+        def api(endpoint, *args, **kwargs):
+            nonlocal calls
+            if endpoint == '/v2/user':
+                calls += 1
+                if calls == 1:
+                    raise ValueError('Vercel 登录已失效')
+                return {'user': {'username': 'restored-user'}}
+            if '/domains?' in endpoint:
+                return {'domains': [{'name': 'share.example.com', 'verified': True}]}
+            if endpoint.endswith('/config'):
+                return {'misconfigured': False}
+            return self.project
+        with patch.object(setup, 'read_vercel_auth', return_value=('fixture-auth', 'fixture-team')), patch.object(setup, 'vercel_api', side_effect=api), patch.object(setup, 'cli') as cli, patch.object(setup.webbrowser, 'open') as browser:
+            result = setup.inspect_connection()
+        cli.assert_called_once_with(['whoami'], timeout=30)
+        browser.assert_not_called()
+        self.assertEqual(result['authState'], 'authorized')
+        self.assertEqual(result['publishState'], 'ready')
+
+    def test_project_permissions_do_not_trigger_new_login(self):
+        # Exercise the real authentication function rather than the setup fixture.
+        authenticate = self._authenticate_original
+        with patch.object(setup, 'read_vercel_auth', return_value=('fixture-auth', 'fixture-team')), patch.object(setup, 'vercel_api', side_effect=ValueError('当前 Vercel 账号没有访问权限')), patch.object(setup, 'cli') as cli, patch.object(setup.webbrowser, 'open') as browser:
+            with self.assertRaisesRegex(ValueError, '没有访问权限'):
+                authenticate(self.cancelled)
+        cli.assert_not_called()
+        browser.assert_not_called()
+
     def test_saved_project_does_not_imply_authorization(self):
         self.save_existing()
         with patch.object(setup, 'read_vercel_auth', side_effect=ValueError('not logged in')), patch.object(setup, 'vercel_api') as remote:
@@ -146,7 +178,7 @@ class VercelSetupTests(unittest.TestCase):
     def test_inspection_distinguishes_expired_authorization_from_network_failure(self):
         self.save_existing()
         with patch.object(setup, 'read_vercel_auth', return_value=('fixture-auth', 'fixture-team')):
-            with patch.object(setup, 'vercel_api', side_effect=ValueError('Vercel 登录已失效或没有项目权限')):
+            with patch.object(setup, 'vercel_api', side_effect=ValueError('Vercel 登录已失效或没有项目权限')), patch.object(setup, 'cli', side_effect=ValueError('expired')):
                 self.assertEqual(setup.inspect_connection()['authState'], 'expired')
             with patch.object(setup, 'vercel_api', side_effect=OSError('offline')):
                 result = setup.inspect_connection()

@@ -121,7 +121,9 @@ button:has(svg):not(:has(.button-label)) {
 #stage {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  /* A canvas must never become a scroll container: focus/scroll anchoring
+     would add an untracked offset to the viewport transform. */
+  overflow: clip;
   outline: none;
   touch-action: none;
   background-color: #f7f8fa;
@@ -747,7 +749,7 @@ button:has(svg):not(:has(.button-label)) {
 .node.hidden-node {
   display: none;
 }
-.node-content[contenteditable=true] {
+.node-content:is([contenteditable=true], [contenteditable=plaintext-only]) {
   user-select: text;
   cursor: text;
   outline: 0;
@@ -894,6 +896,12 @@ button:has(svg):not(:has(.button-label)) {
 #stage.tool-rect,
 #stage.tool-ellipse,
 #stage.tool-board {
+  cursor: crosshair;
+}
+body.board-annotating .node.interacting {
+  outline: calc(2px / var(--zoom)) solid #6366f1;
+}
+body.board-annotating .node.interacting iframe {
   cursor: crosshair;
 }
 .interaction-hint {
@@ -1191,3 +1199,61 @@ body.agent-working .board-agent {
   pointer-events: none;
   opacity: .45;
 }
+
+/* Text previews inherit the object's typography; source editing keeps whitespace. */
+.node.text:not(.editing) .node-content {
+  white-space: normal;
+  line-height: 1.55;
+}
+.node.text .node-content > :first-child { margin-top: 0; }
+.node.text .node-content > :last-child { margin-bottom: 0; }
+.node.text .node-content :is(p, ul, ol, blockquote, pre, table) { margin: 0 0 .65em; }
+.node.text .node-content :is(h1, h2, h3, h4, h5, h6) { margin: .8em 0 .35em; line-height: 1.25; font-weight: 650; }
+.node.text .node-content h1 { font-size: 1.8em; }
+.node.text .node-content h2 { font-size: 1.5em; }
+.node.text .node-content h3 { font-size: 1.25em; }
+.node.text .node-content :is(h4, h5, h6) { font-size: 1em; }
+.node.text .node-content :is(ul, ol) { padding-left: 1.5em; }
+.node.text .node-content li > p { margin: 0; }
+.node.text .node-content li :is(ul, ol) { margin-bottom: 0; }
+.node.text .node-content blockquote { margin-left: 0; padding-left: .8em; border-left: 3px solid #b8bfcd; opacity: .8; }
+.node.text .node-content code { font: .85em/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; background: #9099ad18; border-radius: 3px; padding: .1em .25em; }
+.node.text .node-content pre { padding: .7em; background: #9099ad12; border-radius: 5px; white-space: pre-wrap; }
+.node.text .node-content pre code { background: none; padding: 0; }
+.node.text .node-content a { color: #5364cf; text-decoration: underline; }
+.node.text .node-content table { border-collapse: collapse; width: 100%; }
+.node.text .node-content :is(th, td) { border: 1px solid #cdd2dc; padding: .3em .5em; text-align: start; }
+.node.text .node-content hr { border: 0; border-top: 1px solid #cdd2dc; margin: .8em 0; }
+.node.text .node-content img { width: auto; height: auto; max-width: 100%; }
+.node.text .node-content input[type=checkbox] { margin-right: .35em; }
+/* Native connections are above region backgrounds and below all business content. */
+#canvas-connections,.connection-preview{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;z-index:1}
+#world>.node{z-index:2}#world>.node.connection-container{z-index:0}
+#world>#selection-frame{z-index:4}.connection{pointer-events:auto;cursor:pointer}.connection-line{pointer-events:none}.connection-hit{pointer-events:stroke}.connection circle{cursor:crosshair;pointer-events:auto}.connection-preview{z-index:5}
+#connection-tools{position:absolute;z-index:35;display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:calc(100vw - 24px);padding:8px}
+#connection-tools[hidden]{display:none}#connection-tools input{width:180px;padding:8px 10px;border:1px solid #dfe4ed;border-radius:7px;font:12px var(--font-ui, sans-serif)}
+#connection-tools select{max-width:130px;padding:7px 5px;border:1px solid #e1e5ed;border-radius:7px;background:#fff;font:12px sans-serif;color:#555f70}
+#connection-tools button{padding:8px 10px;border-radius:7px;font-size:12px}#connection-tools button:hover{background:#f0f3f7}#connection-tools input:focus-visible,#connection-tools select:focus-visible{outline:2px solid #6277c9}
+#stage.tool-connect .node{cursor:crosshair}#stage .node.connection-source{outline:2px solid #6678d0}#stage.tool-connect .node:hover:not(.connection-container){outline:2px solid #98a6df}
+@media(max-width:700px){#connection-tools{width:calc(100vw - 24px)}#connection-tools input{width:100%}#connection-tools select{flex:1;max-width:none}}
+.canvas-section-nav{position:fixed;top:18px;left:350px;z-index:15;display:flex;gap:4px;padding:5px;max-width:calc(100vw - 570px);overflow:auto}.canvas-section-nav[hidden],.canvas-connection-legend[hidden]{display:none}
+.canvas-section-nav button{white-space:nowrap;padding:8px 12px;border:0;border-radius:7px;background:transparent;color:#5c6776;font:12px -apple-system,'PingFang SC',sans-serif;cursor:pointer}.canvas-section-nav button.active,.canvas-section-nav button:hover{background:#edf4f0;color:#2e8465}
+.canvas-connection-legend{position:fixed;bottom:92px;left:24px;z-index:12;display:flex;gap:14px;padding:9px 12px;background:#ffffffed;border:1px solid #e2e7ed;border-radius:9px;color:#687482;font:11px -apple-system,'PingFang SC',sans-serif;pointer-events:none}.canvas-connection-legend span{display:flex;align-items:center;gap:6px}.canvas-connection-legend i{width:22px;border-top:2px solid #2e8465}.canvas-connection-legend .secondary{border-color:#71829b}.canvas-connection-legend .exception{border-color:#bd7327;border-top-style:dashed}
+@media(max-width:1000px){.canvas-section-nav{top:66px;left:14px;max-width:calc(100vw - 28px)}.canvas-section-nav button{padding:8px}.canvas-connection-legend{left:14px;bottom:94px}}
+
+.connection-handles{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;z-index:6}.connection-handles circle{pointer-events:auto;cursor:crosshair;}
+
+@media(min-width:1280px){.canvas-connection-legend{top:25px;bottom:auto;left:auto;right:194px;}}
+@media(max-width:1279px){.canvas-connection-legend{display:none;}}
+/* Connection editor v2: stable selection, inline labels and four midpoint ports. */
+.connection:hover .connection-line{filter:drop-shadow(0 0 2px #7184cf66)}
+.connection.selected .connection-line{filter:drop-shadow(0 0 3px #6475ce77)}
+.connection.is-editing .connection-label,.connection.is-editing text{visibility:hidden}
+.connection-label-editor{position:absolute;z-index:45;min-height:44px;max-height:220px;resize:none;box-sizing:border-box;padding:10px 12px;border:2px solid #657bd3!important;border-radius:8px;outline:none;background:#fff;color:#344155;line-height:1.5;text-align:center;font-family:-apple-system,'PingFang SC',sans-serif;box-shadow:0 6px 24px #344b8626;overflow:auto}
+.connection-ports{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;z-index:6}.connection-ports circle{pointer-events:auto;cursor:crosshair}.connection-ports circle:hover{fill:#dce7ff;stroke:#425fc4}
+#stage .node.connection-target{outline:2px solid #2e8465;box-shadow:0 0 0 4px #2e84651a}
+.connection-hint{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);z-index:18;max-width:calc(100vw - 24px);padding:8px 14px;border:1px solid #dfe5f1;border-radius:9px;background:#fffffff2;color:#65718a;font:12px -apple-system,'PingFang SC',sans-serif;pointer-events:none;white-space:nowrap}.connection-hint[hidden]{display:none}
+
+.node.board.connection-top-port>.node-title{max-width:calc(50% - 24px);}
+
+.connection-label-editor{animation:none!important;backdrop-filter:none;opacity:1;}

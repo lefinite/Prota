@@ -5,6 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "pi:build": "node scripts/build-pi.mjs",
+    "pi:verify": "node scripts/verify-pi.mjs",
+    "pi:update": "node scripts/update-pi.mjs",
+    "agent:test": "node --test tests/pi-*.test.mjs",
     "agent:start": "node --env-file-if-exists=.env server/agent-server.mjs",
     "agent:check": "node --check server/agent-server.mjs",
     "drawio:theme-check": "node tools/drawio/audit-theme.mjs",
@@ -14,7 +18,9 @@
     "release:prepare": "python3 tools/public-release.py",
     "vercel": "node scripts/vercel-cli.mjs",
     "postinstall": "node scripts/install-vercel-cli.mjs",
-    "vercel:update": "node scripts/install-vercel-cli.mjs"
+    "vercel:update": "node scripts/install-vercel-cli.mjs",
+    "preview:test": "node --test tests/preview-*.test.mjs",
+    "preview:browser": "node tests/progressive-preview.browser.mjs"
   },
   "dependencies": {
     "@codeany/open-agent-sdk": "^0.2.1",
@@ -28,6 +34,6 @@
     "scheduler": "^0.27.0"
   },
   "engines": {
-    "node": ">=22.9.0"
+    "node": ">=22.19.0"
   }
 }

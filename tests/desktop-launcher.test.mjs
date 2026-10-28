@@ -9,8 +9,8 @@ test('ready dependency check respects product changes and installed versions', t
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'prota-launcher-test-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
     const write=(file,value)=>{const target=path.join(root,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,typeof value==='string'?value:JSON.stringify(value));};
     write('package.json',{});write('scripts/install-vercel-cli.mjs','');write('tools/vercel-runtime/package.json',{});
-    write('package-lock.json',{packages:{'node_modules/@codeany/open-agent-sdk':{version:'1.0.0'},'node_modules/playwright':{version:'1.0.0'}}});
-    for(const name of ['@codeany/open-agent-sdk','playwright'])write('node_modules/'+name+'/package.json',{version:'1.0.0'});
+    write('package-lock.json',{packages:{'node_modules/playwright':{version:'1.0.0'}}});
+    write('node_modules/playwright/package.json',{version:'1.0.0'});
     write('node_modules/.prota-vercel/node_modules/vercel/package.json',{name:'vercel',version:'99.0.0',bin:{vercel:'cli.js'}});write('node_modules/.prota-vercel/node_modules/vercel/cli.js','');
     const previous=fingerprint(root);assert.equal(dependenciesReady(root,previous),true);
     write('package.json',{changed:true});assert.equal(dependenciesReady(root,previous),false);

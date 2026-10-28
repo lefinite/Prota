@@ -59,12 +59,11 @@ export class PRDManager extends EventTarget {
             }
         }
 
-        // Persist last-selected document path per page + version
+        // Reading history belongs to the page, shared across prototype versions.
         if (patch.path && patch.status && patch.status !== 'loading' && patch.status !== 'idle') {
             const pageId = this.host.activePageId || '';
-            const version = this.host.activeVersion || '';
             if (pageId && patch.path) {
-                this.setLocalStorageItem(`readify:prd-last-doc:${pageId}:${version}`, patch.path);
+                this.setLocalStorageItem(this.getLastDocumentKey(), patch.path);
                 this.persistActiveDocumentContext(patch.path);
             }
         }
@@ -76,6 +75,10 @@ export class PRDManager extends EventTarget {
                 prevState
             }
         }));
+    }
+
+    getLastDocumentKey() {
+        return `readify:prd-last-doc:${this.host.activeProjectId || 'readify'}:${this.host.activePageId}`;
     }
 
     getLocalStorageItem(key, fallback = '') {
@@ -166,7 +169,7 @@ export class PRDManager extends EventTarget {
     }
 
     /**
-     * Asynchronously discovers all Markdown PRD files for the active page and version
+     * Asynchronously discovers all Markdown PRD files across the active page
      */
     async discoverPrdDocuments({ preferredPath = '' } = {}) {
         const pageDir = this.getPageVersionDirectoryPath();
@@ -177,6 +180,7 @@ export class PRDManager extends EventTarget {
             const shareConfig = this.host.shareConfig || window.__READIFY_SHARE__ || {};
             if (Array.isArray(shareConfig.documents) && shareConfig.documents.length > 0) {
                 return shareConfig.documents.map((doc) => ({
+                    ...doc,
                     path: doc.path,
                     filename: doc.filename || this.getPrdFileName(doc.path),
                     label: doc.label || this.getPrdDocumentLabel(doc.path),
@@ -188,6 +192,8 @@ export class PRDManager extends EventTarget {
         }
 
         let documents = [];
+        let discoveredByApi = false;
+        this._serverLastOpenedPath = '';
         const activePageId = this.host.activePageId;
         const activeVersion = this.host.activeVersion;
 
@@ -197,10 +203,13 @@ export class PRDManager extends EventTarget {
             const response = await fetch(apiUrl);
             if (response.ok) {
                 const data = await response.json();
+                discoveredByApi = true;
+                this._serverLastOpenedPath = data.lastOpenedPath || '';
                 documents = Array.isArray(data.documents)
                     ? data.documents
                         .filter((doc) => doc?.path && this.isPrdFilename(doc.filename || this.getPrdFileName(doc.path), doc.path.includes('/docs/')))
                         .map((doc) => ({
+                            ...doc,
                             path: doc.path,
                             filename: doc.filename || this.getPrdFileName(doc.path),
                             label: doc.label || this.getPrdDocumentLabel(doc.path),
@@ -219,7 +228,8 @@ export class PRDManager extends EventTarget {
             if (documents.length === 0) {
                 const scanDirs = [
                     `/src/pages/${this.host.activeProjectId || 'readify'}/${activePageId}/docs`,
-                    pageDir
+                    ...(this.host.getPageRecord?.()?.versions || [activeVersion]).map(version =>
+                        `/src/pages/${this.host.activeProjectId || 'readify'}/${activePageId}/${version}`)
                 ];
                 
                 for (const dir of scanDirs) {
@@ -238,6 +248,7 @@ export class PRDManager extends EventTarget {
                             if (documents.some(d => d.path === fullPath)) continue;
 
                             documents.push({
+                                prototypeVersion: /\/(v\d+)$/.exec(dir)?.[1] || null,
                                 path: fullPath,
                                 filename,
                                 label: this.getPrdDocumentLabel(filename)
@@ -267,7 +278,7 @@ export class PRDManager extends EventTarget {
         }
 
         // 4. Ensure preferred path is listed
-        if (preferredPath && !documents.some(d => d.path === preferredPath)) {
+        if (!discoveredByApi && preferredPath && !documents.some(d => d.path === preferredPath)) {
             const filename = this.getPrdFileName(preferredPath);
             if (this.isPrdFilename(filename)) {
                 documents.push({
@@ -339,7 +350,7 @@ export class PRDManager extends EventTarget {
      * Main async method to fetch and load PRD content
      */
     async loadDocument({ force = false, path = '' } = {}) {
-        const requestedPath = path || '';
+        const requestedPath = path || this.state.path || '';
         const activePrdPath = requestedPath || this.state.path || '';
 
         if (!force && activePrdPath && this.state.path === activePrdPath && ['ready', 'empty', 'error'].includes(this.state.status)) {
@@ -366,10 +377,12 @@ export class PRDManager extends EventTarget {
             } else {
                 const pageId = this.host.activePageId || '';
                 const version = this.host.activeVersion || '';
-                const lastPath = this.getLocalStorageItem(`readify:prd-last-doc:${pageId}:${version}`);
+                const lastPath = [this.getLocalStorageItem(this.getLastDocumentKey()), this._serverLastOpenedPath,
+                    this.getLocalStorageItem(`readify:prd-last-doc:${pageId}:${version}`)]
+                    .find(candidate => documents.some(doc => doc.path === candidate));
                 activePath = lastPath && documents.some((doc) => doc.path === lastPath)
                     ? lastPath
-                    : (documents[0]?.path || '');
+                    : (documents.find(doc => doc.prototypeVersion === version)?.path || documents[0]?.path || '');
             }
 
             if (!activePath) {
@@ -414,6 +427,7 @@ export class PRDManager extends EventTarget {
                 }
             }
 
+            if (token !== this._prdLoadToken) return;
             const pageId = this.host.activePageId || '';
             const savedEditMode = this.getLocalStorageItem(`readify:prd-edit-mode:${pageId}:${activePath}`) === 'true';
 
@@ -453,13 +467,14 @@ export class PRDManager extends EventTarget {
             : (typeof this.state.draftContent === 'string' ? this.state.draftContent : String(this.state.content || ''));
         const path = this.state.path || `/src/pages/${this.host.activeProjectId || 'readify'}/${this.host.activePageId}/docs/product-doc.md`;
         
+        const token = this._prdLoadToken;
         this.updateState({
             saving: true,
             saveError: ''
         });
 
         try {
-            const response = await fetch('http://localhost:8080/api/prd-doc', {
+            const response = await fetch('/api/prd-doc', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -476,6 +491,7 @@ export class PRDManager extends EventTarget {
             }
 
             const result = await response.json();
+            if (token !== this._prdLoadToken) return;
             const nextPath = result.path || path;
 
             this.updateState({
@@ -497,6 +513,7 @@ export class PRDManager extends EventTarget {
             this.dispatchEvent(new CustomEvent('prd-save-success', { detail: { path: nextPath } }));
             return true;
         } catch (error) {
+            if (token !== this._prdLoadToken) return;
             const message = error instanceof Error ? error.message : String(error);
             this.updateState({
                 saving: false,
@@ -511,23 +528,25 @@ export class PRDManager extends EventTarget {
     /**
      * Creates a new PRD markdown file with server-side unique naming.
      */
-    async createNewDocument() {
+    async createNewDocument({ derivedFrom = '' } = {}) {
         if (this.state.saving) return;
 
+        const token = this._prdLoadToken;
         this.updateState({
             saving: true,
             saveError: ''
         });
 
         try {
-            const response = await fetch('http://localhost:8080/api/prd-doc/create', {
+            const response = await fetch('/api/prd-doc/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     projectId: this.host.activeProjectId || 'readify',
                     pageId: this.host.activePageId,
                     pageName: this.host.getPageRecord?.()?.name || this.host.activePageId || '',
-                    version: this.host.activeVersion
+                    version: this.host.activeVersion,
+                    derivedFrom
                 })
             });
 
@@ -536,6 +555,7 @@ export class PRDManager extends EventTarget {
             }
 
             const result = await response.json();
+            if (token !== this._prdLoadToken) return;
             const path = result.path || '';
             const content = typeof result.content === 'string' ? result.content : '';
 
@@ -562,6 +582,7 @@ export class PRDManager extends EventTarget {
                 }
             }));
         } catch (error) {
+            if (token !== this._prdLoadToken) return;
             const message = error instanceof Error ? error.message : String(error);
             this.updateState({
                 saving: false,

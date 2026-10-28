@@ -1,0 +1,25 @@
+name: macOS desktop launcher
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run pi:build
+      - run: npm run pi:verify
+      - run: npm run agent:test
+      - run: npx playwright install chromium
+      - run: node tests/pi-ui.browser.mjs
+      - run: node tests/macos-desktop.mjs
+        env:
+          PROTA_TEST_NATIVE_APP: '1'

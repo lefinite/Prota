@@ -1,3 +1,4 @@
+import { PreviewController } from './preview/controller.js';
 /**
  * Readify Demo Shell Logic
  * Handles page/version switching and project management
@@ -9,7 +10,7 @@ import { UnifiedSettings } from './modules/settings/index.js';
 import { formatShareText, prepareShareDraft } from './modules/sharing/copy.js';
 import { requestShareOptions } from './modules/sharing/dialog.js';
 import { VercelConnection } from './modules/settings/vercel.js';
-import { PRDModule } from './modules/prd/index.js?v=20261013-auto-polish-v1';
+import { PRDModule } from './modules/prd/index.js?v=20261027-page-docs-v1';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
 import { MindmapModule } from './modules/mindmap/index.js?v=20260701-xmind-v12';
 
@@ -129,7 +130,7 @@ class DemoShell {
         this.skillSearchQuery = '';
         this.newPageStyleId = 'default';
         this.newPageFrameworkId = 'ant-design-skill';
-        this.newPageTargetDevice = 'auto';
+        this.newPageTargetDevice = 'infinite-canvas';
         this.newPageStyleDropdownOpen = false;
         this.newPageStyleMenuEl = null;
         this.newPageFrameworkZoomEl = null;
@@ -155,6 +156,8 @@ class DemoShell {
         // Annotation mode state
         this.annotationMode = false;
         this._annotationRightClick = null;
+        this.canvasAnnotationTarget = null;
+        this._inspectorContext = null;
         this.currentAnnotations = [];
         this.visibleAnnotations = [];
         this.annotationListScope = this.readAnnotationListScope();
@@ -1392,13 +1395,13 @@ class DemoShell {
                 this.writeShellNavigationState('pages', this.activeProjectId, initialTarget.page.id, initialTarget.version);
                 await this.switchPage(initialTarget.page.id, initialTarget.version);
             } else {
-                if (this.mainIframe) this.mainIframe.src = 'about:blank';
+                if (this.mainIframe) { this.previewController?.navigate(); this.mainIframe.src = 'about:blank'; }
                 if (this.currentPageNameEl) this.currentPageNameEl.textContent = '暂无页面';
                 this.renderVersionPanel(null);
                 this.writeShellNavigationState();
             }
         } else {
-            if (this.mainIframe) this.mainIframe.src = 'about:blank';
+            if (this.mainIframe) { this.previewController?.navigate(); this.mainIframe.src = 'about:blank'; }
             this.switchTopView(this.currentTopView);
         }
         if (!this.isShareMode) {
@@ -1928,6 +1931,7 @@ class DemoShell {
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
+                if (this.annotationMode && this.canvasAnnotationTarget) this.exitAnnotationMode('parent');
                 this.closeShareMenu();
                 this.closeSettingsModal();
             }
@@ -2419,18 +2423,13 @@ class DemoShell {
                 this.mainIframe?.contentWindow?.postMessage({ type: 'prota:canvas-fullscreen-state', active: false }, location.origin);
             }
         });
-        this.mainIframe.addEventListener('load', () => {
-            this.handleIframeLoad();
-            this.upgradeCanvasEditorIfNeeded();
-        });
+        this.bindPreviewFrameEvents(this.mainIframe);
 
         this.viewportStage?.addEventListener('contextmenu', (event) => {
             this.handleAnnotationContextMenu(event);
         });
 
-        this.mainIframe.addEventListener('contextmenu', (event) => {
-            this.handleAnnotationContextMenu(event);
-        });
+
 
         // Annotation mode toggle
         document.getElementById('annotatorBtn').addEventListener('click', () => {
@@ -2743,12 +2742,30 @@ class DemoShell {
                 e.source.postMessage({ type: 'prota:canvas-fullscreen-state', active: Boolean(e.data.active) }, e.origin);
                 return;
             }
+            if (e.data.type === 'prota:canvas-annotation-state') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
+                this.handleCanvasAnnotationState(e.data);
+                return;
+            }
+            if (e.data.type === 'prota:canvas-view') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin) return;
+                this.hideAnnotationHover();
+                this.refreshPendingAnnotationPosition();
+                this.scheduleVisibleAnnotationRefresh();
+                return;
+            }
+            if (String(e.data.type).startsWith('readify:')) {
+                if (e.origin !== location.origin || e.source !== this.mainIframe?.contentWindow) return;
+                if (this.isInfiniteCanvasPage() && !this.resolveBoardMessageTarget(e, e.data)) return;
+            }
             if (e.data.type === 'readify:close-dropdowns') {
                 this.closeAllDropdowns();
             } else if (e.data.type === 'readify:trigger-jump') {
                 this.handleTriggerJump(e.data.toPageId);
             } else if (e.data.type === 'readify:element-selected') {
                 if (this.annotationMode) {
+                    const boardTarget = this.resolveBoardMessageTarget(e, e.data);
+                    if (e.data.protaBoardId && !boardTarget) return;
                     this.hideAnnotationHover();
                     this.showAnnotationDialog(e.data.selector, {
                         tagName: e.data.tagName,
@@ -2758,11 +2775,13 @@ class DemoShell {
                         ariaLabel: e.data.ariaLabel,
                         title: e.data.title,
                         rect: e.data.rect || null
-                    });
+                    }, boardTarget);
                 }
             } else if (e.data.type === 'readify:element-hover') {
                 if (!this.annotationMode) return;
-                this.showAnnotationHover(e.data);
+                const boardTarget = this.resolveBoardMessageTarget(e, e.data);
+                if (e.data.protaBoardId && !boardTarget) return;
+                this.showAnnotationHover(e.data, boardTarget);
             } else if (e.data.type === 'readify:element-hover-clear') {
                 this.hideAnnotationHover();
             } else if (e.data.type === 'readify:toggle-annotation') {
@@ -3507,7 +3526,7 @@ class DemoShell {
         const vercelAutoDeploy = true;
         const payload = { ...this.settings, shareMode, publicDomain, staticDomain, gitAutoPush: false, vercelAutoDeploy };
 
-        const saveBtn = this.shareSettingsForm?.querySelector('button[type="submit"]');
+        const saveBtn = this.shareSettingsForm?.querySelector('button[type="submit"]') || this.unifiedSettings?.q('#usShareActions button[type="submit"]');
         const oldText = saveBtn ? saveBtn.textContent : '';
         if (saveBtn) {
             saveBtn.disabled = true;
@@ -3984,6 +4003,7 @@ class DemoShell {
 
     switchTopView(view) {
         if (!['projects', 'templates', 'skills', 'page'].includes(view)) return;
+        if (view !== 'page') this.previewController?.navigate();
         this.currentTopView = view;
         if (view === 'projects') {
             this.currentView = 'projects';
@@ -5284,7 +5304,9 @@ class DemoShell {
         if (mode === 'infinite-canvas') {
             lines.push('这是页面层级的无限画布，不是项目视图。保存 targetDevice: "canvas" 和 pageMode: "infinite-canvas"。',
                 '完整复制产品模板 src/templates/infinite-canvas/ 到当前页面版本目录，先阅读其中 README.md。保留编辑器功能；画板业务代码放在本版本 boards/{board_id}/，素材放 assets/。',
-                '使用 canvas-data.js 定义画板、文本、便签、形状、图片的位置与尺寸；子画板不注册为项目页面。整张画布作为一个页面迭代和分享。');
+                '使用 canvas-data.js 定义画板、文本、便签、形状、图片的位置与尺寸；子画板不注册为项目页面。整张画布作为一个页面迭代和分享。',
+                '根据用户意图判断首次创建的界面数量：单界面需求对应一个画板；明确列出多个界面时，每个界面对应一个画板；完整业务流程由你结合需求自主判断必要的界面及数量。例如“设计登录页面”创建一个画板，“设计登录、注册、忘记密码三个界面”创建三个画板，“设计完整的电商购物流程”由你合理拆分。',
+                '在本次任务中完成所有所需界面的实际内容与必要交互，每个业务画板创建自己的 boards/{board_id}/index.html、styles.css、app.js，并自动关联节点 src。不能只创建空白画板、只完成其中一个界面或要求用户逐个重复操作。各界面保持一致的视觉语言和与单界面任务同等的视觉质量、交互完整性，不为凑齐数量而简化为占位内容；生成方式由你自主决定。');
             return lines.join('\n');
         }
         if (mode === 'auto') {
@@ -5359,7 +5381,7 @@ class DemoShell {
         this.renderAgentStatusContextControl();
     }
 
-    setNewPageTargetDevice(targetDevice = 'auto', { syncPrompt = true } = {}) {
+    setNewPageTargetDevice(targetDevice = 'infinite-canvas', { syncPrompt = true } = {}) {
         this.newPageTargetDevice = this.normalizeNewPageMode(targetDevice);
         this.closeNewPageStyleMenu({ renderControl: false });
         if (syncPrompt) this.syncNewPagePrompt();
@@ -6226,6 +6248,7 @@ class DemoShell {
     }
 
     enterProject(projectId) {
+        this.previewController?.navigate();
         const project = this.projects?.projects?.find(p => p.id === projectId);
         if (!project) return;
         this.activeProjectId = projectId;
@@ -6250,7 +6273,7 @@ class DemoShell {
                 this.currentPageNameEl.textContent = '暂无页面';
             }
             if (this.mainIframe) {
-                this.mainIframe.src = 'about:blank';
+                { this.previewController?.navigate(); this.mainIframe.src = 'about:blank'; }
             }
             this.renderVersionPanel(null);
             this.resetPrdDocumentState();
@@ -6760,6 +6783,7 @@ class DemoShell {
             return;
         }
 
+        this.previewController?.navigate();
         this.activeVersion = version;
         const page = this.projects.pages.find(p => p.id === this.activePageId);
 
@@ -6963,7 +6987,7 @@ class DemoShell {
         }
     }
 
-    async openNewPageAgentFlow({ templateId = 'default', frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = 'auto' } = {}) {
+    async openNewPageAgentFlow({ templateId = 'default', frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = 'infinite-canvas' } = {}) {
         await this.loadTemplatesData();
         if (projectId) {
             this.activeProjectId = projectId;
@@ -7118,6 +7142,9 @@ class DemoShell {
         event?.preventDefault();
         event?.stopPropagation();
         if (this.isShareMode) return;
+        // Infinite canvas owns its right-click gesture (board activation and
+        // board annotation); the portal never enters annotation from here.
+        if (this.isInfiniteCanvasPage()) return;
 
         // In annotation mode the first right click always exits immediately.
         // Outside annotation mode, require two nearby right clicks so the first
@@ -7148,16 +7175,34 @@ class DemoShell {
         this._annotationRightClick = currentClick;
     }
 
-    async handleIframeLoad() {
+    bindPreviewFrameEvents(frame) {
+        frame.addEventListener('load', () => {
+            if (frame !== this.mainIframe) return;
+            this.handleIframeLoad();
+            this.upgradeCanvasEditorIfNeeded();
+        });
+        frame.addEventListener('contextmenu', event => this.handleAnnotationContextMenu(event));
+    }
+
+    async handleIframeLoad({ presentation = null } = {}) {
         this.teardownIframeObservers();
+        if (this.canvasAnnotationTarget) {
+            // The canvas document was replaced; its runtime re-announces any
+            // still-active board annotation. Drop the stale binding first.
+            this.canvasAnnotationTarget = null;
+            if (this.annotationMode) this.annotationMode = false;
+        }
+        if (this.isInfiniteCanvasPage() && !this.canvasAnnotationTarget) this.annotationMode = false;
+        this._inspectorContext = null;
         const svg = this.versionRefreshBtn?.querySelector('svg');
         if (svg) { svg.style.transition = 'none'; svg.style.transform = ''; }
-        if (this.normalizePageTargetDevice(this.getPageRecord()?.targetDevice) === 'mobile') {
+        if (this.normalizePageTargetDevice(presentation?.targetDevice ?? this.getPageRecord()?.targetDevice) === 'mobile') {
             try { installProtaMobileFrameFit(this.mainIframe.contentWindow); }
             catch (error) { console.warn('Mobile preview fitting unavailable:', error); }
         }
         await this.loadAnnotations();
         this.injectIframeShortcutBridge();
+        this.syncAnnotationButtonState(this.annotationMode);
 
         if (this.annotationMode) {
             this.injectInspector();
@@ -7168,8 +7213,8 @@ class DemoShell {
         this.refreshAnnotationUI();
     }
 
-    injectIframeShortcutBridge() {
-        const iframeDoc = this.mainIframe.contentDocument;
+    injectIframeShortcutBridge(context = null) {
+        const iframeDoc = context?.document || this.mainIframe.contentDocument;
         if (!iframeDoc || !iframeDoc.body) return;
 
         const existing = iframeDoc.getElementById('__readify_shortcut_bridge');
@@ -7286,26 +7331,27 @@ class DemoShell {
      * Send state patches to the iframe's internal JS state object.
      * Returns a promise that resolves when the iframe acknowledges, or rejects on timeout.
      */
-    syncIframeState(patches, timeout = 400) {
-        const iframeWin = this.mainIframe.contentWindow;
+    syncIframeState(patches, timeout = 400, context = null) {
+        const iframeWin = context?.window || this.mainIframe.contentWindow;
         if (!iframeWin) return Promise.resolve(false);
 
+        const receiver = iframeWin.parent;
         return new Promise((resolve) => {
             let settled = false;
             const handler = (event) => {
-                if (!event.data || event.data.type !== 'readify:sync-state-ack') return;
+                if (event.source !== iframeWin || event.origin !== location.origin || event.data?.type !== 'readify:sync-state-ack') return;
                 if (settled) return;
                 settled = true;
-                window.removeEventListener('message', handler);
+                receiver.removeEventListener('message', handler);
                 resolve(true);
             };
-            window.addEventListener('message', handler);
+            receiver.addEventListener('message', handler);
 
             try {
                 iframeWin.postMessage({ type: 'readify:sync-state', patches }, '*');
             } catch {
                 settled = true;
-                window.removeEventListener('message', handler);
+                receiver.removeEventListener('message', handler);
                 resolve(false);
                 return;
             }
@@ -7313,13 +7359,14 @@ class DemoShell {
             window.setTimeout(() => {
                 if (settled) return;
                 settled = true;
-                window.removeEventListener('message', handler);
+                receiver.removeEventListener('message', handler);
                 resolve(false);
             }, timeout);
         });
     }
 
     async upgradeCanvasEditorIfNeeded({ force = false } = {}) {
+        if (this.previewController?.state.runId && !this.previewController.state.detached) return;
         if (this.isShareMode || this.getPageRecord()?.pageMode !== 'infinite-canvas' || this._canvasUpgradePending) return;
         let context;
         try {
@@ -7330,9 +7377,15 @@ class DemoShell {
             if (!frame || decodeURI(frame.location.pathname) !== expected || doc.readyState === 'loading') return;
             const editor = frame.protaCanvas;
             if (editor?.isDirty?.()) return;
+            // A draft offered for recovery is also unsaved work, even if the
+            // old editor has not initialized or reports a clean baseline.
+            try {
+                const draft = JSON.parse(frame.localStorage.getItem('prota-canvas-draft:' + frame.location.pathname) || 'null');
+                if (draft?.state && JSON.stringify(draft.state.nodes) !== JSON.stringify(frame.PROTA_CANVAS?.nodes)) return;
+            } catch { return; }
             // A partial installation may fail before publishing protaCanvas. Do not require
             // the broken editor to initialize before allowing its resources to be repaired.
-            const healthy = editor?.runtimeVersion >= 4 && frame.CanvasCore && frame.ProtaCanvasIcons
+            const healthy = editor?.runtimeVersion >= 8 && frame.CanvasConnections?.editorVersion >= 2 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasCore && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.marked
                 && doc.querySelector('link[href*="styles.css"]')?.sheet;
             if (healthy && !force) return;
             const key = `${context.projectId}/${context.pageId}/${context.version}`;
@@ -7345,7 +7398,7 @@ class DemoShell {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || '修复失败');
-            if (Number(result.runtimeVersion) < 4) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            if (Number(result.runtimeVersion) < 8) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
             if (context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion) {
                 this.mainIframe.contentWindow.location.reload();
             }
@@ -7393,21 +7446,28 @@ class DemoShell {
         if (!this.canvasSelection || !this.mainIframe?.contentWindow) return;
         const context = this.agentSessionContext || this.getAgentContext();
         const belongs = context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion;
-        const state = { type: 'prota:canvas-agent-status', targetIds: belongs && this.agentRunState?.active ? (this._canvasRunScope?.canvasSelection || context.canvasSelection || []).map(n=>n.id) : [], workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(belongs && this.agentRunState?.active), error: belongs ? String(this.agentRunState?.lastError || '') : '' };
+        const state = { type: 'prota:canvas-agent-status', previewManaged: Boolean(this.previewController?.state.runId && !this.previewController.state.detached), targetIds: belongs && this.agentRunState?.active ? (this._canvasRunScope?.canvasSelection || context.canvasSelection || []).map(n=>n.id) : [], workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(belongs && this.agentRunState?.active), error: belongs ? String(this.agentRunState?.lastError || '') : '' };
         const key = JSON.stringify([this.activeProjectId, this.activePageId, this.activeVersion, state]);
         if (key === this._canvasAgentStatusKey) return;
         this._canvasAgentStatusKey = key;
         this.mainIframe.contentWindow.postMessage(state, location.origin);
     }
 
-    refreshCurrentDemo() {
+    async refreshCurrentDemo() {
         if (!this.mainIframe || !this.mainIframe.src) return;
-        try {
-            if (this.mainIframe.contentWindow.protaCanvas?.reloadFromDisk) {
-                this.mainIframe.contentWindow.protaCanvas.reloadFromDisk();
-                return;
+        let editor;
+        try { editor = this.mainIframe.contentWindow.protaCanvas; } catch {}
+        if (editor?.reloadFromDisk) {
+            try {
+                const synced = await editor.reloadFromDisk();
+                this._canvasRefreshPending = !synced;
+                return synced;
+            } catch (error) {
+                this._canvasRefreshPending = true;
+                console.warn('Canvas refresh deferred:', error);
+                return false;
             }
-        } catch {}
+        }
         try {
             this.mainIframe.contentWindow.location.reload(true);
         } catch (err) {
@@ -7479,7 +7539,7 @@ class DemoShell {
                 await this._agentLiveProjectRefreshPromise;
             }
             if (refreshDemo) {
-                this.refreshCurrentDemo();
+                await this.refreshCurrentDemo();
             } else if (refreshPrd && this.docDrawerMode === 'prd' && this.annotationDrawerEnabled) {
                 this.loadPrdDocument({ force: true });
             }
@@ -7674,15 +7734,23 @@ class DemoShell {
         try {
             this.mainIframe.contentWindow.__readifyAnnotationRightClick = null;
         } catch {}
+        if (enabled && this.isInfiniteCanvasPage() && !this.canvasAnnotationTarget) {
+            // Infinite canvas annotates one board at a time; entry happens through
+            // the canvas right-click gesture, not the toolbar toggle.
+            this.syncAnnotationButtonState(false, btn, shellContainer);
+            this.showToast('在无限画布中，请在画板上连续右键进入该画板的标注');
+            return;
+        }
+        if (!enabled && this.canvasAnnotationTarget) {
+            this.notifyCanvasAnnotationExit();
+            this.canvasAnnotationTarget = null;
+        }
         this.annotationMode = Boolean(enabled);
-        btn.classList.toggle('is-active', this.annotationMode);
-        btn.setAttribute('aria-pressed', this.annotationMode ? 'true' : 'false');
-        btn.title = this.annotationMode ? '退出标注' : '标注';
-        btn.setAttribute('aria-label', btn.title);
-        shellContainer.classList.toggle('is-annotating', this.annotationMode);
+        this.syncAnnotationButtonState(this.annotationMode, btn, shellContainer);
 
         if (this.annotationMode) {
             await this.loadAnnotations();
+            if (!this.annotationMode) return;
             this.injectInspector();
         } else {
             this.removeInspector();
@@ -7697,6 +7765,122 @@ class DemoShell {
         }
 
         this.refreshAnnotationUI();
+    }
+
+    syncAnnotationButtonState(active, btn = document.getElementById('annotatorBtn'), shellContainer = document.querySelector('.shell-container')) {
+        btn?.classList.toggle('is-active', active);
+        btn?.setAttribute('aria-pressed', active ? 'true' : 'false');
+        btn.title = active ? '退出标注' : '标注';
+        btn?.setAttribute('aria-label', btn.title);
+        shellContainer?.classList.toggle('is-annotating', active);
+    }
+
+    isInfiniteCanvasPage() {
+        return this.getPageRecord()?.pageMode === 'infinite-canvas';
+    }
+
+    notifyCanvasAnnotationExit() {
+        try {
+            this.mainIframe?.contentWindow?.postMessage({ type: 'prota:canvas-annotation-exit' }, location.origin);
+        } catch {}
+    }
+
+    getCanvasBoardFrame(id) {
+        if (!this.isInfiniteCanvasPage()) return null;
+        try {
+            const editor = this.mainIframe?.contentWindow?.protaCanvas;
+            const frame = editor?.getBoardFrame?.(id);
+            return frame?.iframe ? frame : null;
+        } catch {
+            return null;
+        }
+    }
+
+    getAnnotationBoardKey(annotation) {
+        return annotation?.target?.type === 'canvas-board' ? String(annotation.target.boardId || '') : null;
+    }
+
+    // Single source of truth for "which document am I annotating". Normal pages
+    // annotate the main iframe; infinite-canvas pages annotate one nested board.
+    getAnnotationFrameContext(target = null) {
+        const resolved = target || this.canvasAnnotationTarget;
+        if (resolved?.type === 'canvas-board') {
+            const board = this.getCanvasBoardFrame(resolved.nodeId || resolved.boardId);
+            let boardDocument = null;
+            try { boardDocument = board?.iframe?.contentDocument; } catch {}
+            if (boardDocument) {
+                return {
+                    type: 'canvas-board',
+                    boardId: resolved.boardId || board.boardId,
+                    boardPath: resolved.boardPath || board.boardPath,
+                    nodeId: resolved.nodeId || board.nodeId,
+                    iframe: board.iframe,
+                    document: boardDocument,
+                    window: board.iframe.contentWindow
+                };
+            }
+            return {
+                type: 'canvas-board',
+                boardId: resolved.boardId || '',
+                boardPath: resolved.boardPath || '',
+                nodeId: resolved.nodeId || '',
+                iframe: null,
+                document: null,
+                window: null
+            };
+        }
+        return {
+            type: 'page',
+            iframe: this.mainIframe,
+            document: this.mainIframe?.contentDocument || null,
+            window: this.mainIframe?.contentWindow || null
+        };
+    }
+
+    getAnnotationResolveContext(annotation) {
+        if (!annotation?.target && this.isInfiniteCanvasPage()) {
+            // A legacy page annotation must never resolve against the active board.
+            return { type: 'page', iframe: null, document: null, window: null };
+        }
+        return this.getAnnotationFrameContext(annotation?.target || null);
+    }
+
+    async handleCanvasAnnotationState(data) {
+        if (this.isShareMode || !this.isInfiniteCanvasPage()) return;
+        if (data.active) {
+            const target = {
+                type: 'canvas-board',
+                boardId: String(data.boardId || ''),
+                boardPath: String(data.boardPath || ''),
+                nodeId: String(data.nodeId || '')
+            };
+            const changed = this.canvasAnnotationTarget?.boardId !== target.boardId
+                || this.canvasAnnotationTarget?.nodeId !== target.nodeId;
+            const previousBoard = this.canvasAnnotationTarget?.boardId || null;
+            this.canvasAnnotationTarget = target;
+            if (previousBoard && changed) this.cancelAnnotation();
+            if (!this.annotationMode) {
+                await this.setAnnotationMode(true, 'canvas');
+            } else if (changed || data.rebind) {
+                this.cancelAnnotation();
+                this.injectInspector();
+            }
+        } else {
+            this.canvasAnnotationTarget = null;
+            if (this.annotationMode) await this.setAnnotationMode(false, 'canvas');
+        }
+    }
+
+    // Board inspector messages arrive relayed by the canvas runtime. Only trust
+    // payloads that name the currently annotated board and come from the canvas.
+    resolveBoardMessageTarget(event, data) {
+        if (!data?.protaBoardId) return null;
+        if (event.source !== this.mainIframe?.contentWindow) return null;
+        const current = this.canvasAnnotationTarget;
+        if (!current || current.type !== 'canvas-board') return null;
+        if (event.origin !== location.origin || String(data.protaBoardId) !== String(current.boardId)) return null;
+        if (data.protaAnnotationNodeId !== current.nodeId || data.protaBoardPath !== current.boardPath) return null;
+        return current;
     }
 
     readDrawerPreference() {
@@ -8000,9 +8184,12 @@ class DemoShell {
     }
 
     injectInspector() {
-        const iframeDoc = this.mainIframe.contentDocument;
+        const context = this.getAnnotationFrameContext();
+        const iframeDoc = context.document;
         if (!iframeDoc) {
-            this.showToast('无法访问 iframe 内容，请确保通过 Bridge 服务访问', true);
+            this.showToast(context.type === 'canvas-board'
+                ? '无法访问画板内容，暂时不能标注'
+                : '无法访问 iframe 内容，请确保通过 Bridge 服务访问', true);
             return;
         }
         if (!iframeDoc.head || !iframeDoc.body) {
@@ -8013,6 +8200,8 @@ class DemoShell {
         }
 
         this.removeInspector();
+        this._inspectorContext = context;
+        if (context.type === 'canvas-board' && !iframeDoc.getElementById('__readify_shortcut_bridge')) this.injectIframeShortcutBridge(context);
 
         const style = iframeDoc.createElement('style');
         style.id = '__readify_inspector_css';
@@ -8561,18 +8750,20 @@ class DemoShell {
         iframeDoc.body.appendChild(script);
 
         try {
-            this.mainIframe.contentWindow.__readifyInspecting = true;
+            context.window.__readifyInspecting = true;
         } catch (error) {
             console.warn('Failed to enable iframe inspection:', error);
         }
     }
 
     removeInspector() {
-        const iframeDoc = this.mainIframe.contentDocument;
+        const context = this._inspectorContext || this.getAnnotationFrameContext();
+        this._inspectorContext = null;
+        const iframeDoc = context?.document;
         if (!iframeDoc) return;
 
         try {
-            this.mainIframe.contentWindow.__readifyInspectorCleanup?.();
+            context.window?.__readifyInspectorCleanup?.();
         } catch (error) {
             console.warn('Failed to clean up iframe inspection listeners:', error);
         }
@@ -8595,7 +8786,7 @@ class DemoShell {
         this.hideAnnotationHover();
 
         try {
-            this.mainIframe.contentWindow.__readifyInspecting = false;
+            context.window.__readifyInspecting = false;
         } catch (error) {
             console.warn('Failed to disable iframe inspection:', error);
         }
@@ -8670,7 +8861,7 @@ class DemoShell {
         const manager = this.prdModule?.manager;
         const currentPath = manager?.state?.path;
         
-        const isSameContext = manager && manager.host.activePageId === this.activePageId && manager.host.activeVersion === this.activeVersion;
+        const isSameContext = manager && this.prdModule._pageKey === `${this.activeProjectId}:${this.activePageId}`;
         const isLoaded = manager && ['ready', 'empty', 'error'].includes(manager.state.status);
         
         if (isSameContext && isLoaded && !force && (!path || path === currentPath)) {
@@ -8726,7 +8917,11 @@ class DemoShell {
     }
 
     resetPrdDocumentState() {
-        this.prdModule?.manager?.resetState();
+        const module = this.prdModule;
+        const pageKey = `${this.activeProjectId}:${this.activePageId}`;
+        const path = module?._pageKey === pageKey ? module.manager.state.path : '';
+        module?.manager?.resetState();
+        if (path) module.manager.state.path = path;
     }
 
     getPrdRelativePath() {
@@ -8998,6 +9193,7 @@ class DemoShell {
     refreshAnnotationUI() {
         this.syncAnnotationObservers();
         this.updateDrawerToggleButton();
+        this.refreshPendingAnnotationPosition();
 
         if (!this.shouldShowInteractionDocs()) {
             this.visibleAnnotations = [];
@@ -9009,6 +9205,13 @@ class DemoShell {
         this.visibleAnnotations = this.collectVisibleAnnotations();
         this.renderAnnotationDrawer();
         this.renderAnnotationMarkers();
+    }
+
+    refreshPendingAnnotationPosition() {
+        const pending = this.pendingAnnotation;
+        if (!pending?.element?.isConnected || !pending.target) return;
+        const geometry = this.getMarkerGeometry(pending.element, this.getAnnotationFrameContext(pending.target));
+        if (geometry) this.positionAnnotationDialog(geometry);
     }
 
     getCssVariable(name, fallback) {
@@ -9082,7 +9285,7 @@ class DemoShell {
         this.annotationMarkerLayer.setAttribute('aria-hidden', 'false');
 
         this.visibleAnnotations.forEach((item, index) => {
-            const geometry = this.getMarkerGeometry(item.element);
+            const geometry = this.getMarkerGeometry(item.element, item.context);
             if (!geometry) return;
 
             const key = this.getAnnotationMarkerKey(item.annotation, item.sourceIndex);
@@ -9137,20 +9340,32 @@ class DemoShell {
         });
     }
 
-    getMarkerGeometry(element) {
-        const iframeRect = this.mainIframe.getBoundingClientRect();
+    getMarkerGeometry(element, context = null) {
+        const frame = context?.iframe || this.mainIframe;
+        const frameWindow = context?.window || element?.ownerDocument?.defaultView;
+        if (!frame || !frame.isConnected || !element) return null;
+        const iframeRect = this.getAnnotationFrameScreenRect(context || { iframe: frame }) || frame.getBoundingClientRect();
         const stageRect = this.viewportStage.getBoundingClientRect();
         const elementRect = element.getBoundingClientRect();
+        // Nested board frames render through the canvas zoom transform; their
+        // document viewport keeps the layout size, so scale by the live ratio.
+        const scale = frameWindow ? iframeRect.width / Math.max(1, frameWindow.innerWidth) : 1;
+        const scaleY = frameWindow ? iframeRect.height / Math.max(1, frameWindow.innerHeight) : scale;
 
-        const left = iframeRect.left - stageRect.left + elementRect.left;
-        const top = iframeRect.top - stageRect.top + elementRect.top;
-        const right = iframeRect.left - stageRect.left + elementRect.right;
-        const bottom = iframeRect.top - stageRect.top + elementRect.bottom;
+        const left = iframeRect.left - stageRect.left + elementRect.left * scale;
+        const top = iframeRect.top - stageRect.top + elementRect.top * scaleY;
+        const right = iframeRect.left - stageRect.left + elementRect.right * scale;
+        const bottom = iframeRect.top - stageRect.top + elementRect.bottom * scaleY;
 
-        const clippedLeft = Math.max(0, Math.min(left, stageRect.width));
-        const clippedTop = Math.max(0, Math.min(top, stageRect.height));
-        const clippedRight = Math.max(0, Math.min(right, stageRect.width));
-        const clippedBottom = Math.max(0, Math.min(bottom, stageRect.height));
+        const board = context?.type === 'canvas-board';
+        const minX = board ? Math.max(0, iframeRect.left - stageRect.left) : 0;
+        const minY = board ? Math.max(0, iframeRect.top - stageRect.top) : 0;
+        const maxX = board ? Math.min(stageRect.width, iframeRect.right - stageRect.left) : stageRect.width;
+        const maxY = board ? Math.min(stageRect.height, iframeRect.bottom - stageRect.top) : stageRect.height;
+        const clippedLeft = Math.max(minX, left);
+        const clippedTop = Math.max(minY, top);
+        const clippedRight = Math.min(maxX, right);
+        const clippedBottom = Math.min(maxY, bottom);
         const width = clippedRight - clippedLeft;
         const height = clippedBottom - clippedTop;
 
@@ -9177,17 +9392,16 @@ class DemoShell {
     }
 
     collectVisibleAnnotations() {
-        const iframeDoc = this.mainIframe.contentDocument;
-        const iframeWin = this.mainIframe.contentWindow;
-        if (!iframeDoc || !iframeWin) return [];
-
         return this.currentAnnotations.reduce((items, annotation, sourceIndex) => {
-            const match = this.resolveAnnotationTarget(annotation, iframeDoc, iframeWin);
+            const context = this.getAnnotationResolveContext(annotation);
+            if (!context.document || !context.window) return items;
+            const match = this.resolveAnnotationTarget(annotation, context.document, context.window);
             if (!match) return items;
 
             items.push({
                 annotation,
                 element: match.element,
+                context,
                 sourceIndex,
                 label: this.getAnnotationLabel(annotation, match.element),
                 selectorLabel: this.getAnnotationSelectorLabel(annotation)
@@ -9197,13 +9411,12 @@ class DemoShell {
     }
 
     collectAllAnnotationItems() {
-        const iframeDoc = this.mainIframe.contentDocument;
-        const iframeWin = this.mainIframe.contentWindow;
         const visibleIndexes = new Set(this.visibleAnnotations.map((item) => item.sourceIndex));
 
         return this.currentAnnotations.map((annotation, sourceIndex) => {
-            const match = iframeDoc && iframeWin
-                ? this.resolveAnnotationTarget(annotation, iframeDoc, iframeWin, {
+            const context = this.getAnnotationResolveContext(annotation);
+            const match = context.document && context.window
+                ? this.resolveAnnotationTarget(annotation, context.document, context.window, {
                     requireViewportVisible: false,
                     requireRendered: false,
                     allowAmbiguous: true
@@ -9214,12 +9427,13 @@ class DemoShell {
             return {
                 annotation,
                 element,
+                context,
                 sourceIndex,
                 label: this.getAnnotationLabel(annotation, element),
                 selectorLabel: this.getAnnotationSelectorLabel(annotation),
                 isVisible: visibleIndexes.has(sourceIndex),
                 isResolvable: Boolean(element),
-                isDisplayable: Boolean(element && iframeWin && this.isElementDisplayable(element, iframeWin))
+                isDisplayable: Boolean(element && context.window && this.isElementDisplayable(element, context.window))
             };
         });
     }
@@ -9229,7 +9443,11 @@ class DemoShell {
             return this.collectAllAnnotationItems();
         }
 
-        return this.visibleAnnotations.map((item) => ({
+        const boardId = this.isInfiniteCanvasPage()
+            ? (this.canvasAnnotationTarget?.boardId || this.mainIframe?.contentWindow?.protaCanvas?.getActiveBoard?.()?.boardId)
+            : null;
+        return this.visibleAnnotations.filter(item => !this.isInfiniteCanvasPage()
+            || (boardId && this.getAnnotationBoardKey(item.annotation) === boardId)).map((item) => ({
             ...item,
             isVisible: true,
             isResolvable: true,
@@ -9687,11 +9905,15 @@ class DemoShell {
         const annotation = this.currentAnnotations[sourceIndex];
         if (!annotation) return;
 
-        const iframeDoc = this.mainIframe.contentDocument;
-        const iframeWin = this.mainIframe.contentWindow;
+        const annotationContext = this.getAnnotationResolveContext(annotation);
+        const iframeDoc = annotationContext.document;
+        const iframeWin = annotationContext.window;
         if (!iframeDoc || !iframeWin) {
             this.showToast('无法访问页面内容，请通过 Bridge 服务打开后再定位', true);
             return;
+        }
+        if (annotationContext.type === 'canvas-board' && annotationContext.nodeId) {
+            try { this.mainIframe?.contentWindow?.protaCanvas?.focus([annotationContext.nodeId]); } catch {}
         }
 
         let match = this.resolveAnnotationTarget(annotation, iframeDoc, iframeWin, {
@@ -9886,7 +10108,7 @@ class DemoShell {
         // This is the key improvement: instead of just toggling CSS classes,
         // we tell the iframe's JS to update its internal state and re-render.
         if (Object.keys(statePatches).length > 0) {
-            const synced = await this.syncIframeState(statePatches, 300);
+            const synced = await this.syncIframeState(statePatches, 300, { document: iframeDoc, window: iframeWin });
             if (synced) {
                 // Give the iframe render cycle time to complete
                 await this.waitForAnnotationFrame(150);
@@ -10712,22 +10934,28 @@ class DemoShell {
         this._iframeRefreshListeners = [];
     }
 
-    resolveSelectedElement(selector, meta) {
+    resolveSelectedElement(selector, meta, target = null) {
+        const context = this.getAnnotationFrameContext(target);
         return this.resolveAnnotationTarget(
-            { selector, meta },
-            this.mainIframe.contentDocument,
-            this.mainIframe.contentWindow,
+            { selector, meta, target },
+            context.document,
+            context.window,
             { requireViewportVisible: false }
         )?.element || null;
     }
 
-    findExistingAnnotationIndex(selector, element) {
-        const exactIndex = this.currentAnnotations.findIndex((item) => item.selector === selector);
+    findExistingAnnotationIndex(selector, element, target = null) {
+        // Board annotations live in the boardId+selector space; two boards may
+        // legitimately expose the same selector without overwriting each other.
+        const boardKey = target?.type === 'canvas-board' ? String(target.boardId || '') : null;
+        const exactIndex = this.currentAnnotations.findIndex((item) => item.selector === selector && this.getAnnotationBoardKey(item) === boardKey);
         if (exactIndex >= 0) return exactIndex;
         if (!element) return -1;
 
         for (let index = 0; index < this.currentAnnotations.length; index += 1) {
-            const resolved = this.resolveAnnotationTarget(this.currentAnnotations[index]);
+            if (this.getAnnotationBoardKey(this.currentAnnotations[index]) !== boardKey) continue;
+            const context = this.getAnnotationResolveContext(this.currentAnnotations[index]);
+            const resolved = this.resolveAnnotationTarget(this.currentAnnotations[index], context.document, context.window);
             if (resolved?.element === element) {
                 return index;
             }
@@ -10738,7 +10966,7 @@ class DemoShell {
 
     buildElementSelector(el) {
         if (!el || el.nodeType !== 1) return '';
-        const iframeDoc = this.mainIframe.contentDocument;
+        const iframeDoc = el.ownerDocument;
         if (!iframeDoc) return '';
 
         const escapeIdentifier = (value) => {
@@ -10811,13 +11039,14 @@ class DemoShell {
         return parts.join(' > ');
     }
 
-    selectElementFromParent(el) {
+    selectElementFromParent(el, target = null) {
         if (!el) return;
         const selector = this.buildElementSelector(el);
         const rect = el.getBoundingClientRect();
-        
-        // Update selection class inside iframe
-        const iframeDoc = this.mainIframe.contentDocument;
+        const elementWindow = el.ownerDocument?.defaultView;
+
+        // Update selection class inside the element's own document
+        const iframeDoc = el.ownerDocument;
         if (iframeDoc) {
             iframeDoc.querySelectorAll('.__readify_selected').forEach((item) => {
                 item.classList.remove('__readify_selected');
@@ -10839,21 +11068,21 @@ class DemoShell {
                 bottom: rect.bottom,
                 width: rect.width,
                 height: rect.height,
-                viewportWidth: this.mainIframe.contentWindow.innerWidth,
-                viewportHeight: this.mainIframe.contentWindow.innerHeight
+                viewportWidth: elementWindow?.innerWidth || 0,
+                viewportHeight: elementWindow?.innerHeight || 0
             }
         };
 
-        this.showAnnotationDialog(selector, meta);
+        this.showAnnotationDialog(selector, meta, target);
     }
 
     selectParentAnnotationElement() {
         if (!this.pendingAnnotation || !this.pendingAnnotation.element) return;
         const currentEl = this.pendingAnnotation.element;
         const parentEl = currentEl.parentElement;
-        const iframeDoc = this.mainIframe.contentDocument;
+        const iframeDoc = currentEl.ownerDocument;
         if (parentEl && parentEl !== iframeDoc.body && parentEl !== iframeDoc.documentElement) {
-            this.selectElementFromParent(parentEl);
+            this.selectElementFromParent(parentEl, this.pendingAnnotation.target);
         }
     }
 
@@ -10861,7 +11090,7 @@ class DemoShell {
         if (!this.pendingAnnotation || !this.pendingAnnotation.element) return;
         const currentEl = this.pendingAnnotation.element;
         const children = Array.from(currentEl.children);
-        const iframeWin = this.mainIframe.contentWindow;
+        const iframeWin = currentEl.ownerDocument?.defaultView;
         const visibleChild = children.find(child => {
             if (!iframeWin) return false;
             try {
@@ -10872,23 +11101,55 @@ class DemoShell {
             }
         });
         if (visibleChild) {
-            this.selectElementFromParent(visibleChild);
+            this.selectElementFromParent(visibleChild, this.pendingAnnotation.target);
         }
     }
 
-    getIframeRectInStage(rect) {
+    // Nested board frames report rects in the canvas document's own viewport;
+    // translate them into portal screen space before use.
+    getAnnotationFrameScreenRect(context) {
+        const localRect = context?.iframe?.getBoundingClientRect();
+        if (!localRect) return null;
+        if (context?.type !== 'canvas-board') return localRect;
+        const base = this.mainIframe?.getBoundingClientRect();
+        if (!base) return null;
+        const outerWindow = this.mainIframe.contentWindow;
+        const scaleX = base.width / Math.max(1, outerWindow.innerWidth);
+        const scaleY = base.height / Math.max(1, outerWindow.innerHeight);
+        return {
+            left: localRect.left * scaleX + base.left,
+            top: localRect.top * scaleY + base.top,
+            right: localRect.right * scaleX + base.left,
+            bottom: localRect.bottom * scaleY + base.top,
+            width: localRect.width * scaleX,
+            height: localRect.height * scaleY
+        };
+    }
+
+    getIframeRectInStage(rect, target = null) {
         if (!rect || typeof rect.left !== 'number' || !this.mainIframe || !this.viewportStage) {
             return null;
         }
 
-        const iframeRect = this.mainIframe.getBoundingClientRect();
+        const context = target ? this.getAnnotationFrameContext(target) : null;
+        const frame = context?.iframe || this.mainIframe;
+        if (!frame || !frame.isConnected) return null;
+        const iframeRect = this.getAnnotationFrameScreenRect(context || { iframe: frame }) || frame.getBoundingClientRect();
         const stageRect = this.viewportStage.getBoundingClientRect();
         const scaleX = rect.viewportWidth ? iframeRect.width / rect.viewportWidth : 1;
         const scaleY = rect.viewportHeight ? iframeRect.height / rect.viewportHeight : 1;
-        const left = iframeRect.left - stageRect.left + (rect.left * scaleX);
-        const top = iframeRect.top - stageRect.top + (rect.top * scaleY);
-        const width = Math.max(1, rect.width * scaleX);
-        const height = Math.max(1, rect.height * scaleY);
+        let left = iframeRect.left - stageRect.left + (rect.left * scaleX);
+        let top = iframeRect.top - stageRect.top + (rect.top * scaleY);
+        let width = Math.max(1, rect.width * scaleX);
+        let height = Math.max(1, rect.height * scaleY);
+        if (context?.type === 'canvas-board') {
+            const right = Math.min(left + width, iframeRect.right - stageRect.left);
+            const bottom = Math.min(top + height, iframeRect.bottom - stageRect.top);
+            left = Math.max(left, iframeRect.left - stageRect.left);
+            top = Math.max(top, iframeRect.top - stageRect.top);
+            width = Math.max(0, right - left);
+            height = Math.max(0, bottom - top);
+        }
 
         return {
             left,
@@ -10922,9 +11183,9 @@ class DemoShell {
         return `${tag || 'element'}${labelText}${selector ? ` · ${selector}` : ''}`;
     }
 
-    showAnnotationHover(payload) {
+    showAnnotationHover(payload, target = null) {
         if (!this.annotationMode || this.annotationPanel?.style.display === 'flex') return;
-        const rect = this.getIframeRectInStage(payload?.rect);
+        const rect = this.getIframeRectInStage(payload?.rect, target);
         const box = this.ensureAnnotationHoverBox();
         if (!rect || !box) return;
 
@@ -10943,7 +11204,7 @@ class DemoShell {
         this.annotationHoverBox.style.display = 'none';
     }
 
-    showAnnotationDialog(selector, meta) {
+    showAnnotationDialog(selector, meta, target = null) {
         if (!this.annotationPanel) {
             this.annotationPanel = document.createElement('div');
             this.annotationPanel.className = 'annotation-dialog';
@@ -11006,8 +11267,8 @@ class DemoShell {
             });
         }
 
-        const selectedElement = this.resolveSelectedElement(selector, meta);
-        const existingIdx = this.findExistingAnnotationIndex(selector, selectedElement);
+        const selectedElement = this.resolveSelectedElement(selector, meta, target);
+        const existingIdx = this.findExistingAnnotationIndex(selector, selectedElement, target);
         const existing = existingIdx >= 0 ? this.currentAnnotations[existingIdx] : null;
         const selectorLabel = this.annotationPanel.querySelector('.annotation-dialog__selector');
         const rawLabel = meta?.ariaLabel || meta?.title || meta?.textContent || selector;
@@ -11023,6 +11284,7 @@ class DemoShell {
         this.pendingAnnotation = {
             selector,
             meta,
+            target,
             element: selectedElement,
             existingIdx
         };
@@ -11030,19 +11292,22 @@ class DemoShell {
         this.jumpBindingExistingPageId = selectedElement?.getAttribute?.('data-link-to') || '';
         this.jumpBindingTargetPageId = this.jumpBindingExistingPageId;
         this.annotationLinkSaving = false;
+        const isBoardTarget = target?.type === 'canvas-board';
         const linkPanel = this.ensureAnnotationLinkPanel();
         const linkSearch = linkPanel.querySelector('.annotation-dialog__link-search input');
         if (linkSearch) linkSearch.value = '';
+        // Page-jump bindings and copy edits are written into the page's own
+        // source; they target the main page only, never a nested board.
         this.hideAnnotationLinkPanel();
-        linkPanel.hidden = false;
+        linkPanel.hidden = isBoardTarget;
         this.renderAnnotationLinkPages();
         this.refreshAnnotationLinkUI();
 
         this.annotationPanel.style.display = 'flex';
-        const stageRect = this.getIframeRectInStage(meta?.rect) || meta?.rect;
+        const stageRect = this.getIframeRectInStage(meta?.rect, target) || meta?.rect;
         this.positionAnnotationDialog(stageRect);
         this.positionAnnotationLinkTrigger();
-        this.renderAnnotationCopyPanel(copyText, stageRect);
+        this.renderAnnotationCopyPanel(isBoardTarget ? '' : copyText, stageRect);
         this.annotationPanel.querySelector('.annotation-dialog__textarea').focus();
     }
 
@@ -11413,7 +11678,8 @@ class DemoShell {
             ? this.pendingAnnotation.existingIdx
             : this.findExistingAnnotationIndex(
                 this.pendingAnnotation.selector,
-                this.pendingAnnotation.element
+                this.pendingAnnotation.element,
+                this.pendingAnnotation.target
             );
 
         if (existingIdx >= 0) {
@@ -11421,10 +11687,13 @@ class DemoShell {
             this.currentAnnotations[existingIdx].description = description;
             this.currentAnnotations[existingIdx].timestamp = new Date().toISOString();
             this.currentAnnotations[existingIdx].meta = this.pendingAnnotation.meta;
+            if (this.pendingAnnotation.target) this.currentAnnotations[existingIdx].target = this.pendingAnnotation.target;
+            else delete this.currentAnnotations[existingIdx].target;
         } else {
             this.currentAnnotations.push({
                 id: `ann_${String(this.currentAnnotations.length + 1).padStart(3, '0')}`,
                 selector: this.pendingAnnotation.selector,
+                ...(this.pendingAnnotation.target ? { target: this.pendingAnnotation.target } : {}),
                 description,
                 timestamp: new Date().toISOString(),
                 meta: this.pendingAnnotation.meta
@@ -11473,8 +11742,9 @@ class DemoShell {
 
     // ── Feedback Collection ───────────────────────────────
 
-    captureElementContext(selector, meta) {
-        const iframeDoc = this.mainIframe.contentDocument;
+    captureElementContext(selector, meta, target = null) {
+        const context = this.getAnnotationFrameContext(target);
+        const iframeDoc = context.document;
         if (!iframeDoc) return {};
         let element = null;
         try {
@@ -11488,7 +11758,7 @@ class DemoShell {
             ? element.outerHTML.substring(0, 2000) + '...'
             : element.outerHTML;
 
-        const iframeWin = this.mainIframe.contentWindow;
+        const iframeWin = context.window;
         const computedStyle = iframeWin ? iframeWin.getComputedStyle(element) : null;
         const relevantStyles = {};
         if (computedStyle) {
@@ -11544,12 +11814,13 @@ class DemoShell {
         }
         if (!this.pendingAnnotation) return;
 
-        const { selector, meta } = this.pendingAnnotation;
-        const elementContext = this.captureElementContext(selector, meta);
+        const { selector, meta, target } = this.pendingAnnotation;
+        const elementContext = this.captureElementContext(selector, meta, target);
 
         this.feedbackItems.push({
             selector,
             meta,
+            ...(target ? { target } : {}),
             elementContext,
             description,
             timestamp: new Date().toISOString()
@@ -11782,7 +12053,7 @@ class DemoShell {
             .catch(() => {});
     }
 
-    async refreshProjectsAfterAgentRun() {
+    async refreshProjectsAfterAgentRun({ preservePreview = Boolean(this.previewController?.state.runId) } = {}) {
         if (this.isShareMode || this._projectCatalogRefreshPromise) {
             return this._projectCatalogRefreshPromise || Promise.resolve();
         }
@@ -11830,7 +12101,7 @@ class DemoShell {
 
             this.renderSidebar();
 
-            if (target) {
+            if (target && !preservePreview) {
                 await this.switchPage(target.pageId, target.version, { skipPrdDraftCheck: true });
                 if (this.agentSessionId) {
                     await this.bindAgentSessionToPage(target.pageId, target.version);
@@ -13713,7 +13984,7 @@ class DemoShell {
     selectAgentSkill(skillId) {
         const skill = this.getAgentSkill(skillId);
         if (!skill) return;
-        if (skill.id === 'create-new-page' && this.agentActiveSkill?.id !== skill.id) this.setNewPageTargetDevice('auto', { syncPrompt: false });
+        if (skill.id === 'create-new-page' && this.agentActiveSkill?.id !== skill.id) this.setNewPageTargetDevice('infinite-canvas', { syncPrompt: false });
         this.agentActiveSkill = skill;
         this.agentSkillMenuOpen = false;
         this.renderAgentWorkbench();
@@ -16910,6 +17181,22 @@ class DemoShell {
 
     handleAgentStreamEvent(eventName, event) {
         const payload = event?.payload || {};
+        if (eventName === 'run_started') {
+            if (payload.progressivePreview && !this.isShareMode) {
+                this.previewController ||= new PreviewController(this);
+                this.previewController.start(event);
+            } else if (this.previewController) {
+                this.previewController.navigate(); this.previewController = null;
+            }
+        }
+        if (eventName === 'preview_revision') { this.previewController?.receive(payload); return; }
+        if (eventName === 'preview_disabled') {
+            if (this.previewController?.state.runId === event.runId) this.previewController.disable().catch(error => console.debug('[preview]', error));
+            return;
+        }
+        if (['run_finished', 'run_failed'].includes(eventName) && this.previewController?.state.runId === event.runId) {
+            this.previewController.finish(eventName === 'run_failed' || ['interrupted', 'failed', 'cancelled'].includes(payload.status)).catch(error => console.debug('[preview]', error));
+        }
         let timelineChange = null;
 
         if (this.miniTerminalContainer) {
@@ -17020,7 +17307,7 @@ class DemoShell {
             this.refreshAgentSessionsSoon();
         }
 
-        if (eventName === 'run_live_changes') {
+        if (eventName === 'run_live_changes' && !this.previewController?.state.runId) {
             this.scheduleAgentLiveDemoRefresh(payload);
         }
 
@@ -17925,7 +18212,7 @@ class DemoShell {
 
         if (command.kind === 'skill' && command.skillId) {
             const skill = this.getAgentSkill(command.skillId);
-            if (skill?.id === 'create-new-page') this.setNewPageTargetDevice('auto', { syncPrompt: false });
+            if (skill?.id === 'create-new-page') this.setNewPageTargetDevice('infinite-canvas', { syncPrompt: false });
             this.agentActiveSkill = skill || null;
             this.openAgentWorkbench();
 
@@ -18024,6 +18311,12 @@ class DemoShell {
                     `**选择器**: \`${item.selector}\``,
                     `**元素**: \`<${(ctx.tagName || 'unknown').toLowerCase()}>\``,
                 ];
+                if (item.target?.type === 'canvas-board') {
+                    lines.push(`**所属画板**: \`${item.target.boardId}\``);
+                    if (item.target.boardPath) {
+                        lines.push(`**画板源码**: \`${item.target.boardPath}\`（相对当前页面版本目录，请修改该画板文件，不要改无限画布编辑器源码）`);
+                    }
+                }
                 if (ctx.id) lines.push(`**ID**: \`#${ctx.id}\``);
                 if (ctx.className) lines.push(`**类名**: \`${ctx.className}\``);
                 if (ctx.textContent) lines.push(`**文本内容**: "${ctx.textContent.substring(0, 100)}"`);
@@ -18445,11 +18738,19 @@ class DemoShell {
     }
 
     clearIframeSelection() {
-        const iframeDoc = this.mainIframe.contentDocument;
-        if (!iframeDoc) return;
-
-        iframeDoc.querySelectorAll('.__readify_selected').forEach((el) => {
-            el.classList.remove('__readify_selected');
+        const docs = new Set();
+        const contexts = [
+            this._inspectorContext,
+            this.canvasAnnotationTarget ? this.getAnnotationFrameContext(this.canvasAnnotationTarget) : null,
+            { document: this.mainIframe?.contentDocument || null }
+        ];
+        for (const context of contexts) {
+            if (context?.document) docs.add(context.document);
+        }
+        docs.forEach((iframeDoc) => {
+            iframeDoc.querySelectorAll('.__readify_selected').forEach((el) => {
+                el.classList.remove('__readify_selected');
+            });
         });
     }
 

@@ -8,6 +8,8 @@ $archive=Join-Path $env:RUNNER_TEMP 'prota-product.zip'
 & git -C $source archive --format=zip -o $archive HEAD
 if ($LASTEXITCODE) { throw 'git archive failed' }
 Expand-Archive -LiteralPath $archive -DestinationPath $product
+New-Item -ItemType Directory -Path (Join-Path $product 'runtime') -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $source 'runtime\pi') -Destination (Join-Path $product 'runtime\pi') -Recurse
 $env:READIFY_CONFIG_DIR=Join-Path $base 'config'
 $env:READIFY_PORT='18080'; $env:READIFY_AGENT_PORT='18081'
 $env:PROTA_NO_OPEN='1'; $env:PROTA_LAUNCHER_TEST_UI='1'; $env:PROTA_MANAGED_NODE_ONLY='1'
@@ -49,6 +51,14 @@ try {
     Launch-And-Wait $false
     if ((Get-FileHash -LiteralPath $projects).Hash -ne $hash) { throw 'Warm launch altered project metadata' }
     if ((Get-Item -LiteralPath (Join-Path $product 'node_modules\.prota-vercel\node_modules\vercel\package.json')).LastWriteTimeUtc -ne $before) { throw 'Warm launch reinstalled Vercel' }
+    $piManifest=Join-Path $product 'runtime\pi\manifest.json'
+    $piHash=(Get-FileHash -LiteralPath $piManifest).Hash
+    $agentPid=(Get-NetTCPConnection -State Listen -LocalPort 18081 | Select-Object -First 1).OwningProcess
+    Add-Content -LiteralPath (Join-Path $product 'server\pi\event-adapter.mjs') -Value "`n// Pi adapter update acceptance test"
+    Launch-And-Wait $false
+    $updatedAgentPid=(Get-NetTCPConnection -State Listen -LocalPort 18081 | Select-Object -First 1).OwningProcess
+    if ($agentPid -eq $updatedAgentPid) { throw 'Updated Pi adapter did not restart the Agent service' }
+    if ((Get-FileHash -LiteralPath $piManifest).Hash -ne $piHash) { throw 'Warm launch rebuilt the Pi runtime' }
     $previousPid=(Get-NetTCPConnection -State Listen -LocalPort 18080 | Select-Object -First 1).OwningProcess
     Add-Content -LiteralPath (Join-Path $product 'server\bridge.py') -Value "`n# isolated service update acceptance test"
     Launch-And-Wait $false

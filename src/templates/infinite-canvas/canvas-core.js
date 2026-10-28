@@ -27,12 +27,12 @@
       return true;
     });
   };
-  const locked = (nodes, node) => {
+  const locked = (nodes, node, index = null) => {
     const seen = /* @__PURE__ */ new Set();
     while (node && !seen.has(node.id)) {
       if (node.locked) return true;
       seen.add(node.id);
-      node = nodes.find((n) => n.id === node.parentId);
+      node = index ? index.byId.get(node.parentId) : nodes.find((n) => n.id === node.parentId);
     }
     return false;
   };
@@ -47,14 +47,22 @@
       const c = { ...copy(n), id: mapping.get(n.id), x: n.x + offset, y: n.y + offset, locked: false };
       c.parentId = mapping.get(n.parentId) || n.parentId || null;
       if (rootNodes.includes(n)) c.name += " 副本";
+      if (c.type === "board" && c.boardId) {
+        c.originBoardId = c.boardId;
+        c.boardId = "b_" + crypto.randomUUID().replaceAll("-", "");
+        c.boardRevisionId = null;
+      }
       if (c.type === "board" && c.src) {
         c.cloneFrom = c.src;
         c.src = `boards/${c.id}/index.html`;
       }
       return c;
     });
-    return { nodes: copies, selected: rootNodes.map((n) => mapping.get(n.id)) };
+    return { nodes: copies, selected: rootNodes.map((n) => mapping.get(n.id)), mapping: Object.fromEntries(mapping) };
   };
+  function duplicateEdges(edges, mapping) {
+    return edges.filter(e => Object.hasOwn(mapping,e.fromInstanceId) && Object.hasOwn(mapping,e.toInstanceId)).map(e => ({...copy(e), id: "e_" + crypto.randomUUID().replaceAll("-", ""), fromInstanceId: mapping[e.fromInstanceId], toInstanceId: mapping[e.toInstanceId]}));
+  }
   function reparent(nodes, ids, parentId) {
     const parents = nodes.filter((n) => n.id === parentId && ["board", "group"].includes(n.type));
     if (parentId && !parents.length) throw Error("只能移入画板或分组");
@@ -62,6 +70,7 @@
     for (const n of roots(nodes, ids)) if (!locked(nodes, n)) n.parentId = parentId || null;
   }
   function validate(state) {
+    if (root.CanvasDomain) return root.CanvasDomain.validate(state);
     if (!state || state.schemaVersion !== 1 || !Array.isArray(state.nodes) || state.nodes.length > 1e3) throw Error("画布格式不正确");
     if (!state.viewport || !["x", "y", "zoom"].every((key) => Number.isFinite(state.viewport[key])) || state.viewport.zoom < 0.05 || state.viewport.zoom > 4) throw Error("画布视角无效");
     const map = /* @__PURE__ */ new Map();
@@ -137,44 +146,52 @@
     return best;
   }
   function mergeDocuments(base, local, remote) {
-    const byId = (doc) => new Map(doc.nodes.map((n) => [n.id, n]));
-    const b = byId(base), l = byId(local), r = byId(remote), merged = /* @__PURE__ */ new Map(), conflicts = [];
-    const normalize = (value) => Array.isArray(value) ? value.map(normalize) : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, normalize(value[key])])) : value;
-    const equal = (a, b2) => JSON.stringify(normalize(a)) === JSON.stringify(normalize(b2));
-    for (const id of /* @__PURE__ */ new Set([...r.keys(), ...l.keys(), ...b.keys()])) {
-      const original = b.get(id), ours = l.get(id), theirs = r.get(id);
-      let next;
-      if (equal(ours, original)) next = theirs;
-      else if (equal(theirs, original) || equal(ours, theirs)) next = ours;
-      else if (ours && theirs) {
-        next = {};
-        let disputed = false;
-        for (const key of /* @__PURE__ */ new Set([...Object.keys(ours), ...Object.keys(theirs), ...Object.keys(original || {})])) {
-          const before = original?.[key], a = ours[key], b2 = theirs[key];
-          let value;
-          if (equal(a, before)) value = b2;
-          else if (equal(b2, before) || equal(a, b2)) value = a;
-          else {
-            disputed = true;
-            value = a;
-          }
-          if (value !== void 0) next[key] = copy(value);
+    const conflicts = new Set();
+    const normalize = value => Array.isArray(value) ? value.map(normalize) : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, normalize(value[key])])) : value;
+    const equal = (a, b) => JSON.stringify(normalize(a)) === JSON.stringify(normalize(b));
+    const duplicateValue = value => value === undefined ? undefined : copy(value);
+    const own = (object, key) => object && Object.hasOwn(object, key) ? object[key] : undefined;
+    function mergeValue(before, ours, theirs, conflictId) {
+      if (equal(ours, before)) return duplicateValue(theirs);
+      if (equal(theirs, before) || equal(ours, theirs)) return duplicateValue(ours);
+      if (ours && theirs && typeof ours === "object" && typeof theirs === "object" && !Array.isArray(ours) && !Array.isArray(theirs)) {
+        const result = Object.create(null);
+        for (const key of new Set([...Object.keys(before || {}), ...Object.keys(ours), ...Object.keys(theirs)])) {
+          const value = mergeValue(own(before, key), own(ours, key), own(theirs, key), conflictId);
+          if (value !== undefined) result[key] = value;
         }
-        if (disputed) conflicts.push(id);
-      } else {
-        conflicts.push(id);
-        next = ours;
+        return result;
       }
-      if (next) merged.set(id, copy(next));
+      conflicts.add(conflictId);
+      return duplicateValue(ours);
     }
-    const order = equal(local.nodes.map((n) => n.id), base.nodes.map((n) => n.id)) ? remote.nodes : local.nodes;
-    const nodes = [...order.map((n) => n.id), ...merged.keys()].filter((id, i, all) => all.indexOf(id) === i && merged.has(id)).map((id) => merged.get(id));
-    for (const n of nodes) if (n.parentId && !merged.has(n.parentId)) n.parentId = null;
-    const result = { ...copy(remote), nodes, viewport: copy(local.viewport) };
+    function collection(key, prefix = "") {
+      const byId = doc => new Map((doc[key] || []).map(item => [item.id, item]));
+      const b = byId(base), l = byId(local), r = byId(remote), merged = new Map();
+      for (const id of new Set([...r.keys(), ...l.keys(), ...b.keys()])) {
+        const next = mergeValue(b.get(id), l.get(id), r.get(id), prefix + id);
+        if (next) merged.set(id, next);
+      }
+      const order = equal((local[key] || []).map(n => n.id), (base[key] || []).map(n => n.id)) ? remote[key] || [] : local[key] || [];
+      return [...new Set([...order.map(n => n.id), ...merged.keys()])].filter(id => merged.has(id)).map(id => merged.get(id));
+    }
+    const result = { ...copy(remote) };
+    for (const key of new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)])) {
+      if (["nodes", "edges", "viewport", "revision", "schemaVersion"].includes(key)) continue;
+      const value = mergeValue(own(base, key), own(local, key), own(remote, key), "document:" + key);
+      if (value === undefined) delete result[key];
+      else Object.defineProperty(result, key, { value, writable: true, enumerable: true, configurable: true });
+    }
+    result.nodes = collection("nodes");
+    const ids = new Set(result.nodes.map(n => n.id));
+    for (const n of result.nodes) if (n.parentId && !ids.has(n.parentId)) n.parentId = null;
+    if (local.schemaVersion === 2 || remote.schemaVersion === 2) result.schemaVersion = 2;
+    if ("edges" in base || "edges" in local || "edges" in remote || result.schemaVersion === 2) result.edges = collection("edges", "edge:");
+    result.viewport = copy(local.viewport);
     validate(result);
-    return { state: result, conflicts };
+    return { state: result, conflicts: [...conflicts] };
   }
-  const api = { copy, uid, descendants, roots, locked, bounds, duplicate, reparent, validate, resizeSelection, placeOverlay, mergeDocuments };
+  const api = { copy, uid, descendants, roots, locked, bounds, duplicate, duplicateEdges, reparent, validate, resizeSelection, placeOverlay, mergeDocuments };
   root.CanvasCore = api;
   if (typeof module !== "undefined") module.exports = api;
 })(globalThis);

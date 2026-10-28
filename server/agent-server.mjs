@@ -1,5 +1,6 @@
+import { PreviewObserver, previewScope } from './preview/observer.mjs';
+import { progressivePreviewEnabled } from './preview/config.mjs';
 import http from 'http';
-import { patchProviderReasoning } from './provider-reasoning.mjs';
 import { discoverProviderModels } from './provider-models.mjs';
 import { configDirectory, getWorkspaceRoot, workspaceLocked } from './workspace.mjs';
 import fs from 'fs/promises';
@@ -9,30 +10,20 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { createHash, randomUUID } from 'crypto';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { piVersion } from '../scripts/pi-paths.mjs';
+import { ProtaPiGateway } from './pi/gateway-adapter.mjs';
+import { agentBuild } from './agent-build.mjs';
+import { ensureEngineInfo, sessionPaths, synchronizeEngineInfo } from './pi/session-adapter.mjs';
+import { knownSecrets, redactSecrets } from './pi/secrets.mjs';
+import { configuredMcpSecrets } from './pi/mcp-adapter.mjs';
+import { resolveExecutionSkill } from './pi/skill-adapter.mjs';
 
 const execPromise = promisify(exec);
-import {
-    createAgent,
-    compactConversation,
-    createAutoCompactState,
-    forkSession,
-    getAllBaseTools,
-    getAllSkills,
-    getSkill,
-    listSessions,
-    registerSkill,
-    saveSession,
-    unregisterSkill
-} from '@codeany/open-agent-sdk';
-import {
-    clearQuestionHandler,
-    setQuestionHandler
-} from '../node_modules/@codeany/open-agent-sdk/dist/tools/ask-user.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const PRODUCT_AGENT_BUILD = createHash('sha256').update(fsSync.readFileSync(__filename)).digest('hex');
+const PRODUCT_AGENT_BUILD = agentBuild(ROOT_DIR);
 const PORT = Number.parseInt(process.env.READIFY_AGENT_PORT || '8081', 10);
 const HOST = process.env.READIFY_AGENT_HOST || '127.0.0.1';
 const PROVIDER_PRESETS_PATH = path.join(ROOT_DIR, 'data', 'agent-provider-presets.json');
@@ -211,7 +202,6 @@ const SDK_QUERY_OPTION_KEYS = new Set([
     'timeoutMs',
     'timeout'
 ]);
-const SDK_FUNCTION_OPTION_KEYS = new Set(['canUseTool', 'hooks', 'abortController', 'abortSignal']);
 const SESSION_STREAM_HEADERS = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
@@ -231,6 +221,7 @@ const agentSdkExtension = await loadAgentSdkExtension();
 const sessions = new Map();
 const scheduledSessionPersists = new Map();
 const pendingWorkspaceWrites = new Set();
+const piGateway = new ProtaPiGateway({ workspaceRoot: getWorkspaceRoot, configDirectory });
 try { await hydratePersistedSessions(); await pruneCheckpoints(); }
 catch (error) { console.warn('[agent-gateway] 工作区暂不可用，可在设置中重新定位。', error.message); }
 
@@ -1144,12 +1135,22 @@ function inferSessionScope(snapshot = {}) {
     return 'page';
 }
 
+function sessionSecrets(session) {
+    const secrets = knownSecrets({ ...(piGateway.manager.get(session.id)?.config.env || {}),
+        PROTA_PI_API_KEY: session.providerConfig?.apiKey || '' });
+    // Idle collection removes the child environment. Keep redacting configured
+    // MCP credentials when snapshots and history are subsequently serialized.
+    secrets.push(...configuredMcpSecrets(session.providerConfig?.sdkOptions?.mcpServers));
+    return [...new Set(secrets)];
+}
+
 function createSessionSnapshot(session) {
-    return {
+    return redactSecrets({
         id: session.id,
         title: normalizeSessionTitle(session.title || createSessionTitle(session.context)),
         sessionScope: inferSessionScope(session),
         sdkSessionId: session.sdkSessionId || session.id,
+        engineInfo: session.engineInfo || null,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
         archivedAt: session.archivedAt || null,
@@ -1173,7 +1174,7 @@ function createSessionSnapshot(session) {
                 options: session.pendingQuestion.options
             }
             : null
-    };
+    }, sessionSecrets(session));
 }
 
 function createSessionListItem(session) {
@@ -1187,7 +1188,7 @@ function createSessionListItem(session) {
         if (event.type === 'run_status' && !event.payload?.summary) return false;
         return true;
     });
-    return {
+    return redactSecrets({
         id: session.id,
         title: normalizeSessionTitle(session.title || createSessionTitle(session.context)),
         sessionScope,
@@ -1206,7 +1207,7 @@ function createSessionListItem(session) {
             || session.runState?.lastError
             || '',
         hasHistory
-    };
+    }, sessionSecrets(session));
 }
 
 async function ensureSessionStorageDir() {
@@ -1459,6 +1460,12 @@ async function getHydratedSession(sessionId) {
     try {
         const raw = await fs.readFile(getSessionFilePath(sessionId), 'utf8');
         const snapshot = JSON.parse(raw);
+        if (!snapshot.engineInfo) {
+            const backupDir = path.join(getWorkspaceRoot(), 'data/agent-sessions/legacy-backups', sessionId);
+            await fs.mkdir(backupDir, { recursive: true });
+            await fs.writeFile(path.join(backupDir, 'snapshot.json'), raw, { flag: 'wx', mode: 0o600 })
+                .catch(error => { if (error.code !== 'EEXIST') throw error; });
+        }
         const normalizedContext = normalizeContext(snapshot.context);
         const session = {
             id: snapshot.id,
@@ -1467,6 +1474,7 @@ async function getHydratedSession(sessionId) {
             ),
             sessionScope: inferSessionScope(snapshot),
             sdkSessionId: snapshot.sdkSessionId || snapshot.id,
+            engineInfo: snapshot.engineInfo || null,
             createdAt: snapshot.createdAt || new Date().toISOString(),
             updatedAt: snapshot.updatedAt || snapshot.createdAt || new Date().toISOString(),
             archivedAt: snapshot.archivedAt || null,
@@ -1482,12 +1490,12 @@ async function getHydratedSession(sessionId) {
             },
             pendingApproval: null,
             pendingQuestion: null,
-            approvalPolicies: new Set(),
             subscribers: new Set(),
             activeRun: null,
             closed: false
         };
         normalizeHydratedRunState(session);
+        ensureEngineInfo(session, { legacy: !snapshot.engineInfo });
         sessions.set(session.id, session);
         if (JSON.stringify(snapshot.context || {}) !== JSON.stringify(normalizedContext)) {
             await persistSession(session);
@@ -1562,13 +1570,12 @@ function createSession({ context, providerConfig, sessionScope = 'page' }) {
         },
         pendingApproval: null,
         pendingQuestion: null,
-        approvalPolicies: new Set(),
         subscribers: new Set(),
         activeRun: null,
         closed: false
     };
 
-    session.agent = buildAgentForSession(session, { resume: false });
+    ensureEngineInfo(session);
     sessions.set(id, session);
     emitEvent(session, 'session_ready', {
         sessionId: session.id,
@@ -1628,7 +1635,12 @@ function formatPagePathLines(context = {}) {
     return [
         `当前页面版本相对路径：${context.relativePageDir}`,
         `当前页面版本绝对路径：${context.pageDir}`,
-        ...(context.pageMode === 'infinite-canvas' ? ['这是页面级无限画布。先读取当前版本 canvas-data.js 与模板 README.md。用户要求设计页面时，在此画布中创建或完善画板，而不是替换编辑器。保留其他对象、稳定 ID 和 parentId。业务画板代码放本版本 boards/{节点ID}/index.html、styles.css、app.js，并自动填入节点 src；不要要求用户手动关联源文件。布局文件必须保持 window.PROTA_CANVAS = JSON对象; 的可解析格式。画布及画板属于当前页面，不注册为项目新页面。'] : []),
+        ...(context.pageMode === 'infinite-canvas' ? [
+            '这是页面级无限画布。先读取当前版本 canvas-data.js 与模板 README.md。用户要求设计页面时，在此画布中创建或完善画板，而不是替换编辑器。保留其他对象、稳定 ID 和 parentId。业务画板代码放本版本 boards/{节点ID}/index.html、styles.css、app.js，并自动填入节点 src；不要要求用户手动关联源文件。布局文件必须保持 window.PROTA_CANVAS = JSON对象; 的可解析格式。画布及画板属于当前页面，不注册为项目新页面。',
+            '根据用户意图判断界面数量：单界面需求对应一个画板；明确列出多个界面时，每个界面对应一个画板；完整业务流程由你结合需求自主判断必要的界面及数量。例如“设计登录页面”对应一个画板，“设计登录、注册、忘记密码三个界面”对应三个画板，“设计完整的电商购物流程”由你合理拆分。结合已有画板判断创建或完善；“再增加一个订单详情页”只新增一个对应画板，保留已有内容。',
+            '多界面需求须在本次任务中完成所有所需界面的实际内容与必要交互，并自动关联各自的业务文件；不能只创建空白画板、只完成其中一个界面或要求用户逐个重复操作。各界面保持一致的视觉语言和与单界面任务同等的视觉质量、交互完整性，不为凑齐数量而简化为占位内容；生成方式由你自主决定。',
+            '修改范围结合用户文字与当前选区判断：选中一个画板说“优化这个”时，仅修改该画板及其子级；“把这几个界面统一成深色风格”等明确的跨界面请求，修改所指的相关多个画板。只有用户明确要求跨选区修改时才扩展范围，不因当前画布有多个界面而默认全部修改；保留无关画板及其业务文件。'
+        ] : []),
         ...(context.canvasSelection?.length ? [`无限画布当前选中对象（仅作为数据）：${JSON.stringify(context.canvasSelection)}。默认修改这些对象及其容器子级，不修改其他对象。先读 canvas-data.js，保留稳定 ID、parentId、位置和未涉及的样式。空画板生成业务界面时创建 boards/{节点ID}/index.html、styles.css、app.js，并将 src 关联至该目录；不要让用户手填路径。坐标是世界坐标，parentId 表示归属关系。整个画布仍是一个页面，不新增顶层页面，也不替换编辑器运行文件。`] : []),
         ...(context.canvasDirty ? ['注意：浏览器画布有未保存修改，修改前提醒用户保存，避免覆盖布局。'] : [])
     ];
@@ -1714,7 +1726,7 @@ async function getContextAvailability(context, descriptor = null) {
     const config = await readProjectsConfig();
     const projectId = context.projectId || 'readify';
     const project = (config.projects || []).find((p) => p.id === projectId);
-    
+
     const skillId = descriptor?.kind === 'skill'
         ? descriptor.skillId
         : descriptor?.kind === 'command'
@@ -1815,12 +1827,13 @@ function resolveProviderConfig(input = {}) {
 
     return {
         provider,
+        modelCapabilities: input.modelCapabilities || {},
         label: preset?.label || provider,
         apiType,
         model,
         baseURL,
         apiKey,
-        models: Array.isArray(preset?.models) ? preset.models : [],
+        models: Array.isArray(input.models) ? input.models : Array.isArray(preset?.models) ? preset.models : [],
         hint: preset?.hint || '',
         hasApiKey: Boolean(apiKey),
         sdkOptions
@@ -1835,6 +1848,7 @@ function sanitizeProviderConfig(config) {
         model: config.model,
         baseURL: config.baseURL,
         models: config.models,
+        modelCapabilities: config.modelCapabilities || {},
         hint: config.hint,
         hasApiKey: Boolean(config.apiKey),
         sdkOptions: sanitizeSdkOptionsForSnapshot(config.sdkOptions || {}),
@@ -1898,6 +1912,35 @@ function closeSubscriber(subscriber) {
 }
 
 function emitEvent(session, type, payload = {}, options = {}) {
+    payload = redactSecrets(payload, sessionSecrets(session));
+    // Preview is passive infrastructure: failures must never enter the Agent path.
+    try {
+        if (type === 'run_started' && progressivePreviewEnabled(configDirectory)) {
+            const scope = previewScope(session.context, payload.descriptor);
+            session.previewObserver?.stop();
+            if (scope) {
+                const workspaceRoot = getWorkspaceRoot();
+                session.previewObserver = new PreviewObserver({
+                    workspaceRoot, configDirectory, runId: payload.runId, scope,
+                    isCurrent: () => {
+                        if (!progressivePreviewEnabled(configDirectory)) {
+                            emitEvent(session, 'preview_disabled', { runId: payload.runId }, { persist: false });
+                            return false;
+                        }
+                        try { return !workspaceLocked() && getWorkspaceRoot() === workspaceRoot; }
+                        catch { return false; }
+                    },
+                    publish: revision => emitEvent(session, 'preview_revision', revision, { persist: false }),
+                    log: error => console.debug('[preview]', error.message)
+                }).start();
+                payload = { ...payload, progressivePreview: true };
+            }
+        } else if (type === 'run_live_changes') session.previewObserver?.trigger();
+        else if (type === 'run_finished' || type === 'run_failed') {
+            session.previewObserver?.stop(); session.previewObserver = null;
+        }
+    } catch (error) { console.warn('[preview]', error.message); }
+
     const event = {
         id: options.id || randomUUID(),
         type,
@@ -2064,15 +2107,20 @@ function formatDurationMs(value) {
 }
 
 function resolveSdkOptions(input = {}, allowedKeys = SDK_JSON_OPTION_KEYS) {
+    for (const source of [input.sdkOptions, input.agentOptions, input.options]) {
+        if (!isPlainObject(source)) continue;
+        for (const [key, value] of Object.entries(source)) {
+            if (value !== undefined && value !== null && !allowedKeys.has(key)) {
+                throw createClassifiedError(`SDK option ${key} has no supported Pi mapping.`, 'config_error', 400);
+            }
+        }
+    }
     const options = mergeSdkOptions(
         pickSdkOptions(input.sdkOptions, allowedKeys),
         pickSdkOptions(input.agentOptions, allowedKeys),
         pickSdkOptions(input.options, allowedKeys)
     );
     if (options.permissionMode === 'plan') options.permissionMode = 'default';
-    for (const key of SDK_FUNCTION_OPTION_KEYS) {
-        delete options[key];
-    }
     return options;
 }
 
@@ -2172,97 +2220,14 @@ function getExtensionOptions(...keys) {
     }));
 }
 
-function mergeHookConfigs(...configs) {
-    const output = {};
-    for (const config of configs) {
-        if (!isPlainObject(config)) continue;
-        for (const [eventName, definitions] of Object.entries(config)) {
-            const list = Array.isArray(definitions) ? definitions : [definitions].filter(Boolean);
-            if (!list.length) continue;
-            output[eventName] = [
-                ...(output[eventName] || []),
-                ...list
-            ];
-        }
-    }
-    return output;
-}
-
 function getExtensionTools() {
     const directTools = Array.isArray(agentSdkExtension?.tools) ? agentSdkExtension.tools : [];
     return directTools.filter(Boolean);
 }
 
 function combineToolOptionWithExtensions(toolsOption) {
-    const extensionTools = getExtensionTools();
-    if (!extensionTools.length) {
-        return toolsOption;
-    }
-    if (Array.isArray(toolsOption)) {
-        if (!toolsOption.length) return extensionTools;
-        if (typeof toolsOption[0] === 'string') {
-            const selectedBaseTools = getAllBaseTools()
-                .filter((toolDef) => toolsOption.includes(toolDef.name));
-            return [...selectedBaseTools, ...extensionTools];
-        }
-        return [...toolsOption, ...extensionTools];
-    }
-    if (!toolsOption || (isPlainObject(toolsOption) && toolsOption.type === 'preset')) {
-        return [...getAllBaseTools(), ...extensionTools];
-    }
+    if (getExtensionTools().length) throw new Error('旧 SDK 自定义工具需要迁移到 integrations/pi/prota-extension.ts。');
     return toolsOption;
-}
-
-function composeCreateAgentOptions(session, { resume }) {
-    const extensionBaseOptions = getExtensionOptions('options', 'createAgentOptions');
-    if (isPlainObject(agentSdkExtension?.mcpServers)) {
-        extensionBaseOptions.mcpServers = mergeSdkOptions(extensionBaseOptions.mcpServers || {}, agentSdkExtension.mcpServers);
-    }
-    if (isPlainObject(agentSdkExtension?.agents)) {
-        extensionBaseOptions.agents = mergeSdkOptions(extensionBaseOptions.agents || {}, agentSdkExtension.agents);
-    }
-    const sdkOptions = mergeSdkOptions(
-        pickSdkOptions(extensionBaseOptions),
-        session.providerConfig.sdkOptions || {}
-    );
-    const extensionHooks = mergeHookConfigs(
-        agentSdkExtension?.hooks,
-        agentSdkExtension?.options?.hooks,
-        agentSdkExtension?.createAgentOptions?.hooks,
-        sdkOptions.hooks
-    );
-    delete sdkOptions.hooks;
-    stripReadifyRuntimeOptions(sdkOptions);
-
-    const requestedSessionId = sdkOptions.sessionId;
-    const requestedResume = sdkOptions.resume;
-    delete sdkOptions.sessionId;
-    delete sdkOptions.resume;
-
-    const sdkSessionId = session.sdkSessionId || session.id;
-    const options = {
-        ...sdkOptions,
-        model: session.providerConfig.model,
-        apiType: session.providerConfig.apiType,
-        apiKey: session.providerConfig.apiKey,
-        baseURL: session.providerConfig.baseURL,
-        cwd: getWorkspaceRoot(),
-        sessionId: sdkSessionId,
-        resume: resume ? sdkSessionId : undefined,
-        persistSession: sdkOptions.persistSession ?? true,
-        includePartialMessages: sdkOptions.includePartialMessages ?? true,
-        maxTurns: normalizeAgentMaxTurns(sdkOptions.maxTurns),
-        permissionMode: sdkOptions.permissionMode || 'default',
-        hooks: mergeHookConfigs(extensionHooks, buildHooks(session))
-    };
-    if (requestedSessionId && requestedSessionId !== sdkSessionId) {
-        console.warn(`[agent-gateway] Ignoring SDK option sessionId=${requestedSessionId}; Prota session ${session.id} owns SDK session ${sdkSessionId}.`);
-    }
-    if (requestedResume && requestedResume !== sdkSessionId) {
-        console.warn(`[agent-gateway] Ignoring SDK option resume=${requestedResume}; Prota session ${session.id} resumes SDK session ${sdkSessionId}.`);
-    }
-    options.tools = combineToolOptionWithExtensions(options.tools);
-    return options;
 }
 
 function combineSystemPrompts(...parts) {
@@ -2273,8 +2238,23 @@ function combineSystemPrompts(...parts) {
 }
 
 function composeQueryOptions(session, descriptor) {
-    const extensionQueryOptions = getExtensionOptions('options', 'queryOptions');
-    if (isPlainObject(agentSdkExtension?.agents)) {
+    const extensionQueryOptions = getExtensionOptions('options', 'createAgentOptions', 'queryOptions');
+    if (typeof agentSdkExtension?.canUseTool === 'function' && agentSdkExtension.canUseTool.protaPlaceholder !== true) {
+        throw new Error('旧 SDK canUseTool 回调需要迁移到 integrations/pi/prota-extension.ts 的 tool_call Hook。');
+    }
+    for (const [key, value] of Object.entries(extensionQueryOptions)) {
+        if (value !== undefined && value !== null && !SDK_QUERY_OPTION_KEYS.has(key)) {
+            throw new Error(`SDK extension option ${key} has no supported Pi mapping.`);
+        }
+    }
+    if (isPlainObject(agentSdkExtension?.hooks) && Object.keys(agentSdkExtension.hooks).length) {
+        extensionQueryOptions.hooks = agentSdkExtension.hooks;
+    }
+    if (getExtensionTools().length) throw new Error('旧 SDK 自定义工具需要迁移到 integrations/pi/prota-extension.ts。');
+    extensionQueryOptions.mcpServers = mergeSdkOptions(
+        agentSdkExtension?.mcpServers || {}, agentSdkExtension?.createAgentOptions?.mcpServers || {},
+        extensionQueryOptions.mcpServers || {});
+    if (isPlainObject(agentSdkExtension?.agents) && Object.keys(agentSdkExtension.agents).length) {
         extensionQueryOptions.agents = mergeSdkOptions(extensionQueryOptions.agents || {}, agentSdkExtension.agents);
     }
     const sessionSdkOptions = pickSdkOptions(session.providerConfig.sdkOptions || {}, SDK_QUERY_OPTION_KEYS);
@@ -2301,39 +2281,12 @@ function composeQueryOptions(session, descriptor) {
         queryOptions.appendSystemPrompt,
         getSharedSystemPrompt(session, descriptor)
     );
-    queryOptions.canUseTool = async (toolDef, input) => handleToolPermission(session, toolDef, input);
     if (queryOptions.tools) {
         queryOptions.tools = combineToolOptionWithExtensions(queryOptions.tools);
     }
     return queryOptions;
 }
 
-async function callExtensionCanUseTool(session, toolDef, input) {
-    const candidate = agentSdkExtension?.canUseTool
-        || agentSdkExtension?.permissions?.canUseTool
-        || agentSdkExtension?.queryOptions?.canUseTool
-        || agentSdkExtension?.options?.canUseTool;
-    if (typeof candidate !== 'function') return null;
-    const result = await candidate(toolDef, input, {
-        session,
-        context: session.context,
-        providerConfig: sanitizeProviderConfig(session.providerConfig),
-        rootDir: getWorkspaceRoot()
-    });
-    return isPlainObject(result) && result.behavior ? result : null;
-}
-
-function getSdkPermissionMode(session) {
-    return session.providerConfig.sdkOptions?.permissionMode || 'default';
-}
-
-function summarizeSdkTool(toolDef) {
-    return {
-        name: toolDef?.name || '',
-        description: summarizeText(toolDef?.description || '', 240),
-        readOnly: typeof toolDef?.isReadOnly === 'function' ? Boolean(toolDef.isReadOnly()) : null
-    };
-}
 
 function registerLocalSkill(definition) {
     localSkills.set(definition.id, {
@@ -2343,15 +2296,7 @@ function registerLocalSkill(definition) {
 }
 
 function getLocalSkill(skillId) {
-    const raw = String(skillId || '').trim();
-    if (!raw) return null;
-    const lowered = raw.toLowerCase();
-    return Array.from(localSkills.values()).find((skill) => {
-        if (skill.enabled === false) return false;
-        if (skill.id === raw) return true;
-        if (String(skill.label || '').toLowerCase() === lowered) return true;
-        return (skill.aliases || []).some((alias) => String(alias).trim().toLowerCase() === lowered);
-    }) || null;
+    return resolveExecutionSkill(localSkills, skillId);
 }
 
 function findLocalSkillRecord(skillId) {
@@ -2984,7 +2929,6 @@ function removeAutoDiscoveredSkillRegistration(cacheKey, record) {
         localCommands.delete(record.commandId);
     }
 
-    unregisterSkill(record.id);
     autoDiscoveredSkills.delete(cacheKey);
 }
 
@@ -3069,20 +3013,6 @@ async function refreshProjectSkills({ force = false } = {}) {
             });
 
             const existingCommand = localCommands.get(commandId);
-            if (enabled) {
-                registerSkill({
-                    name: skillId,
-                    description,
-                    aliases,
-                    allowedTools: allowedTools.length ? allowedTools : ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Bash', 'AskUserQuestion'],
-                    userInvocable,
-                    getPrompt: async (args) => {
-                        const latestText = await fs.readFile(skillPath, 'utf8');
-                        const detail = args ? `\n\n当前目标或补充要求：${args}` : '';
-                        return [{ type: 'text', text: `${latestText}${detail}` }];
-                    }
-                });
-            }
 
             if (enabled && userInvocable && commandId && (!existingCommand || existingCommand.autoDiscovered)) {
                 registerLocalCommand({
@@ -3419,47 +3349,29 @@ function buildSessionTitlePrompt(session, descriptor) {
 
 async function generateAiSessionTitle(session, descriptor, fallbackTitle) {
     if (!session?.providerConfig?.apiKey) return '';
-    const controller = new AbortController();
-    let timeout = null;
-    let titleAgent = null;
+    const titleSession = {
+        id: `title-${randomUUID()}`, _transient: true, context: session.context,
+        providerConfig: { ...session.providerConfig, model: SESSION_TITLE_MODEL,
+            sdkOptions: { maxTokens: SESSION_TITLE_MAX_TOKENS, maxTurns: 1, permissionMode: 'bypassPermissions' } }
+    };
     try {
-        titleAgent = createAgent({
-            apiType: session.providerConfig.apiType,
-            apiKey: session.providerConfig.apiKey,
-            baseURL: session.providerConfig.baseURL,
-            model: SESSION_TITLE_MODEL,
-            tools: [],
-            allowedTools: [],
-            maxTurns: 1,
-            maxTokens: SESSION_TITLE_MAX_TOKENS,
-            permissionMode: 'bypassPermissions',
-            systemPrompt: '你只负责生成会话标题。输出必须是10个字以内的中文短标题，不解释。',
-            sessionId: randomUUID(),
-            abortSignal: controller.signal
+        const result = await piGateway.run(titleSession, {
+            prompt: buildSessionTitlePrompt(session, descriptor), runId: randomUUID(),
+            options: { allowedTools: [], maxTurns: 1, maxTokens: SESSION_TITLE_MAX_TOKENS,
+                permissionMode: 'bypassPermissions', requestTimeoutMs: 12000,
+                appendSystemPrompt: '只输出10个字以内的中文会话标题，不解释。' },
+            signal: AbortSignal.timeout(12000), emit: () => {}, setRunState: () => {},
+            approval: async () => 'deny', question: async () => { throw new Error('Title generation cannot ask questions'); }
         });
-        const promptPromise = titleAgent.prompt(buildSessionTitlePrompt(session, descriptor), {
-            tools: [],
-            allowedTools: [],
-            maxTurns: 1,
-            maxTokens: SESSION_TITLE_MAX_TOKENS,
-            abortSignal: controller.signal
-        });
-        const timeoutPromise = new Promise((_, reject) => {
-            timeout = setTimeout(() => {
-                controller.abort();
-                reject(new Error('AI title generation timed out'));
-            }, 12000);
-        });
-        const result = await Promise.race([promptPromise, timeoutPromise]);
-        return normalizeSessionTitle(result?.text || '', fallbackTitle);
+        return normalizeSessionTitle(result.result, fallbackTitle);
     } catch (error) {
-        console.warn('[agent-gateway] Failed to generate AI session title:', error?.message || error);
+        console.warn('[agent-gateway] Failed to generate AI session title:', error.message);
         return '';
     } finally {
-        if (timeout) clearTimeout(timeout);
-        if (titleAgent) {
-            await titleAgent.close().catch(() => {});
-        }
+        await piGateway.dispose(titleSession.id);
+        const paths = sessionPaths(titleSession, getWorkspaceRoot(), configDirectory);
+        await fs.rm(paths.config, { recursive: true, force: true });
+        await fs.rm(paths.sessions, { recursive: true, force: true });
     }
 }
 
@@ -3557,338 +3469,25 @@ function getAllowedToolsForRun(descriptor) {
     return ['Read', 'Glob', 'Grep', 'Write', 'Edit', 'Bash', 'AskUserQuestion', 'Skill'];
 }
 
-function isToolHighRisk(toolName) {
-    return ['Write', 'Edit', 'Bash', 'NotebookEdit'].includes(toolName);
-}
-
 async function ensureSessionAgent(session, nextProviderConfig = null) {
-    const resolvedConfig = nextProviderConfig
-        ? resolveProviderConfig(nextProviderConfig)
-        : session.providerConfig;
-    const requiresRebuild =
-        !session.agent ||
-        session.providerConfig.provider !== resolvedConfig.provider ||
-        session.providerConfig.apiType !== resolvedConfig.apiType ||
-        session.providerConfig.model !== resolvedConfig.model ||
-        session.providerConfig.baseURL !== resolvedConfig.baseURL ||
-        session.providerConfig.apiKey !== resolvedConfig.apiKey ||
-        stableStringify(sanitizeSdkOptionsForSnapshot(session.providerConfig.sdkOptions || {})) !==
-            stableStringify(sanitizeSdkOptionsForSnapshot(resolvedConfig.sdkOptions || {}));
-
-    session.providerConfig = resolvedConfig;
-
-    if (!requiresRebuild) {
-        return session.agent;
+    if (nextProviderConfig) {
+        if (session.activeRun) throw new Error('当前任务执行中，不能切换 Provider。');
+        if (piGateway.manager.get(session.id)?.busy) throw new Error('当前任务执行中，不能切换 Provider。');
+        session.providerConfig = resolveProviderConfig(nextProviderConfig);
     }
-
-    if (session.agent) {
-        // Persist history from the running engine before closing the agent,
-        // ensuring multi-turn context survives agent rebuilds.
-        await persistSdkAgentHistory(session);
-        try {
-            await session.agent.close();
-        } catch (error) {
-            console.warn('Failed to close previous agent:', error);
-        }
-    }
-
-    session.agent = buildAgentForSession(session, { resume: true });
-    emitEvent(session, 'session_ready', {
-        sessionId: session.id,
-        sessionScope: inferSessionScope(session),
-        context: session.context,
-        providerConfig: sanitizeProviderConfig(session.providerConfig),
-        runState: session.runState
-    });
-    return session.agent;
+    return (await piGateway.ensure(session)).runtime;
 }
 
-function buildHooks(session) {
-    return {
-        PreToolUse: [
-            {
-                hooks: [
-                    async (input) => {
-                        const descriptor = session.activeRun?.descriptor;
-                        emitEvent(session, 'tool_started', {
-                            runId: session.runState.runId,
-                            toolName: input.toolName,
-                            toolUseId: input.toolUseId || null,
-                            input: input.toolInput,
-                            summary: `正在运行 ${input.toolName}`
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            currentTool: input.toolName,
-                            stageMessage: isAnyPrdDescriptor(descriptor)
-                                ? `正在执行 ${input.toolName}，生成产品文档`
-                                : `正在执行 ${input.toolName}`,
-                            lastActivityAt: new Date().toISOString()
-                        });
-                    }
-                ]
-            }
-        ],
-        PostToolUse: [
-            {
-                hooks: [
-                    async (input) => {
-                        emitEvent(session, 'tool_finished', {
-                            runId: session.runState.runId,
-                            toolName: input.toolName,
-                            toolUseId: input.toolUseId || null,
-                            output: input.toolOutput,
-                            ok: true
-                        });
-                        await emitLiveRunChanges(session, session.runState.runId, session.activeRun);
-                        setRunState(session, {
-                            status: 'running',
-                            currentTool: null,
-                            stageMessage: '工具执行完成，正在继续思考…'
-                        });
-                    }
-                ]
-            }
-        ],
-        PostToolUseFailure: [
-            {
-                hooks: [
-                    async (input) => {
-                        emitEvent(session, 'tool_finished', {
-                            runId: session.runState.runId,
-                            toolName: input.toolName,
-                            toolUseId: input.toolUseId || null,
-                            output: input.error,
-                            ok: false
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            currentTool: null,
-                            stageMessage: `${input.toolName} 执行失败，正在调整…`
-                        });
-                    }
-                ]
-            }
-        ],
-        PreCompact: [
-            {
-                hooks: [
-                    async () => {
-                        emitEvent(session, 'sdk_compact', {
-                            runId: session.runState.runId,
-                            summary: 'SDK 正在自动压缩模型上下文…',
-                            phase: 'start'
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            currentTool: null,
-                            stageMessage: 'SDK 正在自动压缩模型上下文…'
-                        });
-                    }
-                ]
-            }
-        ],
-        PostCompact: [
-            {
-                hooks: [
-                    async () => {
-                        emitEvent(session, 'sdk_compact', {
-                            runId: session.runState.runId,
-                            summary: 'SDK 已自动压缩模型上下文。',
-                            phase: 'done'
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            currentTool: null,
-                            stageMessage: 'SDK 已自动压缩上下文，正在继续执行…'
-                        });
-                    }
-                ]
-            }
-        ]
-    };
-}
-
-function buildAgentForSession(session, { resume }) {
-    const agent = createAgent(composeCreateAgentOptions(session, { resume }));
-    applyAgentProviderTimeout(session, agent);
-    patchOpenAiProviderForVisionInput(agent);
-    wrapAgentProviderForDiagnostics(session, agent);
-    return agent;
-}
 
 async function persistSdkAgentHistory(session) {
-    const agent = session?.agent;
-    if (!agent || agent.cfg?.persistSession === false || typeof agent.getSessionId !== 'function') {
-        return;
-    }
-    // Prefer engine snapshot (most up-to-date) over agent.history,
-    // because agent.history may not be updated yet if the query was
-    // interrupted before the finally block ran.
-    let effectiveMessages = Array.isArray(agent.history) ? agent.history : [];
-    if (agent.currentEngine && typeof agent.currentEngine.getMessages === 'function') {
-        const engineMsgs = agent.currentEngine.getMessages();
-        if (engineMsgs.length > 0) {
-            effectiveMessages = engineMsgs;
-        }
-    }
-    if (!effectiveMessages.length) {
-        return;
-    }
-    try {
-        await saveSession(agent.getSessionId(), effectiveMessages, {
-            cwd: getWorkspaceRoot(),
-            model: session.providerConfig.model || agent.modelId,
-            summary: session.runState?.lastSummary || session.runState?.stageMessage || ''
+    const runtime = piGateway.manager.get(session.id);
+    if (runtime && !runtime.rpc.closed) {
+        await synchronizeEngineInfo(session, runtime).catch(error => {
+            console.warn('[agent-gateway] Pi session metadata sync failed:', error.message);
         });
-    } catch (error) {
-        console.warn('Failed to persist SDK session history:', error);
     }
 }
 
-function wrapAgentProviderForDiagnostics(session, agent) {
-    const provider = agent?.provider;
-    if (!provider || provider.__readifyDiagnosticsWrapped || typeof provider.createMessage !== 'function') return;
-    const originalCreateMessage = provider.createMessage.bind(provider);
-    provider.createMessage = async (...args) => {
-        try {
-            session._lastProviderError = null;
-            return await originalCreateMessage(...args);
-        } catch (error) {
-            session._lastProviderError = error;
-            throw error;
-        }
-    };
-    provider.__readifyDiagnosticsWrapped = true;
-}
-
-function imageBlockToOpenAiImageUrl(block) {
-    const source = block?.source;
-    if (!source || typeof source !== 'object') return null;
-    if (source.type === 'base64' && source.data) {
-        const mimeType = source.media_type || source.mime_type || source.mimeType || 'image/png';
-        return {
-            type: 'image_url',
-            image_url: {
-                url: `data:${mimeType};base64,${source.data}`
-            }
-        };
-    }
-    if ((source.type === 'url' || source.type === 'image_url') && source.url) {
-        return {
-            type: 'image_url',
-            image_url: {
-                url: source.url
-            }
-        };
-    }
-    return null;
-}
-
-function patchOpenAiProviderForVisionInput(agent) {
-    const provider = agent?.provider;
-    if (!provider || provider.apiType !== 'openai-completions' || provider.__readifyVisionPatched) return;
-    if (typeof provider.convertUserMessage !== 'function') return;
-
-    const originalConvertUserMessage = provider.convertUserMessage.bind(provider);
-    provider.convertUserMessage = (msg, result) => {
-        if (typeof msg?.content === 'string') {
-            originalConvertUserMessage(msg, result);
-            return;
-        }
-        if (!Array.isArray(msg?.content)) {
-            originalConvertUserMessage(msg, result);
-            return;
-        }
-
-        const hasImage = msg.content.some((block) => block?.type === 'image');
-        if (!hasImage) {
-            originalConvertUserMessage(msg, result);
-            return;
-        }
-
-        const contentParts = [];
-        const toolResults = [];
-        for (const block of msg.content) {
-            if (block?.type === 'text' && block.text) {
-                contentParts.push({ type: 'text', text: block.text });
-            } else if (block?.type === 'image') {
-                const imagePart = imageBlockToOpenAiImageUrl(block);
-                if (imagePart) contentParts.push(imagePart);
-            } else if (block?.type === 'tool_result') {
-                toolResults.push({
-                    tool_use_id: block.tool_use_id,
-                    content: block.content
-                });
-            }
-        }
-
-        for (const tr of toolResults) {
-            result.push({
-                role: 'tool',
-                tool_call_id: tr.tool_use_id,
-                content: tr.content
-            });
-        }
-
-        if (contentParts.length > 0) {
-            result.push({ role: 'user', content: contentParts });
-        }
-    };
-    provider.__readifyVisionPatched = true;
-}
-
-function applyAgentProviderTimeout(session, agent) {
-    const timeoutMs = getAgentRequestTimeoutMs(session);
-    session._agentRequestTimeoutMs = timeoutMs;
-    const provider = agent?.provider;
-    if (!provider || provider.__readifyTimeoutPatched) return;
-
-    const client = provider?.client;
-    if (client && typeof client === 'object') {
-        client.timeout = timeoutMs;
-        if (client._options && typeof client._options === 'object') {
-            client._options.timeout = timeoutMs;
-        }
-        if (client._clientOptions && typeof client._clientOptions === 'object') {
-            client._clientOptions.timeout = timeoutMs;
-        }
-        if (client.baseOptions && typeof client.baseOptions === 'object') {
-            client.baseOptions.timeout = timeoutMs;
-        }
-        if (client.constructor && provider.apiType === 'anthropic-messages') {
-            try {
-                provider.client = new client.constructor({
-                    apiKey: agent?.apiCredentials?.key || session.providerConfig.apiKey,
-                    baseURL: agent?.apiCredentials?.baseUrl || session.providerConfig.baseURL,
-                    timeout: timeoutMs
-                });
-            } catch (error) {
-                console.warn('[agent-gateway] Failed to rebuild provider client with timeout:', error?.message || error);
-            }
-        }
-    }
-    patchProviderReasoning(provider, () => session.providerConfig);
-    const originalCreateMessage = provider.createMessage?.bind(provider);
-    if (typeof originalCreateMessage === 'function') {
-        provider.createMessage = async (...args) => {
-            let timer = null;
-            const timeoutPromise = new Promise((_, reject) => {
-                timer = setTimeout(() => {
-                    const error = new Error(`Request timed out after ${formatDurationMs(timeoutMs)}`);
-                    error.code = 'READIFY_PROVIDER_TIMEOUT';
-                    reject(error);
-                }, timeoutMs);
-            });
-            try {
-                return await Promise.race([originalCreateMessage(...args), timeoutPromise]);
-            } finally {
-                if (timer) clearTimeout(timer);
-            }
-        };
-    }
-    provider.__readifyTimeoutPatched = true;
-}
 
 function getSharedSystemPrompt(session, descriptor) {
     const skill = descriptor.kind === 'skill' ? getLocalSkill(descriptor.skillId) : null;
@@ -3926,76 +3525,10 @@ function getSharedSystemPrompt(session, descriptor) {
     ].filter(Boolean).join('\n');
 }
 
-async function handleToolPermission(session, tool, input) {
-    const scopedPathCorrection = getLegacyScopedPathCorrection(session, input);
-    if (scopedPathCorrection) {
-        return {
-            behavior: 'deny',
-            message: [
-                `当前会话范围是 ${formatPageScope(session.context)}。`,
-                `工具参数 ${scopedPathCorrection.key} 使用了缺少项目目录的旧路径：${scopedPathCorrection.wrongPath}`,
-                `请改用正确路径：${scopedPathCorrection.correctPath}`
-            ].join('\n')
-        };
-    }
 
-    const extensionDecision = await callExtensionCanUseTool(session, tool, input);
-    if (extensionDecision) {
-        return extensionDecision;
-    }
-
-    const permissionMode = getSdkPermissionMode(session);
-    if (['bypassPermissions', 'dontAsk', 'acceptEdits', 'auto'].includes(permissionMode)) {
-        return { behavior: 'allow' };
-    }
-
-    if (tool.isReadOnly && tool.isReadOnly()) {
-        return { behavior: 'allow' };
-    }
-
-    if (session.approvalPolicies.has(tool.name)) {
-        return { behavior: 'allow' };
-    }
-
-    if (!isToolHighRisk(tool.name)) {
-        return { behavior: 'allow' };
-    }
-
-    const decision = await waitForApproval(session, tool.name, input);
-
-    if (decision === 'allow_session') {
-        session.approvalPolicies.add(tool.name);
-        setRunState(session, {
-            status: 'running',
-            currentTool: tool.name,
-            stageMessage: `${tool.name} 已获本会话自动批准，继续执行中`
-        });
-        return { behavior: 'allow' };
-    }
-
-    if (decision === 'allow_once') {
-        setRunState(session, {
-            status: 'running',
-            currentTool: tool.name,
-            stageMessage: `${tool.name} 已获批准，继续执行中`
-        });
-        return { behavior: 'allow' };
-    }
-
-    setRunState(session, {
-        status: 'failed',
-        currentTool: null,
-        stageMessage: `${tool.name} 被拒绝，任务已停止`,
-        lastError: `${tool.name} 被用户拒绝`
-    });
-    return {
-        behavior: 'deny',
-        message: `${tool.name} 被用户拒绝，本次任务已停止。`
-    };
-}
-
-async function waitForApproval(session, toolName, input) {
+async function waitForApproval(session, toolName, input, rpcRequest = null) {
     const approvalId = randomUUID();
+    const runId = session.runState.runId;
     const createdAt = new Date().toISOString();
 
     emitEvent(session, 'approval_request', {
@@ -4018,6 +3551,8 @@ async function waitForApproval(session, toolName, input) {
     const decision = await new Promise((resolve) => {
         session.pendingApproval = {
             id: approvalId,
+            rpcId: rpcRequest?.id || null,
+            runId,
             toolName,
             createdAt,
             inputPreview: safeJson(input, 1000),
@@ -4026,7 +3561,7 @@ async function waitForApproval(session, toolName, input) {
         };
     });
 
-    session.pendingApproval = null;
+    if (session.pendingApproval?.id === approvalId) session.pendingApproval = null;
 
     emitEvent(session, 'approval_resolved', {
         runId: session.runState.runId,
@@ -4037,7 +3572,7 @@ async function waitForApproval(session, toolName, input) {
         }
     });
 
-    if (decision !== 'deny') {
+    if (decision !== 'deny' && session.activeRun?.id === runId && !session.activeRun.interrupted) {
         setRunState(session, {
             status: 'running',
             currentTool: toolName,
@@ -4048,8 +3583,9 @@ async function waitForApproval(session, toolName, input) {
     return decision;
 }
 
-async function waitForQuestionResponse(session, question, options = []) {
+async function waitForQuestionResponse(session, question, options = [], rpcRequest = null) {
     const questionId = randomUUID();
+    const runId = session.runState.runId;
     emitEvent(session, 'question_request', {
         runId: session.runState.runId,
         question: {
@@ -4067,6 +3603,8 @@ async function waitForQuestionResponse(session, question, options = []) {
     const answer = await new Promise((resolve, reject) => {
         session.pendingQuestion = {
             id: questionId,
+            rpcId: rpcRequest?.id || null,
+            runId,
             question,
             options,
             resolve,
@@ -4074,7 +3612,7 @@ async function waitForQuestionResponse(session, question, options = []) {
         };
     });
 
-    session.pendingQuestion = null;
+    if (session.pendingQuestion?.id === questionId) session.pendingQuestion = null;
     emitEvent(session, 'question_resolved', {
         runId: session.runState.runId,
         question: {
@@ -4082,7 +3620,7 @@ async function waitForQuestionResponse(session, question, options = []) {
             answer
         }
     });
-    setRunState(session, {
+    if (session.activeRun?.id === runId && !session.activeRun.interrupted) setRunState(session, {
         status: 'running',
         currentTool: null,
         stageMessage: '已收到你的回答，继续执行中'
@@ -4091,16 +3629,10 @@ async function waitForQuestionResponse(session, question, options = []) {
 }
 
 async function prepareSkillPrompt(session, skillId) {
-    const skill = getSkill(skillId);
-    if (!skill) return '';
-    const blocks = await skill.getPrompt(
-        `${session.context.pageId} ${session.context.version}`,
-        { cwd: getWorkspaceRoot() }
-    );
-    return blocks
-        .filter((block) => block.type === 'text')
-        .map((block) => block.text)
-        .join('\n\n');
+    const skill = getLocalSkill(skillId);
+    if (!skill?.skillPath) return '';
+    const text = await fs.readFile(skill.skillPath, 'utf8');
+    return `${text}\n\n当前目标或补充要求：${session.context.pageId} ${session.context.version}`;
 }
 
 async function getPrdPrerequisiteResult(session) {
@@ -4206,7 +3738,6 @@ function resetTransientWaiters(session) {
     }
     session.pendingApproval = null;
     session.pendingQuestion = null;
-    clearQuestionHandler();
 }
 
 async function inspectPrdArtifact(session) {
@@ -4330,6 +3861,7 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
         interrupted: false,
         checkpointId: runId,
         checkpointStatus: 'pending',
+        abortController: new AbortController(),
         heartbeatTimer: setInterval(() => {
             emitEvent(session, 'heartbeat', {
                 runId,
@@ -4449,146 +3981,28 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
         } else if (descriptor.kind === 'command' && !command?.skillId) {
             finalResult = await runBuiltinCommand(session, descriptor, command);
         } else {
-            const agent = await ensureSessionAgent(session);
             const prompt = await buildActionPrompt(session, descriptor, internalInstructions);
             const queryOptions = composeQueryOptions(session, descriptor);
+            queryOptions.requestTimeoutMs = getProviderRequestTimeoutMs(session.providerConfig);
             activeRun.maxTurns = queryOptions.maxTurns;
-
-            setQuestionHandler(async (question, options = []) => {
-                return waitForQuestionResponse(session, question, options);
+            finalResult = await piGateway.run(session, {
+                prompt, options: queryOptions, runId,
+                signal: activeRun.abortController.signal,
+                emit: (type, payload, options) => {
+                    if (!isRunInterrupted(session, activeRun)) emitEvent(session, type, payload, options);
+                },
+                setRunState: next => {
+                    if (!isRunInterrupted(session, activeRun)) setRunState(session, next);
+                },
+                approval: (tool, input, record) => waitForApproval(session, tool, input, record),
+                question: (question, options, record) => waitForQuestionResponse(session, question, options, record),
+                onToolResult: () => isRunInterrupted(session, activeRun) ? undefined : emitLiveRunChanges(session, runId, activeRun)
             });
-
-            for await (const message of agent.query(prompt, queryOptions)) {
-                if (isRunInterrupted(session, activeRun)) {
-                    break;
-                }
-                session.runState.lastActivityAt = new Date().toISOString();
-
-                if (message.type === 'partial_message' && message.partial?.type === 'text') {
-                    upsertPartialAssistant(session, message.partial.text || '');
-                    setRunState(session, {
-                        status: 'running',
-                        currentTool: session.runState.currentTool,
-                        stageMessage: session.runState.currentTool
-                            ? `正在等待 ${session.runState.currentTool} 的结果…`
-                            : '正在思考…'
-                    });
-                    continue;
-                }
-
-                if (message.type === 'assistant') {
-                    const parts = extractAssistantParts(message);
-                    for (const thinking of parts.thinking) {
-                        emitEvent(session, 'assistant_thinking', {
-                            runId,
-                            text: thinking
-                        });
-                    }
-                    for (const toolUse of parts.toolUses) {
-                        emitEvent(session, 'tool_call', {
-                            runId,
-                            toolUseId: toolUse.id,
-                            toolName: toolUse.name,
-                            input: toolUse.input,
-                            inputPreview: safeJson(toolUse.input, 1800),
-                            summary: `正在调用 ${toolUse.name}`
-                        });
-                    }
-                    const text = parts.text;
-                    if (text) {
-                        finalizeAssistantMessage(session, text);
-                    }
-                    continue;
-                }
-
-                if (message.type === 'tool_result') {
-                    emitEvent(session, 'sdk_tool_result', {
-                        runId,
-                        toolUseId: message.result?.tool_use_id || null,
-                        toolName: message.result?.tool_name || 'Tool',
-                        output: message.result?.output || '',
-                        ok: true
-                    });
-                    continue;
-                }
-
-                if (message.type === 'system') {
-                    if (message.subtype === 'init') {
-                        emitEvent(session, 'sdk_init', {
-                            runId,
-                            sessionId: message.session_id || session.id,
-                            tools: message.tools || [],
-                            model: message.model || session.providerConfig.model,
-                            cwd: message.cwd || getWorkspaceRoot(),
-                            mcpServers: message.mcp_servers || [],
-                            permissionMode: getSdkPermissionMode(session)
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            stageMessage: 'SDK 已初始化'
-                        });
-                    } else if (message.subtype === 'status') {
-                        emitEvent(session, 'sdk_status', {
-                            runId,
-                            message: message.message || '正在处理…'
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            stageMessage: message.message || '正在处理…'
-                        });
-                    } else if (message.subtype === 'rate_limit') {
-                        emitEvent(session, 'sdk_rate_limit', {
-                            runId,
-                            message: message.message || 'Provider 返回速率限制提示',
-                            retryAfterMs: message.retry_after_ms || null
-                        });
-                        setRunState(session, {
-                            status: 'running',
-                            stageMessage: message.message || 'Provider 返回速率限制提示'
-                        });
-                    } else if (message.subtype === 'compact_boundary') {
-                        emitEvent(session, 'sdk_compact', {
-                            runId,
-                            summary: message.summary || 'SDK 已压缩上下文'
-                        });
-                    } else if (message.subtype === 'task_notification') {
-                        emitEvent(session, 'sdk_task_notification', {
-                            runId,
-                            taskId: message.task_id,
-                            status: message.status,
-                            message: message.message || ''
-                        });
-                    }
-                    continue;
-                }
-
-                if (message.type === 'result') {
-                    finalResult = message;
-                    const resultIsError = isSdkResultFailure(message);
-                    emitEvent(session, 'sdk_result', {
-                        runId,
-                        subtype: message.subtype || '',
-                        isError: resultIsError,
-                        numTurns: message.num_turns || null,
-                        totalCostUsd: message.total_cost_usd ?? message.cost ?? null,
-                        durationMs: message.duration_ms ?? null,
-                        durationApiMs: message.duration_api_ms ?? null,
-                        usage: message.usage || null,
-                        stopReason: message.stop_reason || null,
-                        structuredOutput: message.structured_output || null,
-                        errors: message.errors || []
-                    });
-                }
-            }
-
-            clearQuestionHandler();
-
-            if (isSdkResultFailure(finalResult)) {
-                throw createClassifiedError(
-                    buildSdkResultFailureMessage(finalResult, session),
-                    'provider_error'
-                );
-            }
+            emitEvent(session, 'sdk_result', {
+                runId, subtype: 'success', isError: false, numTurns: finalResult.num_turns,
+                totalCostUsd: finalResult.total_cost_usd, durationMs: finalResult.duration_ms,
+                usage: finalResult.usage, stopReason: finalResult.stop_reason
+            });
 
             if (isProductDocDescriptor(descriptor, command)) {
                 artifact = await inspectPrdArtifact(session);
@@ -4599,7 +4013,6 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
             }
         }
 
-        clearQuestionHandler();
 
         if (isRunInterrupted(session, activeRun)) {
             await finishInterruptedRun(session, activeRun, runId);
@@ -4649,8 +4062,7 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
             stopReason: finalResult?.stop_reason || null
         });
     } catch (error) {
-        clearQuestionHandler();
-        if (isRunInterrupted(session, activeRun)) {
+            if (isRunInterrupted(session, activeRun)) {
             await finishInterruptedRun(session, activeRun, runId);
             return;
         }
@@ -4991,147 +4403,33 @@ function compactSessionTimeline(session) {
 }
 
 async function compactSdkAgentHistory(session) {
-    const agent = await ensureSessionAgent(session);
-    if (agent?.setupDone && typeof agent.setupDone.then === 'function') {
-        await agent.setupDone;
-    }
-
-    const history = Array.isArray(agent?.history) ? agent.history : [];
-    const previousMessageCount = history.length;
-    if (!previousMessageCount) {
-        return {
-            ok: false,
-            skipped: true,
-            previousMessageCount,
-            nextMessageCount: 0,
-            summary: 'SDK 模型上下文当前为空，未执行模型上下文压缩。'
-        };
-    }
-
-    const provider = agent.provider;
-    const model = session.providerConfig.model || agent.modelId;
-    if (!provider || !model) {
-        return {
-            ok: false,
-            skipped: true,
-            previousMessageCount,
-            nextMessageCount: previousMessageCount,
-            summary: 'SDK Agent 当前缺少 provider 或 model，已保留原模型上下文。'
-        };
-    }
-
-    const compactState = agent.currentEngine?.compactState || createAutoCompactState();
-    const result = await compactConversation(provider, model, history, compactState);
-    const compactedMessages = Array.isArray(result.compactedMessages) ? result.compactedMessages : history;
-    const didCompact = Boolean(result.summary) && compactedMessages !== history && compactedMessages.length > 0;
-
-    if (!didCompact) {
-        return {
-            ok: false,
-            previousMessageCount,
-            nextMessageCount: previousMessageCount,
-            summary: 'SDK 尝试压缩模型上下文，但 Provider 没有返回有效摘要；已保留原上下文。'
-        };
-    }
-
-    agent.history = compactedMessages;
-    if (agent.currentEngine && Array.isArray(agent.currentEngine.messages)) {
-        agent.currentEngine.messages = compactedMessages;
-        if (result.state) {
-            agent.currentEngine.compactState = result.state;
-        }
-    }
-
-    if (Array.isArray(agent.messageLog)) {
-        const timestamp = new Date().toISOString();
-        agent.messageLog = [
-            {
-                type: 'user',
-                message: compactedMessages[0],
-                uuid: randomUUID(),
-                timestamp
-            },
-            {
-                type: 'assistant',
-                message: {
-                    role: 'assistant',
-                    content: [
-                        {
-                            type: 'text',
-                            text: '我已读取压缩后的上下文，会从这里继续。'
-                        }
-                    ]
-                },
-                uuid: randomUUID(),
-                timestamp
-            }
-        ];
-    }
-
-    if (agent.cfg?.persistSession !== false && typeof agent.getSessionId === 'function') {
-        try {
-            await saveSession(agent.getSessionId(), compactedMessages, {
-                cwd: getWorkspaceRoot(),
-                model,
-                summary: result.summary
-            });
-        } catch (error) {
-            console.warn('Failed to persist compacted SDK session:', error);
-        }
-    }
-
-    return {
-        ok: true,
-        previousMessageCount,
-        nextMessageCount: compactedMessages.length,
-        summary: `SDK 模型上下文已压缩：${previousMessageCount} -> ${compactedMessages.length} 条消息。`,
-        compactSummary: result.summary
-    };
+    return piGateway.compact(session);
 }
 
 function buildAgentSdkInfo() {
-    const baseTools = getAllBaseTools().map(summarizeSdkTool);
-    const extensionTools = getExtensionTools().map(summarizeSdkTool);
-    const skills = getAllSkills().map((skill) => ({
-        name: skill.name,
-        description: summarizeText(skill.description || '', 240),
-        userInvocable: skill.userInvocable !== false
-    }));
     return {
-        ok: true,
-        packageName: '@codeany/open-agent-sdk',
-        options: Array.from(SDK_JSON_OPTION_KEYS).sort(),
-        queryOptions: Array.from(SDK_QUERY_OPTION_KEYS).sort(),
-        topLevelApis: [
-            'query',
-            'createAgent',
-            'tool',
-            'createSdkMcpServer',
-            'defineTool',
-            'getAllBaseTools',
-            'registerSkill',
-            'getAllSkills',
-            'createProvider',
-            'createHookRegistry',
-            'listSessions',
-            'forkSession'
-        ],
-        agentMethods: [
-            'query',
-            'prompt',
-            'getMessages',
-            'clear',
-            'interrupt',
-            'setModel',
-            'setPermissionMode',
-            'getApiType',
-            'close'
-        ],
-        baseTools,
-        extensionTools,
-        skills,
-        extension: getAgentSdkExtensionStatus()
+        ok: true, packageName: '@earendil-works/pi-coding-agent', version: piVersion.version,
+        upstreamCommit: piVersion.commit, engine: 'pi', transport: 'rpc',
+        options: Array.from(SDK_JSON_OPTION_KEYS).sort(), queryOptions: Array.from(SDK_QUERY_OPTION_KEYS).sort(),
+        topLevelApis: ['prompt', 'abort', 'get_messages', 'compact', 'set_model', 'new_session', 'clone'],
+        agentMethods: ['prompt', 'abort', 'get_messages', 'compact', 'set_model', 'new_session', 'clone'],
+        baseTools: ['read', 'write', 'edit', 'find', 'grep', 'ls', process.platform === 'win32' ? 'powershell' : 'bash']
+            .map(name => ({ name, description: `Pi native ${name}` })),
+        extensionTools: [{ name: 'ask_user', description: 'Prota 主动提问' }],
+        skills: listUserInvocableSkills().map(skill => ({ name: skill.id, description: skill.description })),
+        extension: { loaded: true, path: 'runtime/pi/extensions/prota-extension.mjs', error: '' }
     };
+}
+
+async function listPiSessions() {
+    const items = [];
+    for (const id of sessions.keys()) {
+        const session = await getHydratedSession(id);
+        if (session) items.push({ id: session.id, engineInfo: session.engineInfo, cwd: getWorkspaceRoot(),
+            model: session.providerConfig.model, createdAt: session.createdAt, updatedAt: session.updatedAt,
+            summary: session.runState.lastSummary || '' });
+    }
+    return items;
 }
 
 async function runBuiltinCommand(session, descriptor, command) {
@@ -5161,8 +4459,8 @@ async function runBuiltinCommand(session, descriptor, command) {
         const info = buildAgentSdkInfo();
         return {
             result: [
-                'Open Agent SDK 集成状态：',
-                `Options：${info.options.length} 个 README/API option 已开放透传`,
+                `Pi ${piVersion.version} RPC 集成状态：`,
+                'Provider 配置通过显式适配，未支持的参数会返回配置错误。',
                 `Agent methods：${info.agentMethods.join(', ')}`,
                 `Top-level APIs：${info.topLevelApis.join(', ')}`,
                 `Base tools：${info.baseTools.length} 个`,
@@ -5185,14 +4483,14 @@ async function runBuiltinCommand(session, descriptor, command) {
     if (command.id === 'messages') {
         const agent = await ensureSessionAgent(session);
         return {
-            result: safeJson(agent.getMessages(), 8000) || '[]'
+            result: safeJson(await piGateway.messages(session), 8000) || '[]'
         };
     }
 
     if (command.id === 'api-type') {
         const agent = await ensureSessionAgent(session);
         return {
-            result: `当前 Agent API Type：${agent.getApiType()}`
+            result: `当前 Agent API Type：${session.providerConfig.apiType}`
         };
     }
 
@@ -5219,7 +4517,7 @@ async function runBuiltinCommand(session, descriptor, command) {
     }
 
     if (command.id === 'sessions') {
-        const sdkSessions = await listSessions();
+        const sdkSessions = await listPiSessions();
         return {
             result: sdkSessions.length
                 ? safeJson(sdkSessions, 8000)
@@ -5237,7 +4535,7 @@ async function runBuiltinCommand(session, descriptor, command) {
         const names = Object.keys(mergedMcp);
         return {
             result: names.length
-                ? names.map((name) => `- ${name}: ${safeJson(mergedMcp[name], 1000)}`).join('\n')
+                ? names.map((name) => `- ${name}`).join('\n')
                 : '当前没有配置 MCP servers。'
         };
     }
@@ -5849,7 +5147,7 @@ async function registerBuiltInSkills() {
             id: 'clear',
             label: '清空上下文',
             aliases: ['clear', '/clear'],
-            description: '调用 SDK agent.clear()，清空当前会话上下文。',
+            description: '建立新的 Pi 会话上下文，保留原始历史文件。',
             category: 'Workbench',
             kind: 'local',
             icon: 'CLR',
@@ -5982,7 +5280,7 @@ async function registerBuiltInSkills() {
             id: 'messages',
             label: 'SDK Messages',
             aliases: ['messages', '/messages'],
-            description: '读取 agent.getMessages() 的当前会话历史。',
+            description: '读取 Pi 当前会话的模型消息。',
             category: 'SDK',
             kind: 'command',
             icon: 'MSG',
@@ -5996,7 +5294,7 @@ async function registerBuiltInSkills() {
             id: 'api-type',
             label: 'API Type',
             aliases: ['api-type', '/api-type'],
-            description: '读取 agent.getApiType()。',
+            description: '读取 session.providerConfig.apiType。',
             category: 'SDK',
             kind: 'command',
             icon: 'API',
@@ -6158,11 +5456,7 @@ async function handleCreateSession(req, res) {
         runState: session.runState
     });
 
-    if (session.providerConfig && session.providerConfig.apiKey) {
-        ensureSessionAgent(session).catch((err) => {
-            console.warn('[agent-gateway] Background prewarm failed (create):', err.message);
-        });
-    }
+
 }
 
 async function handleDownloadZip(req, res) {
@@ -6335,13 +5629,14 @@ async function handleHistory(res, session) {
             };
         }
     }));
-    sendJson(res, 200, {
+    sendJson(res, 200, redactSecrets({
         sessionId: session.id,
         title: normalizeSessionTitle(session.title),
         sessionScope: inferSessionScope(session),
         context: session.context,
         providerConfig: sanitizeProviderConfig(session.providerConfig),
         timeline,
+        engineInfo: session.engineInfo,
         runState: session.runState,
         pendingApproval: session.pendingApproval
             ? {
@@ -6359,13 +5654,9 @@ async function handleHistory(res, session) {
                 options: session.pendingQuestion.options
             }
             : null
-    });
+    }, sessionSecrets(session)));
 
-    if (session.providerConfig && session.providerConfig.apiKey) {
-        ensureSessionAgent(session).catch((err) => {
-            console.warn('[agent-gateway] Background prewarm failed (history):', err.message);
-        });
-    }
+
 }
 
 async function handleSdkMessages(res, session) {
@@ -6373,13 +5664,13 @@ async function handleSdkMessages(res, session) {
     sendJson(res, 200, {
         ok: true,
         sessionId: session.id,
-        messages: agent.getMessages()
+        messages: await piGateway.messages(session)
     });
 }
 
 async function handleSdkClear(res, session) {
-    const agent = await ensureSessionAgent(session);
-    agent.clear();
+    if (session.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    await piGateway.clear(session);
     session.timeline = [];
     session.runState = {
         ...createDefaultRunState(),
@@ -6404,9 +5695,9 @@ async function handleSdkSetModel(req, res, session) {
         sendJson(res, 400, { ok: false, message: 'model is required' });
         return;
     }
-    const agent = await ensureSessionAgent(session);
-    await agent.setModel(model);
+    if (session.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
     session.providerConfig.model = model;
+    await ensureSessionAgent(session);
     await persistSession(session);
     emitEvent(session, 'session_ready', {
         sessionId: session.id,
@@ -6429,10 +5720,7 @@ async function handleSdkSetContext(req, res, session) {
         globalContext: sessionScope === 'global'
     });
     session.sessionScope = sessionScope;
-    if (session.agent) {
-        await session.agent.close();
-        session.agent = buildAgentForSession(session, { resume: true });
-    }
+    await piGateway.dispose(session.id);
     await persistSession(session);
     emitEvent(session, 'session_ready', {
         sessionId: session.id,
@@ -6476,7 +5764,7 @@ async function handleSdkSetPermissionMode(req, res, session) {
         return;
     }
     const agent = await ensureSessionAgent(session);
-    await agent.setPermissionMode(permissionMode);
+
     session.providerConfig.sdkOptions = {
         ...(session.providerConfig.sdkOptions || {}),
         permissionMode
@@ -6492,15 +5780,12 @@ async function handleSdkApiType(res, session) {
     const agent = await ensureSessionAgent(session);
     sendJson(res, 200, {
         ok: true,
-        apiType: agent.getApiType()
+        apiType: session.providerConfig.apiType
     });
 }
 
 async function handleSdkClose(res, session) {
-    if (session.agent) {
-        await session.agent.close();
-        session.agent = null;
-    }
+    await piGateway.dispose(session.id);
     sendJson(res, 200, {
         ok: true,
         closed: true
@@ -6514,20 +5799,19 @@ async function handleSdkPrompt(req, res, session) {
         sendJson(res, 400, { ok: false, message: 'prompt is required' });
         return;
     }
-    const agent = await ensureSessionAgent(session, body.providerConfig || session.providerConfig);
+    if (session.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     const descriptor = createRunDescriptor('message', session.context, {
-        message: prompt,
-        sdkOptions: resolveSdkOptions(body, SDK_QUERY_OPTION_KEYS)
+        message: prompt, sdkOptions: resolveSdkOptions(body, SDK_QUERY_OPTION_KEYS)
     });
-    const result = await agent.prompt(prompt, composeQueryOptions(session, descriptor));
-    sendJson(res, 200, {
-        ok: true,
-        result
-    });
+    await runSessionTask(session, descriptor);
+    sendJson(res, 200, { ok: session.runState.status === 'succeeded', result: {
+        text: session.runState.lastSummary || '', status: session.runState.status
+    } });
 }
 
 async function handleSdkSessionList(res) {
-    const sdkSessions = await listSessions();
+    const sdkSessions = await listPiSessions();
     sendJson(res, 200, {
         ok: true,
         sessions: sdkSessions
@@ -6541,7 +5825,22 @@ async function handleSdkFork(req, res) {
         sendJson(res, 400, { ok: false, message: 'sessionId is required' });
         return;
     }
-    const forked = await forkSession(sessionId);
+    const source = await getHydratedSession(sessionId);
+    if (!source) { sendJson(res, 404, { ok: false, message: 'Session not found' }); return; }
+    if (source.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    const target = createSession({ context: source.context, providerConfig: source.providerConfig, sessionScope: source.sessionScope });
+    try {
+        await piGateway.clone(source, target);
+        target.title = source.title;
+        target.timeline = structuredClone(source.timeline);
+        target.runState = { ...source.runState, active: false };
+        await persistSession(target);
+    } catch (error) {
+        sessions.delete(target.id);
+        await removePersistedSession(target.id);
+        throw error;
+    }
+    const forked = target.id;
     sendJson(res, 200, {
         ok: true,
         session: forked
@@ -6626,7 +5925,7 @@ async function handleStreamAttach(res, session) {
     // Immediately push current run state so the frontend can correctly restore its UI
     // (e.g. stop button) after a browser refresh while a run is still in progress.
     if (session.runState?.active) {
-        writeSseEvent(res, 'run_status', {
+        writeSseEvent(res, 'run_status', redactSecrets({
             id: randomUUID(),
             type: 'run_status',
             runId: session.runState.runId,
@@ -6635,7 +5934,7 @@ async function handleStreamAttach(res, session) {
                 runState: session.runState,
                 summary: session.runState.stageMessage || '正在运行…'
             }
-        });
+        }, sessionSecrets(session)));
     }
 }
 
@@ -6691,14 +5990,8 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
     const normalized = normalizeRunRequest(kind, rawBody);
     const body = normalized.body;
     const normalizedKind = normalized.kind;
-    if (session.activeRun?.interrupted) {
-        if (session.activeRun.heartbeatTimer) {
-            clearInterval(session.activeRun.heartbeatTimer);
-        }
-        session.activeRun = null;
-    }
 
-    if (session.activeRun) {
+    if (session.activeRun || session._runStarting) {
         res.writeHead(200, createSseHeaders());
         const subscriber = attachSubscriber(session, res, 'run', session.runState.runId);
         // Use run_busy instead of run_failed: busy is a transient rejection, not a terminal
@@ -6719,6 +6012,8 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
         return;
     }
 
+    session._runStarting = true;
+    try {
     try {
         body.attachments = await persistAgentImageAttachments(session.id, body.attachments || []);
     } catch (error) {
@@ -6748,7 +6043,7 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
     const shouldUpdateTitle = shouldRefreshSessionTitle(session, descriptor);
 
     if (runNeedsAgent(normalizedKind, body.commandId)) {
-        await ensureSessionAgent(session, body.providerConfig || session.providerConfig);
+        session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     } else {
         session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     }
@@ -6782,6 +6077,9 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
     } catch (error) {
         sendText(res, 500, error?.message || '无法启动任务');
     }
+    } finally {
+        session._runStarting = false;
+    }
 }
 
 async function handleInterrupt(req, res, session) {
@@ -6802,24 +6100,18 @@ async function handleInterrupt(req, res, session) {
     if (activeRun.heartbeatTimer) {
         clearInterval(activeRun.heartbeatTimer);
     }
-    session.activeRun = null;
 
-    await finishInterruptedRun(session, activeRun, runId, {
-        stageMessage: '任务已中断',
-        summary: '用户已中断当前任务'
+    activeRun.abortController?.abort(new Error('User interrupted task'));
+    await piGateway.manager.abort(session.id).catch(error => {
+        console.warn('[agent-gateway] Pi abort failed:', error.message);
     });
-    queueMicrotask(() => finalizeRunCheckpoint(session, runId).catch((error) => {
+    await finishInterruptedRun(session, activeRun, runId, {
+        stageMessage: '任务已中断', summary: '用户已中断当前任务'
+    });
+    if (session.activeRun?.id === runId) session.activeRun = null;
+    queueMicrotask(() => finalizeRunCheckpoint(session, runId).catch(error => {
         console.warn('[agent-gateway] Failed to finalize interrupted checkpoint:', error);
     }));
-
-    const agent = session.agent;
-    if (agent?.interrupt) {
-        Promise.resolve()
-            .then(() => agent.interrupt())
-            .catch((error) => {
-                console.warn('Failed to interrupt agent:', error);
-            });
-    }
 
     sendJson(res, 200, {
         ok: true,
@@ -6866,13 +6158,12 @@ async function handleDeleteSession(res, session) {
     if (session.activeRun?.heartbeatTimer) {
         clearInterval(session.activeRun.heartbeatTimer);
     }
-    if (session.agent) {
-        try {
-            await session.agent.close();
-        } catch (error) {
-            console.warn('Failed to close agent session:', error);
-        }
-    }
+    session.activeRun?.abortController?.abort();
+    await piGateway.dispose(session.id);
+    const piPaths = sessionPaths(session, getWorkspaceRoot(), configDirectory);
+    await fs.rm(piPaths.sessions, { recursive: true, force: true });
+    await fs.rm(piPaths.config, { recursive: true, force: true });
+    await fs.rm(piPaths.backup, { recursive: true, force: true });
     session.subscribers.forEach((subscriber) => closeSubscriber(subscriber));
     session.closed = true;
     sessions.delete(session.id);
@@ -6941,6 +6232,7 @@ const server = http.createServer(async (req, res) => {
                     session.closed = true;
                     for (const subscriber of session.subscribers || []) subscriber.end?.();
                 }
+                await piGateway.releaseAll();
                 sessions.clear();
                 await hydratePersistedSessions();
                 workspaceChanging = false;
@@ -6963,6 +6255,7 @@ const server = http.createServer(async (req, res) => {
                 now: new Date().toISOString(),
                 sessions: sessions.size,
                 activeRuns: [...sessions.values()].filter(session => session.runState?.active).length,
+                piRuntimes: piGateway.manager.entries.size,
                 installation: createHash('sha256').update(fsSync.realpathSync(ROOT_DIR)).digest('hex'),
                 build: PRODUCT_AGENT_BUILD
             });
@@ -7403,3 +6696,22 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
     logInfo(`Listening on http://${HOST}:${PORT}`);
 });
+
+let shuttingDown = false;
+async function shutdownGateway() {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    for (const session of sessions.values()) {
+        session.activeRun?.abortController?.abort(new Error('Gateway is shutting down'));
+        resetTransientWaiters(session);
+        if (session.activeRun?.heartbeatTimer) clearInterval(session.activeRun.heartbeatTimer);
+        for (const subscriber of session.subscribers || []) closeSubscriber(subscriber);
+    }
+    await piGateway.manager.disposeAll();
+    await Promise.allSettled([...sessions.values()].filter(session => !session._summaryOnly).map(persistSession));
+    for (const timer of scheduledSessionPersists.values()) clearTimeout(timer);
+    server.close(() => process.exit(0));
+    server.closeAllConnections();
+}
+process.once('SIGTERM', shutdownGateway);
+process.once('SIGINT', shutdownGateway);

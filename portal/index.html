@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="modules/settings/settings.css?v=20261021">
+    <link rel="stylesheet" href="modules/settings/settings.css?v=20261027">
     <link rel="stylesheet" href="shell.css?v=20260909-roomy-page-selector">
     <link rel="stylesheet" href="modules/prd/prd.css?v=20260827-narrow-header-fix-v1">
     <link rel="stylesheet" href="modules/sharing/dialog.css">
@@ -685,6 +685,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <label class="agent-field provider-field--endpoint">
+                                <span>接口地址</span>
+                                <input id="agentBaseUrlInput" type="text" list="agentEndpointOptions" placeholder="https://open.bigmodel.cn/api/anthropic">
+                                <datalist id="agentEndpointOptions"></datalist>
+                            </label>
                             <div class="agent-field provider-field--key">
                                 <div class="provider-key-label-row">
                                     <span>API Key</span>
@@ -696,11 +701,6 @@
                                     <button id="agentCheckBalanceBtn" class="agent-secondary-btn" type="button">查询余额</button>
                                 </div>
                             </div>
-                            <label class="agent-field provider-field--endpoint">
-                                <span>接口地址</span>
-                                <input id="agentBaseUrlInput" type="text" list="agentEndpointOptions" placeholder="https://open.bigmodel.cn/api/anthropic">
-                                <datalist id="agentEndpointOptions"></datalist>
-                            </label>
                             <div class="agent-field provider-model-field">
                                 <span>模型</span>
                                 <div class="provider-model-select-row">
@@ -806,6 +806,7 @@
                             <label><input type="radio" name="shareSetup" value="custom"><span><strong>自有域名</strong><small>品牌专属网址，需要设置解析</small></span></label>
                         </fieldset>
                         <div class="us-share-value"><strong id="shareChoiceTitle"></strong><p id="shareChoiceDescription"></p></div>
+                        <div class="us-share-requirements" data-custom-requirements hidden><strong>自有域名需要准备</strong><ul><li>一个已购买且可管理 DNS 的域名</li><li>在域名服务商添加 Prota 提供的解析记录</li><li>完成域名验证后，再发布原型</li></ul><p>同样使用 Vercel 托管，沿用已有账号授权。</p></div>
                         <div class="settings-form__group" id="shareCustomDomainGroup" hidden>
                             <label for="staticDomainInput" class="settings-form__label">自有域名</label>
                             <input type="text" id="staticDomainInput" class="settings-form__input" placeholder="例如 share.example.com" disabled>
@@ -823,12 +824,12 @@
                             <summary>连接与分享说明<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></summary>
                             <div class="us-share-guide-content">
                                 <ol data-share-guide="vercel">
-                                    <li><strong>连接并授权</strong><p>点击「连接 Vercel」，在自动打开的浏览器中登录并授权。已有有效登录时会直接继续；页面未打开时，点击连接状态中的授权入口。</p></li>
+                                    <li><strong>连接并授权</strong><p>已有授权会自动沿用；点击「启用 Vercel 地址」准备默认分享地址。尚未登录时，先点击「连接 Vercel」并在浏览器完成一次授权。</p></li>
                                     <li><strong>等待显示「已生效」</strong><p>Prota 自动创建或沿用分享项目，获取固定地址并保存。首次连接只准备分享空间，不会发布你的原型。</p></li>
                                     <li><strong>发布原型</strong><p>回到页面选择「链接分享」，等待发布成功后复制链接。更新同一页面版本后重新分享，原链接即可查看新内容。</p></li>
                                 </ol>
                                 <ol data-share-guide="custom" hidden>
-                                    <li><strong>填写域名并连接</strong><p>在上方填写域名，点击「绑定域名并连接」。设置会自动保存，然后在浏览器中完成 Vercel 授权。</p></li>
+                                    <li><strong>填写域名并连接</strong><p>在上方填写域名，点击「绑定并验证域名」。已有 Vercel 授权会自动沿用，只有尚未登录或授权失效时才需要在浏览器授权。</p></li>
                                     <li><strong>添加解析记录</strong><p>Prota 会显示所需的 DNS 记录。到你使用的域名服务商处添加对应记录，再回到这里点击「重新检查 DNS」。</p></li>
                                     <li><strong>验证成功后发布</strong><p>等待显示「已生效」，域名会自动保存。回到页面选择「链接分享」，发布成功后即可发送链接；同一页面版本更新后链接保持不变。</p></li>
                                 </ol>

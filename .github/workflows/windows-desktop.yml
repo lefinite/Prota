@@ -9,6 +9,15 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run pi:build
+      - run: npm run pi:verify
+      - run: npm run agent:test
       - name: Cold install and warm GUI startup
         shell: powershell
         run: ./tests/windows-desktop.ps1

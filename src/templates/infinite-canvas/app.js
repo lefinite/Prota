@@ -1,7 +1,14 @@
 (() => {
   "use strict";
-  const C = window.CanvasCore;
+  const C = window.CanvasCore, D = window.CanvasDomain;
+  const route = decodeURI(location.pathname).match(/\/src\/pages\/([^/]+)\/([^/]+)\/(v\d+)\//);
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) && Boolean(route);
+  const identityScope = route ? { projectId: route[1], pageId: route[2] } : { projectId: "", pageId: location.pathname.replace(/\/v\d+\/.*$/, "") };
+  let schemaEnabled = false;
+  let connections = null;
+  const materialize = (document, force = schemaEnabled) => D.load(document, identityScope, { migrate: force || document.schemaVersion === 2 });
   const AUTOSAVE_DELAY = 300;
+  const floatingPanels = ["#context-menu", "#property-popover", "#command-palette"];
   const $ = (s) => document.querySelector(s), clone = (value) => JSON.parse(JSON.stringify(value));
   let startupError = null;
   try {
@@ -10,23 +17,32 @@
     startupError = error;
   }
   const initialDocument = startupError ? { schemaVersion: 1, revision: 0, nodes: [], viewport: { x: 100, y: 80, zoom: 1 } } : window.PROTA_CANVAS;
-  let state = clone(initialDocument), baseline = clone(state), selected = /* @__PURE__ */ new Set(), history = [], future = [], dirty = false, saving = false, readOnly = Boolean(startupError), space = false, gesture = null, interacting = null;
+  let prepared;
+  try { prepared = materialize(initialDocument); }
+  catch (error) { startupError = error; prepared = { schemaVersion: 1, revision: 0, nodes: [], viewport: { x: 100, y: 80, zoom: 1 } }; }
+  let state = prepared, baseline = clone(initialDocument), selected = /* @__PURE__ */ new Set(), history = [], future = [], dirty = false, saving = false, readOnly = Boolean(startupError), space = false, gesture = null, interacting = null;
   const stage = $("#stage"), world = $("#world"), properties = $("#properties");
   let propertyEdit = null, propertiesSelection = "", menuInvoker = null, fullscreenFallback = false, imageInsertionPoint = null, imageReplaceTarget = null, groupContext = null, paletteIndex = 0, paletteItems = [], renderFrame = 0, viewAnim = 0;
   let tool = "select", autoTimer, savePromise = null, conflict = false, agentBusy = false, agentPending = false, clipboard = null, editing = null, panelKey = "";
   const nodeEls = /* @__PURE__ */ new Map(), touches = /* @__PURE__ */ new Map(), boardStamps = /* @__PURE__ */ new Map();
+  const boardPreviewUrls = new Map();
+  // Board-level right-click gesture → board annotation. Runtime-only, never persisted.
+  const RIGHT_GESTURE_INTERVAL = 420, RIGHT_GESTURE_DISTANCE = 12;
+  let boardRightGesture = { boardId: null, count: 0, required: 2, lastTime: 0, lastX: 0, lastY: 0 };
+  let annotationBoardId = null, annotationFrameEl = null, deferredBoardMenu = null, viewNotifyFrame = 0;
+  const boardFrameBindings = new Map();
   let agentTargets = /* @__PURE__ */ new Set(), pasteTimer = null;
   const draftKey = "prota-canvas-draft:" + location.pathname, clipboardKey = "prota-canvas-clipboard";
-  const effectiveLocked = (n) => C.locked(state.nodes, n);
+  let nodeIndex = D.createIndex(state.nodes);
+  const effectiveLocked = (n) => C.locked(state.nodes, n, nodeIndex);
   const selectedRoots = () => C.roots(state.nodes, selected);
   const movable = () => {
     const roots = selectedRoots().filter((n) => !effectiveLocked(n));
     const ids = C.descendants(state.nodes, roots.map((n) => n.id));
     return state.nodes.filter((n) => ids.has(n.id));
   };
-  const canEdit = () => !readOnly && !agentBusy && !agentPending;
-  const route = decodeURI(location.pathname).match(/\/src\/pages\/([^/]+)\/([^/]+)\/(v\d+)\//);
-  const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) && Boolean(route);
+  const canEdit = () => !readOnly && !agentBusy && !agentPending && !annotationBoardId;
+
   const names = { group: "分组", board: "画板", text: "文本", note: "便签", rect: "矩形", ellipse: "圆形", image: "图片" };
   const uid = () => "n_" + crypto.randomUUID().replaceAll("-", "");
   function status(text, kind = "") {
@@ -41,6 +57,10 @@
     future = [];
   }
   function changed({ panels = true } = {}) {
+    if (state.schemaVersion === 2) for (const node of state.nodes) if (node.type === "board" && !node.boardId) {
+      node.boardId = "b_" + crypto.randomUUID().replaceAll("-", "");
+      node.boardRevisionId = null;
+    }
     updateGroupBounds();
     dirty = true;
     status(local ? "等待保存…" : "已暂存在当前浏览器", "busy");
@@ -55,6 +75,7 @@
   }
   function mutate(fn) {
     if (!canEdit()) return;
+    exitInteraction();
     checkpoint();
     fn();
     changed();
@@ -197,7 +218,7 @@
       notice(current().some(effectiveLocked) ? "对象已锁定，请先解锁。" : agentBusy ? "Agent 正在处理，完成后可继续编辑。" : "请先选择适用的对象。");
       return false;
     }
-    $("#context-menu").hidden = true;
+    setFloatingPanel("#context-menu", false);
     action.run(event, rect);
     return true;
   }
@@ -217,7 +238,7 @@
     }
     button.onclick = (e) => {
       const rect = button.getBoundingClientRect();
-      $("#context-menu").hidden = true;
+      setFloatingPanel("#context-menu", false);
       actions[action.id] ? runAction(action.id, e, rect) : action.run(e, rect);
       if (document.activeElement === button) stage.focus();
     };
@@ -236,14 +257,214 @@
     $("#zoom-reset").textContent = `${Math.round(v.zoom * 100)}%`;
     updateSelectionFrame();
     positionSelectionTools();
+    connections?.schedule();
+    // Portal annotation markers must follow viewport pan/zoom; coalesce to one message per frame.
+    if (parent !== window && !viewNotifyFrame) {
+      viewNotifyFrame = requestAnimationFrame(() => {
+        viewNotifyFrame = 0;
+        if (parent !== window) parent.postMessage({ type: "prota:canvas-view" }, location.origin);
+      });
+    }
   }
   function notify() {
-    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { text: String(n.text || "").slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 4 }, location.origin === "null" ? "*" : location.origin);
+    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { text: String(n.text || "").slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 8 }, location.origin === "null" ? "*" : location.origin);
   }
   function exitInteraction() {
+    resetBoardRightGesture();
+    if (annotationBoardId) exitBoardAnnotation();
     interacting = null;
     document.querySelectorAll(".interacting").forEach((n) => n.classList.remove("interacting"));
     $("#interaction-hint").textContent = "";
+  }
+  function boardFolderOf(node) {
+    const match = /^boards\/([a-zA-Z0-9_-]+)\/index\.html$/.exec(node?.src || "");
+    return match ? match[1] : "";
+  }
+  function postAnnotationState(active, { rebind = false } = {}) {
+    const node = state.nodes.find((n) => n.id === annotationBoardId);
+    const payload = { type: "prota:canvas-annotation-state", active: Boolean(active), boardId: boardFolderOf(node), boardPath: node?.src || "", nodeId: annotationBoardId || "", rebind };
+    window.__protaCanvasAnnotationState = payload;
+    if (parent !== window) parent.postMessage(payload, location.origin);
+  }
+  function enterBoardAnnotation(id) {
+    if (annotationBoardId && annotationBoardId !== id) return;
+    resetBoardRightGesture();
+    const node = state.nodes.find((n) => n.id === id && n.type === "board");
+    const el = nodeEls.get(id);
+    const frame = el?.querySelector("iframe");
+    if (!node || !frame || !boardFolderOf(node)) {
+      notice("该画板还没有生成内容，暂时不能标注。");
+      return;
+    }
+    let doc = null;
+    try { doc = frame.contentDocument; } catch { doc = null; }
+    if (!doc) {
+      notice("无法访问该画板内容，暂时不能标注。");
+      return;
+    }
+    if (interacting && interacting !== id) {
+      interacting = null;
+      document.querySelectorAll(".interacting").forEach((n) => n.classList.remove("interacting"));
+    }
+    annotationBoardId = id;
+    annotationFrameEl = frame;
+    if (interacting !== id) {
+      selected = /* @__PURE__ */ new Set([id]);
+      groupContext = null;
+      render();
+      interacting = id;
+      el.classList.add("interacting");
+    }
+    document.body.classList.add("board-annotating");
+    updateSelectionFrame();
+    renderInspector();
+    $("#interaction-hint").textContent = "标注中 · 右键或 Esc 退出";
+    positionSelectionTools();
+    postAnnotationState(true);
+  }
+  function exitBoardAnnotation() {
+    if (!annotationBoardId) return;
+    annotationBoardId = null;
+    annotationFrameEl = null;
+    document.body.classList.remove("board-annotating");
+    updateSelectionFrame();
+    renderInspector();
+    positionSelectionTools();
+    $("#interaction-hint").textContent = interacting ? "预览中 · Esc 返回画布" : "";
+    resetBoardRightGesture();
+    postAnnotationState(false);
+  }
+  function resetBoardRightGesture() {
+    boardRightGesture = { boardId: null, count: 0, required: 2, lastTime: 0, lastX: 0, lastY: 0 };
+    cancelDeferredBoardMenu();
+  }
+  function cancelDeferredBoardMenu() {
+    if (!deferredBoardMenu) return;
+    clearTimeout(deferredBoardMenu.timer);
+    deferredBoardMenu = null;
+  }
+  function deferBoardMenu(run) {
+    cancelDeferredBoardMenu();
+    deferredBoardMenu = { timer: setTimeout(() => { deferredBoardMenu = null; run(); }, RIGHT_GESTURE_INTERVAL) };
+  }
+  // Unified right-click counter: the 1st click may land on the canvas while the
+  // board is inactive, follow-ups land inside the board iframe. Both feed this
+  // single state machine; the threshold is fixed when the sequence starts.
+  function handleBoardContextMenu(boardId, screenX, screenY, showMenu) {
+    if (annotationBoardId) {
+      exitBoardAnnotation();
+      return;
+    }
+    setFloatingPanel("#context-menu", false);
+    const outerFrame = window.frameElement;
+    if (outerFrame) {
+      const rect = outerFrame.getBoundingClientRect();
+      screenX *= rect.width / Math.max(1, innerWidth);
+      screenY *= rect.height / Math.max(1, innerHeight);
+    }
+    const now = Date.now(), g = boardRightGesture;
+    if (g.boardId !== boardId || !g.lastTime || now - g.lastTime > RIGHT_GESTURE_INTERVAL || Math.hypot(screenX - g.lastX, screenY - g.lastY) > RIGHT_GESTURE_DISTANCE) {
+      g.boardId = boardId;
+      g.count = 0;
+      g.required = interacting === boardId ? 2 : 3;
+    }
+    g.count += 1;
+    g.lastTime = now;
+    g.lastX = screenX;
+    g.lastY = screenY;
+    const node = state.nodes.find((n) => n.id === boardId && n.type === "board");
+    if (!node || !canEdit() || effectiveLocked(node)) {
+      resetBoardRightGesture();
+      showMenu?.();
+      return;
+    }
+    if (g.count >= g.required) {
+      resetBoardRightGesture();
+      enterBoardAnnotation(boardId);
+      return;
+    }
+    if (interacting !== boardId) {
+      // First right click activates the board (same as preview double-click);
+      // the regular menu still opens after the gesture window expires.
+      interacting = null;
+      document.querySelectorAll(".interacting").forEach((n) => n.classList.remove("interacting"));
+      selected = /* @__PURE__ */ new Set([boardId]);
+      groupContext = null;
+      render();
+      interacting = boardId;
+      nodeEls.get(boardId)?.classList.add("interacting");
+      $("#interaction-hint").textContent = "预览中 · Esc 返回画布";
+      positionSelectionTools();
+      deferBoardMenu(showMenu);
+      return;
+    }
+    deferBoardMenu(showMenu);
+  }
+  // Same-origin board frames report their own contextmenu/Escape events here.
+  // Cross-origin or unavailable documents simply never bind; the editor keeps working.
+  function detachBoardFrameEvents(frame) {
+    boardFrameBindings.get(frame)?.abort();
+    boardFrameBindings.delete(frame);
+  }
+  function attachBoardFrameEvents(nodeId, frame) {
+    detachBoardFrameEvents(frame);
+    if (!frame.isConnected || nodeEls.get(nodeId)?.querySelector("iframe") !== frame) return;
+    let doc = null;
+    try { doc = frame.contentDocument; } catch { doc = null; }
+    if (!doc) {
+      if (annotationBoardId === nodeId) exitBoardAnnotation();
+      return;
+    }
+    const controller = new AbortController();
+    boardFrameBindings.set(frame, controller);
+    const options = { capture: true, signal: controller.signal };
+    doc.addEventListener("pointerdown", (e) => {
+      if (e.button !== 2) resetBoardRightGesture();
+      setFloatingPanel("#context-menu", false);
+    }, options);
+    doc.addEventListener("pointermove", (e) => {
+      if (e.buttons) resetBoardRightGesture();
+    }, options);
+    doc.addEventListener("scroll", () => {
+      if (parent !== window) parent.postMessage({ type: "prota:canvas-view" }, location.origin);
+    }, options);
+    doc.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      resetBoardRightGesture();
+      e.preventDefault();
+      e.stopPropagation();
+      if (annotationBoardId) {
+        exitBoardAnnotation();
+        stage.focus();
+        return;
+      }
+      setFloatingPanel("#property-popover", false);
+      exitInteraction();
+      stage.focus();
+    }, options);
+    doc.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const node = state.nodes.find((n) => n.id === nodeId && n.type === "board");
+      if (!node) return;
+      let screenX = e.clientX, screenY = e.clientY;
+      try {
+        const r = frame.getBoundingClientRect(), w = frame.contentWindow;
+        screenX = r.left + (e.clientX / Math.max(1, w.innerWidth)) * r.width;
+        screenY = r.top + (e.clientY / Math.max(1, w.innerHeight)) * r.height;
+      } catch {
+      }
+      if (annotationBoardId) {
+        if (annotationBoardId === nodeId) exitBoardAnnotation();
+        return;
+      }
+      if (readOnly || !canEdit()) return;
+      handleBoardContextMenu(nodeId, screenX, screenY, () => openNodeMenu(nodeEls.get(nodeId), screenX, screenY, { includeBoardAdd: true }));
+    }, options);
+    if (annotationBoardId === nodeId) {
+      annotationFrameEl = frame;
+      postAnnotationState(true, { rebind: true });
+    }
   }
   function render(options = {}) {
     if (options.panels === false) {
@@ -260,6 +481,9 @@
     renderNow(options);
   }
   function renderNow({ panels = true } = {}) {
+    if (selected.size && connections?.getSelection()) connections.clear();
+    nodeIndex = D.createIndex(state.nodes);
+    if (annotationBoardId && !state.nodes.some((n) => n.id === annotationBoardId)) exitBoardAnnotation();
     const previous = new Map([...world.querySelectorAll(".node")].map((el) => [el.dataset.id, el]));
     const contextMembers = groupContext ? C.descendants(state.nodes, [groupContext]) : null;
     for (const [index, n] of state.nodes.entries()) {
@@ -270,11 +494,13 @@
       }
       previous.delete(n.id);
       nodeEls.set(n.id, el);
-      el.className = `node ${n.type}${selected.has(n.id) ? " selected" : ""}${effectiveLocked(n) ? " locked" : ""}${interacting === n.id ? " interacting" : ""}${n.hidden ? " hidden-node" : ""}${editing?.id === n.id ? " editing" : ""}${agentTargets.has(n.id) ? " agent-target" : ""}${n.id === groupContext ? " context" : ""}${contextMembers && !contextMembers.has(n.id) ? " dimmed" : ""}`;
+      const connectionLayers = ["connection-container", "connection-top-port", "connection-source", "connection-target"].filter(name => el.classList.contains(name));
+      el.className = `node ${n.type}${selected.has(n.id) ? " selected" : ""}${effectiveLocked(n) ? " locked" : ""}${interacting === n.id ? " interacting" : ""}${n.hidden ? " hidden-node" : ""}${editing?.id === n.id ? " editing" : ""}${agentTargets.has(n.id) ? " agent-target" : ""}${n.id === groupContext ? " context" : ""}${contextMembers && !contextMembers.has(n.id) ? " dimmed" : ""}` + (connectionLayers.length ? " " + connectionLayers.join(" ") : "");
       Object.assign(el.style, { left: `${n.x}px`, top: `${n.y}px`, width: `${n.width}px`, height: `${n.height}px`, background: n.color || "", fontSize: `${n.fontSize || 20}px`, opacity: n.opacity ?? 1, borderRadius: n.type === "ellipse" ? "50%" : `${n.radius || 0}px`, color: n.textColor || "#30323a", fontWeight: n.fontWeight || 400, textAlign: n.textAlign || "left" });
-      const signature = JSON.stringify([n.type, n.type === "board" ? "" : n.text, n.src, n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
+      const signature = JSON.stringify([n.type, n.type === "board" ? "" : n.text, n.src, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
       if (el.dataset.signature !== signature && editing?.id !== n.id) {
         el.dataset.signature = signature;
+        el.querySelectorAll("iframe").forEach(detachBoardFrameEvents);
         el.replaceChildren();
         const title = document.createElement("div");
         title.className = "node-title";
@@ -287,7 +513,7 @@
           if (/^boards\/[a-zA-Z0-9_-]+\/index\.html$/.test(n.src || "")) {
             const frame = document.createElement("iframe");
             const stamp = boardStamps.get(n.id) || 0;
-            frame.src = n.src + (stamp ? "?canvas=" + stamp : "");
+            frame.src = (boardPreviewUrls.get(n.id) || n.src) + (stamp ? "?canvas=" + stamp : "");
             frame.title = n.name;
             frame.loading = "lazy";
             frame.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
@@ -295,18 +521,7 @@
             el.classList.add("loading");
             frame.addEventListener("load", () => {
               el.classList.remove("loading");
-              try {
-                frame.contentDocument.addEventListener("keydown", (e) => {
-                  if (e.key === "Escape") {
-                    $("#property-popover").hidden = true;
-                    e.preventDefault();
-                    e.stopPropagation();
-                    exitInteraction();
-                    stage.focus();
-                  }
-                });
-              } catch {
-              }
+              attachBoardFrameEvents(n.id, frame);
             });
           } else {
             const placeholder2 = document.createElement("div");
@@ -332,7 +547,8 @@
             img.alt = n.name;
             content.append(img);
           }
-        } else content.textContent = n.text || "";
+        } else if (n.type === "text") content.append(window.CanvasMarkdown.render(n.text || ""));
+        else content.textContent = n.text || "";
       }
       const inner = el.querySelector(".node-content");
       if (inner && n.padding !== void 0) inner.style.padding = n.padding + "px";
@@ -342,6 +558,7 @@
       if (world.children[index] !== el) world.insertBefore(el, world.children[index] || null);
     }
     previous.forEach((el) => {
+      el.querySelectorAll("iframe").forEach(detachBoardFrameEvents);
       nodeEls.delete(el.dataset.id);
       el.remove();
     });
@@ -360,6 +577,7 @@
       Object.assign(el.style, { left: `${n.x}px`, top: `${n.y}px`, width: `${n.width}px`, height: `${n.height}px` });
     }
     updateSelectionFrame();
+    connections?.schedule();
   }
   function updateSelectionFrame() {
     const frame = $("#selection-frame"), roots = selectedRoots().filter((n) => !effectiveLocked(n)), bounds = C.bounds(roots);
@@ -407,7 +625,7 @@
     }
     if (propertiesSelection !== [...selected].join(",")) {
       propertyEdit = null;
-      $("#property-popover").hidden = true;
+      setFloatingPanel("#property-popover", false);
       propertiesSelection = [...selected].join(",");
     }
     if (!$("#property-popover").hidden && signature !== panelKey && !properties.contains(document.activeElement)) renderProperties();
@@ -541,10 +759,10 @@
     propertiesSelection = [...selected].join(",");
     renderProperties(focusLabel);
     const popover = $("#property-popover");
-    popover.hidden = false;
-    $("#context-menu").hidden = true;
+    setFloatingPanel("#property-popover", true);
+    setFloatingPanel("#context-menu", false);
     const anchor = screenSelection();
-    const position = C.placeOverlay({ anchor, width: popover.offsetWidth, height: popover.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: overlayObstacles(["#selection-tools"]), placement: "popover" });
+    const position = C.placeOverlay({ anchor, width: popover.offsetWidth, height: popover.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: overlayObstacles(), placement: "popover" });
     popover.style.left = position.x + "px";
     popover.style.top = position.y + "px";
   }
@@ -620,6 +838,7 @@
     mutate(() => {
       const copied = C.duplicate(state.nodes, selected);
       state.nodes.push(...copied.nodes);
+      if(state.edges) state.edges.push(...C.duplicateEdges(state.edges, copied.mapping));
       selected = new Set(copied.selected);
     });
   }
@@ -627,6 +846,7 @@
     mutate(() => {
       const ids = C.descendants(state.nodes, selectedRoots().filter((n) => !effectiveLocked(n)).map((n) => n.id));
       state.nodes = state.nodes.filter((n) => !ids.has(n.id));
+      if (state.edges) state.edges = state.edges.filter(e => !ids.has(e.fromInstanceId) && !ids.has(e.toInstanceId));
       selected.clear();
     });
     if (groupContext && !state.nodes.some((n) => n.id === groupContext)) groupContext = null;
@@ -711,6 +931,7 @@
     });
   }
   function previewBoard(n) {
+    if (annotationBoardId) return;
     exitInteraction();
     const el = nodeEls.get(n.id);
     if (!el?.querySelector("iframe")) return;
@@ -738,8 +959,21 @@
     };
     viewAnim = requestAnimationFrame(step);
   }
-  function zoom(factor, x = stage.clientWidth / 2, y = stage.clientHeight / 2, animate = false) {
-    exitInteraction();
+  // Keep the last point on the canvas when the pointer moves to zoom controls.
+  let zoomAnchor = null;
+  function rememberZoomAnchor(e) {
+    if (e.target.closest("button,.floating,#selection-tools")) return;
+    const r = stage.getBoundingClientRect();
+    zoomAnchor = { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  stage.addEventListener("pointermove", (e) => {
+    if (e.buttons) resetBoardRightGesture();
+    rememberZoomAnchor(e);
+  });
+  stage.addEventListener("pointerdown", rememberZoomAnchor);
+  function zoom(factor, x = zoomAnchor?.x ?? stage.clientWidth / 2, y = zoomAnchor?.y ?? stage.clientHeight / 2, animate = false) {
+    stopViewAnimation();
+    if (!annotationBoardId) exitInteraction();
     const v = state.viewport, z = Math.max(0.05, Math.min(4, v.zoom * factor));
     const target = { zoom: z, x: x - (x - v.x) * z / v.zoom, y: y - (y - v.y) * z / v.zoom };
     if (animate) animateView(target, 190, () => {
@@ -752,19 +986,15 @@
     }
   }
   function zoomTo(z) {
-    exitInteraction();
-    const v = state.viewport, cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
-    animateView({ zoom: z, x: cx - (cx - v.x) * z / v.zoom, y: cy - (cy - v.y) * z / v.zoom }, 190, () => {
-      if (!readOnly) persistView();
-    });
+    zoom(z / state.viewport.zoom, void 0, void 0, true);
   }
-  function fit(nodes = state.nodes, { animate = false } = {}) {
+  function fit(nodes = state.nodes, { animate = false, align = "center" } = {}) {
     nodes = nodes.filter((n) => !n.hidden);
     if (!nodes.length) return;
-    exitInteraction();
+    if (!annotationBoardId) exitInteraction();
     const left = Math.min(...nodes.map((n) => n.x)), top = Math.min(...nodes.map((n) => n.y)), right = Math.max(...nodes.map((n) => n.x + n.width)), bottom = Math.max(...nodes.map((n) => n.y + n.height));
-    const z = Math.max(0.05, Math.min(1.5, (stage.clientWidth - 100) / (right - left), (stage.clientHeight - 100) / (bottom - top)));
-    const target = { x: (stage.clientWidth - (right - left) * z) / 2 - left * z, y: (stage.clientHeight - (bottom - top) * z) / 2 - top * z, zoom: z };
+    const z = Math.max(0.05, Math.min(1.5, (stage.clientWidth - 100) / (right - left), (stage.clientHeight - (align === "top" ? 190 : 100)) / (bottom - top)));
+    const target = { x: (stage.clientWidth - (right - left) * z) / 2 - left * z, y: align === "top" ? 100 - top * z : (stage.clientHeight - (bottom - top) * z) / 2 - top * z, zoom: z };
     if (animate) animateView(target, 200, () => {
       if (!readOnly) persistView();
     });
@@ -788,8 +1018,25 @@
     changed();
   }
   stage.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("#canvas-connections") && !space && tool !== "hand" && e.button !== 1) return;
     if (e.button === 2 || e.target.closest("button,.floating,#selection-tools") || e.target.closest(".interacting") || e.target.isContentEditable) return;
     stopViewAnimation();
+    resetBoardRightGesture();
+    // While annotating a board, canvas editing gestures stay disabled;
+    // only viewport panning (space / hand / middle button) remains available.
+    if (annotationBoardId) {
+      if (!(space || tool === "hand" || e.button === 1)) {
+        e.preventDefault();
+        return;
+      }
+      finishText();
+      setFloatingPanel("#context-menu", false);
+      gesture = { kind: "pan", cx: e.clientX, cy: e.clientY, x: state.viewport.x, y: state.viewport.y };
+      stage.classList.add("panning");
+      stage.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      return;
+    }
     if (e.pointerType === "touch") {
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (touches.size === 2) {
@@ -803,7 +1050,7 @@
     }
     finishText();
     const priorSelection = [...selected];
-    $("#context-menu").hidden = true;
+    setFloatingPanel("#context-menu", false);
     exitInteraction();
     stage.focus();
     const handleEl = e.target.closest("#selection-frame i[data-handle]");
@@ -908,6 +1155,7 @@
         if (g.pendingAlt) {
           const copies = C.duplicate(state.nodes, selected, 0);
           state.nodes.push(...copies.nodes);
+          if(state.edges) state.edges.push(...C.duplicateEdges(state.edges, copies.mapping));
           selected = new Set(copies.selected);
           g.nodes = copies.nodes.map((item) => ({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height }));
           renderNow({ panels: false });
@@ -1013,9 +1261,21 @@
     if (gesture?.pointerId === e.pointerId) cancelGesture();
   });
   stage.addEventListener("dblclick", (e) => {
+    if (e.target.closest("#canvas-connections,.connection-handles,.connection-preview")) return;
     const el = e.target.closest(".node"), n = state.nodes.find((n2) => n2.id === el?.dataset.id);
-    if (!n) return;
+    if (e.target.closest("button,.floating,#selection-tools,[contenteditable=true]") || e.target.isContentEditable || space || tool !== "select" || e.button !== 0) return;
+    if (annotationBoardId) return;
+    if (!n) {
+      if (!canEdit()) return;
+      e.preventDefault();
+      const p = point(e.clientX, e.clientY);
+      selected.clear();
+      const made = add("text", { x: p.x + 140, y: p.y + 50 });
+      if (made) startText(made.id);
+      return;
+    }
     if (n.type === "board" && el.querySelector("iframe")) {
+      resetBoardRightGesture();
       interacting = n.id;
       el.classList.add("interacting");
       $("#interaction-hint").textContent = "预览中 · Esc 返回";
@@ -1032,7 +1292,11 @@
     e.preventDefault();
     stopViewAnimation();
     const r = stage.getBoundingClientRect();
-    if (e.ctrlKey || e.metaKey) zoom(Math.exp(-e.deltaY * 8e-3), e.clientX - r.left, e.clientY - r.top);
+    if (!e.shiftKey || e.ctrlKey || e.metaKey) {
+      zoomAnchor = { x: e.clientX - r.left, y: e.clientY - r.top };
+      const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stage.clientHeight : 1);
+      zoom(Math.exp(-delta * (e.ctrlKey || e.metaKey ? 8e-3 : 1.5e-3)), zoomAnchor.x, zoomAnchor.y);
+    }
     else {
       state.viewport.x -= e.deltaX;
       state.viewport.y -= e.deltaY;
@@ -1044,17 +1308,24 @@
     if (e.isComposing || e.keyCode === 229) return;
     const mod = e.metaKey || e.ctrlKey;
     if (e.key === "Escape") {
+      resetBoardRightGesture();
+      if (annotationBoardId) {
+        e.preventDefault();
+        exitBoardAnnotation();
+        stage.focus();
+        return;
+      }
       if (!$("#command-palette").hidden) {
         closePalette();
         return;
       }
       if (!$("#context-menu").hidden) {
-        $("#context-menu").hidden = true;
+        setFloatingPanel("#context-menu", false);
         menuInvoker?.focus?.();
         return;
       }
       if (!$("#property-popover").hidden) {
-        $("#property-popover").hidden = true;
+        setFloatingPanel("#property-popover", false);
         stage.focus();
         return;
       }
@@ -1064,6 +1335,11 @@
       }
       if (editing) {
         finishText(true);
+        return;
+      }
+      if (annotationBoardId) {
+        exitBoardAnnotation();
+        stage.focus();
         return;
       }
       if (interacting) {
@@ -1077,7 +1353,7 @@
         return;
       }
       setTool("select");
-      $("#property-popover").hidden = true;
+      setFloatingPanel("#property-popover", false);
       if (selected.size) {
         selected.clear();
         render();
@@ -1086,6 +1362,7 @@
       return;
     }
     if (e.target.matches("input,textarea,select") || e.target.isContentEditable) return;
+    if (annotationBoardId && !(e.code === "Space" || (mod && ["0", "s"].includes(e.key.toLowerCase())))) return;
     if (mod && e.key.toLowerCase() === "k") {
       e.preventDefault();
       $("#command-palette").hidden ? openPalette() : closePalette();
@@ -1203,11 +1480,24 @@
     }
     return { dx: resultX, dy: resultY };
   }
+  function textSource(el) {
+    // Chromium represents Enter as sibling DIVs with a placeholder BR on empty lines.
+    // innerText counts those placeholder breaks twice under pre-wrap.
+    function read(parent) {
+      if (parent.childNodes.length === 1 && parent.firstChild.nodeName === "BR") return "";
+      return [...parent.childNodes].map((child, index) => {
+        if (child.nodeType === Node.TEXT_NODE) return child.nodeValue;
+        if (child.nodeName === "BR") return "\n";
+        return (index > 0 && ["DIV", "P"].includes(child.nodeName) ? "\n" : "") + read(child);
+      }).join("");
+    }
+    return read(el);
+  }
   function startText(id) {
     if (!canEdit()) return;
     finishText();
-    $("#property-popover").hidden = true;
-    $("#context-menu").hidden = true;
+    setFloatingPanel("#property-popover", false);
+    setFloatingPanel("#context-menu", false);
     const n = state.nodes.find((n2) => n2.id === id);
     if (!n || effectiveLocked(n)) return;
     selected = /* @__PURE__ */ new Set([id]);
@@ -1216,8 +1506,11 @@
     if (!el) return;
     checkpoint();
     editing = { id, original: n.text || "", historyLength: history.length - 1, composing: false };
-    el.contentEditable = "true";
+    // Editing always uses the saved source, never the rendered Markdown DOM.
+    el.textContent = n.text || "";
+    el.contentEditable = "plaintext-only";
     el.spellcheck = false;
+    el.setAttribute("aria-label", n.type === "text" ? "编辑 Markdown 文本" : "编辑便签");
     el.parentElement.classList.add("editing");
     el.focus();
     const range = document.createRange();
@@ -1233,7 +1526,7 @@
       if (editing) editing.composing = false;
     };
     el.oninput = () => {
-      n.text = el.innerText;
+      n.text = textSource(el);
       dirty = true;
       status("等待保存…", "busy");
       try {
@@ -1257,6 +1550,8 @@
       el.oncompositionstart = null;
       el.oncompositionend = null;
       el.contentEditable = "false";
+      // Force source/preview synchronization even after Escape or an unchanged edit.
+      delete el.parentElement.dataset.signature;
     }
     if (!n) return;
     if (cancel) n.text = edit.original;
@@ -1279,7 +1574,7 @@
   }
   function copySelection() {
     if (!selected.size) return;
-    clipboard = { nodes: clone(state.nodes.filter((n) => C.descendants(state.nodes, selected).has(n.id))), selected: [...selected], sourcePath: location.pathname };
+    clipboard = { nodes: clone(state.nodes.filter((n) => C.descendants(state.nodes, selected).has(n.id))), selected: [...selected], edges: clone((state.edges || []).filter(e => C.descendants(state.nodes, selected).has(e.fromInstanceId) && C.descendants(state.nodes, selected).has(e.toInstanceId))), sourcePath: location.pathname };
     try {
       localStorage.setItem(clipboardKey, JSON.stringify({ ...clipboard, at: Date.now() }));
     } catch {
@@ -1292,7 +1587,7 @@
   function loadClipboard() {
     try {
       const stored = JSON.parse(localStorage.getItem(clipboardKey) || "null");
-      if (stored?.nodes?.length) clipboard = { nodes: clone(stored.nodes), selected: clone(stored.selected), sourcePath: stored.sourcePath };
+      if (stored?.nodes?.length) clipboard = { nodes: clone(stored.nodes), selected: clone(stored.selected), edges: clone(stored.edges || []), sourcePath: stored.sourcePath };
     } catch {
     }
     return clipboard;
@@ -1317,6 +1612,8 @@
         }
       }
       state.nodes.push(...copies.nodes);
+      const copiedEdges=C.duplicateEdges(source.edges || [], copies.mapping);
+      if(copiedEdges.length)(state.edges ||= []).push(...copiedEdges);
       selected = new Set(copies.selected);
     });
     return true;
@@ -1454,8 +1751,9 @@
       throw Error("无法备份当前修改");
     }
   }
-  async function fetchDiskDocument() {
-    const response = await fetch("./canvas-data.js?fresh=" + Date.now(), { cache: "no-store" });
+  async function fetchDiskDocument(snapshotUrl = null) {
+    const layoutUrl = snapshotUrl ? new URL("canvas-data.js", new URL(snapshotUrl, location.href)).href : "./canvas-data.js?fresh=" + Date.now();
+    const response = await fetch(layoutUrl, { cache: "no-store" });
     if (!response.ok) throw Error("读取画布失败");
     const text = await response.text(), prefix = "window.PROTA_CANVAS = ";
     if (!text.trim().startsWith(prefix)) throw Error("画布格式错误，请检查 Agent 的修改");
@@ -1478,7 +1776,9 @@
       if (!backup?.state) throw Error("未找到本机备份");
       const disk = await fetchDiskDocument();
       C.validate(backup.state);
-      const merged = C.mergeDocuments(backup.baseline || baseline, backup.state, disk);
+      const useV2 = schemaEnabled || state.schemaVersion === 2 || backup.state.schemaVersion === 2 || disk.schemaVersion === 2;
+      const [before, ours, theirs] = await Promise.all([backup.baseline || baseline, backup.state, disk].map(doc => materialize(doc, useV2)));
+      const merged = C.mergeDocuments(before, ours, theirs);
       const apply = () => {
         checkpoint();
         try {
@@ -1540,13 +1840,22 @@
     if (agentBusy) status("Agent 正在修改", "busy");
     else if (wasBusy) {
       if (data.error) notice("任务未完成，可在当前 Agent 中查看详情。");
-      reloadFromDisk(false, { targetIds: previousTargets.length ? previousTargets : null });
+      if (!data.previewManaged) reloadFromDisk(false, { targetIds: previousTargets.length ? previousTargets : null });
     }
     document.querySelectorAll("#add-board,#add-shape,#add-note,#add-component,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = agentBusy || readOnly);
     renderInspector();
   }
+  // Transient surfaces own the interaction until dismissed. Keep selection itself
+  // intact, but never let its toolbar reappear behind a menu during a render.
+  function setFloatingPanel(selector, open) {
+    if (open) {
+      for (const other of floatingPanels) if (other !== selector) $(other).hidden = true;
+    }
+    $(selector).hidden = !open;
+    positionSelectionTools();
+  }
   function placeFloating(element, x, y) {
-    element.hidden = false;
+    setFloatingPanel("#" + element.id, true);
     const w = element.offsetWidth, h = element.offsetHeight;
     element.style.left = Math.max(10, Math.min(innerWidth - w - 10, x)) + "px";
     element.style.top = Math.max(10, Math.min(innerHeight - h - 10, y)) + "px";
@@ -1554,7 +1863,7 @@
   function showMenu(items, x, y, invoker = document.activeElement) {
     if (!invoker || invoker === document.body) invoker = stage;
     closePalette();
-    $("#property-popover").hidden = true;
+    setFloatingPanel("#property-popover", false);
     const menu = $("#context-menu");
     menu.replaceChildren();
     menuInvoker = invoker;
@@ -1609,7 +1918,7 @@
   $("#ask-agent").onclick = focusAgent;
   $("#empty-agent").onclick = focusAgent;
   $("#close-properties").onclick = () => {
-    $("#property-popover").hidden = true;
+    setFloatingPanel("#property-popover", false);
     stage.focus();
   };
   $("#notice-dismiss").onclick = () => $("#notice").hidden = true;
@@ -1617,30 +1926,46 @@
     finishText();
     exitInteraction();
     setTool(button.dataset.tool);
-    $("#property-popover").hidden = true;
+    setFloatingPanel("#property-popover", false);
   });
+  function openNodeMenu(el, clientX, clientY, { includeBoardAdd = false } = {}) {
+    if (!el) return;
+    if (!selected.has(el.dataset.id)) {
+      selected = /* @__PURE__ */ new Set([el.dataset.id]);
+      groupContext = null;
+    }
+    render();
+    const { primary, more } = contextActions();
+    const items = [...primary];
+    if (primary.length && more.length) items.push({ divider: true });
+    items.push(...more);
+    const board = state.nodes.find((n) => n.id === el.dataset.id && n.type === "board");
+    if (includeBoardAdd && board && !effectiveLocked(board) && canEdit()) {
+      const at = point(clientX, clientY);
+      items.push({ divider: true }, { heading: "添加到此画板" }, ...creationActions(at).filter((a) => ["add-text", "add-note", "add-rect", "add-ellipse", "add-image"].includes(a.id)));
+    }
+    showMenu(items, clientX, clientY);
+  }
   stage.addEventListener("contextmenu", (e) => {
     if (e.target.isContentEditable || e.target.closest("#property-popover,#selection-tools,.floating")) return;
     e.preventDefault();
     finishText();
-    exitInteraction();
+    if (annotationBoardId) {
+      exitBoardAnnotation();
+      return;
+    }
     const el = e.target.closest(".node");
+    const boardNode = el ? state.nodes.find((n) => n.id === el.dataset.id && n.type === "board" && el.querySelector("iframe")) : null;
+    if (boardNode && !e.target.closest(".node-title") && !readOnly && canEdit() && !effectiveLocked(boardNode)) {
+      const includeBoardAdd = !e.target.closest(".node-title");
+      handleBoardContextMenu(boardNode.id, e.clientX, e.clientY, () => {
+        openNodeMenu(el, e.clientX, e.clientY, { includeBoardAdd });
+      });
+      return;
+    }
+    exitInteraction();
     if (el) {
-      if (!selected.has(el.dataset.id)) {
-        selected = /* @__PURE__ */ new Set([el.dataset.id]);
-        groupContext = null;
-      }
-      render();
-      const { primary, more } = contextActions();
-      const items = [...primary];
-      if (primary.length && more.length) items.push({ divider: true });
-      items.push(...more);
-      const board = state.nodes.find((n) => n.id === el.dataset.id && n.type === "board");
-      if (board && !e.target.closest(".node-title") && !effectiveLocked(board) && canEdit()) {
-        const at = point(e.clientX, e.clientY);
-        items.push({ divider: true }, { heading: "添加到此画板" }, ...creationActions(at).filter((a) => ["add-text", "add-note", "add-rect", "add-ellipse", "add-image"].includes(a.id)));
-      }
-      showMenu(items, e.clientX, e.clientY);
+      openNodeMenu(el, e.clientX, e.clientY, { includeBoardAdd: false });
     } else {
       selected.clear();
       groupContext = null;
@@ -1658,8 +1983,8 @@
     }
   });
   document.addEventListener("pointerdown", (e) => {
-    if (!e.target.closest("#context-menu") && !e.target.closest("[aria-haspopup=menu]") && !e.target.closest("#command-palette")) $("#context-menu").hidden = true;
-    if (!e.target.closest("#property-popover") && !e.target.closest("#selection-tools")) $("#property-popover").hidden = true;
+    if (!e.target.closest("#context-menu") && !e.target.closest("[aria-haspopup=menu]") && !e.target.closest("#command-palette")) setFloatingPanel("#context-menu", false);
+    if (!e.target.closest("#property-popover") && !e.target.closest("#selection-tools")) setFloatingPanel("#property-popover", false);
   });
   $("#context-menu").addEventListener("keydown", (e) => {
     const buttons = [...$("#context-menu").querySelectorAll("button:not(:disabled)")], index = buttons.indexOf(document.activeElement);
@@ -1672,7 +1997,7 @@
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
-      $("#context-menu").hidden = true;
+      setFloatingPanel("#context-menu", false);
       menuInvoker?.focus?.();
     }
   });
@@ -1680,6 +2005,7 @@
     const list = [];
     const push = (label, icon, shortcut, run, id) => list.push({ id: id || "cmd-" + label, label, icon, shortcut, run });
     for (const action of creationActions(null).filter((a) => a.id !== "add-image" && !a.disabled)) push(action.label, action.icon, "", action.run, action.id);
+    if (canEdit()) push("连接对象", "waypoints", "L", () => setTool("connect"), "connect");
     if (canEdit()) push("插入图片", "image-plus", "", () => $("#image-input").click());
     push("撤销", "undo-2", "⌘ Z", () => undo());
     push("重做", "redo-2", "⌘ ⇧ Z", () => undo(true));
@@ -1731,7 +2057,7 @@
     item?.run(null, $("#selection-tools").getBoundingClientRect());
   }
   function openPalette() {
-    $("#command-palette").hidden = false;
+    setFloatingPanel("#command-palette", true);
     paletteIndex = 0;
     $("#command-input").value = "";
     renderPalette();
@@ -1739,7 +2065,7 @@
   }
   function closePalette() {
     if ($("#command-palette").hidden) return;
-    $("#command-palette").hidden = true;
+    setFloatingPanel("#command-palette", false);
     stage.focus();
   }
   $("#command-input").addEventListener("input", () => {
@@ -1775,7 +2101,7 @@
   }
   function positionSelectionTools() {
     const box = $("#selection-tools");
-    if (!current().length || editing || gesture || interacting) {
+    if (!current().length || editing || gesture || interacting || floatingPanels.some((selector) => !$(selector).hidden)) {
       box.hidden = true;
       return;
     }
@@ -1834,7 +2160,8 @@
   };
   function setTool(value) {
     tool = value;
-    stage.classList.remove("tool-select", "tool-hand", "tool-text", "tool-rect", "tool-ellipse", "tool-board");
+    connections?.setTool(value);
+    stage.classList.remove("tool-select", "tool-hand", "tool-text", "tool-rect", "tool-ellipse", "tool-board", "tool-connect");
     stage.classList.add("tool-" + value);
     document.querySelectorAll("[data-tool]").forEach((b) => {
       b.classList.toggle("active", b.dataset.tool === value);
@@ -1866,8 +2193,9 @@
     }
     state.nodes.forEach(visit);
   }
-  async function reloadFromDisk(discard = false, { targetIds = null } = {}) {
-    if (!local || agentBusy || agentPending) return false;
+  async function reloadFromDisk(discard = false, { targetIds = null, previewSync = false, snapshotUrl = null } = {}) {
+    if (!local || (!previewSync && (agentBusy || agentPending))) return false;
+    if (previewSync && (editing || dirty || saving)) return false;
     if (saving) await savePromise;
     if (editing || dirty) {
       if (!discard) {
@@ -1877,13 +2205,21 @@
       finishText();
     }
     try {
-      const next = await fetchDiskDocument();
+      const next = await fetchDiskDocument(snapshotUrl);
+      if (previewSync && (editing || dirty || saving)) return false;
       const viewport = clone(state.viewport), previousIds = new Set(state.nodes.map((n) => n.id));
-      state = next;
+      if (previewSync && snapshotUrl) {
+        for (const node of next.nodes) {
+          if (node.type === "board" && /^boards\/[a-zA-Z0-9_-]+\/index\.html$/.test(node.src || "") && !state.nodes.some(n => n.id === node.id && n.src === node.src)) {
+            boardPreviewUrls.set(node.id, new URL(node.src, new URL(snapshotUrl, location.href)).href);
+          }
+        }
+      }
+      state = materialize(next, schemaEnabled || state.schemaVersion === 2);
       baseline = clone(next);
       state.viewport = viewport;
       selected = new Set([...selected].filter((id) => state.nodes.some((n) => n.id === id)));
-      if (!selected.size) {
+      if (!previewSync && !selected.size) {
         const added = state.nodes.filter((n) => !previousIds.has(n.id));
         if (added.length) selected = new Set(C.roots(state.nodes, added.map((n) => n.id)).map((n) => n.id));
       }
@@ -1904,7 +2240,7 @@
           }
         }
       } else state.nodes.filter((n) => n.type === "board").forEach((n) => refreshed.add(n.id));
-      for (const id of refreshed) boardStamps.set(id, Date.now());
+      if (!previewSync) for (const id of refreshed) boardStamps.set(id, Date.now());
       panelKey = "";
       render();
       status("已同步");
@@ -1919,6 +2255,44 @@
       notice(error.message, [{ label: "重试", run: () => reloadFromDisk(discard) }]);
       return false;
     }
+  }
+  async function refreshBoards(boardIds, { snapshotUrl = null } = {}) {
+    if (dirty || editing || saving) return false;
+    const ids = boardIds == null ? state.nodes.filter(n => n.type === "board").map(n => n.id) : Array.isArray(boardIds) ? state.nodes.filter(n => n.type === "board" && (boardIds.includes(n.id) || boardIds.includes((n.src || "").split("/")[1]))).map(n => n.id) : null;
+    if (!Array.isArray(ids)) return false;
+    let ok = true;
+    for (const id of ids) {
+      const node = state.nodes.find(n => n.id === id && n.type === "board");
+      if (!node || !/^boards\/[a-zA-Z0-9_-]+\/index\.html$/.test(node.src || "")) continue;
+      const old = nodeEls.get(id)?.querySelector("iframe");
+      const url = snapshotUrl ? new URL(node.src, new URL(snapshotUrl, location.href)).href : node.src;
+      if (old) {
+        const next = old.cloneNode(false);
+        next.loading = "eager";
+        Object.assign(next.style, { position: "absolute", inset: "0", opacity: "0", pointerEvents: "none" });
+        const loaded = await new Promise(resolve => {
+          const timer = setTimeout(() => resolve(false), 5000);
+          next.onload = () => {
+            clearTimeout(timer);
+            try { const body = next.contentDocument?.body; resolve(Boolean(body && (body.innerText.trim() || body.querySelector("img,svg,canvas,iframe,input,button")))); }
+            catch { resolve(false); }
+          };
+          next.onerror = () => { clearTimeout(timer); resolve(false); };
+          old.after(next); next.src = url + (url.includes("?") ? "&" : "?") + "canvas=" + Date.now();
+        });
+        if (!loaded || dirty || editing || saving || !old.isConnected) { next.remove(); ok = false; continue; }
+        next.onload = next.onerror = null;
+        // The replacement keeps the same Escape/annotation behavior as an original board.
+        next.addEventListener("load", () => attachBoardFrameEvents(id, next));
+        attachBoardFrameEvents(id, next);
+        old.replaceWith(next); next.removeAttribute("style");
+      }
+      if (snapshotUrl) boardPreviewUrls.set(id, url); else boardPreviewUrls.delete(id);
+      // Mark the rendered signature without rerendering unrelated boards.
+      const el = nodeEls.get(id);
+      if (el) el.dataset.signature = JSON.stringify([node.type, "", node.src, boardPreviewUrls.get(id) || "", boardStamps.get(id) || 0]);
+    }
+    return ok;
   }
   function updateFullscreen() {
     const active = Boolean(document.fullscreenElement) || fullscreenFallback;
@@ -2005,6 +2379,23 @@
       updateFullscreen();
     }
   });
+  // Inspector events born inside the annotated board frame are relayed to the
+  // Portal with the board identity attached; only the currently annotated
+  // same-origin board frame may speak, never other boards or the editor itself.
+  window.addEventListener("message", (e) => {
+    if (e.origin !== location.origin) return;
+    const data = e.data || {};
+    if (e.source === parent && data.type === "prota:canvas-annotation-exit") {
+      exitBoardAnnotation();
+      return;
+    }
+    if (parent === window || !annotationBoardId) return;
+    if (!["readify:element-hover", "readify:element-hover-clear", "readify:element-selected"].includes(data.type)) return;
+    const frame = annotationFrameEl || nodeEls.get(annotationBoardId)?.querySelector("iframe");
+    if (!frame || e.source !== frame.contentWindow) return;
+    const node = state.nodes.find((n) => n.id === annotationBoardId);
+    parent.postMessage({ ...data, protaBoardId: boardFolderOf(node), protaBoardPath: node?.src || "", protaAnnotationNodeId: annotationBoardId }, location.origin);
+  });
   window.addEventListener("beforeunload", (e) => {
     if (dirty && !readOnly) {
       e.preventDefault();
@@ -2040,7 +2431,7 @@
   }
   try {
     const draft = JSON.parse(localStorage.getItem(draftKey) || "null");
-    if (draft && !readOnly && JSON.stringify(draft.state.nodes) !== JSON.stringify(state.nodes)) notice("找到未保存的本机修改。", [{ label: "恢复修改", primary: true, run: () => {
+    if (draft && !readOnly && JSON.stringify(draft.state.nodes) !== JSON.stringify(state.nodes)) notice("找到未保存的本机修改。", [{ label: "恢复修改", primary: true, run: async () => {
       C.validate(draft.state);
       if (JSON.stringify(draft.baseline) !== JSON.stringify(window.PROTA_CANVAS)) {
         try {
@@ -2053,7 +2444,7 @@
         return;
       }
       checkpoint();
-      state = draft.state;
+      state = materialize(draft.state, schemaEnabled || state.schemaVersion === 2);
       baseline = draft.baseline;
       conflict = false;
       changed();
@@ -2068,12 +2459,40 @@
     $("#empty p").textContent = "布局文件格式有误。原文件已保留，请检查或从备份恢复。";
     notice(startupError.message, [{ label: "刷新重试", run: () => location.reload() }]);
   }
+  connections = window.CanvasConnections.install({
+    state: () => state, canEdit, focus: ids => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), tool: () => tool, panning: () => space || tool === "hand",
+    mutate: fn => mutate(() => fn(state)), setTool,
+    clearSelection: () => { selected.clear(); finishText(); exitInteraction(); renderInspector(); updateSelectionFrame(); },
+  });
   render();
-  if (!restoredView && !readOnly && state.nodes.length) fit();
+  if (!restoredView && !readOnly && state.nodes.length) {
+    const initial = state.nodes.filter(n => (state.initialFocusNodeIds || []).includes(n.id));
+    fit(initial.length ? initial : state.nodes, {align: state.focusAlignment || "center"});
+  }
   if (!local) status(readOnly ? "只读分享" : "已暂存在当前浏览器");
-  window.protaCanvas = { runtimeVersion: 4, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, fit, reloadFromDisk, agentState, setPreparing(value) {
+  function getBoardFrame(id) {
+    const node = state.nodes.find((n) => n.type === "board" && (n.id === id || boardFolderOf(n) === id));
+    if (!node) return null;
+    const iframe = nodeEls.get(node.id)?.querySelector("iframe") || null;
+    return { boardId: boardFolderOf(node), boardPath: node.src || "", nodeId: node.id, iframe };
+  }
+  window.protaCanvas = { runtimeVersion: 8, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
     agentPending = Boolean(value);
     panelKey = "";
     renderInspector();
   } };
+  window.protaCanvasSchemaReady = (async () => {
+    if (!local || startupError) return;
+    try {
+      const response = await fetch("/api/canvas/features", { cache: "no-store", signal: AbortSignal.timeout(2000) });
+      if (!response.ok || (await response.json()).canvasSchemaV2 !== true) return;
+      const prepared = materialize(state, true);
+      const past = history.map(doc => materialize(doc, true)), next = future.map(doc => materialize(doc, true));
+      state = prepared; history = past; future = next; schemaEnabled = true;
+      render();
+    } catch (error) {
+      // Configuration unavailability falls back to v1; invalid migration never replaces state.
+      if (!(error instanceof TypeError) && error.name !== "TimeoutError") notice("画布迁移未应用：" + error.message);
+    }
+  })();
 })();

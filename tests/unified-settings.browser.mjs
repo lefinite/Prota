@@ -78,6 +78,8 @@ try {
     assert.equal(await page.locator('#globalSettingsBtn').getAttribute('aria-label'), '设置');
     assert.equal(await page.locator('#globalSettingsBtn svg').count(), 1);
     assert.equal(await page.locator('.us-sidebar nav button svg').count(), 4);
+    assert.equal(await page.locator('.us-nav-label small').count(), 0);
+    assert.equal(await page.locator('[name=shareSetup]').first().evaluate(node => getComputedStyle(node).opacity), '0');
     await page.locator('#usCurrentPath').filter({ hasText: source }).waitFor();
     assert.equal(await page.locator('.unified-settings [role=dialog]').count(), 1);
     await page.locator('[data-us-tab=sharing]').click();
@@ -97,10 +99,10 @@ try {
     await page.locator('[name=shareSetup][value=vercel]').check();
     assert.equal(await page.locator('#staticDomainInput').isVisible(), false);
     assert.equal(await page.locator('#gitAutoPushCheckbox').isChecked(), true);
-    await page.locator('#shareSettingsForm button[type=submit]').click();
+    await page.locator('#usShareActions button[type=submit]').click();
     await wait(async () => (await (await fetch(`${base}/api/settings`)).json()).shareMode === 'vercel', 'save automatic Vercel mode');
     assert.equal((await (await fetch(`${base}/api/settings`)).json()).staticDomain, '');
-    await wait(async () => await page.locator('#shareSettingsForm button[type=submit]').isEnabled(), 'share save completed');
+    await wait(async () => await page.locator('#usShareActions button[type=submit]').isEnabled(), 'share save completed');
     assert.deepEqual(await page.locator('.us-window').boundingBox(), settingsBounds, 'save feedback keeps window fixed');
     assert.deepEqual(await page.locator('.us-heading').boundingBox(), headingBounds, 'save feedback keeps heading fixed');
     await page.locator('.us-window').screenshot({ animations: 'disabled', path: '/tmp/prota-settings-sharing.png' });
@@ -162,9 +164,13 @@ try {
     await page.locator('[data-vc-badge]').filter({hasText:'已生效'}).waitFor();
     assert.match(await page.locator('[data-vc-account]').innerText(), /已授权.*sample-user/);
     assert.equal(await page.locator('[data-vc-address]').getAttribute('href'), 'https://ready.vercel.app');
+    assert.equal(await page.locator('#vercelAutoConfigBtn').isVisible(), false);
     await page.locator('.us-window').screenshot({animations:'disabled',path:'/tmp/prota-settings-vercel-active.png'});
     await page.locator('[name=shareSetup][value=custom]').check();
     assert.equal(await page.locator('[data-vc-badge]').innerText(), '待应用');
+    assert.equal(await page.locator('[data-custom-requirements]').isVisible(), true);
+    assert.equal(await page.locator('#vercelAutoConfigBtn').innerText(), '绑定并验证域名');
+    assert.match(await page.locator('[data-vc-summary-message]').innerText(), /账号授权可继续使用/);
     assert.match(await page.locator('[data-vc-effective]').innerText(), /当前选择尚未应用/);
     await page.locator('[name=shareSetup][value=vercel]').check();
     await page.locator('.us-close').click();
@@ -185,6 +191,7 @@ try {
     await page.locator('[data-us-tab=models]').click();
     await page.locator('.provider-advanced summary').click();
     await page.locator('#agentProviderNameInput').fill('已修改的测试模型');
+    assert.match(await page.locator('#usEditStatus').innerText(), /未保存/);
     await page.locator('#agentSaveProviderBtn').click();
     await wait(async () => !await page.locator('[data-us-tab=models]').evaluate(node => node.classList.contains('is-dirty')), 'model save');
     assert.equal(JSON.parse(await fs.readFile(path.join(config, 'agent-provider-config.json'), 'utf8')).providers[0].label, '已修改的测试模型');
@@ -229,6 +236,11 @@ try {
             await page.locator(`[data-us-tab=${panel}]`).click();
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `overflow at ${width} in ${panel}`);
             assert.equal(await page.locator('.us-body').evaluate(node => node.scrollWidth > node.clientWidth + 1), false, `settings overflow at ${width} in ${panel}`);
+            if (panel !== 'storage') {
+                const action = page.locator(panel === 'models' ? '#agentSaveProviderBtn' : '#usShareActions button[type=submit]');
+                const box = await action.boundingBox();
+                assert.ok(box && box.y >= 0 && box.y + box.height <= 844, 'save action remains visible');
+            }
             if (width === 390) await page.locator('.us-window').screenshot({animations: 'disabled', path: `/tmp/prota-settings-${panel}-mobile.png`});
         }
         await page.locator('[data-us-tab=storage]').click();
@@ -236,7 +248,7 @@ try {
     await page.setViewportSize({ width: 1440, height: 1000 });
     assert.equal(await page.locator('.us-storage-details').count(), 0);
     await page.locator('.us-window').screenshot({animations: 'disabled', path: '/tmp/prota-settings-storage-simple.png'});
-    assert.deepEqual(await page.locator('.us-path-buttons button').allTextContents(), ['迁移到', '更改']);
+    assert.deepEqual(await page.locator('.us-storage-actions button').allTextContents(), ['切换文件夹', '迁移内容']);
     const occupied = path.join(temporary, 'occupied');
     await fs.mkdir(occupied);
     await fs.writeFile(path.join(occupied, '.hidden'), 'keep');

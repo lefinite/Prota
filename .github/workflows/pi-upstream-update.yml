@@ -1,0 +1,114 @@
+name: Propose tested Pi release upgrade
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.release.outputs.available }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/update-pi.mjs --check --output "$RUNNER_TEMP/pi-release.json"
+          node --input-type=module -e 'import fs from "node:fs"; const r=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/pi-release.json")); fs.appendFileSync(process.env.GITHUB_OUTPUT, `available=${r.available}\ntag=${r.tag}\n`);'
+      - if: steps.release.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PI_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          node scripts/update-pi.mjs --tag "$PI_TAG" --output "$RUNNER_TEMP/pi-upgrade.json"
+          git diff --binary HEAD -- pi-version.json vendor/pi > "$RUNNER_TEMP/pi-upgrade.patch"
+      - if: steps.release.outputs.available == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: pi-upgrade-source
+          path: |
+            ${{ runner.temp }}/pi-upgrade.patch
+            ${{ runner.temp }}/pi-upgrade.json
+  validate:
+    needs: discover
+    if: needs.discover.outputs.available == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v6
+        with:
+          name: pi-upgrade-source
+          path: pi-upgrade-input
+      - run: git apply --index pi-upgrade-input/pi-upgrade.patch
+      - run: git submodule update --init --recursive
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run pi:build
+      - run: npm run pi:verify
+      - run: npm run agent:test
+      - run: node --test tests/desktop-launcher.test.mjs tests/runtime-archive.test.mjs
+  propose:
+    needs: [discover, validate]
+    if: needs.discover.outputs.available == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v6
+        with:
+          name: pi-upgrade-source
+          path: pi-upgrade-input
+      - name: Create a draft upgrade PR after all platform checks succeed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PI_TAG: ${{ needs.discover.outputs.tag }}
+        run: |
+          branch="codex/pi-upgrade-$PI_TAG"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "An upgrade branch already exists; preserving its review state." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git switch -c "$branch"
+          git apply --index pi-upgrade-input/pi-upgrade.patch
+          git submodule update --init --recursive
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pi-version.json vendor/pi
+          git commit -m "chore: upgrade Pi to $PI_TAG"
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('pi-upgrade-input/pi-upgrade.json'));
+          fs.writeFileSync('pi-upgrade-input/body.md', [
+            `Upgrade Pi ${r.oldVersion} to ${r.version}.`,
+            `Upstream commit: ${r.commit}`, `Release: ${r.releaseUrl}`, '', r.releaseSummary, '',
+            'Validation: source build, runtime integrity, RPC/Extension contracts, native Session recovery, Gateway HTTP/SSE, permissions, checkpoint/rollback, model switching and launcher unit tests passed on macOS, Windows and Linux.', '',
+            'Review required: upstream RPC and Extension API changes; real Provider connections, image/reasoning behavior, full prototype/canvas/PRD generation, clean desktop installation and visual quality remain manual release gates. No real Provider success is claimed by these local deterministic-endpoint tests.'
+          ].join('\n\n'));
+          JS
+          git push -u origin "$branch"
+          gh pr create --draft --head "$branch" --title "Upgrade Pi to $PI_TAG" --body-file pi-upgrade-input/body.md

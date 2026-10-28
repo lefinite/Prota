@@ -1,7 +1,8 @@
 /**
- * Optional Prota bridge for @codeany/open-agent-sdk features that cannot be
- * represented as JSON in the UI, such as custom ToolDefinition handlers,
- * SDK MCP servers, hooks, subagents, and canUseTool callbacks.
+ * Legacy configuration entry point retained for existing Prota installs.
+ * JSON options and MCP servers are translated by the Pi adapter. Custom tool
+ * handlers, hooks and permission callbacks must use the official Pi Extension
+ * API in integrations/pi/prota-extension.ts.
  */
 
 export const options = {};
@@ -21,6 +22,7 @@ export const hooks = {};
 export async function canUseTool() {
     return null;
 }
+canUseTool.protaPlaceholder = true;
 
 export default {
     options,

@@ -1,4 +1,4 @@
 interface:
   display_name: "生成业务 PRD"
   short_description: "结合原型、标注和功能截图，以最少文字生成清晰的中文图文 PRD"
-  default_prompt: "使用 $generate-business-prd，综合当前需求、原型源码和标注，逐功能截取真实状态，沿用现有格式生成简洁中文图文 PRD，以具体需求命名文档，只写本次变化和影响实现的必要规则；简单需求直接讲清，交互与状态补充、Mermaid 流程图均按需提供。"
+  default_prompt: "使用 $generate-business-prd，综合当前需求、原型源码和标注，逐功能截取真实状态，沿用现有格式生成简洁中文图文 PRD，以具体需求命名文档，在概览中用一句话说明整个需求，各功能只配截图和必要的业务逻辑规则，不重复需求说明，不描述界面和交互，Mermaid 流程图按需提供。"
