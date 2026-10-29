@@ -3,6 +3,7 @@ import http.server
 import socketserver
 import urllib.parse
 import subprocess
+import shutil
 import os
 import json
 import re
@@ -714,7 +715,7 @@ def list_prd_documents(root, project_id, page_id, version):
             documents.append({
                 **metadata,
                 'path': rel_path, 'filename': filename, 'label': filename,
-                'prototypeVersion': metadata.get('prototypeVersion') or prototype_version,
+                'prototypeVersion': metadata.get('prototypeVersion', prototype_version),
                 'revision': metadata.get('revision'), 'derivedFrom': metadata.get('derivedFrom'),
                 'updatedAt': datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
                 'updatedAtMs': stat.st_mtime * 1000, 'size': stat.st_size
@@ -1196,13 +1197,25 @@ def resolve_share_version_dir(root, project_id, page_id, version):
 def read_share_prd(root, project_id, page_id, version, requested_path=''):
     documents = list_prd_documents(root, project_id, page_id, version)
     candidates = []
-    if requested_path:
+    # Use this prototype's associations before unrelated reading history.
+    # Template READMEs remain available but come last among associated files.
+    associated = [doc['path'] for doc in sorted(documents, key=lambda doc: str(doc.get('filename') or '').lower() == 'readme.md')
+                  if doc.get('prototypeVersion') == version]
+    preferred_paths = ([requested_path] if requested_path in associated else []) + associated + [
+        requested_path, read_prd_index(root, project_id, page_id).get('lastOpenedPath', '')]
+    for preferred_path in preferred_paths:
+        if not preferred_path:
+            continue
         try:
-            document_path, filename = resolve_prd_document_path(root, project_id, page_id, version, requested_path)
+            document_path, filename = resolve_prd_document_path(root, project_id, page_id, version, preferred_path)
             candidates.append((document_path, filename))
         except ValueError:
             pass
-    for document in documents:
+    ranked_documents = sorted(documents, key=lambda doc: (
+        str(doc.get('filename') or '').lower() == 'readme.md',
+        doc.get('prototypeVersion') != version,
+    ))
+    for document in ranked_documents:
         try:
             document_path, filename = resolve_prd_document_path(root, project_id, page_id, version, document.get('path') or '')
             candidates.append((document_path, filename))
@@ -2307,7 +2320,23 @@ def build_share_page_html(share_data):
 
 
 import hashlib
-_PRODUCT_BUILD = hashlib.sha256(b''.join((workspace.APP_ROOT / file).read_bytes() for file in ['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py', 'server/share_security.py', 'server/share_gateway.mjs', 'server/share_gate_page.mjs', 'server/share_manager.py'])).hexdigest()
+
+# 指纹必须覆盖 bridge 进程会加载的全部 Python 模块；只列 bridge.py 会让
+# canvas_store 等模块更新后仍被启动器视为最新，旧代码继续驻留内存。
+def _product_build():
+    digest = hashlib.sha256()
+    names = sorted(
+        path.relative_to(workspace.APP_ROOT).as_posix()
+        for path in (workspace.APP_ROOT / 'server').rglob('*.py')
+        if path.is_file() and '__pycache__' not in path.parts
+    )
+    for name in names:
+        digest.update(name.encode('utf-8'))
+        digest.update(b'\0')
+        digest.update((workspace.APP_ROOT / name).read_bytes())
+    return digest.hexdigest()
+
+_PRODUCT_BUILD = _product_build()
 
 
 class BridgeHandler(http.server.SimpleHTTPRequestHandler):
@@ -2482,7 +2511,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
         if clean_path == '/api/preview/config':
             from server.preview_http import configuration
             return configuration(self, workspace, update=True)
-        if clean_path in {'/api/boards/versions/create', '/api/boards/versions/restore', '/api/boards/transactions/recover'}:
+        if clean_path in {'/api/boards/versions/create', '/api/boards/versions/restore', '/api/boards/versions/manage', '/api/boards/transactions/recover'}:
             from server.board_http import mutate
             return mutate(self, workspace)
         if clean_path in {'/api/canvas/save', '/api/canvas/upgrade'}:
@@ -2565,6 +2594,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_iterate()
         elif self.path.startswith('/api/create-project'):
             self.handle_create_project()
+        elif self.path.startswith('/api/create-page'):
+            self.handle_create_page()
         elif self.path.startswith('/api/delete-project'):
             self.handle_delete_project()
         elif self.path.startswith('/api/force-delete-project'):
@@ -2601,6 +2632,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_prd_doc_save()
         elif self.path.split('?')[0] == '/api/prd-doc/create':
             self.handle_prd_doc_create()
+        elif self.path.split('?')[0] == '/api/prd-doc/binding':
+            self.handle_prd_doc_binding()
         elif self.path.split('?')[0] == '/api/prd-doc/delete':
             self.handle_prd_doc_delete()
         elif self.path.split('?')[0] == '/api/drawio-diagram':
@@ -2620,7 +2653,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path.startswith('/api/sync'):
             self.handle_sync()
         else:
-            super().do_POST()
+            return self.workspace_reply(404, {'error': '接口不存在，请重新打开 Prota 后重试。'})
 
     def handle_create_project(self):
         content_length = int(self.headers['Content-Length'])
@@ -2679,6 +2712,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
+            self.send_header('Cache-Control', 'no-store')
             self.end_headers()
             response = {
                 "status": "success",
@@ -2691,6 +2725,89 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write(f"Server error: {str(e)}".encode('utf-8'))
+
+    def handle_create_page(self):
+        """Create a page version directly from a built-in template, skipping the agent."""
+        try:
+            content_length = int(self.headers['Content-Length'])
+            params = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            project_id = normalize_safe_segment(params.get('projectId')).lower()
+            page_name = str(params.get('pageName') or '').strip()
+            template = normalize_safe_segment(params.get('template') or 'infinite-canvas')
+
+            if not project_id:
+                return self.workspace_reply(400, {'error': '缺少有效的 projectId。'})
+            if template != 'infinite-canvas':
+                return self.workspace_reply(400, {'error': '暂不支持该模板的快捷创建。'})
+
+            root = get_project_root()
+            template_dir = os.path.join(get_application_root(), 'src', 'templates', template)
+            if not os.path.isdir(template_dir):
+                return self.workspace_reply(500, {'error': '产品模板缺失，请重新安装后重试。'})
+
+            json_path = os.path.join(root, 'data', 'projects.json')
+            data = {}
+            if os.path.isfile(json_path):
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                except Exception:
+                    data = {}
+            project = next(
+                (p for p in data.get('projects', []) if p.get('id') == project_id and not p.get('deleted')),
+                None
+            )
+            if not project:
+                return self.workspace_reply(404, {'error': '项目不存在或已删除。'})
+
+            taken_ids = {p.get('id') for p in project.get('pages', [])}
+            pages_dir = os.path.join(root, 'src', 'pages', project_id)
+            if os.path.isdir(pages_dir):
+                taken_ids.update(os.listdir(pages_dir))
+            index = 1
+            while f'canvas-{index}' in taken_ids:
+                index += 1
+            page_id = f'canvas-{index}'
+
+            version_dir = os.path.join(pages_dir, page_id, 'v1')
+            if os.path.exists(version_dir):
+                return self.workspace_reply(409, {'error': f'页面目录 {page_id}/v1 已存在。'})
+            os.makedirs(os.path.dirname(version_dir), exist_ok=True)
+            shutil.copytree(template_dir, version_dir)
+
+            existing_orders = [
+                p.get('order', 0)
+                for p in project.get('pages', [])
+                if isinstance(p.get('order', 0), (int, float)) and p.get('order', 0) > 0
+            ]
+            project.setdefault('pages', []).append({
+                'id': page_id,
+                'name': page_name or page_id,
+                'parentId': None,
+                'order': (max(existing_orders) if existing_orders else 0) + 1000,
+                'targetDevice': 'canvas',
+                'pageMode': 'infinite-canvas',
+                'versions': ['v1'],
+                'activeVersion': 'v1',
+                'deleted': False,
+                'deletedAt': None,
+                'versionStates': {'v1': {'deleted': False, 'deletedAt': None}}
+            })
+
+            os.makedirs(os.path.dirname(json_path), exist_ok=True)
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+            synced = sync_projects()
+            return self.workspace_reply(200, {
+                'status': 'success',
+                'projectId': project_id,
+                'pageId': page_id,
+                'version': 'v1',
+                'projects': synced
+            })
+        except (ValueError, OSError) as error:
+            return self.workspace_reply(500, {'error': f'创建空白画布失败：{error}'})
 
     def handle_delete_project(self):
         content_length = int(self.headers['Content-Length'])
@@ -3626,9 +3743,21 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
             existing = next((doc for doc in list_prd_documents(root, project_id, page_id, version)
                              if doc['path'] == '/' + os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), '/')), None)
+            if 'expectedContent' in params:
+                if not os.path.isfile(document_path):
+                    return self.workspace_reply(409, {'error': '原文档已删除，请先合并最新内容'})
+                with open(document_path, 'r', encoding='utf-8') as current:
+                    if current.read() != params['expectedContent']:
+                        return self.workspace_reply(409, {'error': '原文档已被修改，请先合并最新内容'})
+            autosave = params.get('autosave') is True
+            if autosave:
+                from server.prd_autosave import record_manual, settle_manual
+                record_manual(prd_page_directory(root, project_id, page_id), version, document_path, content)
+            from server.canvas_transactions import atomic_bytes
             os.makedirs(os.path.dirname(document_path), exist_ok=True)
-            with open(document_path, 'w', encoding='utf-8', newline='\n') as f:
-                f.write(content)
+            atomic_bytes(document_path, content.encode('utf-8'))
+            if autosave:
+                settle_manual(prd_page_directory(root, project_id, page_id), version, document_path, content)
 
             stat = os.stat(document_path)
             relative_path = '/' + os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), '/')
@@ -3659,6 +3788,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'updatedAt': stat.st_mtime,
                 'documents': documents
             }
+            if autosave:
+                response['durable'] = True
             self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
         except ValueError as e:
             self.send_response(400)
@@ -3730,6 +3861,29 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write(f"Server error: {str(e)}".encode('utf-8'))
+
+    def handle_prd_doc_binding(self):
+        # Binding management belongs to the local editor, never a shared page.
+        referer = urllib.parse.urlparse(self.headers.get('Referer', '')).path
+        if not self.workspace_local() or referer.startswith('/shares/') or referer.endswith(('-static.html', '-public.html', '-local.html')):
+            return self.workspace_reply(403, {'error': '分享页面不支持修改文档关联。'})
+        try:
+            params = json.loads(self.rfile.read(int(self.headers.get('Content-Length', '0'))))
+            root = get_project_root()
+            project_id, page_id, version = params.get('projectId'), params.get('pageId'), params.get('version')
+            document_path, _ = resolve_prd_document_path(root, project_id, page_id, version, params.get('path') or '')
+            if not os.path.isfile(document_path):
+                raise ValueError('文档不存在，请刷新后重试。')
+            binding = params.get('prototypeVersion')
+            page = read_project_page(root, project_id, page_id) or {}
+            if binding is not None and (not isinstance(binding, str) or binding not in page.get('versions', [])
+                                        or page.get('versionStates', {}).get(binding, {}).get('deleted')):
+                raise ValueError('关联版本不可用，请刷新后重试。')
+            relative = '/' + os.path.relpath(os.path.realpath(document_path), os.path.realpath(root)).replace(chr(92), '/')
+            update_prd_index(root, project_id, page_id, relative, {'prototypeVersion': binding})
+            return self.workspace_reply(200, {'documents': list_prd_documents(root, project_id, page_id, version)})
+        except (ValueError, TypeError, AttributeError) as error:
+            return self.workspace_reply(400, {'error': str(error)})
 
     def handle_prd_doc_create(self):
         content_length = int(self.headers.get('Content-Length', '0'))
@@ -4110,15 +4264,12 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             # without the backend tunnel (prota.*) being up.
             extra_deploy_files = []
             if share_type == 'static':
-                try:
-                    zip_bytes = build_page_zip_bytes(root, project_id, page_id, version)
-                    zip_filename = f'{slugify_share_part(page_id)}-{version}-static.zip'
-                    with open(os.path.join(share_dir, zip_filename), 'wb') as zf:
-                        zf.write(zip_bytes)
-                    shell_share_data['zipFilename'] = zip_filename
-                    extra_deploy_files.append(os.path.relpath(os.path.join(share_dir, zip_filename), root))
-                except Exception as zip_err:
-                    print(f"Static share zip generation failed: {zip_err}")
+                zip_bytes = build_page_zip_bytes(root, project_id, page_id, version)
+                zip_filename = f'{slugify_share_part(page_id)}-{version}-static.zip'
+                with open(os.path.join(share_dir, zip_filename), 'wb') as zf:
+                    zf.write(zip_bytes)
+                shell_share_data['zipFilename'] = zip_filename
+                extra_deploy_files.append(os.path.relpath(os.path.join(share_dir, zip_filename), root))
 
             with open(share_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(build_share_page_html(shell_share_data))
@@ -4181,6 +4332,10 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
         project_id = params.get('projectId', 'readify')
         folder_id = params.get('folderId')
+        # Per-page version/document choices remembered in the sharer's browser
+        # (localStorage); take priority over persisted state when valid.
+        version_overrides = params.get('versionOverrides') if isinstance(params.get('versionOverrides'), dict) else {}
+        prd_overrides = params.get('prdOverrides') if isinstance(params.get('prdOverrides'), dict) else {}
         raw_share_type = str(params.get('shareType') or params.get('mode') or 'local').strip().lower()
         if raw_share_type == 'static':
             share_type = 'static'
@@ -4253,7 +4408,15 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 page_parent = page.get('parentId')
                 if not page_parent or page_parent not in descendant_folder_ids:
                     continue
-                version = page.get('activeVersion') or (page.get('versions') or [None])[0]
+                available_versions = [
+                    v for v in (page.get('versions') or [])
+                    if not (page.get('versionStates') or {}).get(v, {}).get('deleted')
+                ]
+                override_version = str(version_overrides.get(str(page.get('id'))) or '')
+                if override_version in available_versions:
+                    version = override_version
+                else:
+                    version = page.get('activeVersion') or (page.get('versions') or [None])[0]
                 if not version:
                     continue
                 version_states = page.get('versionStates') or {}
@@ -4265,7 +4428,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 except ValueError:
                     continue
                 annotations = read_share_annotations(version_dir)
-                prd = read_share_prd(root, project_id, page.get('id'), version, params.get('prdPath') or '')
+                prd = read_share_prd(root, project_id, page.get('id'), version,
+                                     prd_overrides.get(str(page.get('id'))) or params.get('prdPath') or '')
                 diagram = read_share_drawio(root, project_id, page.get('id'), version, params.get('diagramPath') or '')
                 mindmap = read_share_mindmap(root, project_id, page.get('id'), version, params.get('mindmapPath') or '')
                 pages_payload.append({
@@ -4314,6 +4478,13 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             share_dir = os.path.join(root, 'shares')
             os.makedirs(share_dir, exist_ok=True)
             share_path = os.path.join(share_dir, filename)
+            if share_type == 'static':
+                # Each navigation entry downloads its own selected page/version.
+                for page in pages_payload:
+                    zip_filename = f'{slugify_share_part(project_id)}-{slugify_share_part(folder_id)}-{page["id"]}-{page["version"]}-static.zip'
+                    zip_bytes = build_page_zip_bytes(root, project_id, page['id'], page['version'])
+                    (Path(share_dir) / zip_filename).write_bytes(zip_bytes)
+                    page['zipFilename'] = zip_filename
             with open(share_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(build_share_page_html(share_payload))
 
@@ -4748,6 +4919,11 @@ if __name__ == '__main__':
     class ReusableTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
 
+
+    from server.canvas_autosave import start_worker
+    start_worker(workspace.workspace_root, workspace.bridge_locked)
+    from server.prd_autosave import start_worker as start_prd_worker
+    start_prd_worker(workspace.workspace_root, workspace.bridge_locked)
 
     with ReusableTCPServer(("", PORT), BridgeHandler) as httpd:
         try:

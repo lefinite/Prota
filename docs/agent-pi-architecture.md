@@ -27,7 +27,15 @@
 
 `server/pi/event-adapter.mjs` 将流式文字、思考、工具调用/结果、压缩与交互映射为现有 SSE 事件形状。文字与思考通过稳定事件 ID 原位替换，并以最终消息校正；工具调用按原生 ID 去重。适配层不自行生成 Run 终态，Gateway 必须在 Runtime 完成、产物检查和文件变更处理后统一完成 Run。
 
+无限画布允许独立会话并行修改不同画板，默认进程容量为 4。画板 Agent 入口在运行中保持可用，优先打开处理所选画板的运行会话；页面内新建会话绑定当前页面。切换会话只断开前端订阅，后台任务继续运行，前端按会话和 AbortController 隔离迟到事件，并汇总后台任务的画板目标保护。
+
+运行中可继续标注，并通过 `POST /api/agent/session/:sessionId/steer` 追加文字、标注与 PRD 文本。Gateway 使用原生 `prompt` 的 `streamingBehavior: "steer"`，在当前步骤后交给同一 Pi 会话；不创建重复 Run 或检查点。Runtime 在追加消息的接受结果返回前保留原 Run 监听，覆盖前一轮恰好结束的边界。追加消息以 `user_followup` 保存到 Timeline，失败时保留输入与标注草稿。输入为空时发送按钮仍停止当前任务，审批和主动提问继续沿原入口处理。运行中图片和斜杠命令仍使用新会话或等待本轮结束。
+
 正式 Gateway 的任务执行与标题生成已经改为 Pi RPC，不再导入旧 SDK。HTTP/SSE 路由名称保持兼容。创建会话和读取历史不启动 Pi；需要执行任务或明确读取模型消息时才启动。`engineInfo` 与原 Prota Snapshot 一起保存，原生 Session 放在工作区 `data/pi-sessions/<Prota session ID>/`。
+
+命令层已改为 Prota 注册表 + Pi 原生命令的合并模型。`/tree`、`/fork`、`/clone`、`/rewind`、`/thinking`、`/auto-compact`、`/name`、`/usage`、`/export`、`/copy` 和 `/compact [要求]` 走 Pi Session/RPC；`/compact` 调用官方原生压缩并保留 Prota Timeline，不再用摘要事件覆盖业务历史。动态发现的 Pi 命令会过滤 Prota 内部命令、prompt/skill 来源、不安全名称以及与现有命令或别名冲突的项。未知 `/xxx` 在前端提示，后端 message API 同样拒绝，避免被当成普通 Prompt 发送。
+
+Fork 在所选原生用户消息前创建分支并把该消息放入输入框草稿；Clone 复制当前完整上下文。两者都会生成独立 Prota Snapshot 与原生 Session，并只复制能精确映射的 Timeline/检查点。`/rewind` 默认仅回溯对话，文件保持当前状态；选择恢复文件时必须先生成差异预览，再用 5 分钟有效的确认 token 执行。预览后任何文件状态变化都会要求重新预览。恢复成功后，源会话和分支会话都持久化 `workspaceNotice`，后续模型请求会收到“请读取实际文件”的上下文提示。
 
 旧 Snapshot 在首次读取、任何修改前保存到 `data/agent-sessions/legacy-backups/<ID>/snapshot.json`。迁移会尝试读取工作区匹配的旧 SDK transcript 并备份原始字节；对可验证的旧消息执行文本、图片和工具关联转换，通过扩展命令调用官方 `ctx.newSession({setup})` 与 Session Manager 写入；缺少的计量/时间元数据使用明确标注的默认值，不宣称补测。未知消息块、签名思考、孤立工具结果或未完成工具调用会保留原始数据并明确采用摘要恢复。转换结果通过原生迁移标记检测，支持 Snapshot 尚未保存时的幂等恢复。摘要恢复通过官方 `before_agent_start` 返回自定义上下文消息，并检查原生分支中是否已有相同 `customType`，避免重复注入。Snapshot 保存 `pending` / `converted` / `summary_recovered` / `failed` 状态与迁移版本。
 
@@ -54,6 +62,10 @@ Prota Extension 已实现逐轮任务策略、系统上下文、官方请求 pay
 `dontAsk` 采用“不询问，拒绝未授权高风险操作”的语义，Provider Adapter 返回兼容性提示，Gateway 必须展示；`plan` 明确保留现有 default 审批行为。
 
 MCP 使用 Pi 官方未修改的 MCP 扩展、stdio/streamable HTTP 传输和原生工具管线。Prota 只转换配置并强制 direct 工具模式，关闭隐式 codemode；只有本轮显式允许的 `mcp__server__tool` 或通配符工具可用，排除名单优先。MCP 操作默认审批，`acceptEdits` 不会自动授权外部调用；会话授权按工具类型匹配，绑定当前 Prota 会话和工作区；分叉会话重新审批，持久化记录不保存参数原文。环境变量、请求头及 OAuth clientSecret 转为专属环境引用，不写入运行时 mcp.json；旧 SSE 传输、命令式凭证和未知字段明确报错。OAuth 登录 UI 尚未验证。
+
+`/mcp` 展示每个 namespace 的 configured / enabled / connected / tools / allowedTools / approval 状态；`/mcp enable|disable 名称` 只切换当前会话级启用状态。未显式 `enabled: true` 的 namespace 不加入默认工具白名单；启用的 namespace 也仍受本轮工具交集、deny 列表、available tools 和审批模式约束。
+
+Provider 连接测试使用与运行时一致的协议适配，分别构造 Anthropic Messages、OpenAI Chat Completions、OpenAI Responses 和 Google Generative Language 请求。OpenAI 兼容端点保留已有数字版本段（如 `/v1`、`/v4`）；没有版本段时自动补 `/v1`，避免根地址测试误打到缺少版本的路径。
 
 Pi 内置资源默认排在文件扩展之后；因此通过文件路径加载其官方 MCP 工厂，保证 MCP direct 工具连接完成后再执行 Prota 策略 Hook，同时明确更新 `systemPromptOptions.selectedTools` 与活动工具集。该路径属于固定版本的兼容面，由原生集成测试覆盖升级检查。
 
@@ -83,6 +95,10 @@ npm run agent:test
 - 真实 Portal + Bridge + Gateway + Pi + Chromium：审批/主动提问等待时刷新，同一会话恢复、回答后继续、最终消息去重。allow_session 保持原产品按工具授权，并验证不同文件与分叉隔离。
 - 同 Provider RPC 模型切换；工作区、持久化选项、MCP、端点和完整模型目录变化时安全重建。
 - 已知 Provider/MCP 凭证在流式片段、工具结果、快照和历史中脱敏；空闲进程已被回收时仍从配置识别 MCP 凭证。此功能不构成操作系统沙箱。
+- 命令层与会话能力专项：原生 compact 后 Timeline 前缀保持不变，compact 指定重点进入模型请求；Fork/Clone/Rewind 保持独立语义，文件恢复必须经过新鲜预览与 token 确认；重启后恢复文件通知进入后续模型请求；四种 Provider 协议的连接测试端点一致；未知斜杠命令不会提交为普通 Prompt。
+- 取消生命周期专项：已接受的 Abort 会等待 Pi `agent_settled` 后再关闭该 Runtime，避免立即重试与原生工具收尾重叠；未接受 prompt 的 Abort 仍在确认后立即销毁不确定进程。
+
+2026-10-28 本次命令层改造完成后：`npm run agent:test` 81 项全部通过，`npm run pi:verify` 通过，真实 Portal + Bridge + Gateway + Pi + Chromium 的 `tests/pi-ui.browser.mjs` 通过。
 
 ### 真实 Provider 与业务生成
 
@@ -112,7 +128,7 @@ npm run agent:test
 
 macOS 已在隔离配置和无旧 SDK 的导出产品中运行真实 Prota.app 可执行入口，经 osascript/JXA 创建 Cocoa 准备窗口，验证首次产品依赖安装时窗口 visible、就绪后退出，暖启动及适配更新不显示准备窗口。测试同时检查服务暖复用、适配文件变化仅重启 Agent，业务元数据和运行时 manifest 不变。独立 cache override 仅隔离测试诊断，不改变默认缓存路径。`PROTA_TEST_NATIVE_APP=1 node tests/macos-desktop.mjs` 现已接入 macOS CI；原 bootstrap 直测模式仍保留。本地未提交工作树须通过 PROTA_TEST_PRODUCT 指向白名单导出目录；默认模式仅归档已提交源码。测试没有验证 Finder 的系统签名/信任提示，也没有强制重复下载已有的系统 Node/Python。Windows 与 macOS 远端 CI 仍未执行，Windows 验收不以此替代。
 
-最新白名单导出 19047 文件，扫描 0 findings、readyForReview=true。完整运行时随包交付，不要求用户安装 Pi 或拉取 Submodule；导出包可在没有根 node_modules 的情况下运行原生测试。独立导出副本已从 package.json 与锁文件移除旧 SDK，75 项 Pi 测试全部通过，macOS 冷安装/暖启动/适配更新重启再次通过；主工作树依赖仍待完整验收后清理。最终源码变动后须重新导出。此自动扫描不替代对发布内容的人工审查。
+最新白名单导出 19047 文件，扫描 0 findings、readyForReview=true。完整运行时随包交付，不要求用户安装 Pi 或拉取 Submodule；导出包可在没有根 node_modules 的情况下运行原生测试。主工作树与独立导出副本的 `package.json` 和锁文件均已移除旧 SDK，Pi 原生测试通过，macOS 冷安装/暖启动/适配更新重启再次通过。最终源码变动后须重新导出。此自动扫描不替代对发布内容的人工审查。
 
 上游检查与每周升级 PR 流程已实现：仅稳定 Release，跨平台构建测试成功后创建草稿 PR，不自动合并。初始只读检查的最新版本为 v1.4.0；尚未演练更新至新的正式 Release。
 
@@ -121,7 +137,6 @@ macOS 已在隔离配置和无旧 SDK 的导出产品中运行真实 Prota.app �
 1. 人工盲评与画布/PRD 消耗增加的最终质量判断。
 2. Windows 实机/远端 CI 与原生 GUI 全新安装验收。macOS 原生入口/准备窗口已在本机实测；远端 CI 仍需执行。需准备审查后的测试分支或提供 Windows 执行环境。
 3. 未配置的真实 Provider、供应商图片输入与 MCP OAuth；未知高级选项、自定义旧回调/工具明确报迁移错误，未声称全部兼容。
-4. 完成验收后从 package.json 和锁文件移除旧 SDK。正式 Gateway 已无其入口，当前依赖仍保留供本次对照验收，临时基线脚本均在产品目录之外。
-5. 新 Release 可用后执行一次真实升级演练。
+4. 新 Release 可用后执行一次真实升级演练。
 
 当前迁移目标仍为进行中。未通过的发布门槛没有以本机确定性服务或生成成功状态替代。

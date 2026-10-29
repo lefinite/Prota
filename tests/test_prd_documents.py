@@ -6,7 +6,8 @@ import unittest
 from unittest.mock import patch
 
 from server.bridge import (BridgeHandler, list_prd_documents, read_prd_index,
-                           resolve_prd_document_path, cleanup_unused_prd_assets)
+                           resolve_prd_document_path, cleanup_unused_prd_assets,
+                           read_share_prd, update_prd_index)
 
 
 class PRDDocumentsTests(unittest.TestCase):
@@ -18,10 +19,11 @@ class PRDDocumentsTests(unittest.TestCase):
         for directory in ('v1', 'v2', 'v3', 'docs/prd-assets'):
             (self.page / directory).mkdir(parents=True)
 
-    def call(self, method, **params):
+    def call(self, method, expected_status=200, request_headers=None, client='127.0.0.1', **params):
         handler = object.__new__(BridgeHandler)
         body = json.dumps({'projectId': 'demo', 'pageId': 'reader', 'version': 'v2', **params}).encode()
-        handler.headers = {'Content-Length': str(len(body))}
+        handler.headers = {'Content-Length': str(len(body)), 'Host': 'localhost:8080', **(request_headers or {})}
+        handler.client_address = (client, 12345)
         handler.rfile, handler.wfile = io.BytesIO(body), io.BytesIO()
         handler.send_response = lambda status: setattr(handler, 'status', status)
         handler.send_header = lambda *args: None
@@ -29,7 +31,7 @@ class PRDDocumentsTests(unittest.TestCase):
         with patch('server.bridge.get_project_root', return_value=str(self.root)):
             getattr(handler, method)()
         result = handler.wfile.getvalue().decode()
-        self.assertEqual(handler.status, 200, result)
+        self.assertEqual(handler.status, expected_status, result)
         return json.loads(result)
 
     def test_acceptance_revision_history_reopen_and_save_old_path(self):
@@ -82,6 +84,52 @@ class PRDDocumentsTests(unittest.TestCase):
         (self.page / 'docs/link.md').symlink_to(self.root / 'outside.md')
         with self.assertRaises(ValueError):
             resolve_prd_document_path(str(self.root), 'demo', 'reader', 'v2', '/src/pages/demo/reader/docs/link.md')
+
+    def test_share_selection_history_association_and_readme_fallback(self):
+        prefix = '/src/pages/demo/reader/'
+        business = prefix + 'docs/login.md'
+        current = prefix + 'docs/reader-v2-prd-v1.md'
+        readme = prefix + 'v2/README.md'
+        for path in (business, current, readme):
+            (self.root / path.lstrip('/')).write_text('# ' + path)
+
+        def selected(version='v2', requested=''):
+            return '/' + read_share_prd(str(self.root), 'demo', 'reader', version, requested)['path']
+
+        self.assertEqual(selected(), current)
+        update_prd_index(str(self.root), 'demo', 'reader', business, last_opened=True)
+        self.assertEqual(selected(), current)
+        self.assertEqual(selected('v1'), business)
+        self.assertEqual(selected(requested=readme), readme)
+        self.assertEqual(selected(requested='/src/pages/demo/other/docs/private.md'), current)
+        (self.root / business.lstrip('/')).unlink()
+        self.assertEqual(selected(), current)
+        (self.root / current.lstrip('/')).unlink()
+        self.assertEqual(selected(), readme)
+
+    def test_bind_rebind_unbind_survive_reload_and_validate_permissions(self):
+        (self.root / 'data').mkdir()
+        (self.root / 'data/projects.json').write_text(json.dumps({'projects': [{'id': 'demo', 'pages': [
+            {'id': 'reader', 'versions': ['v1', 'v2', 'v3'], 'versionStates': {'v3': {'deleted': True}}}
+        ]}]}))
+        path = '/src/pages/demo/reader/v1/product-doc.md'
+        (self.root / path.lstrip('/')).write_text('# unchanged')
+        def association():
+            return next(doc for doc in list_prd_documents(str(self.root), 'demo', 'reader', 'v2') if doc['path'] == path)['prototypeVersion']
+        self.assertEqual(association(), 'v1')
+        self.call('handle_prd_doc_binding', path=path, prototypeVersion='v2')
+        self.assertEqual(association(), 'v2')
+        self.call('handle_prd_doc_binding', path=path, prototypeVersion=None)
+        self.assertIsNone(association(), 'explicit unbinding must not infer v1 from the directory')
+        for binding in ('v3', 'v9', '../v2', [], False):
+            self.call('handle_prd_doc_binding', expected_status=400, path=path, prototypeVersion=binding)
+        for headers, client in [({'Origin': 'https://evil.test'}, '127.0.0.1'),
+                                ({'Referer': 'http://localhost:8080/shares/demo-v1-local.html'}, '127.0.0.1'),
+                                ({}, '192.0.2.1')]:
+            self.call('handle_prd_doc_binding', expected_status=403, request_headers=headers, client=client, path=path, prototypeVersion='v2')
+        self.call('handle_prd_doc_binding', expected_status=400, path='/src/pages/demo/other/docs/doc.md', prototypeVersion='v1')
+        self.assertIsNone(association())
+        self.assertEqual((self.root / path.lstrip('/')).read_text(), '# unchanged')
 
 
 if __name__ == '__main__':

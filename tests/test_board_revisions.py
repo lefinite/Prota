@@ -93,7 +93,7 @@ class BoardRevisionTests(unittest.TestCase):
 
     def test_flag_off_prevents_mutation_but_keeps_history_readable(self):
         first = self.create()
-        (self.root / 'data/canvas-features.json').write_text('{}')
+        (self.root / 'data/canvas-features.json').write_text(json.dumps({'testWorkspaceIds': ['revisions-test'], 'overrides': {'boardRevisions': False, 'canvasSchemaV2': False}}))
         self.assertEqual(create_revision(self.root, self.params())[0], 403)
         self.assertEqual(restore_revision(self.root, self.params(revisionId=first['revisionId']))[0], 403)
         self.assertEqual(len(self.history()), 1)

@@ -13,7 +13,8 @@ export default function protaExtension(pi: ExtensionAPI) {
     pi.registerCommand('prota-runtime-status', {
         description: 'Inspect Prota runtime integration protocol version',
         handler: async (_args, ctx) => {
-            ctx.ui.notify(JSON.stringify({ protocol: 'prota-runtime-v1', activeRunId: policy?.runId || null }), 'info');
+            ctx.ui.notify(JSON.stringify({ protocol: 'prota-runtime-v1', activeRunId: policy?.runId || null,
+                tools: pi.getAllTools().map(tool => tool.name), allowedTools: policy?.allowedTools || [] }), 'info');
         }
     });
     pi.registerCommand('prota-import-legacy-v1', {

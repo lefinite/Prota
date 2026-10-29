@@ -132,6 +132,26 @@ async function releaseOwnedPort(port, entry) {
     throw Error('上一份 Prota 尚未退出，请稍后重试。');
 }
 
+export function bridgeBuildHash(directory) {
+    // 必须与 server/bridge.py 的 _product_build 保持同一算法：server/ 下全部 .py，
+    // 排除 __pycache__，按相对路径排序后逐个 (路径 + \0 + 内容) 喂进 sha256。
+    const names = [];
+    (function walk(current) {
+        for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+            if (entry.name === '__pycache__') continue;
+            const full = path.join(current, entry.name);
+            if (entry.isDirectory()) walk(full);
+            else if (entry.isFile() && entry.name.endsWith('.py')) names.push(path.relative(directory, full).split(path.sep).join('/'));
+        }
+    })(path.join(directory, 'server'));
+    const hash = crypto.createHash('sha256');
+    for (const name of names.sort()) {
+        hash.update(name);
+        hash.update('\0');
+        hash.update(fs.readFileSync(path.join(directory, name)));
+    }
+    return hash.digest('hex');
+}
 async function main() {
     assertNodeVersion();
     fs.mkdirSync(runtime, { recursive: true });
@@ -145,7 +165,7 @@ async function main() {
     try {
         status(1, '检查运行环境', '正在校验内置 Pi 运行时。');
         try { await verifyPi(path.join(root, 'runtime/pi'), { smoke: false }); }
-        catch { throw Error('产品内置 Pi 运行时缺失或校验失败。请重新安装完整发布包；源码开发请运行 npm run pi:build。'); }
+        catch (error) { throw Error('产品内置 Pi 运行时缺失或校验失败。请重新安装完整发布包；源码开发请运行 npm run pi:build。', { cause: error }); }
         const nodeDir = path.dirname(process.execPath);
         process.env.PATH = nodeDir + path.delimiter + process.env.PATH;
         if (!windows) process.env.SSL_CERT_FILE ||= '/etc/ssl/cert.pem';
@@ -165,7 +185,7 @@ async function main() {
         const identity = crypto.createHash('sha256').update(fs.realpathSync(root)).digest('hex');
         const health = await request(bridgeBase + '/api/product/health');
         let agent = await request(agentBase + '/api/agent/health');
-        const bridgeBuild = crypto.createHash('sha256').update(Buffer.concat(['server/bridge.py', 'server/deployer.py', 'server/vercel_setup.py', 'server/share_security.py', 'server/share_gateway.mjs', 'server/share_gate_page.mjs', 'server/share_manager.py'].map(file => fs.readFileSync(path.join(root, file))))).digest('hex');
+        const bridgeBuild = bridgeBuildHash(root);
         const expectedAgentBuild = agentBuild(root);
         const environment = { ...process.env, READIFY_AGENT_HOST: '127.0.0.1' };
         fs.mkdirSync(path.join(root, 'logs'), { recursive: true });
@@ -197,4 +217,4 @@ async function main() {
         throw Error('本机服务未能启动，请重试；详细信息已保存到本机日志。');
     } finally { fs.rmSync(lock, { recursive: true, force: true }); }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) main().catch(error => { status(currentStep, '启动未完成', error.message, true, 'error'); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) main().catch(error => { console.error(error); status(currentStep, '启动未完成', error.message, true, 'error'); process.exitCode = 1; });

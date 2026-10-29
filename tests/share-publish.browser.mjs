@@ -30,7 +30,14 @@ share.write_text(build_share_page_html({'enabled':True,'projectId':'fixture','pa
 save_policy(root, share.name, create_policy({'password':'a4B9','expiresInDays':7}))
 deployer = VercelDeployer(root)
 output = Path(sys.argv[1]) / 'release'
-deployer.prepare_gateway(output, deployer.prepare(output, [share]), [share])
+canvas = root / 'src/pages/fixture/canvas/v1'
+canvas.mkdir(parents=True)
+(canvas / 'index.html').write_text('<!doctype html><html><head></head><body><div id="canvas-fixture">Legacy canvas</div></body></html>')
+canvas_share = root / 'shares/canvas-v1-static.html'
+canvas_share.write_text(build_share_page_html({'enabled':True,'projectId':'fixture','pageId':'canvas','pageName':'Canvas','version':'v1','targetDevice':'canvas','pageMode':'infinite-canvas','shareType':'static','annotations':[]}))
+save_policy(root, canvas_share.name, create_policy({}))
+shares = [share, canvas_share]
+deployer.prepare_gateway(output, deployer.prepare(output, shares), shares)
 `, base], {cwd:fileURLToPath(new URL('..', import.meta.url)), stdio:'pipe'});
     const bundle = join(base, 'release/.vercel/output/functions/share.func');
     const {createShareHandler} = await import(pathToFileURL(join(bundle, 'handler.mjs')));
@@ -52,12 +59,26 @@ deployer.prepare_gateway(output, deployer.prepare(output, [share]), [share])
     assert.equal(await page.frameLocator('#mainIframe').locator('img').evaluate(node=>node.complete && node.naturalWidth>0),true);
     assert.equal((await page.request.get(origin+'/shares/reader.zip')).status(),200);
     await page.screenshot({path:'/tmp/prota-share-protected-preview.png'});
+    assert.equal(await page.locator('#shareNavigation').count(),0,'single-page shares must not render a directory or toggle');
     assert.deepEqual(failures,[]);
     const stranger=await browser.newContext();
     assert.equal((await stranger.request.get(origin+'/src/pages/fixture/reader/v1/index.html')).status(),404);
     assert.equal((await stranger.request.get(origin+'/assets/fixture.svg')).status(),404);
     assert.equal((await stranger.request.get(origin+'/shares/reader.zip')).status(),404);
     await stranger.close();
+    await page.goto(origin+'/shares/canvas-v1-static.html');
+    await page.frameLocator('#mainIframe').locator('#canvas-fixture').waitFor();
+    await page.waitForFunction(() => document.documentElement.classList.contains('is-infinite-canvas'));
+    const overscroll = () => page.evaluate(() => {
+        const frame = document.querySelector('#mainIframe').contentDocument;
+        return [document.documentElement, document.body, frame.documentElement, frame.body]
+            .map(node => node.ownerDocument.defaultView.getComputedStyle(node).overscrollBehaviorX);
+    });
+    assert.deepEqual(await overscroll(), ['none', 'none', 'none', 'none'], 'published legacy canvases suppress swipe navigation in both documents');
+    await page.goto(origin+'/shares/reader-v1-static.html');
+    await page.frameLocator('#mainIframe').locator('#fixture-demo').waitFor();
+    assert.deepEqual(await overscroll(), ['auto', 'auto', 'auto', 'auto'], 'ordinary shares retain default navigation behavior');
+    assert.deepEqual(failures,[]);
     console.log('Published bundle: password → shared Portal → prototype iframe, CSS, asset and ZIP access; unauthenticated resource denial passed');
 } finally {
     await browser?.close();

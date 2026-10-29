@@ -80,3 +80,10 @@ export function adaptMcpServers(servers = {}, source = process.env) {
     return { config: { mcpServers: output, autoEnableCodemode: false }, env, secretValues,
         names: Object.entries(output).filter(([, config]) => config.enabled !== false).map(([name]) => name) };
 }
+
+// Only explicit product enablement grants default run access. Merely connecting
+// or discovering a server never expands a tool whitelist.
+export function enabledMcpTools(servers = {}) {
+    return Object.entries(servers).filter(([, config]) => config?.enabled === true)
+        .map(([name]) => `mcp__${name.replace(/-/g, '_')}__*`);
+}

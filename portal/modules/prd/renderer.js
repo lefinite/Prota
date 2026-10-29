@@ -593,29 +593,41 @@ export class PRDRenderer {
     }
 
     /**
-     * Renders PRD metadata (dirty badge, breadcrumbs, and file switcher)
+     * Compact version selector inside the document menu.
      */
+    renderPrdBindingControl(doc, versions, bindingId) {
+        const bindingLabel = doc.prototypeVersion ? doc.prototypeVersion.toUpperCase() : '未关联';
+        return `<div class="prd-binding-control">
+            <button type="button" class="prd-version-binding${doc.prototypeVersion ? ' is-bound' : ''}" data-prd-binding-trigger="${bindingId}" data-prd-binding-path="${this.escapeHtml(doc.path)}" aria-controls="${bindingId}" aria-haspopup="listbox" aria-expanded="false" aria-label="${this.escapeHtml(doc.filename)}的关联版本：${this.escapeHtml(bindingLabel)}">
+                <span>${this.escapeHtml(bindingLabel)}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+            </button>
+            <div id="${bindingId}" class="prd-binding-options" popover="auto" role="listbox" aria-label="${this.escapeHtml(doc.filename)}的关联版本">
+                ${[null, ...versions].map(version => `<button type="button" role="option" tabindex="-1" class="prd-binding-option" data-prd-bind-path="${this.escapeHtml(doc.path)}" data-prd-bind-version="${this.escapeHtml(version || '')}" aria-selected="${(doc.prototypeVersion || null) === version}">
+                    <span>${version ? this.escapeHtml(version.toUpperCase()) : '未关联'}</span>
+                    ${(doc.prototypeVersion || null) === version ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>' : ''}
+                </button>`).join('')}
+            </div>
+        </div>`;
+    }
+
     renderPrdMeta(state) {
         const isShareMode = this.manager.host.isShareMode || window.__READIFY_SHARE__ || window.location.pathname.includes('/shares/');
         const page = this.manager.host.getPageRecord();
-        const pageName = page?.name || this.manager.host.activePageId || '当前页面';
-        const versionLabel = this.manager.host.activeVersion ? this.manager.host.activeVersion.toUpperCase() : '';
         const activeFileName = this.getPrdFileName(state?.path || this.manager.host.getPrdRelativePath()) || 'product-doc.md';
-        const baseLabel = `${pageName} / ${versionLabel}`;
-        
         const dirtyLabel = state?.dirty ? '<span class="prd-meta__dirty">未保存</span>' : '';
         const documents = Array.isArray(state?.documents) ? state.documents : [];
         
-        const activeDoc = documents.find(doc => doc.path === state.path);
-        const association = activeDoc?.prototypeVersion;
-        const historyLabel = association && association !== this.manager.host.activeVersion
-            ? `正在查看关联 ${association.toUpperCase()} 的历史文档` : '';
-        const dropdownItemsHtml = documents.map(doc => {
+        if (isShareMode) {
+            return `<div class="prd-meta prd-meta--document"><span class="prd-meta__readonly-name" title="${this.escapeHtml(activeFileName)}">${this.escapeHtml(activeFileName)}</span></div>`;
+        }
+        const versions = (page?.versions || []).filter(version => !page?.versionStates?.[version]?.deleted);
+        const dropdownItemsHtml = documents.map((doc, docIndex) => {
             const isActive = doc.path === state.path;
             const timeLabel = this.formatDocDate(doc);
+            const bindingId = `prd-version-options-${docIndex}`;
             
             const actionsHtml = isShareMode ? '' : `
-                    <div class="prd-dropdown-item__actions">
                         <button type="button" class="prd-dropdown-item__delete-btn" title="物理删除文件" data-prd-delete-path="${this.escapeHtml(doc.path)}" data-prd-delete-filename="${this.escapeHtml(doc.filename)}">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -624,28 +636,31 @@ export class PRDRenderer {
                                 <line x1="14" y1="11" x2="14" y2="17"></line>
                             </svg>
                         </button>
-                    </div>
             `;
             
             return `
                 <li class="prd-dropdown-item${isActive ? ' is-active' : ''}">
-                    <div class="prd-dropdown-item__left" data-prd-switch-path="${this.escapeHtml(doc.path)}">
-                        <div class="prd-dropdown-item__name-row">
+                    <div class="prd-dropdown-item__left">
+                        <button type="button" class="prd-dropdown-item__select" draggable="true" data-prd-drag-path="${this.escapeHtml(doc.path)}" data-prd-switch-path="${this.escapeHtml(doc.path)}">
+                        <span class="prd-dropdown-item__name-row">
                             <span class="prd-dropdown-item__name" title="${this.escapeHtml(doc.filename)}">${this.escapeHtml(doc.label || doc.filename)}</span>
-                        </div>
-                        <div class="prd-dropdown-item__details"><span>${this.escapeHtml(doc.prototypeVersion ? `原型 ${doc.prototypeVersion.toUpperCase()}` : '原型版本未记录')}${doc.revision ? ` · 修订 ${this.escapeHtml(doc.revision)}` : ''}${timeLabel ? ` · ${timeLabel}` : ''}</span></div>
+                        </span>
+                        <span class="prd-dropdown-item__details">${[doc.revision ? `修订 ${this.escapeHtml(doc.revision)}` : '', this.escapeHtml(timeLabel)].filter(Boolean).join(' · ')}</span>
+                        </button>
                     </div>
-                    ${actionsHtml}
+                    <div class="prd-dropdown-item__actions">
+                        ${this.renderPrdBindingControl(doc, versions, bindingId)}
+                        ${actionsHtml}
+                    </div>
                 </li>
             `;
         }).join('');
         
         return `
-            <div class="prd-meta">
-                <span class="prd-meta__breadcrumb" title="${this.escapeHtml(baseLabel)}">${this.escapeHtml(baseLabel)}</span>
-                <span class="prd-meta__divider">·</span>
+            <div class="prd-meta prd-meta--document">
                 <div class="prd-meta__switcher-wrapper">
-                    <button class="prd-meta__manage-btn" data-prd-manage-trigger title="管理/切换 PRD 文档">
+                    <button class="prd-meta__manage-btn" data-prd-manage-trigger ${state.path && state.status === 'ready' ? `draggable="true" data-prd-drag-path="${this.escapeHtml(state.path)}"` : ''} title="管理/切换 PRD 文档，可拖入画布">
+                        <svg class="prd-meta__file-icon" width="15" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
                         <span>${this.escapeHtml(activeFileName)}</span>
                         <svg class="prd-meta__arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"></polyline>
@@ -674,7 +689,6 @@ export class PRDRenderer {
                         `}
                     </div>
                 </div>
-                ${historyLabel ? `<span class="prd-meta__history" title="${this.escapeHtml(historyLabel)}">${this.escapeHtml(historyLabel)}</span>` : ''}
                 ${dirtyLabel}
             </div>
         `;

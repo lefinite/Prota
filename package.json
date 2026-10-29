@@ -23,7 +23,6 @@
     "preview:browser": "node tests/progressive-preview.browser.mjs"
   },
   "dependencies": {
-    "@codeany/open-agent-sdk": "^0.2.1",
     "playwright": "^1.60.0"
   },
   "devDependencies": {

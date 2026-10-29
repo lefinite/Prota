@@ -74,3 +74,8 @@
 - 内置模板与普通 Skill 从产品安装目录读取；不得复制或改写业务数据到模板示例。
 - 静态分享使用独立 Build Output 目录直接部署 Vercel，禁止通过产品 Git 仓库发布业务内容。
 - 开源使用 `tools/public-release.py` 白名单导出并审查，禁止继承旧业务仓库历史。
+
+
+## 9. 界面表达原则
+
+- Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.（避免不必要的次要标签和描述，让布局本身来传达信息。）

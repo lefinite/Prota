@@ -106,7 +106,8 @@ export class PreviewObserver {
                     const snapshot = await createSnapshot({ pageRoot: page.dir, cacheRoot: this.cacheRoot, runId: this.runId, revision: this.revision + 1, previous: this.previous.get(page.dir), config: this.config });
                     if (!snapshot || this.stopped || !this.isCurrent()) continue;
                     this.revision++; this.previous.set(page.dir, snapshot); this.lastPublish = Date.now();
-                    this.publish(revisionEvent(this.runId, page.scope, snapshot));
+                    this.latestRevision = revisionEvent(this.runId, page.scope, snapshot);
+                    this.publish(this.latestRevision);
                     const obsolete = this.revision - this.config.maxRevisions;
                     if (obsolete > 0) await fsp.rm(path.join(this.cacheRoot, this.runId, String(obsolete)), { recursive: true, force: true });
                 } catch (error) { this.log(error); }

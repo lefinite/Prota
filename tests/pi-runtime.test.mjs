@@ -94,6 +94,24 @@ test('Pi abort signal terminates a running task and clears listeners', async t =
     await rejected;
 });
 
+test('Pi abort waits for native settlement before an immediate retry', async t => {
+    const runtimes = manager(t);
+    const controller = new AbortController();
+    const lifecycle = [];
+    const run = runtimes.prompt('a', { message: 'slow-abort', signal: controller.signal,
+        onEvent: record => lifecycle.push(record.type) });
+    const rejected = assert.rejects(run, { code: 'PI_ABORTED' });
+    while (!runtimes.get('a')?.busy) await delay(5);
+    const interruptedPid = runtimes.get('a').child.pid;
+    controller.abort();
+    await rejected;
+    assert.equal(lifecycle.at(-1), 'agent_settled');
+    assert.equal(runtimes.get('a'), null);
+    const resumed = await runtimes.ensure('a');
+    assert.notEqual(resumed.child.pid, interruptedPid);
+    assert.equal((await runtimes.prompt('a', { message: 'continue' })).aborted, false);
+});
+
 test('Pi timeout closes the uncertain run before allowing another task', async t => {
     const runtimes = manager(t);
     await assert.rejects(runtimes.prompt('a', { message: 'hang', timeoutMs: 30 }), { code: 'PI_TIMEOUT' });
@@ -145,4 +163,25 @@ test('Pi shutdown during configuration never launches an orphan process', async 
     await closing;
     await rejected;
     assert.equal(runtimes.entries.size, 0);
+});
+
+
+test('independent Pi sessions run concurrently and steering preserves both active runs', async t => {
+    const runtimes = manager(t);
+    const first = runtimes.prompt('board-a', { message: 'hang' });
+    const second = runtimes.prompt('board-b', { message: 'hang' });
+    const firstAborted = assert.rejects(first, { code: 'PI_ABORTED' });
+    const secondAborted = assert.rejects(second, { code: 'PI_ABORTED' });
+    while (!runtimes.get('board-a')?.busy || !runtimes.get('board-b')?.busy) await delay(5);
+    const pid = runtimes.get('board-a').child.pid;
+    assert.deepEqual(await runtimes.steer('board-a', { message: 'Continue with this annotation' }), { disposition: 'queued' });
+    assert.equal(runtimes.get('board-a').child.pid, pid);
+    assert.equal(runtimes.get('board-a').busy, true);
+    assert.equal(runtimes.get('board-b').busy, true);
+    await runtimes.abort('board-a');
+    await firstAborted;
+    assert.equal(runtimes.get('board-b').busy, true);
+    await assert.rejects(runtimes.steer('board-a', { message: 'Too late' }), { code: 'PI_IDLE' });
+    await runtimes.abort('board-b');
+    await secondAborted;
 });

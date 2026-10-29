@@ -94,7 +94,24 @@ try {
     assert.match(await page.locator('#body').innerText(), /v1 原文/);
     await page.locator('#body img').evaluate(image => image.decode());
     assert.equal(await page.locator('#body img').evaluate(image => image.naturalWidth), 1);
+    await page.evaluate(async original => {
+        const manager = window.module.manager;
+        const readme = '/src/pages/demo/reader/v2/README.md';
+        window.host.isShareMode = true;
+        window.host.activeVersion = 'v1';
+        window.host.shareConfig = {
+            documents: [{path:readme, filename:'README.md', prototypeVersion:'v2'},
+                {path:original, filename:original.split('/').pop(), prototypeVersion:'v1'}],
+            prdPath:original, prdContent:'# 分享指定的手机号登录文档'
+        };
+        localStorage.setItem(manager.getLastDocumentKey(), readme);
+        manager.resetState();
+        await manager.loadDocument();
+    }, original);
+    assert.equal(await page.evaluate(() => window.module.manager.state.path), original);
+    assert.match(await page.locator('#body').innerText(), /分享指定的手机号登录文档/);
     console.log('PASS: v1 create → v2 read/revise/switch → v3 history → reload restoration; original bytes preserved');
+    console.log('PASS: shared document overrides template README and recipient reading history');
 } finally {
     await browser?.close();
     server.kill();

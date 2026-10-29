@@ -1,8 +1,7 @@
-// S0 contract only. Runtime consumers are connected in their implementation stage.
-// Enabling a flag never claims that the corresponding feature is implemented.
+// Shipped features default on; experimental features retain workspace opt-in.
 export const CANVAS_FEATURE_DEFAULTS = Object.freeze({
-  canvasSchemaV2: false,
-  boardRevisions: false,
+  canvasSchemaV2: true,
+  boardRevisions: true,
   canvasVersionMetadata: false,
   progressiveCanvasPreview: false,
   canvasVirtualization: false,
@@ -21,6 +20,6 @@ export function resolveCanvasFeatures({ workspaceId, testWorkspaceIds = [], over
   if (typeof workspaceId !== 'string' || !workspaceId || !testWorkspaceIds.includes(workspaceId)) {
     return Object.freeze(flags);
   }
-  for (const key of Object.keys(flags)) flags[key] = overrides[key] === true;
+  for (const key of Object.keys(flags)) if (Object.hasOwn(overrides, key)) flags[key] = overrides[key] === true;
   return Object.freeze(flags);
 }

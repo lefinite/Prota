@@ -1,6 +1,7 @@
 // Protocol fixture only; production always launches the built upstream CLI.
 let buffer = '';
 let active = null;
+let activeMessage = '';
 const output = record => process.stdout.write(JSON.stringify(record) + '\n');
 const response = (command, data = {}) => output({ id: command.id, type: 'response', command: command.type, success: true, data });
 process.stdin.on('data', bytes => {
@@ -11,9 +12,13 @@ process.stdin.on('data', bytes => {
         buffer = buffer.slice(lf + 1);
         if (command.type === 'get_state') response(command, { isStreaming: Boolean(active), pid: process.pid });
         else if (command.type === 'prompt') {
+            if (command.streamingBehavior === 'steer' && active) { response(command, { disposition: 'queued' }); continue; }
+            activeMessage = command.message;
             if (command.message === 'crash') process.exit(7);
             if (command.message === 'handled') { response(command, { disposition: 'handled' }); continue; }
-            if (command.message === 'no-accept' || command.message === 'native-dialog') {
+            if (command.message === 'slow-abort') {
+                active = setTimeout(() => output({ type: 'agent_settled', aborted: false }), 60_000);
+            } else if (command.message === 'no-accept' || command.message === 'native-dialog') {
                 active = setTimeout(() => {}, 60_000);
                 if (command.message === 'native-dialog') output({ type: 'extension_ui_request', id: 'native-dialog', method: 'select', title: 'Native settings' });
                 continue;
@@ -30,7 +35,7 @@ process.stdin.on('data', bytes => {
         } else if (command.type === 'abort') {
             clearTimeout(active); active = null;
             response(command);
-            output({ type: 'agent_settled', aborted: true });
+            setTimeout(() => output({ type: 'agent_settled', aborted: true }), activeMessage === 'slow-abort' ? 40 : 0);
         } else response(command);
     }
 });

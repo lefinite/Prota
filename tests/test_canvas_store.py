@@ -35,6 +35,21 @@ class CanvasStoreTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_document(dict(params['state'], edges=[invalid]))
 
+    def test_manual_connector_route_round_trip_and_validation(self):
+        params = self.params()
+        params['state']['nodes'] = [dict(id=id, type='board', x=x, y=0, width=200, height=300) for id, x in [('a', 0), ('b', 500)]]
+        route = [{'x': 200, 'y': 150}, {'x': 300, 'y': 150}, {'x': 300, 'y': 400}, {'x': 450, 'y': 400}, {'x': 450, 'y': 150}, {'x': 500, 'y': 150}]
+        edge = dict(id='manual', fromInstanceId='a', toInstanceId='b', fromPort='right', toPort='left', manualRoute=route)
+        params['state']['edges'] = [edge]
+        status, _ = save_canvas(self.root, params)
+        self.assertEqual(status, 200)
+        persisted = json.loads(self.file.read_text()[len(PREFIX):].strip().removesuffix(';'))
+        self.assertEqual(persisted['edges'][0]['manualRoute'], route)
+        from server.canvas_domain import validate_document
+        for invalid in ([{'x': 0, 'y': 0}], [{'x': 0, 'y': 0}, {'x': 2, 'y': 3}], [{'x': float('nan'), 'y': 0}, {'x': 0, 'y': 0}], [{'x': 0, 'y': 0}] * 257):
+            with self.assertRaises(ValueError):
+                validate_document(dict(params['state'], edges=[dict(edge, manualRoute=invalid)]))
+
     def test_save_and_conflict(self):
         params = self.params()
         params['state']['nodes'] = [{'id':'text_1','type':'text','x':-100,'y':10,'width':200,'height':100,'text':'<script>文本</script>'}]
@@ -106,7 +121,7 @@ class CanvasStoreTests(unittest.TestCase):
         files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png',self.directory/'annotations.json']
         original={file:file.read_bytes() for file in files}
         template=Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas'
-        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':8})
+        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':33})
         self.assertTrue(all(file.read_bytes()==data for file,data in original.items()))
         self.assertIn('runtimeVersion:4',(self.directory/'.canvas-runtime-backup/app.js').read_text())
 

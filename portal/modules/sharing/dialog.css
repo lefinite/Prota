@@ -27,7 +27,6 @@
 .share-access-heading > div { min-width: 0; }
 .share-access-heading h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; line-height: 1.5; }
 .share-access-heading h2:focus { outline: none; }
-.share-access-heading [data-name] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary, #6b7280); font-size: 13px; }
 .share-access-dialog .share-access-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary, #6b7280); }
 .share-access-body { padding: 0 24px 24px; }
 .share-access-expiry { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -84,3 +83,62 @@
     box-shadow: none;
 }
 .share-access-password-input input[aria-invalid=true]:focus { border-color: #c53030; }
+
+
+/* Share progress is a quiet toast. Access options use the full modal above. */
+.share-flow {
+    inset: auto;
+    margin: 0;
+    width: min(240px, calc(100vw - 16px));
+    max-height: calc(100dvh - 16px);
+    z-index: 10050;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px #18263b14;
+}
+.share-progress { width: min(220px, calc(100vw - 16px)); }
+.share-status-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; min-height: 42px; }
+.share-flow .share-status-action { min-width: 0; padding: 2px 0; border: 0; background: transparent; font: inherit; font-size: 12px; line-height: 20px; color: inherit; white-space: nowrap; cursor: pointer; }
+.share-flow .share-status-action:disabled { color: inherit; opacity: 1; cursor: default; }
+.share-status-row [data-elapsed] { margin-left: auto; color: var(--text-secondary, #6b7280); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.share-status-row a { margin-left: auto; font-size: 12px; text-decoration: none; color: var(--text-secondary, #6b7280); white-space: nowrap; }
+.share-status-row > .share-access-icon { margin-left: auto; }
+.share-status-row [data-elapsed] + a[hidden] + .share-access-icon { margin-left: 0; }
+.share-status-symbol { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 12px; height: 12px; color: #237b56; }
+.share-progress[data-state=error] .share-status-symbol { width: 5px; height: 5px; margin: 0 3px; border-radius: 50%; background: #b42318; }
+.share-flow .share-flow-error { padding: 0 12px 10px; max-height: 100px; overflow-y: auto; overflow-wrap: anywhere; color: var(--text-secondary, #6b7280); font-size: 12px; line-height: 1.6; }
+.share-copy-fallback { display: block; width: calc(100% - 24px); margin: 0 12px 12px; padding: 6px; border: 1px solid var(--border, #e5e7eb); border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 11px; resize: vertical; }
+.share-flow :is(a, button, select):focus-visible { outline: 2px solid var(--accent, #6366f1); outline-offset: 2px; }
+@keyframes share-status-spin { to { transform: rotate(360deg); } }
+
+/* Match the existing product toast position; the page stays interactive. */
+.share-flow.share-progress {
+    left: 50%;
+    top: 32px;
+    right: auto;
+    bottom: auto;
+    transform: translateX(-50%);
+    border-color: transparent;
+    background: #24252a;
+    color: #fff;
+    box-shadow: 0 4px 16px #14151b29;
+}
+.share-progress .share-access-icon { width: 24px; height: 24px; }
+.share-progress .share-status-row [data-elapsed], .share-progress .share-status-row a,
+.share-progress .share-access-icon { color: #c9cad1; }
+.share-progress .share-access-icon:hover { color: #fff; background: #ffffff14; }
+.share-progress .share-status-symbol { color: #b7e0c5; }
+.share-progress .share-flow-error { color: #d2d3d9; }
+.share-progress .share-copy-fallback { border-color: #ffffff40; }
+.share-progress :is(a, button):focus-visible { outline-color: #fff; }
+
+.share-access-title { display: flex; align-items: center; gap: 12px; }
+.share-access-title > div { min-width: 0; }
+.share-access-emblem { display: grid; place-items: center; flex: 0 0 auto; width: 40px; height: 40px; border: 1px solid var(--border, #e5e7eb); border-radius: 11px; color: var(--accent, #6366f1); background: var(--accent-glow, #6366f10d); }
+.share-access-dialog .share-access-icon { flex-shrink: 0; }
+
+/* Text is read-only UI; only the password input and manual copy field show a caret. */
+.share-access-dialog { caret-color: transparent; cursor: default; }
+.share-access-heading, .share-access-body, .share-access-actions { user-select: none; }
+.share-access-password-input input, .share-copy-fallback { caret-color: auto; user-select: text; cursor: text; }
+.share-status-spinner { display: block; flex-shrink: 0; color: #fff; transform-origin: center; animation: share-status-spin 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .share-progress .share-status-spinner { animation: none !important; } }

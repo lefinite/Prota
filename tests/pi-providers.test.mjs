@@ -34,6 +34,29 @@ test('provider conversion preserves known model capabilities and maps token/time
     assert.equal(adapted.settings.thinkingBudgets.high, 2048);
 });
 
+test('GLM vision input survives a custom Anthropic-compatible endpoint', () => {
+    const adapted = adaptProvider({ ...base, model: 'glm-5.3-flash', apiType: 'anthropic-messages' }, { catalog });
+    assert.doesNotThrow(() => assertImageInput(adapted.model, [{ data: 'image' }]));
+    const provider = adapted.models.providers[adapted.providerId];
+    assert.equal(provider.api, 'anthropic-messages');
+    assert.equal(provider.baseUrl, base.baseURL);
+    assert.equal(adapted.model.compat, undefined, 'Do not inherit protocol-specific metadata');
+});
+
+test('cross-API input inference respects ambiguity, exact API entries and explicit overrides', () => {
+    const config = { ...base, apiType: 'anthropic-messages' };
+    const vision = { id: base.model, api: 'openai-completions', input: ['text', 'image'], compat: { unsupported: true } };
+    const text = { id: base.model, api: 'openai-responses', input: ['text'] };
+    const conflicting = [vision, text];
+    assert.throws(() => assertImageInput(adaptProvider(config, { catalog: conflicting }).model, [{}]), /image input support/);
+    const exact = [...conflicting, { ...text, api: config.apiType }];
+    assert.throws(() => assertImageInput(adaptProvider(config, { catalog: exact }).model, [{}]), /image input support/);
+    const overridden = adaptProvider(config, { catalog: exact, capabilities: { input: ['text', 'image'] } });
+    assert.doesNotThrow(() => assertImageInput(overridden.model, [{}]));
+    const disabled = adaptProvider(config, { catalog: [vision], capabilities: { input: ['text'] } });
+    assert.throws(() => assertImageInput(disabled.model, [{}]), /image input support/);
+});
+
 test('unsupported meaningful options cause an explicit configuration error', () => {
     for (const key of ['maxBudgetUsd', 'fallbackModel', 'sandbox', 'agents', 'extraArgs', 'env', 'hooks', 'canUseTool']) {
         assert.throws(() => adaptProvider({ ...base, sdkOptions: { [key]: {} } }), new RegExp(key));

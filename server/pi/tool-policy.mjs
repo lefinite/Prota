@@ -20,7 +20,7 @@ export function normalizeToolSelection(option) {
     if (Array.isArray(option)) return mapAllowedTools(option);
     if (option && option.type === 'preset' && option.preset === 'default'
         && Object.keys(option).every(key => ['type', 'preset'].includes(key))) return undefined;
-    throw new Error('Unsupported SDK tools configuration; use tool names, the default preset, or migrate custom handlers to a Pi Extension');
+    throw new Error('Unsupported Agent tools configuration; use tool names, the default preset, or migrate custom handlers to a Pi Extension');
 }
 
 export function toolMatches(pattern, name) {

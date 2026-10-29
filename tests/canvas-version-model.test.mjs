@@ -38,10 +38,12 @@ test('indexes distinguish logical boards from instances and preserve source arra
 test('independent copies get new board identity, origin and no fictional revision', async () => {
   const state = await D.load(legacy(), scope);
   state.nodes[0].boardRevisionId = 'br_old';
+  state.nodes[0].boardVersionId = 'v3';
   const result = C.duplicate(state.nodes, ['home']);
   assert.notEqual(result.nodes[0].boardId, state.nodes[0].boardId);
   assert.equal(result.nodes[0].originBoardId, state.nodes[0].boardId);
   assert.equal(result.nodes[0].boardRevisionId, null);
+  assert.equal(result.nodes[0].boardVersionId, undefined);
   assert.notEqual(result.nodes[0].id, state.nodes[0].id);
   assert.equal(result.nodes[1].parentId, result.nodes[0].id);
 });
@@ -61,7 +63,7 @@ test('shared validation corpus agrees between frontend and backend', async () =>
   const cases = [state, legacy()];
   for (const edit of [
     s => s.nodes[0].boardId = '../escape', s => delete s.nodes[0].boardId,
-    s => s.nodes[0].boardRevisionId = 7, s => s.nodes[0].x = true,
+    s => s.nodes[0].boardRevisionId = 7, s => s.nodes[0].boardVersionId = [], s => s.nodes[0].boardVersionId = 'v0', s => s.nodes[0].x = true,
     s => s.nodes[0].src = 'boards/../escape/index.html', s => s.nodes[1].parentId = 'label',
     s => s.nodes.push(structuredClone(s.nodes[0])), s => s.revision = -1,
     s => s.revision = null, s => s.nodes[0].id = 'bad\n', s => s.nodes[0].src += '\n', s => s.nodes[0].cloneFrom = [], s => s.viewport.x = 10000001, s => s.nodes[0].opacity = true,
@@ -91,4 +93,26 @@ test('unknown JSON fields survive recovery without becoming object prototypes', 
   assert.equal(Object.hasOwn(merged.state, '__proto__'), true);
   assert.deepEqual(merged.state.__proto__, { retained: true });
   assert.equal({}.retained, undefined);
+});
+
+
+test('board version responses normalize missing/null catalogs from older running services', () => {
+  for (const versions of [undefined, null, {}]) {
+    const original = { boardId: 'b_home', revisions: [], versions };
+    const catalog = D.normalizeBoardVersions(original);
+    assert.deepEqual(catalog.versions, { v1: { revisionId: null } });
+    assert.equal(catalog.manageSupported, false);
+    assert.equal(original.versions, versions);
+  }
+  const old = D.normalizeBoardVersions({ revisions: [
+    { revisionId: 'br_1', kind: 'snapshot' }, { revisionId: 'br_r', kind: 'recovery' },
+    { revisionId: 'br_s', kind: 'restore', parentRevisionId: 'br_1' }, { revisionId: 'br_2', kind: 'snapshot' },
+  ] });
+  assert.deepEqual(old.versions, { v1: { revisionId: 'br_1' }, v2: { revisionId: 'br_2' } });
+  const modern = D.normalizeBoardVersions({ versions: { v2: { revisionId: 'br_2' }, v4: { revisionId: 'br_4' } } });
+  assert.equal(modern.manageSupported, true);
+  assert.deepEqual(Object.keys(modern.versions), ['v2', 'v4']);
+  for (const invalid of [null, [], { versions: [] }, { versions: { v1: null } }]) {
+    assert.throws(() => D.normalizeBoardVersions(invalid), /画板版本数据无效/);
+  }
 });

@@ -61,13 +61,18 @@ try {
     await wait(async () => (await fetch(base + '/api/workspace')).ok, 'workspace bridge');
     await wait(async () => (await fetch(`http://127.0.0.1:${agentPort}/api/agent/health`)).ok, 'Pi Gateway');
     browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }); page.setDefaultTimeout(10000);
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }); page.setDefaultTimeout(60000);
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.route(/fonts\.google/, route => route.abort());
     await page.route(/http:\/\/(localhost|127\.0\.0\.1):8081\//, route => route.continue({ url: route.request().url().replace(/:8081\//, `:${agentPort}/`) }));
     await page.goto(base + '/portal/index.html', { waitUntil: 'domcontentloaded' });
     await wait(() => page.evaluate(() => Boolean(window.shell?.agentProviderPersistenceReady && window.shell?.agentApi)), 'Portal');
     await page.evaluate(() => window.shell.openAgentWorkbench());
+    const commandIds = await page.evaluate(() => window.shell.agentAvailableCommands.map(command => command.id));
+    assert.ok(commandIds.includes('runtime'));
+    assert.ok(commandIds.includes('tools'));
+    assert.ok(!commandIds.includes('sdk'));
+    assert.ok(!commandIds.includes('sdk-tools'));
     await page.locator('#agentInput').fill('执行 Pi UI 验证，先写文件，再询问语言。'); await page.locator('#agentSendBtn').click();
     await page.waitForSelector('[data-approval-decision="allow_once"]');
     const sessionId = await page.evaluate(() => window.shell.agentSessionId);
@@ -92,12 +97,58 @@ try {
     assert.equal(await fs.readFile(path.join(pageDir, 'session-approved.txt'), 'utf8'), 'same-tool-session-grant');
     assert.equal(await page.evaluate(() => window.shell.agentTimelineEvents.filter(event => event.type === 'assistant_message'
         && event.payload.text === 'Pi UI 验证完成。' && !event.payload.partial).length), 1);
+    assert.ok(await page.evaluate(() => !window.shell.agentTimelineEvents.some(event => ['agent_init', 'sdk_init'].includes(event.type))));
+    const timelineText = await page.locator('.agent-timeline').innerText();
+    assert.ok(!/SDK initialized|Agent initialized|初始化完成/.test(timelineText));
+    await page.evaluate(() => {
+        window.shell.agentTimelineEvents.push({
+            id: 'legacy-sdk-init',
+            type: 'sdk_init',
+            runId: window.shell.agentRunState.runId,
+            createdAt: new Date().toISOString(),
+            payload: { model: 'legacy-model', tools: [], permissionMode: 'default' }
+        });
+        window.shell._needsFullTimelineRebuild = true;
+        window.shell.renderAgentTimeline();
+    });
+    assert.equal(await page.locator('[data-event-id="legacy-sdk-init"]').count(), 0);
+    assert.ok(!/SDK initialized|legacy-model/.test(await page.locator('.agent-timeline').innerText()));
     assert.ok(requests.some(request => request.messages.some(message => message.role === 'tool' && String(message.content).includes('中文'))));
+    await page.locator('#agentInput').fill('/tree');
+    await page.locator('#agentSendBtn').click();
+    await page.locator('dialog.pi-session-dialog').waitFor({ state: 'visible' });
+    assert.ok(await page.locator('dialog.pi-session-dialog option:not([disabled])').count());
+    await page.screenshot({ path: path.join(root, 'session-tree.png') });
+    await page.locator('dialog.pi-session-dialog button', { hasText: '取消' }).click();
+    assert.equal(await page.evaluate(() => window.shell.agentSessionId), sessionId);
+    await page.locator('#agentInput').fill('/unknown-command');
+    await page.locator('#agentSendBtn').click();
+    await wait(() => page.evaluate(() => Boolean([...document.querySelectorAll('.toast')].some(el => el.textContent.includes('未知命令')))), 'unknown command feedback');
+    await page.locator('#agentInput').fill('/thinking');
+    await page.locator('#agentSendBtn').click();
+    await page.locator('dialog.pi-session-dialog').waitFor({ state: 'visible' });
+    await page.locator('dialog.pi-session-dialog button', { hasText: '取消' }).click();
+    await page.locator('#agentInput').fill('/clone');
+    await page.locator('#agentSendBtn').click();
+    await wait(() => page.evaluate(original => window.shell.agentSessionId !== original, sessionId), 'clone switches session');
+    const clonedId = await page.evaluate(() => window.shell.agentSessionId);
+    assert.ok(clonedId);
+    await page.locator('#agentInput').fill('/fork');
+    await page.locator('#agentSendBtn').click();
+    await page.locator('dialog.pi-session-dialog').waitFor({ state: 'visible' });
+    await page.locator('dialog.pi-session-dialog button[type="submit"]').click();
+    await wait(() => page.evaluate(original => window.shell.agentSessionId !== original, clonedId), 'fork switches session');
+    assert.ok((await page.locator('#agentInput').inputValue()).includes('执行 Pi UI 验证'));
+    assert.equal(await fs.readFile(path.join(pageDir, 'app.js'), 'utf8'), 'window.piUiVerified = true;');
     assert.deepEqual(errors, []);
     await page.screenshot({ path: path.join(root, 'completed.png') });
     await fs.writeFile(path.join(root, 'report.json'), JSON.stringify({ status: 'passed', checks: ['native Pi write requires approval',
         'refresh retains pending approval and active run', 'session approval permits same-tool writes to different files', 'refresh retains pending question',
-        'answer continues native tool loop', 'one final assistant message', 'no page errors'], sessionId, errors }, null, 2));
+        'answer continues native tool loop', 'one final assistant message', 'runtime initialization is hidden from timeline',
+        'legacy sdk_init history remains invisible',
+        'legacy SDK commands are absent while /runtime and /tools remain', 'session tree cancel preserves current session',
+        'unknown command rejected', 'thinking selector', 'clone and historical fork switch session',
+        'fork restores selected user text without changing files', 'no page errors'], sessionId, errors }, null, 2));
     console.log(`PASS: real Portal + Gateway + Pi approval/question/refresh; evidence ${root}`);
 } finally {
     await browser?.close();

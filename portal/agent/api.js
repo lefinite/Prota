@@ -56,8 +56,20 @@ class AgentApiClient {
         return this.request(`/api/agent/skills/${encodeURIComponent(skillId)}/detail`);
     }
 
-    getCommands() {
-        return this.request('/api/agent/commands');
+    getCommands(sessionId = '') {
+        return this.request(`/api/agent/commands${sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''}`);
+    }
+
+    piSessionCommand(sessionId, operation, payload = {}) {
+        return this.request(`/api/agent/session/${encodeURIComponent(sessionId)}/pi`, {
+            method: 'POST', body: { operation, ...payload }
+        });
+    }
+
+    steer(sessionId, message) {
+        return this.request(`/api/agent/session/${encodeURIComponent(sessionId)}/steer`, {
+            method: 'POST', body: { message }
+        });
     }
 
     getSdkInfo() {

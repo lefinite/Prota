@@ -3,8 +3,8 @@
  * Orchestrates PRDManager, PRDRenderer and PRDScrollSync to deliver high-quality PRD experiences.
  */
 
-import { PRDManager } from './manager.js?v=20261027-page-docs-v1';
-import { PRDRenderer } from './renderer.js?v=20261027-page-docs-v1';
+import { PRDManager } from './manager.js?v=20261028-prd-live-v13';
+import { PRDRenderer } from './renderer.js?v=20261028-prd-live-v13';
 import { PRDScrollSync } from './scroll-sync.js?v=20261013-stable-edit-scroll-v1';
 
 export class PRDModule {
@@ -106,7 +106,7 @@ export class PRDModule {
      */
     ensureStylesheet() {
         const isShare = window.__READIFY_SHARE__ || window.location.pathname.includes('/shares/');
-        const href = isShare ? '/portal/modules/prd/prd.css?v=20261027-page-docs-v1' : 'modules/prd/prd.css?v=20261027-page-docs-v1';
+        const href = isShare ? '/portal/modules/prd/prd.css?v=20261028-prd-live-v13' : 'modules/prd/prd.css?v=20261028-prd-live-v13';
 
         const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
             .find((link) => (link.getAttribute('href') || '').includes('prd.css'));
@@ -129,8 +129,9 @@ export class PRDModule {
      */
     async switchContext(pageId, version, preferredPath = '') {
         const pageKey = `${this.host.activeProjectId}:${pageId}`;
-        const currentPath = this._pageKey === pageKey ? this.manager.state.path : '';
+        const currentPath = this._pageKey === pageKey && this._version === version ? this.manager.state.path : '';
         this._pageKey = pageKey;
+        this._version = version;
         this.manager.resetState();
         await this.manager.loadDocument({ force: true, path: preferredPath || currentPath });
     }
@@ -277,7 +278,10 @@ export class PRDModule {
             this.render();
         } else {
             // Smaller diff patches (like dirty flag)
-            this.renderer.rendererPrdMeta?.(state);
+            if (state.documents !== prevState.documents && this.host.annotationDrawerMeta) {
+                this.host.annotationDrawerMeta.innerHTML = this.renderer.renderPrdMeta(state);
+                this.bindMetaSwitcherEvents();
+            }
             this.syncPrdActionButtons(state);
         }
     }
@@ -1517,7 +1521,55 @@ export class PRDModule {
     /**
      * Binds dropdown toggle, document switching, and physical deletion inside the metadata switcher dropdown
      */
+    startCanvasDocumentDrag(event, payload) {
+        const iframe = this.host.mainIframe;
+        if (!iframe || this.host.getPageRecord?.()?.pageMode !== 'infinite-canvas') return;
+        this._prdDropCleanup?.();
+        const rect = iframe.getBoundingClientRect();
+        const canvasPath = iframe.contentWindow.location.pathname;
+        const target = document.createElement('div');
+        target.dataset.prdCanvasDrop = '';
+        Object.assign(target.style, {position:'fixed', left:`${rect.left}px`, top:`${rect.top}px`, width:`${rect.width}px`, height:`${rect.height}px`, zIndex:'9999', outline:'2px solid #7b86cb', outlineOffset:'-2px', background:'#737fc40a'});
+        const cleanup = () => { target.remove(); document.removeEventListener('dragend', cleanup); this._prdDropCleanup = null; };
+        this._prdDropCleanup = cleanup;
+        document.addEventListener('dragend', cleanup);
+        target.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+        target.addEventListener('drop', async e => {
+            e.preventDefault(); e.stopPropagation(); cleanup();
+            try {
+                const frame = iframe.contentWindow;
+                if (!frame.protaCanvas?.importPrd) {
+                    if (frame.protaCanvas?.isDirty() && !(await frame.protaCanvas.save())) throw new Error('请先保存当前画布，再拖入 PRD');
+                    const loaded = new Promise(resolve => iframe.addEventListener('load', resolve, {once:true}));
+                    await this.host.upgradeCanvasEditorIfNeeded?.({force:true});
+                    await Promise.race([loaded, new Promise(resolve => setTimeout(resolve, 5000))]);
+                }
+                if (iframe.contentWindow.location.pathname !== canvasPath) throw new Error('页面已切换，请重新拖入');
+                const editor = iframe.contentWindow.protaCanvas;
+                if (!editor?.importPrd) throw new Error('画布运行时尚未更新，请刷新页面后重试');
+                const bounds = iframe.getBoundingClientRect();
+                await editor.importPrd(payload, e.clientX - bounds.left, e.clientY - bounds.top);
+            } catch (error) { this.host.showToast(error.message || 'PRD 拖入失败，请重试', 'error'); }
+        });
+        // Adding the target after dragstart lets the native browser drag initialize first.
+        requestAnimationFrame(() => { if (this._prdDropCleanup === cleanup) document.body.append(target); });
+    }
+
+    positionDocumentDropdown(dropdown) {
+        if (!dropdown || dropdown.hidden) return;
+        dropdown.style.transform = '';
+        const drawer = this.host.annotationDrawer?.getBoundingClientRect();
+        const left = Math.max(12, (drawer?.left || 0) + 8);
+        const right = Math.min(window.innerWidth - 12, (drawer?.right || window.innerWidth) - 8);
+        dropdown.style.width = `${Math.min(320, Math.max(0, right - left))}px`;
+        const bounds = dropdown.getBoundingClientRect();
+        const offset = bounds.left < left ? left - bounds.left : Math.min(0, right - bounds.right);
+        dropdown.style.transform = `translateX(${offset}px)`;
+        dropdown.style.maxHeight = `${Math.max(120, Math.min(window.innerHeight, drawer?.bottom || window.innerHeight) - bounds.top - 12)}px`;
+    }
+
     bindMetaSwitcherEvents() {
+        if (this.manager.isReadOnly()) return;
         const metaEl = this.host.annotationDrawerMeta;
         if (!metaEl) return;
 
@@ -1531,8 +1583,24 @@ export class PRDModule {
                 const isHidden = dropdown.hidden;
                 dropdown.hidden = !isHidden;
                 trigger.classList.toggle('is-active', isHidden);
+                this.positionDocumentDropdown(dropdown);
             });
         }
+
+        // Native drag data crosses the Portal / canvas iframe boundary.
+        metaEl.querySelectorAll('[data-prd-drag-path]').forEach(item => {
+            item.addEventListener('dragstart', event => {
+                const path = item.dataset.prdDragPath;
+                const state = this.manager.state;
+                if (!event.dataTransfer || !path) return;
+                const doc = state.documents.find(doc => doc.path === path);
+                const payload = { path, name: doc?.label || doc?.filename || path.split('/').pop() };
+                event.dataTransfer.effectAllowed = 'copy';
+                event.dataTransfer.setData('application/x-prota-prd+json', JSON.stringify(payload));
+                event.dataTransfer.setData('text/plain', payload.name);
+                this.startCanvasDocumentDrag(event, payload);
+            });
+        });
 
         // Bind switch document events
         const switchItems = metaEl.querySelectorAll('[data-prd-switch-path]');
@@ -1549,6 +1617,71 @@ export class PRDModule {
                     if (!(await this.canNavigate())) return;
                     this.manager.loadDocument({ force: true, path });
                 }
+            });
+        });
+
+        // The native popover puts the short version menu above the scrollable
+        // document list, so it cannot be clipped by the drawer.
+        metaEl.querySelectorAll('[data-prd-binding-trigger]').forEach(trigger => {
+            const options = metaEl.querySelector(`#${trigger.dataset.prdBindingTrigger}`);
+            if (!options) return;
+            options.addEventListener('toggle', () => trigger.setAttribute('aria-expanded', String(options.matches(':popover-open'))));
+            const close = () => { options.hidePopover(); trigger.focus({ preventScroll: true }); };
+            trigger.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (options.matches(':popover-open')) { close(); return; }
+                metaEl.querySelectorAll('.prd-binding-options:popover-open').forEach(other => other.hidePopover());
+                const anchor = trigger.getBoundingClientRect();
+                options.showPopover();
+                const { height, width } = options.getBoundingClientRect();
+                options.style.left = `${Math.max(12, Math.min(anchor.left, window.innerWidth - width - 12))}px`;
+                options.style.top = `${anchor.bottom + height + 6 < window.innerHeight - 12 ? anchor.bottom + 6 : Math.max(12, anchor.top - height - 6)}px`;
+                (options.querySelector('[aria-selected="true"]') || options.querySelector('button'))?.focus({ preventScroll: true });
+            });
+            options.addEventListener('keydown', event => {
+                const items = [...options.querySelectorAll('button:not(:disabled)')];
+                const index = items.indexOf(document.activeElement);
+                if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+                    event.preventDefault();
+                    const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
+                        : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+                    items[next]?.focus();
+                } else if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    close();
+                }
+            });
+        });
+
+        metaEl.querySelectorAll('[data-prd-bind-path]').forEach(button => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const previous = this.manager.state.documents.find(doc => doc.path === button.dataset.prdBindPath)?.prototypeVersion || '';
+                if (this.manager._bindingPending) return;
+                const bindingId = button.closest('.prd-binding-control')?.querySelector('[data-prd-binding-trigger]')?.dataset.prdBindingTrigger;
+                const keepDocumentMenuOpen = dropdown && !dropdown.hidden;
+                const scrollTop = dropdown?.querySelector('.prd-dropdown-list')?.scrollTop || 0;
+                const version = button.dataset.prdBindVersion;
+                button.closest('[popover]')?.hidePopover();
+                if (previous === version) return;
+                metaEl.querySelectorAll('[data-prd-bind-path], [data-prd-binding-trigger]').forEach(item => { item.disabled = true; });
+                const saved = await this.manager.bindDocument(button.dataset.prdBindPath, version || null);
+                // Saving metadata rerenders the menu; leave it open for another
+                // change, without moving the user's reading position.
+                const nextDropdown = metaEl.querySelector('[data-prd-dropdown]');
+                if (saved && nextDropdown && keepDocumentMenuOpen) {
+                    nextDropdown.hidden = false;
+                    this.positionDocumentDropdown(nextDropdown);
+                    metaEl.querySelector('[data-prd-manage-trigger]')?.classList.add('is-active');
+                    const list = nextDropdown.querySelector('.prd-dropdown-list');
+                    if (list) list.scrollTop = scrollTop;
+                }
+                metaEl.querySelectorAll('[data-prd-bind-path], [data-prd-binding-trigger]').forEach(item => { item.disabled = false; });
+                [...metaEl.querySelectorAll('[data-prd-binding-trigger]')].find(item =>
+                    item.dataset.prdBindingTrigger === bindingId)?.focus({ preventScroll: true });
             });
         });
 
@@ -1586,6 +1719,7 @@ export class PRDModule {
      * Executes physical deletion flow of a PRD file with user confirmation
      */
     async deleteDocumentFlow(path, filename) {
+        if (this.manager.isReadOnly()) return;
         const confirmed = await this.host.showConfirm({
             title: '确认物理删除 PRD 文件',
             message: `此操作将从磁盘上永久删除文件「${filename}」，且无法从回收站恢复！确认删除吗？`,
@@ -1799,6 +1933,7 @@ export class PRDModule {
      * Cleanups and destroys all event listeners
      */
     destroy() {
+        this._prdDropCleanup?.();
         if (this._eventCleanup) {
             this._eventCleanup();
             this._eventCleanup = null;

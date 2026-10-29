@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 const server = createServer(async (req, res) => {
     if (req.url === '/') {res.setHeader('Content-Type','text/html; charset=utf-8');return res.end('<meta charset="utf-8"><link rel="stylesheet" href="/shell.css"><link rel="stylesheet" href="/dialog.css"><button id="share">分享</button><script type="module">import {requestShareOptions} from "/dialog.js";document.querySelector("button").onclick=async()=>{window.result=await requestShareOptions("阅读器 V1");}</script>');}
-    const files = {'/dialog.js':'../portal/modules/sharing/dialog.js', '/dialog.css':'../portal/modules/sharing/dialog.css', '/shell.css':'../portal/shell.css'};
+    const files = {'/dialog.js':'../portal/modules/sharing/dialog.js', '/surface.js':'../portal/modules/sharing/surface.js', '/dialog.css':'../portal/modules/sharing/dialog.css', '/shell.css':'../portal/shell.css'};
     const file = files[req.url];
     if (!file) { res.statusCode=404;return res.end(); }
     res.setHeader('Content-Type', req.url.endsWith('.js') ? 'text/javascript' : 'text/css');
@@ -17,6 +17,16 @@ try {
     await page.goto(`http://127.0.0.1:${server.address().port}`);
     await page.click('#share');
     assert.equal(await page.locator('dialog').isVisible(),true);
+    assert.equal(await page.locator('[data-name]').count(),0);
+    const heading=page.getByRole('heading',{name:'链接分享',exact:true});
+    assert.equal(await heading.getAttribute('tabindex'),null);
+    assert.equal(await heading.evaluate(node=>node===document.activeElement),false);
+    assert.equal(await page.locator('dialog').evaluate(node=>node.isContentEditable),false);
+    await heading.click();
+    await page.keyboard.type('test');
+    assert.equal(await heading.textContent(),'链接分享');
+    assert.equal(await heading.evaluate(node=>getComputedStyle(node).caretColor),'rgba(0, 0, 0, 0)');
+
     assert.equal(await page.getByRole('radio',{name:'30 天',exact:true}).isChecked(),true);
     const centered = await page.locator('dialog').evaluate(node=>{const r=node.getBoundingClientRect();return Math.abs(r.x+r.width/2-innerWidth/2)<2 && Math.abs(r.y+r.height/2-innerHeight/2)<2;});
     assert.equal(centered,true,'Dialog must center despite the product global margin reset');
@@ -25,6 +35,7 @@ try {
     const focusStyle = await page.locator('#sharePassword').evaluate(node=>{const s=getComputedStyle(node);return {border:s.borderWidth,outline:s.outlineWidth,shadow:s.boxShadow};});
     assert.deepEqual(focusStyle,{border:'1px',outline:'0px',shadow:'none'});
     assert.match(await page.locator('#sharePassword').inputValue(), /^[2-9A-HJ-NP-Z]{4}$/);
+    assert.notEqual(await page.locator('#sharePassword').evaluate(node=>getComputedStyle(node).caretColor),'rgba(0, 0, 0, 0)');
     await page.locator('#sharePassword').fill('abc');
     await page.getByRole('button',{name:'创建分享链接'}).click();
     assert.equal(await page.locator('dialog').isVisible(),true);

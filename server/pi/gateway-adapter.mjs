@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { PiRuntimeManager } from './runtime-manager.mjs';
 import { PiEventAdapter } from './event-adapter.mjs';
 import { adaptProvider, prepareProviderDirectory, readPiModelCatalog, assertImageInput } from './provider-adapter.mjs';
-import { mapAllowedTools, normalizeToolSelection } from './tool-policy.mjs';
+import { mapAllowedTools, normalizeToolSelection, isToolAllowed } from './tool-policy.mjs';
 import { ensureEngineInfo, sessionPaths, prepareLegacyRecovery, synchronizeEngineInfo } from './session-adapter.mjs';
 import { piRuntime } from '../../scripts/pi-paths.mjs';
 import { verifyPi } from '../../scripts/verify-pi.mjs';
@@ -42,6 +42,7 @@ export class ProtaPiGateway {
         // custom callback cannot be silently discarded at the RPC boundary.
         const { cwd, ...jsonOptions } = options;
         const provider = { ...session.providerConfig, sdkOptions: { ...session.providerConfig.sdkOptions, ...jsonOptions } };
+        if (engine.thinkingLevel && engine.thinkingTarget === JSON.stringify([provider.provider, provider.baseURL, provider.model])) provider.sdkOptions = { ...provider.sdkOptions, reasoningEffort: engine.thinkingLevel };
         const adapted = adaptProvider(provider, { catalog: this.catalog, capabilities: provider.modelCapabilities || {} });
         const mcp = adaptMcpServers(provider.sdkOptions.mcpServers);
         const mcpSignature = createHash('sha256').update(JSON.stringify(mcp)).digest('hex');
@@ -92,6 +93,7 @@ export class ProtaPiGateway {
                 PROTA_PI_MIGRATION_CONFIG: path.join(paths.config, 'migration.json') }, signature, persistence, transient, mcpSignature, mcpNames: mcp.names, paths, adapted: prepared });
         }
         const runtime = await this.manager.ensure(session.id);
+        if (!runtime.busy && engine.autoCompaction !== undefined) await runtime.rpc.request('set_auto_compaction', { enabled: engine.autoCompaction });
         return { runtime, paths, adapted };
     }
 
@@ -116,7 +118,7 @@ export class ProtaPiGateway {
             allowedTools: allowed, availableTools: normalizeToolSelection(options.tools ?? session.providerConfig.sdkOptions?.tools),
             disallowedTools: [...denied], permissionMode: options.permissionMode || 'default',
             maxTurns: options.maxTurns || 200,
-            systemContext: [options.systemPrompt, options.appendSystemPrompt].filter(Boolean).join('\n\n'),
+            systemContext: [options.systemPrompt, options.appendSystemPrompt, session.engineInfo.workspaceNotice].filter(Boolean).join('\n\n'),
             reasoningBody: adapted.reasoningBody, legacyRecovery: recovery };
         const filename = runtime.config.env.PROTA_PI_RUN_CONFIG;
         await fs.writeFile(`${filename}.next`, JSON.stringify(policy), { mode: 0o600 });
@@ -156,8 +158,11 @@ export class ProtaPiGateway {
         let totalCost = 0;
         let maxTurnsReached = false;
         const started = Date.now();
-        emit('sdk_init', { runId, sessionId: session.engineInfo.piSessionId, tools: policy.allowedTools,
-            model: session.providerConfig.model, cwd: policy.workspaceRoot, mcpServers: runtime.config.mcpNames, permissionMode: policy.permissionMode });
+        const before = await runtime.rpc.request('get_entries');
+        // Runtime readiness is operational state, not conversation history.
+        emit('agent_init', { runId, sessionId: session.engineInfo.piSessionId, tools: policy.allowedTools,
+            model: session.providerConfig.model, cwd: policy.workspaceRoot, mcpServers: runtime.config.mcpNames, permissionMode: policy.permissionMode },
+        { persist: false });
         for (const warning of adapted.warnings) emit('sdk_status', { runId, message: warning });
         if (recovery) emit('sdk_status', { runId, message: '旧会话将通过上下文摘要恢复；原始历史已备份，未进行无损转换。' });
         try {
@@ -178,6 +183,10 @@ export class ProtaPiGateway {
                 } });
             await adapter.flush();
             await synchronizeEngineInfo(session, runtime);
+            const after = await runtime.rpc.request('get_entries', before.entries.length ? { since: before.entries.at(-1).id } : {});
+            const userEntry = after.entries.find(entry => entry.type === 'message' && entry.message?.role === 'user');
+            session.engineInfo.runEntries ||= {};
+            session.engineInfo.runEntries[runId] = { beforeLeafId: before.leafId, userEntryId: userEntry?.id, leafId: after.leafId };
             return { result: redactText((result.message?.content || []).filter(block => block.type === 'text').map(block => block.text).join('\n'), secrets),
                 num_turns: turns, usage, total_cost_usd: totalCost, duration_ms: Date.now() - started, stop_reason: result.message?.stopReason };
         } catch (error) {
@@ -188,6 +197,74 @@ export class ProtaPiGateway {
             signal?.removeEventListener('abort', abort);
             await fs.rm(filename, { force: true });
         }
+    }
+
+    async sessionCommand(session, operation, args = {}) {
+        const methods = { tree: 'get_tree', entries: 'get_entries', forkMessages: 'get_fork_messages',
+            usage: 'get_session_stats', state: 'get_state', thinkingLevels: 'get_available_thinking_levels', copy: 'get_last_assistant_text', commands: 'get_commands',
+            name: 'set_session_name', thinking: 'set_thinking_level', 'auto-compact': 'set_auto_compaction' };
+        if (!methods[operation]) throw new Error('Unsupported Pi session operation');
+        const { runtime } = await this.ensure(session);
+        if (runtime.busy) throw new Error('Pi session is busy');
+        let payload = {};
+        if (operation === 'name') {
+            const name = String(args.value || '').trim();
+            if (!name || name.length > 120) throw new Error('会话名称须为 1–120 个字符。');
+            payload = { name };
+        }
+        if (operation === 'thinking') {
+            if (!['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'].includes(args.value)) throw new Error('无效推理等级');
+            const { levels } = await runtime.rpc.request('get_available_thinking_levels');
+            if (!levels.includes(args.value)) throw new Error('当前模型不支持该推理等级。');
+            payload = { level: args.value };
+        }
+        if (operation === 'auto-compact') {
+            if (typeof args.enabled !== 'boolean') throw new Error('enabled 必须为布尔值');
+            payload = { enabled: args.enabled };
+        }
+        const result = await runtime.rpc.request(methods[operation], payload);
+        if (operation === 'thinking') {
+            session.engineInfo.thinkingLevel = (await runtime.rpc.request('get_state')).thinkingLevel;
+            session.engineInfo.thinkingTarget = JSON.stringify([session.providerConfig.provider, session.providerConfig.baseURL, session.providerConfig.model]);
+        }
+        if (operation === 'auto-compact') session.engineInfo.autoCompaction = args.enabled;
+        if (operation === 'name') { session.title = payload.name; session.engineInfo.sessionName = payload.name; }
+        return result;
+    }
+
+    async exportSession(session) {
+        const { runtime, paths } = await this.ensure(session);
+        if (runtime.busy) throw new Error('Pi session is busy');
+        // Export into this session's private directory; paths supplied by clients are never used.
+        const outputPath = path.join(paths.config, 'session-export.html');
+        await runtime.rpc.request('export_html', { outputPath });
+        const html = await fs.readFile(outputPath, 'utf8');
+        return redactText(html, knownSecrets(runtime.config.env));
+    }
+
+    async mcpStatus(session) {
+        const { runtime } = await this.ensure(session);
+        if (runtime.busy) throw new Error('Pi session is busy');
+        let status = null;
+        const listener = event => {
+            if (event.type !== 'extension_ui_request' || event.method !== 'notify') return;
+            try { const value = JSON.parse(event.message); if (value.protocol === 'prota-runtime-v1') status = value; } catch {}
+        };
+        runtime.rpc.on('event', listener);
+        try { await runtime.rpc.request('prompt', { message: '/prota-runtime-status' }); }
+        finally { runtime.rpc.off('event', listener); }
+        const options = session.providerConfig.sdkOptions || {};
+        return Object.entries(options.mcpServers || {}).map(([name, config]) => {
+            const prefix = `mcp__${name.replace(/-/g, '_')}__`;
+            const tools = (status?.tools || []).filter(tool => tool.startsWith(prefix));
+            const allowed = mapAllowedTools(options.allowedTools || []);
+            const denied = mapAllowedTools(options.disallowedTools || []);
+            const available = normalizeToolSelection(options.tools);
+            const permitted = tools.filter(tool => isToolAllowed({ allowedTools: config.enabled === true ? [...allowed, `${prefix}*`] : allowed,
+                disallowedTools: denied, availableTools: available }, tool));
+            return { name, configured: true, enabled: config.enabled === true, connected: status ? tools.length > 0 : null,
+                tools, allowedTools: permitted, approval: options.permissionMode === 'bypassPermissions' ? 'bypassed' : 'required' };
+        });
     }
 
     async messages(session) {
@@ -236,10 +313,11 @@ export class ProtaPiGateway {
         }
     }
 
-    async compact(session) {
+    async compact(session, customInstructions = '') {
         const { runtime } = await this.ensure(session);
+        if (runtime.busy) throw new Error('Cannot compact a running session');
         const previous = (await runtime.rpc.request('get_messages')).messages.length;
-        const result = await runtime.rpc.request('compact', {}, { timeoutMs: 20 * 60_000 });
+        const result = await runtime.rpc.request('compact', { customInstructions }, { timeoutMs: 20 * 60_000 });
         const next = (await runtime.rpc.request('get_messages')).messages.length;
         await synchronizeEngineInfo(session, runtime);
         return { ok: true, previousMessageCount: previous, nextMessageCount: next, summary: result.summary, compactSummary: result.summary };
@@ -251,25 +329,42 @@ export class ProtaPiGateway {
         ensureEngineInfo(session);
     }
 
-    async clone(source, target) {
+    async clone(source, target, entryId = null) {
         const { runtime } = await this.ensure(source);
         if (runtime.busy) throw new Error('Cannot fork a running session');
+        if (entryId) {
+            const { messages } = await runtime.rpc.request('get_fork_messages');
+            if (!messages.some(message => message.entryId === entryId)) throw new Error('请选择可分叉的历史用户消息。');
+        }
         const original = await runtime.rpc.request('get_state');
         if (!original.sessionFile || source.providerConfig.sdkOptions?.persistSession === false) {
             throw new Error('Cannot fork a non-persistent Pi session');
         }
         let copiedClone;
         try {
-            const result = await runtime.rpc.request('clone');
+            const result = await runtime.rpc.request(entryId ? 'fork' : 'clone', entryId ? { entryId } : {});
+            target.branchDraft = result.text || '';
+            target.parentSession = { sessionId: source.id, entryId, mode: entryId ? 'fork' : 'clone' };
             if (result.cancelled) throw new Error('Pi session fork was cancelled');
             const cloned = await runtime.rpc.request('get_state');
             if (!cloned.sessionFile) throw new Error('Pi clone did not create a native session file');
             const paths = sessionPaths(target, this.workspaceRoot(), this.configDirectory);
             await fs.mkdir(paths.sessions, { recursive: true });
             const destination = path.join(paths.sessions, path.basename(cloned.sessionFile));
-            await fs.copyFile(cloned.sessionFile, destination);
-            copiedClone = cloned.sessionFile;
-            target.engineInfo = { ...source.engineInfo, piSessionId: cloned.sessionId, piSessionFile: destination };
+            let nativeFile = destination;
+            try {
+                await fs.copyFile(cloned.sessionFile, destination);
+                copiedClone = cloned.sessionFile;
+            } catch (error) {
+                if (error.code !== 'ENOENT') throw error;
+                const { messages } = await runtime.rpc.request('get_messages');
+                if (messages.some(message => message.role === 'user' || message.role === 'assistant')) throw error;
+                // Pi intentionally persists only after the first conversation
+                // message. Forking before the first user therefore has no file
+                // to copy; the target's native ID is persisted on its next run.
+                nativeFile = undefined;
+            }
+            target.engineInfo = { ...structuredClone(source.engineInfo), piSessionId: cloned.sessionId, piSessionFile: nativeFile };
         } finally {
             try { await runtime.rpc.request('switch_session', { sessionPath: original.sessionFile }); }
             finally {

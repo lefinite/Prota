@@ -35,6 +35,11 @@ def share_payload(file):
     raise ValueError(f'分享元数据无法识别，请重新生成：{Path(file).name}')
 
 
+def share_zip_filenames(payload):
+    pages = (payload.get('pages') or []) if payload.get('mode') == 'folder' else [payload]
+    return {page['zipFilename'] for page in pages if page.get('zipFilename')}
+
+
 def withdraw_snapshot(static, filenames):
     """Remove both link layouts, downloads and page resources no remaining share uses."""
     static = Path(static)
@@ -59,17 +64,17 @@ def withdraw_snapshot(static, filenames):
         page_dir = relative.rsplit('/', 1)[0]
         if not any(path.startswith(page_dir + '/') for path in kept):
             shutil.rmtree(static / page_dir / 'docs', ignore_errors=True)
-    kept_zips = {item.get('zipFilename') for item in remaining}
+    kept_zips = set().union(*(share_zip_filenames(item) for item in remaining))
     for filename in filenames:
         if Path(filename).name != filename or not filename.endswith('.html'):
             raise ValueError('分享文件名无效。')
         for relative in [filename, 'shares/' + filename]:
             (static / relative).unlink(missing_ok=True)
     for payload in removed:
-        zipped = payload.get('zipFilename')
-        if zipped and zipped not in kept_zips and Path(zipped).name == zipped:
-            for relative in [zipped, 'shares/' + zipped]:
-                (static / relative).unlink(missing_ok=True)
+        for zipped in share_zip_filenames(payload) - kept_zips:
+            if Path(zipped).name == zipped:
+                for relative in [zipped, 'shares/' + zipped]:
+                    (static / relative).unlink(missing_ok=True)
 
 
 def safe_relative(value):
@@ -253,8 +258,7 @@ class VercelDeployer:
                 docs = self.root / f'src/pages/{project}/{page_id}/docs'
                 if docs.is_dir() and (documents or page.get('prdContent') or page.get('diagrams') or page.get('mindmaps')):
                     self._copy(self.root, docs.relative_to(self.root).as_posix(), static)
-            zip_name = payload.get('zipFilename')
-            if zip_name:
+            for zip_name in share_zip_filenames(payload):
                 if Path(zip_name).name != zip_name or not zip_name.endswith('.zip'):
                     raise ValueError('下载包路径无效。')
                 self._copy(self.root, 'shares/' + zip_name, static)

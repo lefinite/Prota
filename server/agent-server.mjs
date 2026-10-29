@@ -1,5 +1,7 @@
-import { PreviewObserver, previewScope } from './preview/observer.mjs';
-import { progressivePreviewEnabled } from './preview/config.mjs';
+import { canvasPersistence } from './canvas-autosave.mjs';
+import { mergePiCommands } from './pi/command-registry.mjs';
+import { buildConnectionProbe } from './pi/connection-probe.mjs';
+import { ensureRunPreview, previewRunMetadata } from './preview/lifecycle.mjs';
 import http from 'http';
 import { discoverProviderModels } from './provider-models.mjs';
 import { configDirectory, getWorkspaceRoot, workspaceLocked } from './workspace.mjs';
@@ -15,7 +17,7 @@ import { ProtaPiGateway } from './pi/gateway-adapter.mjs';
 import { agentBuild } from './agent-build.mjs';
 import { ensureEngineInfo, sessionPaths, synchronizeEngineInfo } from './pi/session-adapter.mjs';
 import { knownSecrets, redactSecrets } from './pi/secrets.mjs';
-import { configuredMcpSecrets } from './pi/mcp-adapter.mjs';
+import { configuredMcpSecrets, enabledMcpTools } from './pi/mcp-adapter.mjs';
 import { resolveExecutionSkill } from './pi/skill-adapter.mjs';
 
 const execPromise = promisify(exec);
@@ -411,6 +413,10 @@ async function readCheckpointFileRecord(relativePath, absolutePath, stat = null,
 }
 
 async function createRunCheckpoint(session, runId, descriptor) {
+    if (session.activeRun) {
+        session.activeRun.canvasPersistence = { root: getWorkspaceRoot(), context: { ...session.context } };
+        await canvasPersistence('begin', getWorkspaceRoot(), session.context, runId);
+    }
     const checkpointDir = getCheckpointDir(session.id, runId);
     await fs.mkdir(checkpointDir, { recursive: true });
     const scope = createCheckpointScope(session);
@@ -739,6 +745,8 @@ async function emitRunChanges(session, runId, activeRun = null) {
     if (activeRun) {
         activeRun.changesEmitted = true;
     }
+    const persistence = activeRun?.canvasPersistence;
+    if (persistence) await canvasPersistence('finish', persistence.root, persistence.context, runId);
     const changes = await detectRunChanges(session, runId);
     emitEvent(session, 'run_changes', changes);
     return changes;
@@ -807,13 +815,13 @@ function getLatestAvailableRunChange(session) {
     return null;
 }
 
-function getRollbackCandidatePaths(session, runId, mode) {
+function getRollbackCandidatePaths(session, runId, mode, beforeRun = false) {
     if (mode === 'single') {
         const changes = getRunChangesPayload(session, runId);
         return new Set((changes?.files || []).map((file) => file.path).filter(Boolean));
     }
     const paths = new Set();
-    for (const event of getRunChangeEvents(session, runId, { includeSelf: false })) {
+    for (const event of getRunChangeEvents(session, runId, { includeSelf: beforeRun })) {
         for (const file of event.payload?.files || []) {
             if (file.path) paths.add(file.path);
         }
@@ -821,10 +829,10 @@ function getRollbackCandidatePaths(session, runId, mode) {
     return paths;
 }
 
-function getLatestKnownAfterHash(session, relativePath, runId, mode) {
+function getLatestKnownAfterHash(session, relativePath, runId, mode, beforeRun = false) {
     const events = mode === 'single'
         ? (getRunChangesPayload(session, runId) ? [{ payload: getRunChangesPayload(session, runId) }] : [])
-        : getRunChangeEvents(session, runId, { includeSelf: false });
+        : getRunChangeEvents(session, runId, { includeSelf: beforeRun });
     for (let index = events.length - 1; index >= 0; index -= 1) {
         const file = (events[index].payload?.files || []).find((item) => item.path === relativePath);
         if (file) return file.afterSha256 || null;
@@ -879,7 +887,7 @@ function getCheckpointTargetHash(checkpoint, relativePath) {
 
 async function getRollbackTargetCheckpoint(session, runId, mode, fallbackCheckpoint) {
     if (mode === 'single') return fallbackCheckpoint;
-    const nextChange = getRunChangeEvents(session, runId, { includeSelf: false })[0] || null;
+    const nextChange = getRunChangeEvents(session, runId, { includeSelf: false }).find(event => event.payload?.files?.length) || null;
     if (!nextChange?.payload?.runId) return fallbackCheckpoint;
     return readRunCheckpoint(session.id, nextChange.payload.runId);
 }
@@ -908,7 +916,7 @@ async function createRestoreSnapshot(session, runId, mode, candidatePaths, check
     return snapshot;
 }
 
-async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint', force = false } = {}) {
+async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint', force = false, dryRun = false, beforeRun = false } = {}) {
     const normalizedMode = mode === 'single' ? 'single' : 'to_checkpoint';
     if (normalizedMode === 'single') {
         const latestChange = getLatestAvailableRunChange(session);
@@ -925,8 +933,8 @@ async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint',
         }
     }
     const checkpoint = await readRunCheckpoint(session.id, runId);
-    const targetCheckpoint = await getRollbackTargetCheckpoint(session, runId, normalizedMode, checkpoint);
-    const candidatePaths = getRollbackCandidatePaths(session, runId, normalizedMode);
+    const targetCheckpoint = beforeRun ? checkpoint : await getRollbackTargetCheckpoint(session, runId, normalizedMode, checkpoint);
+    const candidatePaths = getRollbackCandidatePaths(session, runId, normalizedMode, beforeRun);
     if (!candidatePaths.size) {
         return {
             ok: false,
@@ -941,7 +949,7 @@ async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint',
 
     const conflicts = [];
     for (const relativePath of candidatePaths) {
-        const latestAfterHash = getLatestKnownAfterHash(session, relativePath, runId, normalizedMode);
+        const latestAfterHash = getLatestKnownAfterHash(session, relativePath, runId, normalizedMode, beforeRun);
         const currentHash = await readCurrentFileHash(relativePath);
         if (!force && latestAfterHash !== currentHash) {
             conflicts.push({
@@ -953,7 +961,7 @@ async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint',
     }
 
     if (conflicts.length) {
-        markRunRollbackStatus(session, runId, normalizedMode, 'conflict');
+        if (!dryRun) markRunRollbackStatus(session, runId, normalizedMode, 'conflict');
         return {
             ok: false,
             status: 'conflict',
@@ -964,6 +972,10 @@ async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint',
             conflicts
         };
     }
+
+    if (dryRun) return { ok: true, status: 'preview', runId, files: await Promise.all([...candidatePaths].sort().map(async path => ({
+        path, currentSha256: await readCurrentFileHash(path), targetSha256: getCheckpointTargetHash(targetCheckpoint, path)
+    }))), conflicts: [] };
 
     const restoreSnapshot = await createRestoreSnapshot(session, runId, normalizedMode, candidatePaths, targetCheckpoint);
     const restored = [];
@@ -984,6 +996,10 @@ async function rollbackRunToCheckpoint(session, runId, { mode = 'to_checkpoint',
         restoreMode: normalizedMode,
         restoreSnapshotCreatedAt: restoreSnapshot.createdAt
     });
+    if (beforeRun) {
+        const selected = getRunChangesPayload(session, runId);
+        if (selected) selected.rollbackStatus = 'reverted';
+    }
     await persistSession(session);
     return {
         ok: true,
@@ -1147,10 +1163,11 @@ function sessionSecrets(session) {
 function createSessionSnapshot(session) {
     return redactSecrets({
         id: session.id,
-        title: normalizeSessionTitle(session.title || createSessionTitle(session.context)),
+        title: session.engineInfo?.sessionName || normalizeSessionTitle(session.title || createSessionTitle(session.context)),
         sessionScope: inferSessionScope(session),
         sdkSessionId: session.sdkSessionId || session.id,
         engineInfo: session.engineInfo || null,
+        parentSession: session.parentSession || null,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
         archivedAt: session.archivedAt || null,
@@ -1190,7 +1207,7 @@ function createSessionListItem(session) {
     });
     return redactSecrets({
         id: session.id,
-        title: normalizeSessionTitle(session.title || createSessionTitle(session.context)),
+        title: session.engineInfo?.sessionName || normalizeSessionTitle(session.title || createSessionTitle(session.context)),
         sessionScope,
         projectId: session.context.projectId || 'readify',
         pageId: session.context.pageId,
@@ -1199,6 +1216,7 @@ function createSessionListItem(session) {
             ? ''
             : `${session.context.projectId} / ${session.context.pageId} / ${session.context.version}`,
         status: session.runState?.status || 'ready',
+        canvasTargetIds: (session.runState?.descriptor?.context?.canvasSelection || session.context.canvasSelection || []).map(node => node.id),
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
         archived: Boolean(session.archivedAt),
@@ -1469,12 +1487,13 @@ async function getHydratedSession(sessionId) {
         const normalizedContext = normalizeContext(snapshot.context);
         const session = {
             id: snapshot.id,
-            title: normalizeSessionTitle(
+            title: snapshot.engineInfo?.sessionName || normalizeSessionTitle(
                 snapshot.title || createSessionTitle(normalizedContext, snapshot.runState?.lastSummary)
             ),
             sessionScope: inferSessionScope(snapshot),
             sdkSessionId: snapshot.sdkSessionId || snapshot.id,
             engineInfo: snapshot.engineInfo || null,
+            parentSession: snapshot.parentSession || null,
             createdAt: snapshot.createdAt || new Date().toISOString(),
             updatedAt: snapshot.updatedAt || snapshot.createdAt || new Date().toISOString(),
             archivedAt: snapshot.archivedAt || null,
@@ -1915,27 +1934,22 @@ function emitEvent(session, type, payload = {}, options = {}) {
     payload = redactSecrets(payload, sessionSecrets(session));
     // Preview is passive infrastructure: failures must never enter the Agent path.
     try {
-        if (type === 'run_started' && progressivePreviewEnabled(configDirectory)) {
-            const scope = previewScope(session.context, payload.descriptor);
-            session.previewObserver?.stop();
-            if (scope) {
-                const workspaceRoot = getWorkspaceRoot();
-                session.previewObserver = new PreviewObserver({
-                    workspaceRoot, configDirectory, runId: payload.runId, scope,
-                    isCurrent: () => {
-                        if (!progressivePreviewEnabled(configDirectory)) {
-                            emitEvent(session, 'preview_disabled', { runId: payload.runId }, { persist: false });
-                            return false;
-                        }
-                        try { return !workspaceLocked() && getWorkspaceRoot() === workspaceRoot; }
-                        catch { return false; }
-                    },
-                    publish: revision => emitEvent(session, 'preview_revision', revision, { persist: false }),
-                    log: error => console.debug('[preview]', error.message)
-                }).start();
-                payload = { ...payload, progressivePreview: true };
-            }
-        } else if (type === 'run_live_changes') session.previewObserver?.trigger();
+        if (type === 'run_started') {
+            session.previewObserver?.stop(); session.previewObserver = null;
+            const observer = ensureRunPreview(session, {
+                configDirectory, getWorkspaceRoot, workspaceLocked,
+                runId: payload.runId, descriptor: payload.descriptor,
+                emit: (name, data) => emitEvent(session, name, data, { persist: false })
+            });
+            if (observer) payload = { ...payload, progressivePreview: true };
+        } else if (['run_live_changes', 'heartbeat', 'run_status'].includes(type) && session.runState?.active) {
+            const observer = ensureRunPreview(session, {
+                configDirectory, getWorkspaceRoot, workspaceLocked, announce: true,
+                emit: (name, data) => emitEvent(session, name, data, { persist: false })
+            });
+            if (type === 'run_live_changes') observer?.trigger();
+            else payload = { ...payload, ...previewRunMetadata(session), context: session.context };
+        }
         else if (type === 'run_finished' || type === 'run_failed') {
             session.previewObserver?.stop(); session.previewObserver = null;
         }
@@ -2111,7 +2125,7 @@ function resolveSdkOptions(input = {}, allowedKeys = SDK_JSON_OPTION_KEYS) {
         if (!isPlainObject(source)) continue;
         for (const [key, value] of Object.entries(source)) {
             if (value !== undefined && value !== null && !allowedKeys.has(key)) {
-                throw createClassifiedError(`SDK option ${key} has no supported Pi mapping.`, 'config_error', 400);
+                throw createClassifiedError(`Agent option ${key} has no supported Pi mapping.`, 'config_error', 400);
             }
         }
     }
@@ -2195,10 +2209,10 @@ async function loadAgentSdkExtension() {
         const extension = isPlainObject(module.default)
             ? { ...module.default, ...module }
             : { ...module };
-        logInfo('Loaded SDK extension', path.relative(ROOT_DIR, AGENT_SDK_EXTENSION_PATH));
+        logInfo('Loaded Agent extension', path.relative(ROOT_DIR, AGENT_SDK_EXTENSION_PATH));
         return extension;
     } catch (error) {
-        console.warn('[agent-gateway] Failed to load SDK extension:', error);
+        console.warn('[agent-gateway] Failed to load Agent extension:', error);
         return {
             loadError: summarizeText(error?.message || String(error), 500)
         };
@@ -2226,7 +2240,7 @@ function getExtensionTools() {
 }
 
 function combineToolOptionWithExtensions(toolsOption) {
-    if (getExtensionTools().length) throw new Error('旧 SDK 自定义工具需要迁移到 integrations/pi/prota-extension.ts。');
+    if (getExtensionTools().length) throw new Error('旧 Agent 自定义工具需要迁移到 integrations/pi/prota-extension.ts。');
     return toolsOption;
 }
 
@@ -2240,17 +2254,17 @@ function combineSystemPrompts(...parts) {
 function composeQueryOptions(session, descriptor) {
     const extensionQueryOptions = getExtensionOptions('options', 'createAgentOptions', 'queryOptions');
     if (typeof agentSdkExtension?.canUseTool === 'function' && agentSdkExtension.canUseTool.protaPlaceholder !== true) {
-        throw new Error('旧 SDK canUseTool 回调需要迁移到 integrations/pi/prota-extension.ts 的 tool_call Hook。');
+        throw new Error('旧 Agent canUseTool 回调需要迁移到 integrations/pi/prota-extension.ts 的 tool_call Hook。');
     }
     for (const [key, value] of Object.entries(extensionQueryOptions)) {
         if (value !== undefined && value !== null && !SDK_QUERY_OPTION_KEYS.has(key)) {
-            throw new Error(`SDK extension option ${key} has no supported Pi mapping.`);
+            throw new Error(`Agent extension option ${key} has no supported Pi mapping.`);
         }
     }
     if (isPlainObject(agentSdkExtension?.hooks) && Object.keys(agentSdkExtension.hooks).length) {
         extensionQueryOptions.hooks = agentSdkExtension.hooks;
     }
-    if (getExtensionTools().length) throw new Error('旧 SDK 自定义工具需要迁移到 integrations/pi/prota-extension.ts。');
+    if (getExtensionTools().length) throw new Error('旧 Agent 自定义工具需要迁移到 integrations/pi/prota-extension.ts。');
     extensionQueryOptions.mcpServers = mergeSdkOptions(
         agentSdkExtension?.mcpServers || {}, agentSdkExtension?.createAgentOptions?.mcpServers || {},
         extensionQueryOptions.mcpServers || {});
@@ -2274,8 +2288,8 @@ function composeQueryOptions(session, descriptor) {
             Math.max(queryOptions.maxTurns, MIN_SKILL_AGENT_MAX_TURNS)
         );
     }
-    if (!Array.isArray(queryOptions.allowedTools) || queryOptions.allowedTools.length === 0) {
-        queryOptions.allowedTools = getAllowedToolsForRun(descriptor);
+    if (!Array.isArray(queryOptions.allowedTools)) {
+        queryOptions.allowedTools = [...getAllowedToolsForRun(descriptor), ...enabledMcpTools(queryOptions.mcpServers)];
     }
     queryOptions.appendSystemPrompt = combineSystemPrompts(
         queryOptions.appendSystemPrompt,
@@ -2290,6 +2304,11 @@ function composeQueryOptions(session, descriptor) {
 
 function registerLocalSkill(definition) {
     localSkills.set(definition.id, {
+        ...definition,
+        source: definition.kind === 'skill' ? 'skill' : 'prota',
+        action: definition.localOnly ? 'client' : 'gateway',
+        availability: 'available',
+        advanced: ['messages', 'api-type', 'config', 'delete-session', 'runtime'].includes(definition.id),
         ...definition,
         aliases: Array.isArray(definition.aliases) ? definition.aliases : []
     });
@@ -2816,6 +2835,10 @@ function normalizeImportedFileList(files) {
 
 function registerLocalCommand(definition) {
     localCommands.set(definition.id, {
+        source: definition.kind === 'skill' ? 'skill' : 'prota',
+        action: definition.localOnly ? 'client' : 'gateway',
+        availability: 'available',
+        advanced: ['messages', 'api-type', 'config', 'delete-session', 'runtime'].includes(definition.id),
         ...definition,
         aliases: Array.isArray(definition.aliases) ? definition.aliases : []
     });
@@ -3044,12 +3067,12 @@ async function refreshProjectSkills({ force = false } = {}) {
     }
 }
 
-function getLocalCommand(commandId) {
+function getLocalCommand(commandId, session = null) {
     const raw = String(commandId || '').trim();
     if (!raw) return null;
     const normalized = raw.startsWith('/') ? raw.slice(1) : raw;
     const lowered = normalized.toLowerCase();
-    return Array.from(localCommands.values()).find((command) => {
+    return [...localCommands.values(), ...(session?._piCommands || [])].find((command) => {
         if (command.id === normalized) return true;
         if (String(command.label || '').toLowerCase() === lowered) return true;
         return (command.aliases || []).some((alias) => String(alias).replace(/^\//, '').trim().toLowerCase() === lowered);
@@ -3071,7 +3094,9 @@ function listUserInvocableCommands() {
         supportsSession: command.supportsSession !== false,
         dangerous: Boolean(command.dangerous),
         localOnly: Boolean(command.localOnly),
-        skillId: command.skillId || null
+        skillId: command.skillId || null,
+        source: command.source, action: command.action, availability: command.availability, advanced: command.advanced,
+        requiresConfirmation: Boolean(command.requiresConfirmation)
     }));
 }
 
@@ -3324,7 +3349,7 @@ function isGenericSessionTitle(value = '') {
 }
 
 function shouldRefreshSessionTitle(session, descriptor) {
-    if (!session || !descriptor) return false;
+    if (!session || !descriptor || session.engineInfo?.sessionName) return false;
     const hasPriorRun = (session.timeline || []).some((event) => event.type === 'run_started');
     return !hasPriorRun || isGenericSessionTitle(session.title);
 }
@@ -3378,7 +3403,7 @@ async function generateAiSessionTitle(session, descriptor, fallbackTitle) {
 function emitSessionTitleUpdated(session, source = 'local') {
     emitEvent(session, 'session_updated', {
         sessionId: session.id,
-        title: normalizeSessionTitle(session.title),
+        title: session.engineInfo?.sessionName || normalizeSessionTitle(session.title),
         source,
         context: session.context
     }, { persist: false });
@@ -3418,9 +3443,7 @@ async function buildActionPrompt(session, descriptor, internalInstructions = '')
         const command = getLocalCommand(descriptor.commandId);
         if (command?.skillId) {
             const skill = getLocalSkill(command.skillId);
-            const leadMessage = command.id === 'iterate'
-                ? `请明确按“迭代版本”流程执行，基于当前版本创建下一个版本，并在新版本中完成以下需求：${descriptor.arguments || '请基于当前页面给出下一版优化方案并落地。'}`
-                : descriptor.arguments || skill?.defaultStarter || '';
+            const leadMessage = descriptor.arguments || skill?.defaultStarter || '';
             const commandSkillPrompt = [
                 leadMessage,
                 skill?.executionPrompt || '',
@@ -3471,7 +3494,7 @@ function getAllowedToolsForRun(descriptor) {
 
 async function ensureSessionAgent(session, nextProviderConfig = null) {
     if (nextProviderConfig) {
-        if (session.activeRun) throw new Error('当前任务执行中，不能切换 Provider。');
+        if (session.activeRun || session._piOperation) throw new Error('当前任务执行中，不能切换 Provider。');
         if (piGateway.manager.get(session.id)?.busy) throw new Error('当前任务执行中，不能切换 Provider。');
         session.providerConfig = resolveProviderConfig(nextProviderConfig);
     }
@@ -3491,7 +3514,7 @@ async function persistSdkAgentHistory(session) {
 
 function getSharedSystemPrompt(session, descriptor) {
     const skill = descriptor.kind === 'skill' ? getLocalSkill(descriptor.skillId) : null;
-    const command = descriptor.kind === 'command' ? getLocalCommand(descriptor.commandId) : null;
+    const command = descriptor.kind === 'command' ? getLocalCommand(descriptor.commandId, session) : null;
     const commandSkill = command?.skillId ? getLocalSkill(command.skillId) : null;
     const isGlobalContext = Boolean(session.context?.globalContext || skill?.globalContext || commandSkill?.globalContext);
     return [
@@ -3834,7 +3857,7 @@ async function inspectBusinessPrdArtifact(session) {
 }
 
 async function runSessionTask(session, descriptor, { internalInstructions = '' } = {}) {
-    if (session.activeRun) {
+    if (session.activeRun || session._piOperation) {
         throw new Error('当前会话已有任务在执行，请先等待完成或手动中断。');
     }
 
@@ -3843,7 +3866,7 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
         : descriptor.kind === 'command'
             ? getLocalSkill(getLocalCommand(descriptor.commandId)?.skillId)
             : null;
-    const command = descriptor.kind === 'command' ? getLocalCommand(descriptor.commandId) : null;
+    const command = descriptor.kind === 'command' ? getLocalCommand(descriptor.commandId, session) : null;
     if (descriptor.kind === 'skill' && !skill) {
         throw createClassifiedError('指定的 Skill 不存在或暂不可用。', 'config_error');
     }
@@ -4159,12 +4182,12 @@ function buildSdkResultFailureMessage(result, session) {
             '这通常不是 Provider 连接失败，而是任务需要更多“模型调用 -> 工具执行 -> 模型调用”的循环才能完成。',
             `Provider：${session.providerConfig.label || session.providerConfig.provider}`,
             `Model：${session.providerConfig.model}`,
-            '可以在 Prota Provider 的 SDK Options 里调高 maxTurns，例如 {"maxTurns": 60}；也可以把任务拆小，或先执行 /compact 后继续。'
+            '可以在 Prota Provider 的 Agent Options 里调高 maxTurns，例如 {"maxTurns": 60}；也可以把任务拆小，或先执行 /compact 后继续。'
         ].join('\n');
     }
 
     return [
-        `SDK 在第 ${result?.num_turns || 1} 轮模型调用时返回 ${result?.subtype || 'error'}，但当前 SDK 没有暴露上游错误详情。`,
+        `Agent 在第 ${result?.num_turns || 1} 轮模型调用时返回 ${result?.subtype || 'error'}，但当前 Pi Runtime 没有暴露上游错误详情。`,
         `Provider：${session.providerConfig.label || session.providerConfig.provider}`,
         `Model：${session.providerConfig.model}`,
         `Base URL：${session.providerConfig.baseURL || '未配置'}`,
@@ -4347,71 +4370,12 @@ async function runDevSimulation(session, descriptor) {
     };
 }
 
-function compactSessionTimeline(session) {
-    const timeline = session.timeline || [];
-    if (!timeline.length) {
-        return '当前会话没有历史记录，无需压缩。';
-    }
-
-    const runCount = timeline.filter((e) => e.type === 'run_started').length;
-    const toolCount = timeline.filter((e) => e.type === 'tool_started').length;
-    const messageCount = timeline.filter((e) => e.type === 'assistant_message').length;
-    const artifactCount = timeline.filter((e) => e.type === 'artifact_ready').length;
-
-    const summaryParts = [
-        `会话「${session.title}」共包含 ${runCount} 次运行、${toolCount} 次工具调用、${messageCount} 条助手消息、${artifactCount} 个产物。`
-    ];
-
-    const lastRunEvents = [];
-    let inLastRun = false;
-    for (let i = timeline.length - 1; i >= 0; i--) {
-        if (timeline[i].type === 'run_started') {
-            inLastRun = true;
-        }
-        if (inLastRun) {
-            lastRunEvents.unshift(timeline[i]);
-        }
-        if (timeline[i].type === 'run_finished' || timeline[i].type === 'run_failed') {
-            break;
-        }
-    }
-    const lastRunMessages = lastRunEvents
-        .filter((e) => e.type === 'assistant_message' && e.payload?.text)
-        .map((e) => summarizeText(e.payload.text, 120));
-    if (lastRunMessages.length) {
-        summaryParts.push('最近一次运行摘要：\n' + lastRunMessages.map((m, i) => `${i + 1}. ${m}`).join('\n'));
-    }
-
-    const compactEvent = {
-        id: randomUUID(),
-        type: 'system',
-        subtype: 'compact',
-        createdAt: new Date().toISOString(),
-        payload: {
-            summary: `已压缩 ${timeline.length} 条历史事件。保留最近一次运行上下文。`,
-            previousEventCount: timeline.length,
-            runCount,
-            toolCount,
-            messageCount
-        }
-    };
-
-    session.timeline = [compactEvent];
-    queueMicrotask(() => persistSession(session));
-
-    return summaryParts.join('\n\n');
-}
-
-async function compactSdkAgentHistory(session) {
-    return piGateway.compact(session);
-}
-
 function buildAgentSdkInfo() {
     return {
         ok: true, packageName: '@earendil-works/pi-coding-agent', version: piVersion.version,
         upstreamCommit: piVersion.commit, engine: 'pi', transport: 'rpc',
         options: Array.from(SDK_JSON_OPTION_KEYS).sort(), queryOptions: Array.from(SDK_QUERY_OPTION_KEYS).sort(),
-        topLevelApis: ['prompt', 'abort', 'get_messages', 'compact', 'set_model', 'new_session', 'clone'],
+        topLevelApis: ['prompt', 'abort', 'get_messages', 'compact', 'set_model', 'new_session', 'clone', 'get_tree', 'fork', 'get_entries', 'get_fork_messages', 'set_session_name', 'get_session_stats', 'set_auto_compaction', 'set_thinking_level', 'export_html', 'get_last_assistant_text', 'get_commands'],
         agentMethods: ['prompt', 'abort', 'get_messages', 'compact', 'set_model', 'new_session', 'clone'],
         baseTools: ['read', 'write', 'edit', 'find', 'grep', 'ls', process.platform === 'win32' ? 'powershell' : 'bash']
             .map(name => ({ name, description: `Pi native ${name}` })),
@@ -4434,8 +4398,24 @@ async function listPiSessions() {
 
 async function runBuiltinCommand(session, descriptor, command) {
     const normalizedArgs = String(descriptor.arguments || '').trim();
+    if (command.source === 'pi-extension') {
+        const { commands } = await piGateway.sessionCommand(session, 'commands');
+        if (!mergePiCommands(listUserInvocableCommands(), commands).some(item => item.id === command.id && item.source === 'pi-extension')) {
+            throw new Error('该 Pi 扩展命令已不可用。');
+        }
+        return piGateway.run(session, {
+            prompt: `/${command.id}${normalizedArgs ? ` ${normalizedArgs}` : ''}`,
+            options: composeQueryOptions(session, descriptor), runId: session.runState.runId,
+            signal: session.activeRun.abortController.signal,
+            emit: (type, payload, options) => emitEvent(session, type, payload, options),
+            setRunState: patch => setRunState(session, patch),
+            approval: (...args) => waitForApproval(session, ...args),
+            question: (...args) => waitForQuestionResponse(session, ...args)
+        });
+    }
+
     if (command.id === 'help') {
-        const commands = listUserInvocableCommands();
+        const commands = [...listUserInvocableCommands(), ...(session._piCommands || [])];
         const commandSummary = commands
             .filter((item) => item.category !== 'Skills')
             .map((item) => `/${item.id}`)
@@ -4455,7 +4435,7 @@ async function runBuiltinCommand(session, descriptor, command) {
         };
     }
 
-    if (command.id === 'sdk') {
+    if (command.id === 'runtime') {
         const info = buildAgentSdkInfo();
         return {
             result: [
@@ -4469,14 +4449,14 @@ async function runBuiltinCommand(session, descriptor, command) {
         };
     }
 
-    if (command.id === 'sdk-tools') {
+    if (command.id === 'tools') {
         const info = buildAgentSdkInfo();
         const tools = [
             ...info.baseTools.map((toolDef) => `- ${toolDef.name}${toolDef.description ? `：${toolDef.description}` : ''}`),
             ...info.extensionTools.map((toolDef) => `- ${toolDef.name}${toolDef.description ? `：${toolDef.description}` : ''} (extension)`)
         ];
         return {
-            result: ['SDK Tools：', ...tools].join('\n')
+            result: ['Pi Tools：', ...tools].join('\n')
         };
     }
 
@@ -4494,50 +4474,30 @@ async function runBuiltinCommand(session, descriptor, command) {
         };
     }
 
-    if (command.id === 'cost') {
-        const lastCostEvent = [...(session.timeline || [])].reverse()
-            .find((event) => event.type === 'sdk_result' || event.type === 'run_finished');
-        const payload = lastCostEvent?.payload || {};
-        const usage = payload.usage || {};
-        return {
-            result: [
-                `Turns：${payload.numTurns || payload.num_turns || 0}`,
-                `Cost：${payload.totalCostUsd ?? payload.total_cost_usd ?? payload.cost ?? 0}`,
-                `Input tokens：${usage.input_tokens || 0}`,
-                `Output tokens：${usage.output_tokens || 0}`,
-                `API duration：${payload.durationApiMs ?? payload.duration_api_ms ?? 0}ms`
-            ].join('\n')
-        };
-    }
+    if (command.id === 'usage') return { result: safeJson(await piGateway.sessionCommand(session, 'usage'), 16000) };
 
     if (command.id === 'config') {
+        const { sdkOptions, sdkExtension, ...provider } = sanitizeProviderConfig(session.providerConfig);
         return {
-            result: safeJson(sanitizeProviderConfig(session.providerConfig), 8000)
-        };
-    }
-
-    if (command.id === 'sessions') {
-        const sdkSessions = await listPiSessions();
-        return {
-            result: sdkSessions.length
-                ? safeJson(sdkSessions, 8000)
-                : '暂无 SDK 持久化 sessions。'
+            result: safeJson({
+                ...provider,
+                agentOptions: sdkOptions,
+                extension: sdkExtension
+            }, 8000)
         };
     }
 
     if (command.id === 'mcp') {
-        const mergedMcp = mergeSdkOptions(
-            agentSdkExtension?.mcpServers || {},
-            agentSdkExtension?.options?.mcpServers || {},
-            agentSdkExtension?.createAgentOptions?.mcpServers || {},
-            session.providerConfig.sdkOptions?.mcpServers || {}
-        );
-        const names = Object.keys(mergedMcp);
-        return {
-            result: names.length
-                ? names.map((name) => `- ${name}`).join('\n')
-                : '当前没有配置 MCP servers。'
-        };
+        const match = normalizedArgs.match(/^(enable|disable)\s+([A-Za-z0-9_-]+)$/);
+        if (normalizedArgs && !match) throw new Error('使用 /mcp、/mcp enable 服务名 或 /mcp disable 服务名。');
+        if (match) {
+            const config = session.providerConfig.sdkOptions?.mcpServers?.[match[2]];
+            if (!config) throw new Error('该 MCP Server 尚未配置。');
+            config.enabled = match[1] === 'enable';
+            await persistSession(session);
+        }
+        const status = await piGateway.mcpStatus(session);
+        return { result: status.length ? safeJson(status, 16000) : '当前没有配置 MCP Server。启用后工具仍受本轮白名单和权限审批控制。' };
     }
 
     if (command.id === 'status') {
@@ -4546,15 +4506,8 @@ async function runBuiltinCommand(session, descriptor, command) {
         };
     }
 
-    if (command.id === 'analyze') {
-        return {
-            result: normalizedArgs || '请分析当前页面的交互结构、状态反馈和潜在问题，并给出优先级建议。'
-        };
-    }
-
-    if (command.id === 'compact') {
-        const sdkCompact = await compactSdkAgentHistory(session);
-        const timelineSummary = compactSessionTimeline(session);
+        if (command.id === 'compact') {
+        const sdkCompact = await piGateway.compact(session, normalizedArgs);
         emitEvent(session, 'sdk_compact', {
             runId: session.runState.runId,
             summary: sdkCompact.summary,
@@ -4568,8 +4521,7 @@ async function runBuiltinCommand(session, descriptor, command) {
                 sdkCompact.summary,
                 sdkCompact.compactSummary ? `\n压缩摘要：\n${summarizeText(sdkCompact.compactSummary, 1600)}` : '',
                 '',
-                'Prota 终端历史：',
-                timelineSummary
+                '上下文已压缩，Prota 消息、工具记录与文件回滚入口完整保留。'
             ].filter(Boolean).join('\n')
         };
     }
@@ -4585,7 +4537,7 @@ function buildActionableFailureMessage(classification, rawMessage, providerConfi
         const suggestion = providerConfig.provider?.startsWith('zhipu')
             ? '智谱 GLM 5.1 在长上下文/工具循环下容易超时；可以先切到 glm-5-turbo 或 glm-5-air，或执行 /compact 后继续。'
             : '可以稍后重试、执行 /compact 压缩上下文，或切换到响应更稳定的模型。';
-        return `${providerLabel} / ${model} 请求超时：${rawMessage || 'Request timed out.'}\n当前 Prota 请求超时上限：${timeoutText}。如果实际未达到该时长，通常是上游网关或 Provider SDK 提前返回了 timeout。${suggestion}`;
+        return `${providerLabel} / ${model} 请求超时：${rawMessage || 'Request timed out.'}\n当前 Prota 请求超时上限：${timeoutText}。如果实际未达到该时长，通常是上游网关或 Provider 提前返回了 timeout。${suggestion}`;
     }
     if (classification === 'quota_error') {
         return `Provider 额度已用尽或当前时段受限：${rawMessage}`;
@@ -5042,53 +4994,6 @@ async function queryBalance(providerConfigInput) {
     return { ok: false, message: '该服务商不支持在线余额/用量查询' };
 }
 
-function buildConnectionProbe(providerConfig) {
-    if (providerConfig.apiType === 'anthropic-messages') {
-        const baseURL = providerConfig.baseURL.replace(/\/$/, '');
-        const endpoint = baseURL.endsWith('/v1') ? `${baseURL}/messages` : `${baseURL}/v1/messages`;
-        return {
-            url: endpoint,
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': providerConfig.apiKey,
-                'anthropic-version': '2023-06-01'
-            },
-            body: {
-                model: providerConfig.model,
-                max_tokens: 12,
-                messages: [
-                    {
-                        role: 'user',
-                        content: 'Reply with exactly CONNECTED.'
-                    }
-                ]
-            }
-        };
-    }
-
-    const baseURL = providerConfig.baseURL.replace(/\/$/, '');
-    const endpoint = baseURL.endsWith('/v1')
-        ? `${baseURL}/chat/completions`
-        : `${baseURL}/v1/chat/completions`;
-    return {
-        url: endpoint,
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${providerConfig.apiKey}`
-        },
-        body: {
-            model: providerConfig.model,
-            max_tokens: 12,
-            messages: [
-                {
-                    role: 'user',
-                    content: 'Reply with exactly CONNECTED.'
-                }
-            ]
-        }
-    };
-}
-
 function parseMaybeJson(text) {
     try {
         return JSON.parse(text);
@@ -5131,7 +5036,7 @@ async function registerBuiltInSkills() {
         {
             id: 'history',
             label: '历史对话',
-            aliases: ['history', '/history'],
+            aliases: ['history', '/history', 'resume', '/resume', 'sessions', '/sessions'],
             description: '打开并聚焦历史对话搜索。',
             category: 'Workbench',
             kind: 'local',
@@ -5237,8 +5142,8 @@ async function registerBuiltInSkills() {
             id: 'permission',
             label: '权限模式',
             aliases: ['permission', '/permission', 'perm', '/perm'],
-            description: '调用 SDK Agent setPermissionMode，切换工具权限模式。',
-            category: 'SDK',
+            description: '切换工具权限与审批模式。',
+            category: 'Agent',
             kind: 'local',
             icon: 'PER',
             usage: '/permission default',
@@ -5249,39 +5154,39 @@ async function registerBuiltInSkills() {
             localOnly: true
         },
         {
-            id: 'sdk',
-            label: 'SDK 概览',
-            aliases: ['sdk', '/sdk'],
-            description: '查看当前集成的 SDK options、tools 与 Agent methods。',
-            category: 'SDK',
+            id: 'runtime',
+            label: 'Pi 运行时',
+            aliases: [],
+            description: '查看 Pi 运行时配置、工具与会话能力。',
+            category: 'Agent',
             kind: 'command',
-            icon: 'SDK',
-            usage: '/sdk',
-            examples: ['/sdk'],
+            icon: 'PI',
+            usage: '/runtime',
+            examples: ['/runtime'],
             argumentMode: 'none',
             supportsSession: false,
             dangerous: false
         },
         {
-            id: 'sdk-tools',
-            label: 'SDK Tools',
-            aliases: ['sdk-tools', '/sdk-tools', 'tools', '/tools'],
-            description: '列出 SDK 内置 tools 与 extension tools。',
-            category: 'SDK',
+            id: 'tools',
+            label: 'Agent 工具',
+            aliases: ['tools', '/tools'],
+            description: '列出 Pi 内置 tools 与 Prota extension tools。',
+            category: 'Agent',
             kind: 'command',
             icon: 'TLS',
-            usage: '/sdk-tools',
-            examples: ['/sdk-tools'],
+            usage: '/tools',
+            examples: ['/tools'],
             argumentMode: 'none',
             supportsSession: false,
             dangerous: false
         },
         {
             id: 'messages',
-            label: 'SDK Messages',
+            label: 'Pi 模型消息',
             aliases: ['messages', '/messages'],
             description: '读取 Pi 当前会话的模型消息。',
-            category: 'SDK',
+            category: 'Agent',
             kind: 'command',
             icon: 'MSG',
             usage: '/messages',
@@ -5295,7 +5200,7 @@ async function registerBuiltInSkills() {
             label: 'API Type',
             aliases: ['api-type', '/api-type'],
             description: '读取 session.providerConfig.apiType。',
-            category: 'SDK',
+            category: 'Agent',
             kind: 'command',
             icon: 'API',
             usage: '/api-type',
@@ -5305,14 +5210,14 @@ async function registerBuiltInSkills() {
             dangerous: false
         },
         {
-            id: 'cost',
+            id: 'usage',
             label: 'Token / Cost',
             aliases: ['cost', '/cost'],
-            description: '查看最近一次 SDK 运行的 turns、token 与 cost 摘要。',
-            category: 'SDK',
+            description: '查看当前 Pi 会话的 Token、费用和上下文统计。',
+            category: 'Agent',
             kind: 'command',
             icon: 'CST',
-            usage: '/cost',
+            usage: '/usage',
             examples: ['/cost'],
             argumentMode: 'none',
             supportsSession: true,
@@ -5322,8 +5227,8 @@ async function registerBuiltInSkills() {
             id: 'config',
             label: '配置摘要',
             aliases: ['config', '/config'],
-            description: '查看当前 Provider 与 SDK options 摘要。',
-            category: 'SDK',
+            description: '查看当前 Provider 与 Agent options 摘要。',
+            category: 'Agent',
             kind: 'command',
             icon: 'CFG',
             usage: '/config',
@@ -5336,27 +5241,13 @@ async function registerBuiltInSkills() {
             id: 'mcp',
             label: 'MCP',
             aliases: ['mcp', '/mcp'],
-            description: '查看当前 MCP server 配置。',
-            category: 'SDK',
+            description: '查看连接、启用和允许使用状态；enable/disable 服务名。',
+            category: 'Agent',
             kind: 'command',
             icon: 'MCP',
-            usage: '/mcp',
+            usage: '/mcp [enable|disable 服务名]',
             examples: ['/mcp'],
-            argumentMode: 'none',
-            supportsSession: true,
-            dangerous: false
-        },
-        {
-            id: 'sessions',
-            label: 'SDK Sessions',
-            aliases: ['sessions', '/sessions'],
-            description: '查看 SDK 持久化 session 列表。',
-            category: 'SDK',
-            kind: 'command',
-            icon: 'SES',
-            usage: '/sessions',
-            examples: ['/sessions'],
-            argumentMode: 'none',
+            argumentMode: 'optional-text',
             supportsSession: true,
             dangerous: false
         },
@@ -5392,17 +5283,34 @@ async function registerBuiltInSkills() {
             id: 'compact',
             label: '压缩上下文',
             aliases: ['compact', '/compact'],
-            description: '压缩当前会话历史，减少后续 token 开销。',
+            description: '压缩模型上下文，保留完整操作历史；可指定保留重点。',
             category: 'Workbench',
             kind: 'command',
             icon: 'CMP',
-            usage: '/compact',
-            examples: ['/compact'],
-            argumentMode: 'none',
+            usage: '/compact [保留重点]',
+            examples: ['/compact', '/compact 保留画板需求和当前进度'],
+            argumentMode: 'optional-text',
             supportsSession: true,
             dangerous: false
         }
     ].forEach(registerLocalCommand);
+    const piCommands = [
+        ['tree', '会话历史树', '查看历史节点与分支，从用户消息继续探索。', 'none'],
+        ['fork', '从历史消息分叉', '选择历史用户消息，创建独立会话；保留当前文件。', 'optional-text'],
+        ['clone', '复制当前会话', '复制当前完整模型上下文到独立会话。', 'none'],
+        ['rewind', '回溯对话', '选择历史用户消息创建分支，文件保持当前状态。', 'optional-text'],
+        ['rollback', '文件回滚', '查看运行的文件变更，确认后恢复检查点。', 'optional-text'],
+        ['thinking', '推理等级', '选择模型支持的推理强度。', 'optional-text'],
+        ['name', '命名会话', '重命名当前会话。', 'required-text'],
+        ['auto-compact', '自动压缩', '开启或关闭自动上下文压缩。', 'optional-text'],
+        ['export', '导出会话', '下载当前会话 HTML 到本地。', 'none'],
+        ['copy', '复制最近回复', '复制最近一条助手回复。', 'none']
+    ];
+    for (const [id, label, description, argumentMode] of piCommands) registerLocalCommand({
+        id, label, description, argumentMode, kind: 'command', source: 'pi-rpc', action: 'client',
+        category: 'Session', icon: 'PI', usage: `/${id}`, aliases: [], localOnly: true,
+        supportsSession: true, requiresConfirmation: id === 'rollback'
+    });
 }
 
 async function loadProviderPresets() {
@@ -5631,13 +5539,14 @@ async function handleHistory(res, session) {
     }));
     sendJson(res, 200, redactSecrets({
         sessionId: session.id,
-        title: normalizeSessionTitle(session.title),
+        title: session.engineInfo?.sessionName || normalizeSessionTitle(session.title),
         sessionScope: inferSessionScope(session),
         context: session.context,
         providerConfig: sanitizeProviderConfig(session.providerConfig),
         timeline,
         engineInfo: session.engineInfo,
         runState: session.runState,
+        ...previewRunMetadata(session),
         pendingApproval: session.pendingApproval
             ? {
                 id: session.pendingApproval.id,
@@ -5669,17 +5578,17 @@ async function handleSdkMessages(res, session) {
 }
 
 async function handleSdkClear(res, session) {
-    if (session.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    if (session.activeRun || session._piOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
     await piGateway.clear(session);
     session.timeline = [];
     session.runState = {
         ...createDefaultRunState(),
         status: 'ready',
-        stageMessage: 'SDK 上下文已清空，等待新的任务'
+        stageMessage: 'Agent 上下文已清空，等待新的任务'
     };
     emitEvent(session, 'sdk_status', {
         runId: null,
-        message: 'SDK conversation history cleared'
+        message: 'Agent conversation history cleared'
     });
     await persistSession(session);
     sendJson(res, 200, {
@@ -5695,7 +5604,7 @@ async function handleSdkSetModel(req, res, session) {
         sendJson(res, 400, { ok: false, message: 'model is required' });
         return;
     }
-    if (session.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    if (session.activeRun || session._piOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
     session.providerConfig.model = model;
     await ensureSessionAgent(session);
     await persistSession(session);
@@ -5799,7 +5708,7 @@ async function handleSdkPrompt(req, res, session) {
         sendJson(res, 400, { ok: false, message: 'prompt is required' });
         return;
     }
-    if (session.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    if (session.activeRun || session._piOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
     session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     const descriptor = createRunDescriptor('message', session.context, {
         message: prompt, sdkOptions: resolveSdkOptions(body, SDK_QUERY_OPTION_KEYS)
@@ -5827,24 +5736,123 @@ async function handleSdkFork(req, res) {
     }
     const source = await getHydratedSession(sessionId);
     if (!source) { sendJson(res, 404, { ok: false, message: 'Session not found' }); return; }
-    if (source.activeRun) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
-    const target = createSession({ context: source.context, providerConfig: source.providerConfig, sessionScope: source.sessionScope });
+    if (source.activeRun || source._piOperation || source._runStarting) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    source._piOperation = true;
     try {
-        await piGateway.clone(source, target);
-        target.title = source.title;
-        target.timeline = structuredClone(source.timeline);
-        target.runState = { ...source.runState, active: false };
+        const target = await branchPiSession(source, body.entryId || null);
+        sendJson(res, 200, { ok: true, session: target.id, draft: target.branchDraft || '' });
+    } finally { delete source._piOperation; }
+}
+
+async function branchPiSession(source, entryId = null) {
+    const target = createSession({ context: structuredClone(source.context), providerConfig: structuredClone(source.providerConfig), sessionScope: source.sessionScope });
+    try {
+        await piGateway.clone(source, target, entryId);
+        target.title = `${source.title} · ${entryId ? '分支' : '副本'}`;
+        target.engineInfo.sessionName = target.title;
+        let cutoff = source.timeline.length;
+        if (entryId) {
+            const runId = Object.entries(source.engineInfo.runEntries || {}).find(([, entry]) => entry.userEntryId === entryId)?.[0];
+            cutoff = runId ? source.timeline.findIndex(event => event.type === 'run_started' && event.payload?.runId === runId) : -1;
+            // Older sessions lack an exact run mapping. Keep their business history
+            // in the parent instead of falsely displaying a future timeline.
+            if (cutoff < 0) cutoff = 0;
+        }
+        target.timeline = structuredClone(source.timeline.slice(0, cutoff));
+        const retainedRuns = new Set(target.timeline.filter(event => event.type === 'run_started').map(event => event.payload?.runId));
+        target.engineInfo.runEntries = Object.fromEntries(Object.entries(target.engineInfo.runEntries || {}).filter(([runId]) => retainedRuns.has(runId)));
+        for (const runId of retainedRuns) {
+            const from = getCheckpointDir(source.id, runId);
+            try { await fs.cp(from, getCheckpointDir(target.id, runId), { recursive: true }); }
+            catch (error) { if (error.code !== 'ENOENT') throw error; }
+        }
+        emitEvent(target, 'system', { text: '已创建独立会话。工作区文件保持当前状态；文件恢复需单独预览并确认。', parentSession: target.parentSession });
         await persistSession(target);
+        return target;
     } catch (error) {
+        await piGateway.dispose(target.id);
         sessions.delete(target.id);
         await removePersistedSession(target.id);
+        await fs.rm(path.dirname(getCheckpointDir(target.id, '_')), { recursive: true, force: true });
+        await fs.rm(sessionPaths(target, getWorkspaceRoot(), configDirectory).sessions, { recursive: true, force: true });
         throw error;
     }
-    const forked = target.id;
-    sendJson(res, 200, {
-        ok: true,
-        session: forked
-    });
+}
+
+async function handleSteer(req, res, session) {
+    const body = await readJsonBody(req);
+    const message = String(body.message || '').trim();
+    if (!message || message.startsWith('/')) {
+        sendJson(res, 400, { message: '请输入补充要求；斜杠命令请通过命令入口执行。' }); return;
+    }
+    const run = session.activeRun;
+    if (!run || run.interrupted || session.pendingApproval || session.pendingQuestion) {
+        sendJson(res, 409, { message: '当前任务已结束或正在等待回答，请处理后重新发送。' }); return;
+    }
+    try {
+        const result = await piGateway.manager.steer(session.id, { message });
+        const event = emitEvent(session, 'user_followup', { runId: run.id, text: message, disposition: result.disposition });
+        await persistSession(session);
+        sendJson(res, 200, { ok: true, disposition: result.disposition, event });
+    } catch (error) {
+        sendJson(res, error.code === 'PI_IDLE' ? 409 : 400, { message: error.message });
+    }
+}
+
+async function handlePiSessionCommand(req, res, session) {
+    if (session.activeRun || session._runStarting || session._piOperation) {
+        sendJson(res, 409, { ok: false, message: '当前会话正在运行，请完成或中断后再操作。' }); return;
+    }
+    session._piOperation = true;
+    try {
+        const body = await readJsonBody(req);
+        const operation = body.operation;
+        let result;
+        if (operation === 'rewind-preview') {
+            const entryId = String(body.entryId || '');
+            const runId = Object.entries(session.engineInfo?.runEntries || {}).find(([, entry]) => entry.userEntryId === entryId)?.[0];
+            if (!runId) throw new Error('该历史消息没有精确关联的文件检查点，可选择仅回溯对话。');
+            let preview;
+            try { preview = await rollbackRunToCheckpoint(session, runId, { dryRun: true, beforeRun: true }); }
+            catch (error) { if (error.code === 'ENOENT') throw new Error('该历史消息的文件检查点已过期。'); throw error; }
+            if (!preview.ok) { sendJson(res, 409, { ok: false, message: preview.summary, result: preview }); return; }
+            const token = randomUUID();
+            session._rewindPreview = { token, entryId, runId, preview, expires: Date.now() + 5 * 60_000 };
+            result = { ...preview, token };
+        } else if (['clone', 'fork', 'rewind'].includes(operation)) {
+            if (operation !== 'clone' && !body.entryId) throw new Error('请选择历史用户消息。');
+            let restore;
+            if (body.restoreFiles) {
+                restore = session._rewindPreview;
+                if (operation !== 'rewind' || !restore || body.confirmationToken !== restore.token || restore.entryId !== body.entryId || restore.expires < Date.now()) {
+                    throw new Error('恢复文件需先预览并确认，请重新选择历史节点。');
+                }
+                const current = await rollbackRunToCheckpoint(session, restore.runId, { dryRun: true, beforeRun: true });
+                if (!current.ok || JSON.stringify(current) !== JSON.stringify(restore.preview)) throw new Error('文件状态已变化，请重新预览并确认。');
+            }
+            const target = await branchPiSession(session, operation === 'clone' ? null : String(body.entryId));
+            if (restore) {
+                const rollback = await rollbackRunToCheckpoint(session, restore.runId, { beforeRun: true });
+                if (!rollback.ok) {
+                    sendJson(res, 409, { ok: false, message: rollback.summary, result: { ...rollback, sessionId: target.id } }); return;
+                }
+                delete session._rewindPreview;
+                session.engineInfo.workspaceNotice = `用户已将工作区文件恢复至运行 ${restore.runId} 之前。请读取实际文件再继续。`;
+                target.engineInfo.workspaceNotice = session.engineInfo.workspaceNotice;
+                emitEvent(session, 'run_rollback', { runId: restore.runId, mode: 'to_checkpoint', result: rollback });
+                await persistSession(session);
+                await persistSession(target);
+            }
+            result = { sessionId: target.id, draft: target.branchDraft || '', filesRestored: Boolean(restore) };
+        } else if (operation === 'export') {
+            result = { html: await piGateway.exportSession(session) };
+        } else if (operation === 'compact') {
+            result = await piGateway.compact(session, String(body.value || ''));
+            emitEvent(session, 'sdk_compact', { ...result, phase: 'done' });
+        } else result = await piGateway.sessionCommand(session, operation, body);
+        await persistSession(session);
+        sendJson(res, 200, { ok: true, result });
+    } finally { delete session._piOperation; }
 }
 
 async function handleArchiveSession(req, res, session) {
@@ -5882,7 +5890,7 @@ async function handleRunChanges(res, session, runId) {
 }
 
 async function handleRunRollback(req, res, session, runId) {
-    if (session.activeRun) {
+    if (session.activeRun || session._piOperation) {
         sendJson(res, 409, {
             ok: false,
             status: 'busy',
@@ -5909,6 +5917,10 @@ async function handleRunRollback(req, res, session, runId) {
         });
         return;
     }
+    if (result.ok) {
+        ensureEngineInfo(session).workspaceNotice = `工作区文件已执行 ${mode}，关联运行 ${runId}。请读取实际文件确认当前状态。`;
+        await persistSession(session);
+    }
     emitEvent(session, 'run_rollback', {
         runId,
         mode,
@@ -5922,6 +5934,12 @@ async function handleRunRollback(req, res, session, runId) {
 async function handleStreamAttach(res, session) {
     res.writeHead(200, createSseHeaders());
     attachSubscriber(session, res, 'session');
+    try {
+        if (session.runState?.active) ensureRunPreview(session, {
+            configDirectory, getWorkspaceRoot, workspaceLocked,
+            emit: (name, data) => emitEvent(session, name, data, { persist: false })
+        });
+    } catch (error) { console.warn('[preview]', error.message); }
     // Immediately push current run state so the frontend can correctly restore its UI
     // (e.g. stop button) after a browser refresh while a run is still in progress.
     if (session.runState?.active) {
@@ -5932,6 +5950,8 @@ async function handleStreamAttach(res, session) {
             createdAt: new Date().toISOString(),
             payload: {
                 runState: session.runState,
+                ...previewRunMetadata(session),
+                context: session.context,
                 summary: session.runState.stageMessage || '正在运行…'
             }
         }, sessionSecrets(session)));
@@ -5987,11 +6007,14 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
         ...(await readJsonBody(req)),
         ...extraBody
     };
+    if (kind === 'message' && /^\/[a-z0-9_-]+(?:\s|$)/i.test(String(rawBody.message || ''))) {
+        sendJson(res, 400, { ok: false, message: '斜杠命令请通过命令入口执行；输入 /help 查看可用命令。' }); return;
+    }
     const normalized = normalizeRunRequest(kind, rawBody);
     const body = normalized.body;
     const normalizedKind = normalized.kind;
 
-    if (session.activeRun || session._runStarting) {
+    if (session.activeRun || session._runStarting || session._piOperation) {
         res.writeHead(200, createSseHeaders());
         const subscriber = attachSubscriber(session, res, 'run', session.runState.runId);
         // Use run_busy instead of run_failed: busy is a transient rejection, not a terminal
@@ -6355,10 +6378,16 @@ const server = http.createServer(async (req, res) => {
         }
 
         if (req.method === 'GET' && url.pathname === '/api/agent/commands') {
-            sendJson(res, 200, {
-                ok: true,
-                commands: listUserInvocableCommands()
-            });
+            const sessionId = url.searchParams.get('sessionId');
+            const session = sessionId ? await getHydratedSession(sessionId) : null;
+            let commands = listUserInvocableCommands();
+            const runtime = session && piGateway.manager.get(session.id);
+            if (runtime && !runtime.busy) {
+                const native = await runtime.rpc.request('get_commands');
+                commands = mergePiCommands(commands, native.commands);
+                session._piCommands = commands.filter(command => command.source === 'pi-extension');
+            }
+            sendJson(res, 200, { ok: true, commands });
             return;
         }
 
@@ -6410,6 +6439,14 @@ const server = http.createServer(async (req, res) => {
 
         if (req.method === 'POST' && url.pathname === '/api/agent/session') {
             await handleCreateSession(req, res);
+            return;
+        }
+
+        const piCommandMatch = matchPath(url.pathname, '/api/agent/session/:sessionId/pi');
+        if (req.method === 'POST' && piCommandMatch) {
+            const session = await getHydratedSession(piCommandMatch.sessionId);
+            if (!session) { sendJson(res, 404, { ok: false, message: 'Session not found' }); return; }
+            await handlePiSessionCommand(req, res, session);
             return;
         }
 
@@ -6564,6 +6601,14 @@ const server = http.createServer(async (req, res) => {
                 return;
             }
             await handleRunRollback(req, res, session, decodeURIComponent(runRollbackMatch.runId));
+            return;
+        }
+
+        const steerMatch = matchPath(url.pathname, '/api/agent/session/:sessionId/steer');
+        if (req.method === 'POST' && steerMatch) {
+            const session = await getHydratedSession(steerMatch.sessionId);
+            if (!session) { sendText(res, 404, 'Session not found'); return; }
+            await handleSteer(req, res, session);
             return;
         }
 

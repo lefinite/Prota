@@ -81,6 +81,36 @@ export class PRDManager extends EventTarget {
         return `readify:prd-last-doc:${this.host.activeProjectId || 'readify'}:${this.host.activePageId}`;
     }
 
+    isReadOnly() {
+        return Boolean(this.host.isShareMode || window.__READIFY_SHARE__ || window.location.pathname.includes('/shares/'));
+    }
+
+    async bindDocument(path, prototypeVersion) {
+        if (this.isReadOnly() || this._bindingPending) return false;
+        this._bindingPending = true;
+        const token = this._prdLoadToken;
+        try {
+            const response = await fetch('/api/prd-doc/binding', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ projectId: this.host.activeProjectId, pageId: this.host.activePageId,
+                    version: this.host.activeVersion, path, prototypeVersion })
+            });
+            const text = await response.text();
+            let result;
+            try { result = JSON.parse(text); } catch {
+                throw new Error('文档关联服务尚未就绪，请重新打开 Prota 后重试。');
+            }
+            if (!response.ok) throw new Error(result.error || '关联未保存，请重试。');
+            if (token === this._prdLoadToken) this.updateState({ documents: this.sortPrdDocuments(result.documents || []) });
+            return token === this._prdLoadToken;
+        } catch (error) {
+            this.host.showToast?.(error instanceof TypeError ? '未能连接本地服务，请重新打开 Prota 后重试。' : error.message || '关联未保存，请重试。', true);
+            return false;
+        } finally {
+            this._bindingPending = false;
+        }
+    }
+
     getLocalStorageItem(key, fallback = '') {
         try {
             return window.localStorage.getItem(key) ?? fallback;
@@ -178,17 +208,19 @@ export class PRDManager extends EventTarget {
         const isShareMode = this.host.isShareMode || window.__READIFY_SHARE__ || window.location.pathname.includes('/shares/');
         if (isShareMode) {
             const shareConfig = this.host.shareConfig || window.__READIFY_SHARE__ || {};
-            if (Array.isArray(shareConfig.documents) && shareConfig.documents.length > 0) {
-                return shareConfig.documents.map((doc) => ({
+            // Shared readers get exactly the published selection, without local
+            // discovery or access to the editor's complete document library.
+            if (!shareConfig.prdPath) return [];
+            const doc = (shareConfig.documents || []).find(doc => doc.path === shareConfig.prdPath) || {};
+            return [{
                     ...doc,
-                    path: doc.path,
-                    filename: doc.filename || this.getPrdFileName(doc.path),
-                    label: doc.label || this.getPrdDocumentLabel(doc.path),
+                    path: shareConfig.prdPath,
+                    filename: doc.filename || this.getPrdFileName(shareConfig.prdPath),
+                    label: doc.label || this.getPrdDocumentLabel(shareConfig.prdPath),
                     updatedAt: doc.updatedAt || doc.lastModified || '',
                     updatedAtMs: doc.updatedAtMs ?? doc.mtimeMs ?? null,
                     size: doc.size ?? null
-                }));
-            }
+            }];
         }
 
         let documents = [];
@@ -374,15 +406,19 @@ export class PRDManager extends EventTarget {
             let activePath;
             if (requestedPath && documents.some((doc) => doc.path === requestedPath)) {
                 activePath = requestedPath;
+            } else if (this.host.isShareMode && documents.some(doc => doc.path === this.host.shareConfig?.prdPath)) {
+                // The sender's selection is part of the snapshot, independent of
+                // the recipient's reading history and document modification times.
+                activePath = this.host.shareConfig.prdPath;
             } else {
                 const pageId = this.host.activePageId || '';
                 const version = this.host.activeVersion || '';
                 const lastPath = [this.getLocalStorageItem(this.getLastDocumentKey()), this._serverLastOpenedPath,
                     this.getLocalStorageItem(`readify:prd-last-doc:${pageId}:${version}`)]
                     .find(candidate => documents.some(doc => doc.path === candidate));
-                activePath = lastPath && documents.some((doc) => doc.path === lastPath)
-                    ? lastPath
-                    : (documents.find(doc => doc.prototypeVersion === version)?.path || documents[0]?.path || '');
+                const associated = documents.filter(doc => doc.prototypeVersion === version);
+                activePath = associated.find(doc => this.getPrdFileName(doc.path).toLowerCase() !== 'readme.md')?.path
+                    || associated[0]?.path || lastPath || documents[0]?.path || '';
             }
 
             if (!activePath) {
@@ -435,7 +471,7 @@ export class PRDManager extends EventTarget {
                 status: content.trim() ? 'ready' : 'empty',
                 content,
                 draftContent: content,
-                editMode: savedEditMode,
+                editMode: !this.isReadOnly() && savedEditMode,
                 dirty: false,
                 saving: false,
                 saveError: '',
@@ -459,6 +495,7 @@ export class PRDManager extends EventTarget {
      * Triggers the saving sequence via Bridge Server
      */
     async saveDocument(options = {}) {
+        if (this.isReadOnly()) return false;
         const directContent = typeof options.content === 'string' ? options.content : null;
         if ((!this.state.editMode && directContent === null) || this.state.saving) return false;
         
@@ -529,6 +566,7 @@ export class PRDManager extends EventTarget {
      * Creates a new PRD markdown file with server-side unique naming.
      */
     async createNewDocument({ derivedFrom = '' } = {}) {
+        if (this.isReadOnly()) return;
         if (this.state.saving) return;
 
         const token = this._prdLoadToken;
@@ -607,6 +645,7 @@ export class PRDManager extends EventTarget {
      * Creates a standard empty boilerplate template inside active draft content
      */
     createEmptyDraft() {
+        if (this.isReadOnly()) return;
         const path = this.state.path || `/src/pages/${this.host.activeProjectId || 'readify'}/${this.host.activePageId}/docs/product-doc.md`;
         const content = [
             `# ${this.host.getPageRecord()?.name || this.host.activePageId || '页面'} PRD`,

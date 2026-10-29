@@ -6,7 +6,7 @@ import threading
 from urllib.parse import quote
 
 from server import workspace
-from server.deployer import VercelDeployer, share_payload, _publish_lock
+from server.deployer import VercelDeployer, share_payload, share_zip_filenames, _publish_lock
 
 _lock = threading.RLock()
 
@@ -92,9 +92,9 @@ def manage(root, params, host='localhost:8080'):
                 file = root / 'shares' / key
                 if file.is_file():
                     try:
-                        zipped = share_payload(file).get('zipFilename')
-                        if zipped and Path(zipped).name == zipped and zipped.endswith('.zip'):
-                            (root / 'shares' / zipped).unlink(missing_ok=True)
+                        for zipped in share_zip_filenames(share_payload(file)):
+                            if Path(zipped).name == zipped and zipped.endswith('.zip'):
+                                (root / 'shares' / zipped).unlink(missing_ok=True)
                     except (ValueError, OSError):
                         pass
                     file.unlink()

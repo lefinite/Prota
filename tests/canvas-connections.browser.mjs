@@ -19,10 +19,35 @@ try{
  await page.getByRole('button',{name:'连线工具',exact:true}).click();await page.locator('.node[data-id=a]').hover();
  const sourcePort=page.locator('[data-node-id=a][data-connection-port=right]');await sourcePort.waitFor();assert.equal(Number(await sourcePort.getAttribute('cx')),240);assert.equal(Number(await sourcePort.getAttribute('cy')),130);await sourcePort.click();
  await page.locator('.node[data-id=b]').hover();await page.waitForFunction(()=>document.querySelector('.node[data-id=b]')?.classList.contains('connection-target'));await page.locator('[data-node-id=b][data-connection-port=left]').click();assert.equal((await state()).edges.length,1);assert.equal((await state()).edges[0].fromPort,'right');assert.equal((await state()).edges[0].toPort,'left');
+ // Selected lines have direct style choices, no endpoint or business-type dropdowns.
+ assert.equal(await page.locator('#connection-tools select').count(),0);
+ assert.equal(await page.locator('.canvas-connection-legend').count(),0);
+ await page.getByRole('button',{name:'恢复自动连接',exact:true}).click();
+ assert.equal((await state()).edges[0].fromPort,'auto');assert.equal((await state()).edges[0].toPort,'auto');
+ await page.getByRole('button',{name:'恢复自动连接',exact:true}).waitFor({state:'hidden'});
+ await page.getByRole('button',{name:'撤销',exact:true}).click();
+ assert.equal((await state()).edges[0].fromPort,'right');assert.equal((await state()).edges[0].toPort,'left');
+ await page.locator('#connection-tools').waitFor({state:'visible'});
+ if(process.env.CANVAS_SCREENSHOTS){
+   await page.screenshot({path:'/tmp/prota-connections-desktop.png'});
+   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(100);
+   const tools=await page.locator('#connection-tools').boundingBox();assert.ok(tools.x>=0&&tools.x+tools.width<=390,'toolbar stays in narrow viewport');
+   await page.screenshot({path:'/tmp/prota-connections-mobile.png'});await page.setViewportSize({width:1440,height:1000});
+ }
  // Even a line without a label supports direct double-click editing.
  const emptyPoint=await page.locator('.connection-hit').evaluate(el=>{const p=el.getPointAtLength(el.getTotalLength()/2),q=new DOMPoint(p.x,p.y).matrixTransform(el.getScreenCTM());return {x:q.x,y:q.y};});await page.mouse.dblclick(emptyPoint.x,emptyPoint.y);
- await page.getByRole('textbox',{name:'在线编辑连线文字'}).fill('验证成功 → 继续');await page.keyboard.press('Enter');await page.getByRole('combobox',{name:'连线类型'}).selectOption('exception');assert.equal((await state()).edges[0].label,'验证成功 → 继续');assert.equal((await state()).edges[0].kind,'exception');await page.keyboard.press('Escape');await save();
+ await page.getByRole('textbox',{name:'在线编辑连线文字'}).fill('验证成功 → 继续');await page.keyboard.press('Enter');await page.getByRole('button',{name:'橙色虚线',exact:true}).click();assert.equal((await state()).edges[0].label,'验证成功 → 继续');assert.equal((await state()).edges[0].kind,'exception');await page.keyboard.press('Escape');await save();
  await page.reload();assert.equal((await state()).edges[0].kind,'exception');await page.waitForFunction(()=>window.protaCanvas.connections.getRoutes().length===1);
+ // Keyboard deletion works after selecting a connection directly.
+ const connectionPoint=()=>page.locator('.connection-hit').evaluate(el=>{const p=el.getPointAtLength(el.getTotalLength()/2),q=new DOMPoint(p.x,p.y).matrixTransform(el.getScreenCTM());return {x:q.x,y:q.y};});
+ let keyboardLine=await connectionPoint();await page.mouse.click(keyboardLine.x,keyboardLine.y);assert.equal(await page.evaluate(()=>window.protaCanvas.connections.getSelection()),(await state()).edges[0].id);await page.keyboard.press('Delete');assert.equal((await state()).edges.length,0,'Delete removes the selected connection');await page.keyboard.press('ControlOrMeta+z');assert.equal((await state()).edges.length,1,'undo restores the deleted connection');
+ await page.waitForFunction(()=>document.querySelector('.connection-hit'));
+ keyboardLine=await connectionPoint();await page.mouse.click(keyboardLine.x,keyboardLine.y);assert.equal(await page.evaluate(()=>window.protaCanvas.connections.getSelection()),(await state()).edges[0].id);await page.keyboard.press('Backspace');assert.equal((await state()).edges.length,0,'Backspace removes the selected connection');await page.keyboard.press('ControlOrMeta+z');assert.equal((await state()).edges.length,1,'undo restores the Backspace deletion');
+ // IME composition state and a swallowed keydown still cannot strand the selection.
+ await page.waitForFunction(()=>document.querySelector('.connection-hit'));
+ keyboardLine=await connectionPoint();await page.mouse.click(keyboardLine.x,keyboardLine.y);await page.evaluate(()=>document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Backspace',code:'Backspace',isComposing:true,bubbles:true,cancelable:true})));assert.equal((await state()).edges.length,0,'Backspace works while isComposing is set outside an editor');await page.keyboard.press('ControlOrMeta+z');assert.equal((await state()).edges.length,1);
+ await page.waitForFunction(()=>document.querySelector('.connection-hit'));
+ keyboardLine=await connectionPoint();await page.mouse.click(keyboardLine.x,keyboardLine.y);await page.evaluate(()=>document.body.dispatchEvent(new KeyboardEvent('keyup',{key:'Backspace',code:'Backspace',bubbles:true,cancelable:true})));assert.equal((await state()).edges.length,0,'Backspace keyup fallback removes the selected connection');await page.keyboard.press('ControlOrMeta+z');assert.equal((await state()).edges.length,1);
  // Click-only selection changes must not hide connections behind an opaque region background.
  const lineVisible=()=>page.evaluate(()=>{const box=document.querySelector('.connection-label')?.getBoundingClientRect();return box&&Boolean(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2)?.closest('#canvas-connections'));});
  for(let i=0;i<3;i++){await page.locator('.node[data-id=a]').click({position:{x:12,y:12}});assert.ok(await lineVisible(),'connection remains visible immediately after node selection');await page.mouse.click(20,180);assert.ok(await lineVisible(),'connection remains visible after deselection, without zoom');}
@@ -44,9 +69,21 @@ try{
  await page.locator('.connection').first().focus();await page.keyboard.press('Enter');await page.keyboard.press('Escape');
  const originalId=(await state()).edges[0].id;
  await page.locator('[data-connection-end=to]').dragTo(page.locator('.node[data-id=obstacle]'),{targetPosition:{x:20,y:20}});
- assert.equal((await state()).edges[0].toInstanceId,'obstacle');assert.equal((await state()).edges[0].id,originalId);
+ assert.equal((await state()).edges[0].toPort,'auto');assert.equal((await state()).edges[0].toInstanceId,'obstacle');assert.equal((await state()).edges[0].id,originalId);
  await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges[0].toInstanceId,'b');
+ // Drag near a dot to pin a side; reversing and resetting remain undoable.
+ const destination=await page.locator('.node[data-id=b]').boundingBox();
+ await page.locator('[data-connection-end=to]').dragTo(page.locator('.node[data-id=b]'),{targetPosition:{x:destination.width/2,y:10}});
+ assert.equal((await state()).edges[0].toPort,'top');assert.equal((await state()).edges[0].toInstanceId,'b');
+ await page.getByRole('button',{name:'反向',exact:true}).click();assert.equal((await state()).edges[0].fromInstanceId,'b');assert.equal((await state()).edges[0].fromPort,'top');
+ await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges[0].toPort,'top');
+ await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges[0].toPort,'left');
  await page.keyboard.press('Escape');await page.getByRole('button',{name:'连线工具',exact:true}).click();await page.locator('.node[data-id=a]').click({position:{x:12,y:12}});await page.keyboard.press('Escape');assert.equal((await state()).edges.length,1,'cancel does not create an edge');
+ // Clicking object bodies creates a fully automatic connection.
+ await page.getByRole('button',{name:'连线工具',exact:true}).click();
+ await page.locator('.node[data-id=a]').click({position:{x:80,y:80}});await page.locator('.node[data-id=b]').click({position:{x:80,y:80}});
+ assert.equal((await state()).edges.length,2);assert.equal((await state()).edges[1].fromPort,'auto');assert.equal((await state()).edges[1].toPort,'auto');
+ await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges.length,1);await page.waitForFunction(()=>document.querySelectorAll('.connection-line').length===1);
  // Moving a source changes endpoints; the intermediate obstacle remains clear.
  const before=await page.locator('.connection-line').getAttribute('d');await page.locator('.node[data-id=a]').click({position:{x:12,y:12}});await page.keyboard.press('ArrowDown');await page.waitForTimeout(150);assert.notEqual(await page.locator('.connection-line').getAttribute('d'),before);
  const safe=await page.evaluate(()=>{const doc=protaCanvas.getState(),routes=protaCanvas.connections.getRoutes(),boxes=CanvasConnections.obstacles(doc.nodes,doc.viewport.zoom);return routes.every(r=>r.points.every((p,i)=>!i||boxes.every(box=>box.id===r.edge.fromInstanceId||box.id===r.edge.toInstanceId||!CanvasConnections.intersects(r.points[i-1],p,box))));});assert.ok(safe);
@@ -55,6 +92,6 @@ try{
  // Edge editing and deletion use the same undo stack as nodes.
  await page.keyboard.press('Escape');await page.locator('.connection').first().focus();await page.keyboard.press('Space');await page.getByRole('button',{name:'删除',exact:true}).click();assert.equal((await state()).edges.length,1);await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges.length,2);await save();
  // Read-only shares keep routes visible and block programmatic and UI changes.
- await page.evaluate(()=>window.postMessage({type:'prota:canvas-config',readOnly:true},location.origin));await page.waitForTimeout(150);const count=(await state()).edges.length;assert.equal(await page.evaluate(()=>protaCanvas.connections.create('a','b')),null);assert.equal((await state()).edges.length,count);
+ await page.evaluate(()=>window.postMessage({type:'prota:canvas-config',readOnly:true},location.origin));await page.waitForTimeout(150);const count=(await state()).edges.length;await page.locator('.connection').first().focus();await page.keyboard.press('Space');assert.ok(await page.locator('#connection-tools').isHidden());assert.equal(await page.evaluate(()=>protaCanvas.connections.create('a','b')),null);assert.equal((await state()).edges.length,count);
  assert.deepEqual(errors,[]);console.log('PASS: native connections, midpoint ports, click visibility, inline double-click/F2 edit, cancel/IME/undo, reconnection, persistence and read-only');
 }finally{await browser?.close();child?.kill('SIGTERM');await fs.rm(tmp,{recursive:true,force:true});}

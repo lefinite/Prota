@@ -24,8 +24,8 @@ try {
  // No side panels, no duplicate agent UI, canvas occupies the whole viewport.
  assert.equal(await page.locator('#outline,#inspector,#agent-composer,header,#save,#export').count(),0);
  assert.deepEqual(await page.locator('#stage').evaluate(el=>({x:el.getBoundingClientRect().x,y:el.getBoundingClientRect().y,width:el.clientWidth,height:el.clientHeight})),{x:0,y:0,width:1440,height:1000});
- // Runtime V8 reports to the portal.
- assert.equal(await page.evaluate(()=>window.protaCanvas.runtimeVersion),8);
+ // Runtime V10 reports to the portal.
+ assert.equal(await page.evaluate(()=>window.protaCanvas.runtimeVersion),33);
  // Focus and browser scroll anchoring must not introduce a second camera offset.
  await page.locator('#stage').evaluate(el=>{
   const sentinel=document.createElement('button');sentinel.id='scroll-probe';
@@ -33,23 +33,48 @@ try {
   sentinel.focus();el.scrollTo(500,700);sentinel.remove();
  });
  assert.deepEqual(await page.locator('#stage').evaluate(el=>[el.scrollLeft,el.scrollTop]),[0,0]);
- // An off-center canvas point stays at the same screen coordinate through every zoom entry.
+ // Unmodified wheel gestures pan the canvas without changing zoom.
  const anchor={x:370,y:280};
  await page.mouse.move(anchor.x,anchor.y);
- await page.locator('#stage').dispatchEvent('wheel',{shiftKey:true,deltaX:73,deltaY:-41,clientX:anchor.x,clientY:anchor.y});
+ for(const options of [
+  {deltaX:73,deltaY:-41},
+  {deltaY:120},
+  {shiftKey:true,deltaX:73,deltaY:-41},
+  {deltaMode:1,deltaY:-3},
+  {deltaMode:2,deltaY:1},
+ ]){
+  const before=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+  await page.locator('#stage').dispatchEvent('wheel',{...options,clientX:anchor.x,clientY:anchor.y});
+  const after=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+  const factor=options.deltaMode===1?16:options.deltaMode===2?1000:1;
+  const dx=options.shiftKey?options.deltaY:(options.deltaX||0);
+  const dy=options.shiftKey?0:(options.deltaY||0);
+  assert.equal(after.zoom,before.zoom,'wheel never changes zoom');
+  assert.equal(after.x,before.x-dx*factor);
+  assert.equal(after.y,before.y-dy*factor);
+ }
+ // Trackpad pinch and Ctrl/Cmd + wheel remain zoom gestures.
+ for(const options of [
+  {ctrlKey:true,deltaY:-12},
+  {metaKey:true,deltaY:-12},
+ ]){
+  const before=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+  await page.locator('#stage').dispatchEvent('wheel',{...options,clientX:anchor.x,clientY:anchor.y});
+  const after=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+  assert.ok(after.zoom>before.zoom,'modified wheel zooms in');
+ }
+ {
+  const before=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+  await page.locator('#stage').dispatchEvent('wheel',{ctrlKey:true,deltaY:12,clientX:anchor.x,clientY:anchor.y});
+  const after=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+  assert.ok(after.zoom<before.zoom,'modified wheel zooms out');
+ }
+ // An off-center canvas point stays fixed through every zoom control entry.
  const fixedWorld=await page.evaluate(a=>{const v=window.protaCanvas.getState().viewport;return {x:(a.x-v.x)/v.zoom,y:(a.y-v.y)/v.zoom};},anchor);
  const assertAnchor=async()=>{
   const screen=await page.locator('#world').evaluate((el,p)=>{const m=new DOMMatrix(getComputedStyle(el).transform), r=el.getBoundingClientRect();return {x:p.x*m.a+r.left,y:p.y*m.d+r.top};},fixedWorld);
   assert.ok(Math.abs(screen.x-anchor.x)<0.01 && Math.abs(screen.y-anchor.y)<0.01,JSON.stringify(screen));
  };
- for(const deltaY of [-24,-24,18,10000,-10000,32]){
-  await page.locator('#stage').dispatchEvent('wheel',{deltaY,clientX:anchor.x,clientY:anchor.y});
-  await assertAnchor();
- }
- for(const options of [{ctrlKey:true,deltaY:-12},{metaKey:true,deltaY:12},{deltaMode:1,deltaY:-3},{deltaMode:2,deltaY:1}]){
-  await page.locator('#stage').dispatchEvent('wheel',{...options,clientX:anchor.x,clientY:anchor.y});
-  await assertAnchor();
- }
  // Moving over the toolbar must not replace the last canvas anchor.
  await page.locator('#zoom-out').dispatchEvent('pointermove',{clientX:750,clientY:970,pointerType:'mouse'});
  await page.locator('#zoom-out').dispatchEvent('click');
@@ -58,12 +83,22 @@ try {
  await page.getByRole('menuitem',{name:'100%',exact:true}).click();
  await page.waitForTimeout(230);await assertAnchor();
  // Reset navigation so the remaining editing cases retain their original coordinates.
+ await page.route('**/api/canvas/features',async route=>{await new Promise(resolve=>setTimeout(resolve,250));await route.continue();});
  await page.evaluate(()=>sessionStorage.removeItem('prota-canvas-draft:'+location.pathname+':view'));await page.reload();
  // Double-click blank space creates one text node at the world coordinate and starts editing.
  await page.mouse.click(240,220);assert.equal(await page.locator('.node.text').count(),0);
  await page.mouse.dblclick(240,220);
  const created=await page.evaluate(()=>window.protaCanvas.getState().nodes[0]);
  assert.equal(created.type,'text');assert.equal(created.x,120);assert.equal(created.y,120);
+ // Wait through creation autosave before typing: the editor must keep focus.
+ await page.waitForTimeout(650);
+ assert.equal(await page.locator('.node.editing .node-content').count(),1,'creation autosave keeps the new text in edit mode');
+ assert.equal(await page.locator('.node.editing .node-content').evaluate(el=>document.activeElement===el),true,'new text keeps keyboard focus without another click');
+ await page.keyboard.insertText('双击后直接输入');
+ assert.equal(await page.evaluate(()=>window.protaCanvas.getState().nodes[0].text),'双击后直接输入','typing goes directly into the new text');
+ await page.waitForFunction(()=>!window.protaCanvas.isDirty());
+ assert.equal(await page.locator('.node.editing .node-content').evaluate(el=>document.activeElement===el),true,'typing autosave also keeps the editor focused');
+ await page.unroute('**/api/canvas/features');
  const markdownSource='# 标题\n\n**粗体**与 *斜体*、~~删除~~、`code`\n\n- 列表\n- [x] 完成\n\n> 引用\n\n```js\nconst a = 1;\n```\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n\n[链接](https://example.com)\n\n[危险](javascript:alert(1))\n\n<img src=x onerror="window.canvasInjected=1">';
  const editor=page.locator('.node.editing .node-content');
  await editor.fill(markdownSource);await page.mouse.click(60,700);
@@ -75,11 +110,14 @@ try {
  assert.equal(await preview.locator('script,img,[onerror],a[href^="javascript:"]').count(),0);
  assert.equal(await page.evaluate(()=>window.canvasInjected),undefined);
  await page.waitForFunction(()=>!window.protaCanvas.isDirty());
+ const viewportBeforeEdit=await page.evaluate(()=>window.protaCanvas.getState().viewport);
  await preview.dblclick({position:{x:25,y:25}});
+ assert.equal(await editor.count(),1,'double-click enters Markdown editing');
+ assert.deepEqual(await page.evaluate(()=>window.protaCanvas.getState().viewport),viewportBeforeEdit,'editing keeps the viewport fixed');
  assert.equal(await editor.textContent(),markdownSource,'editing preserves the Markdown source');
  await editor.fill('取消的修改');await page.keyboard.press('Escape');
  assert.equal(await preview.locator('h1').textContent(),'标题','Escape restores preview');
- await preview.dblclick({position:{x:25,y:25}});await page.mouse.click(60,700);
+ await page.locator('#selection-tools [data-action=edit-text]').click();await page.mouse.click(60,700);
  assert.equal(await preview.locator('h1').textContent(),'标题','unchanged edit restores preview');
  await page.reload();await preview.locator('h1').waitFor();
  assert.equal((await page.evaluate(()=>window.protaCanvas.getState())).nodes[0].text,markdownSource);
@@ -109,7 +147,27 @@ try {
  assert.equal(await page.locator('#selection-tools').isVisible(),true);
  assert.deepEqual(await page.evaluate(()=>window.protaCanvas.getSelection()),[textId]);
  await page.locator('#selection-tools [data-action=more]').click();
- assert.equal(await page.locator('#selection-tools').isVisible(),false,'more menu hides its toolbar');
+ assert.equal(await page.locator('#selection-tools').isVisible(),true,'more menu keeps its toolbar visible');
+ assert.equal(await page.locator('#context-menu').isVisible(),true);
+ const checkMorePosition = async () => {
+  const toolbar = await page.locator('#selection-tools').boundingBox();
+  const menu = await page.locator('#context-menu').boundingBox();
+  assert.ok(Math.abs(menu.y - toolbar.y - toolbar.height - 6) < 1,'more menu sits below the toolbar');
+  assert.ok(menu.x >= 0 && menu.x + menu.width <= 1440);
+ };
+ await checkMorePosition();
+ await page.evaluate(()=>window.dispatchEvent(new Event('resize')));
+ assert.equal(await page.locator('#selection-tools').isVisible(),true,'rerenders preserve the expanded toolbar');
+ await checkMorePosition();
+ await page.locator('#selection-tools [data-action=more]').click();
+ assert.equal(await page.locator('#context-menu').isVisible(),false,'clicking More again collapses the menu');
+ assert.equal(await page.locator('#selection-tools').isVisible(),true);
+ await page.locator('#selection-tools [data-action=more]').click();
+ await page.mouse.click(30,650);
+ assert.equal(await page.locator('#context-menu').isVisible(),false,'blank click collapses More');
+ assert.equal(await page.locator('#selection-tools').isVisible(),true,'blank dismissal keeps the toolbar');
+ assert.deepEqual(await page.evaluate(()=>window.protaCanvas.getSelection()),[textId]);
+ await page.locator('#selection-tools [data-action=more]').click();
  await page.keyboard.press('Escape');
  assert.equal(await page.locator('#selection-tools').isVisible(),true);
  await page.locator('#selection-tools [data-action=style]').click();
@@ -132,18 +190,52 @@ try {
  await page.waitForFunction(()=>!window.protaCanvas.isDirty());assert.equal(await page.locator('.node.editing .node-content').count(),1,'autosave must not end text editing');assert.ok((await fs.readFile(path.join(dir,'canvas-data.js'),'utf8')).includes('浮动工具栏与实时保存'));await page.locator('#stage').click({position:{x:60,y:760}});await page.waitForFunction(()=>!window.protaCanvas.isDirty());
  assert.equal(await page.locator('.node.text .node-content').textContent(),'浮动工具栏与实时保存');
  await page.locator('.node.text .node-content').click();
- await page.locator('#selection-tools [data-action=style]').click();await page.getByLabel('宽',{exact:true}).fill('320');await page.getByLabel('宽',{exact:true}).press('Tab');await page.locator('#close-properties').click();
- assert.equal((await page.evaluate(()=>window.protaCanvas.getState())).nodes.find(n=>n.id===textId).width,320);
+ await page.locator('#selection-tools [data-action=style]').click();
+ for (const label of ['X','Y','宽','高']) assert.equal(await page.getByLabel(label,{exact:true}).count(),0);
+ await page.getByLabel('字号',{exact:true}).fill('24');await page.getByLabel('字号',{exact:true}).press('Tab');await page.locator('#close-properties').click();
+ assert.equal((await page.evaluate(()=>window.protaCanvas.getState())).nodes.find(n=>n.id===textId).fontSize,24);
  // Board without code shows generate-style agent action; with code shows preview.
  const boardId=await page.evaluate(()=>window.protaCanvas.getState().nodes.find(n=>n.type==='board').id);
  await page.locator(`.node[data-id="${boardId}"] .node-title`).click();
- assert.equal(await page.locator('#selection-tools [data-action=agent]').textContent(),'Agent 生成');
+ assert.equal(await page.locator('#selection-tools [data-action=agent]').textContent(),'Prota');
+ await page.locator('#selection-tools [data-action=more]').click();
+ assert.equal(await page.locator('#selection-tools').isVisible(),true,'board controls remain visible with More open');
+ await checkMorePosition();
+ await page.keyboard.press('Escape');
+ assert.deepEqual(await page.evaluate(()=>window.protaCanvas.getSelection()),[boardId]);
+ await page.keyboard.press('F2');
+ assert.equal(await page.locator('#property-title').textContent(),'重命名');
+ assert.equal(await page.locator('#properties input').count(),1);
+ assert.equal(await page.locator('#properties select').count(),1);
+ await page.getByLabel('名称',{exact:true}).fill('重命名后的画板');
+ await page.getByLabel('设备预设',{exact:true}).selectOption('1440x900');
+ await page.locator('#close-properties').click();
+ const renamed=await page.evaluate(id=>window.protaCanvas.getState().nodes.find(n=>n.id===id),boardId);
+ assert.equal(renamed.name,'重命名后的画板');
+ assert.equal(renamed.width,1440);
+ assert.equal(renamed.height,900);
+ // Restore its original phone preset for subsequent spatial tests.
+ await page.keyboard.press('F2');
+ await page.getByLabel('设备预设',{exact:true}).selectOption('390x844');
+ await page.locator('#close-properties').click();
  // Sticky note single-select shows color swatches in the property bubble.
  await addAt('便签',380,200);const noteId=await page.evaluate(()=>window.protaCanvas.getSelection()[0]);
  await page.locator('#selection-tools [data-action=color]').click();
  assert.equal(await page.locator('.swatch').count(),6);
  await page.locator('.swatch').nth(2).click();await page.waitForFunction(()=>!window.protaCanvas.isDirty());
  assert.equal((await page.evaluate(()=>window.protaCanvas.getState())).nodes.find(n=>n.id===noteId).color,'#d4ecec');
+ // Sticky notes share direct double-click editing, save and cancellation.
+ await page.locator('#close-properties').click();
+ const noteContent=page.locator(`.node[data-id="${noteId}"] .node-content`);
+ const noteView=await page.evaluate(()=>window.protaCanvas.getState().viewport);
+ await noteContent.dblclick();
+ assert.equal(await noteContent.getAttribute('contenteditable'),'plaintext-only');
+ assert.deepEqual(await page.evaluate(()=>window.protaCanvas.getState().viewport),noteView);
+ await noteContent.fill('便签双击编辑');
+ await page.mouse.click(60,700);await page.waitForFunction(()=>!window.protaCanvas.isDirty());
+ assert.equal(await noteContent.textContent(),'便签双击编辑');
+ await noteContent.dblclick();await noteContent.fill('取消便签修改');await page.keyboard.press('Escape');
+ assert.equal(await noteContent.textContent(),'便签双击编辑');
  // Multi-select: one shared toolbar with count, group/align actions.
  await addAt('矩形',1000,400);const rectId=await page.evaluate(()=>window.protaCanvas.getSelection()[0]);
  await page.locator(`.node[data-id="${textId}"] .node-content`).click({modifiers:['Shift']});
@@ -172,6 +264,31 @@ try {
  await page.waitForTimeout(80);
  assert.deepEqual(await page.evaluate(()=>window.protaCanvas.getSelection().length),1,'plain click narrows a multi-selection');
  await page.locator(`.node[data-id="${textId}"] .node-content`).click({modifiers:['Shift']});
+ // Marquee drag must surface the same multi-selection toolbar as shift+click.
+ // Regression: a marquee ending in endGesture('select') skipped render, so
+ // group/align stayed hidden although several objects were selected.
+ const marqueeBoxes=await page.evaluate(ids=>ids.map(id=>{const r=document.querySelector(`.node[data-id="${id}"]`).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}),[textId,rectId]);
+ const marqueeLeft=Math.min(...marqueeBoxes.map(b=>b.x))-30,marqueeTop=Math.min(...marqueeBoxes.map(b=>b.y))-30;
+ const marqueeRight=Math.max(...marqueeBoxes.map(b=>b.x+b.width))+30,marqueeBottom=Math.max(...marqueeBoxes.map(b=>b.y+b.height))+30;
+ // Crossing only part of an object must leave it unselected.
+ const rightmostIndex=marqueeBoxes[0].x+marqueeBoxes[0].width>marqueeBoxes[1].x+marqueeBoxes[1].width?0:1;
+ const partialBox=marqueeBoxes[rightmostIndex],partialId=[textId,rectId][rightmostIndex];
+ await page.mouse.move(marqueeLeft,marqueeTop);await page.mouse.down();await page.mouse.move(partialBox.x+partialBox.width/2,marqueeBottom,{steps:12});await page.mouse.up();
+ assert.ok(!(await page.evaluate(()=>window.protaCanvas.getSelection())).includes(partialId),'partial overlap does not select an object');
+ await page.mouse.move(marqueeLeft,marqueeTop);await page.mouse.down();await page.mouse.move(marqueeRight,marqueeBottom,{steps:12});await page.mouse.up();
+ await page.waitForTimeout(150);
+ assert.ok((await page.evaluate(()=>window.protaCanvas.getSelection().length))>=2,'marquee selects multiple objects');
+ assert.equal(await page.locator('#selection-tools').isVisible(),true,'marquee selection keeps the toolbar visible');
+ assert.equal(await page.locator('#selection-tools [data-action=group]').isVisible(),true,'marquee selection offers group');
+ assert.equal(await page.locator('#selection-tools [data-action=align]').isVisible(),true,'marquee selection offers align');
+ // Reverse drag uses the same full-containment rule.
+ await page.mouse.move(marqueeRight,marqueeBottom);await page.mouse.down();await page.mouse.move(marqueeLeft,marqueeTop,{steps:12});await page.mouse.up();
+ assert.ok((await page.evaluate(()=>window.protaCanvas.getSelection())).includes(textId));
+ assert.ok((await page.evaluate(()=>window.protaCanvas.getSelection())).includes(rectId));
+ // Restore the exact two-object selection so the grouping flow below stays unchanged.
+ await page.locator(`.node[data-id="${rectId}"] .node-content`).click();
+ await page.locator(`.node[data-id="${textId}"] .node-content`).click({modifiers:['Shift']});
+ assert.equal(await page.locator('#selection-tools .selection-count').textContent(),'已选 2 个');
  await page.locator('#selection-tools [data-action=group]').click();
  await page.locator('#selection-tools [data-action=duplicate]').click();assert.equal(await page.locator('.node.group').count(),2);
  await page.locator('#selection-tools [data-action=more]').click();await page.getByRole('menuitem').filter({hasText:'锁定'}).click();
@@ -185,10 +302,11 @@ try {
  assert.equal(await page.getByRole('menuitem').filter({hasText:'取消编组'}).isVisible(),true);
  assert.equal(await page.getByRole('menuitem').filter({hasText:'手机画板'}).count(),0);
  await page.keyboard.press('Escape');
- // Enter group editing by double-click, exit with Esc, then remove the overlapping copy.
+ // Enter group editing through its explicit action, exit with Esc, then remove the overlapping copy.
  const groupId=await page.evaluate(()=>window.protaCanvas.getSelection()[0]);
- await page.locator('.node.group.selected .node-title').dblclick();
- assert.equal(await page.evaluate(gid=>{const st=window.protaCanvas.getState();const kids=st.nodes.filter(n=>n.parentId===gid).map(n=>n.id);const sel=window.protaCanvas.getSelection();return kids.length>1&&sel.length===kids.length&&kids.every(k=>sel.includes(k));},groupId),true,'double-click selects the group children');
+ await page.locator('#selection-tools [data-action=more]').click();
+ await page.locator('#context-menu [data-action=enter-group]').click();
+ assert.equal(await page.evaluate(gid=>{const st=window.protaCanvas.getState();const kids=st.nodes.filter(n=>n.parentId===gid).map(n=>n.id);const sel=window.protaCanvas.getSelection();return kids.length>1&&sel.length===kids.length&&kids.every(k=>sel.includes(k));},groupId),true,'enter group selects its children');
  await page.keyboard.press('Escape');
  assert.equal(await page.locator('.node.group.selected').count(),1);
  await page.keyboard.press('Delete');
@@ -252,21 +370,19 @@ try {
  await fs.writeFile(path.join(dir,'canvas-data.js'),'window.PROTA_CANVAS = '+JSON.stringify(fresh)+';');
  await page.evaluate(()=>window.protaCanvas.reloadFromDisk());
  await page.locator(`.node[data-id="${board2.id}"] .node-title`).click();await page.locator('#selection-tools [data-action=preview]').click();await page.frameLocator(`.node[data-id="${board2.id}"] iframe`).locator('#hit').click();assert.equal(await page.frameLocator(`.node[data-id="${board2.id}"] iframe`).locator('#hit').textContent(),'已点击');await page.frameLocator(`.node[data-id="${board2.id}"] iframe`).locator('#hit').press('Escape');
- // Conflict: disk changes behind our back, then we recover our local edits.
+ // External disk edits merge with manual changes during autosave.
  const disk=JSON.parse((await fs.readFile(path.join(dir,'canvas-data.js'),'utf8')).replace('window.PROTA_CANVAS = ','').replace(/;\s*$/,''));
  disk.nodes.push({id:'external_mark',type:'note',name:'外部修改',x:2000,y:2000,width:200,height:160,color:'#ffd9d2',text:''});
  await fs.writeFile(path.join(dir,'canvas-data.js'),'window.PROTA_CANVAS = '+JSON.stringify(disk)+';');
  await addAt('文本',150,930);
- await page.waitForFunction(()=>document.querySelector('#save-status').textContent.includes('保存冲突'));
- await page.locator('#notice-action').filter({hasText:'恢复我的修改'}).click();
  await page.waitForFunction(()=>!window.protaCanvas.isDirty());
  const recovered=await page.evaluate(()=>window.protaCanvas.getState().nodes);
  assert.ok(recovered.some(n=>n.text==='浮动工具栏与实时保存'),'local edits survive the conflict');
  assert.ok(recovered.some(n=>n.id==='external_mark'),'recovery keeps independent external additions');
  // A service failure keeps drafts and offers retry rather than a conflict overwrite.
  await page.route('**/api/canvas/save',r=>r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'测试连接中断'})}));await addAt('文本',80,700);
- await page.locator('#selection-tools [data-action=edit-text]').click();await page.locator('.node.editing .node-content').fill('故障后的本机草稿');await page.locator('.node.editing .node-content').press('Tab');await page.waitForFunction(()=>document.querySelector('#save-status').textContent.includes('保存失败'));
- page.once('dialog',d=>d.accept());await page.reload();await page.unroute('**/api/canvas/save');await page.locator('#notice').getByRole('button',{name:'恢复修改',exact:true}).click();await page.waitForFunction(()=>!window.protaCanvas.isDirty());assert.ok((await page.evaluate(()=>window.protaCanvas.getState().nodes)).some(n=>n.text==='故障后的本机草稿'));
+ await page.locator('#selection-tools [data-action=edit-text]').click();await page.locator('.node.editing .node-content').fill('故障后的本机草稿');await page.locator('.markdown-inline-tools').getByRole('button',{name:'完成',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#save-status').textContent.includes('保存失败'));
+ await page.reload();await page.unroute('**/api/canvas/save');await page.waitForFunction(()=>!window.protaCanvas.isDirty());assert.ok((await page.evaluate(()=>window.protaCanvas.getState().nodes)).some(n=>n.text==='故障后的本机草稿'));
  // Responsive floating bars stay in the viewport at 320 / 390 / 1440.
  for(const size of [{width:320,height:844},{width:390,height:844},{width:1440,height:1000}]){
   await page.setViewportSize(size);await page.locator('#fit').click();
@@ -281,6 +397,39 @@ try {
  await fs.writeFile(path.join(visualDir,'boards/home/index.html'),`<!doctype html><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;font-family:"PingFang SC",sans-serif;padding:35px;color:#252832;background:white}h2{font-size:23px;letter-spacing:-.5px;margin:0 0 9px}p{margin:0;color:#9198a5;font-size:13px}.cards{display:flex;gap:12px;margin-top:30px}.card{flex:1;padding:20px 16px;background:#f7f8fc;border:1px solid #eceef5;border-radius:11px;font-size:12px}.card span{display:block;font-size:11px;margin-top:8px;color:#969ead}</style><h2>欢迎使用 Prota</h2><p>从想法，到可交互的产品原型。</p><div class="cards"><div class="card">产品探索<span>Ideas & Discovery</span></div><div class="card">原型设计<span>Interactive Prototype</span></div><div class="card">AI 协作<span>Agent Workflow</span></div></div>`);
  await fs.writeFile(path.join(visualDir,'canvas-data.js'),'window.PROTA_CANVAS = '+JSON.stringify({schemaVersion:1,revision:0,viewport:{x:0,y:0,zoom:1},nodes:[{id:'visual_home',type:'board',name:'Web 画板 · 首页',x:460,y:320,width:520,height:320,src:'boards/home/index.html'}]})+';');
  const qa=await browser.newPage({viewport:{width:1440,height:1000}});qa.on('pageerror',e=>errors.push(e.message));await qa.addInitScript(()=>sessionStorage.setItem('prota-canvas-draft:/src/pages/demo/design/v3/index.html:view',JSON.stringify({x:0,y:0,zoom:1})));await qa.goto(base+'/src/pages/demo/design/v3/index.html');await qa.frameLocator('.node.board iframe').locator('h2').waitFor();await qa.locator('.node.board .node-title').click();await qa.mouse.move(30,200);await qa.waitForTimeout(200);await qa.screenshot({path:path.join(evidence,'selected-board.png')});
+ // Activated boards retain pinch zoom and native two-axis scrolling.
+ await qa.locator('.node.board .node-title').dblclick();
+ await qa.locator('.node.board.interacting').waitFor();await qa.waitForTimeout(250);
+ const boardBody=qa.frameLocator('.node.board iframe').locator('body');
+ for(const options of [{ctrlKey:true,deltaY:-12},{ctrlKey:true,deltaY:12},{metaKey:true,deltaY:-12}]){
+  const before=await qa.evaluate(()=>window.protaCanvas.getState().viewport);
+  const rect=await qa.locator('.node.board iframe').boundingBox();
+  const size=await boardBody.evaluate(()=>({width:innerWidth,height:innerHeight}));
+  const anchor={x:rect.x+80*rect.width/size.width,y:rect.y+60*rect.height/size.height};
+  const prevented=await boardBody.evaluate((el,options)=>!el.dispatchEvent(new WheelEvent('wheel',{...options,clientX:80,clientY:60,bubbles:true,cancelable:true})),options);
+  assert.equal(prevented,true,'frame zoom prevents native browser zoom');
+  const after=await qa.evaluate(()=>window.protaCanvas.getState().viewport);
+  assert.ok(options.deltaY<0?after.zoom>before.zoom:after.zoom<before.zoom,'active board zooms both ways');
+  assert.ok(Math.abs((anchor.x-before.x)/before.zoom-(anchor.x-after.x)/after.zoom)<0.001,'frame zoom preserves horizontal anchor');
+  assert.ok(Math.abs((anchor.y-before.y)/before.zoom-(anchor.y-after.y)/after.zoom)<0.001,'frame zoom preserves vertical anchor');
+  assert.equal(await qa.locator('.node.board.interacting').count(),1);
+ }
+ await qa.locator('#zoom-out').click();await qa.waitForTimeout(250);
+ assert.equal(await qa.locator('.node.board.interacting').count(),1,'zoom controls preserve preview activation');
+ await boardBody.evaluate(el=>{
+  const scroller=document.createElement('div');scroller.id='board-scroll-probe';
+  scroller.style.cssText='position:absolute;left:0;top:0;width:240px;height:120px;overflow:scroll;background:white';
+  const content=document.createElement('div');content.style.cssText='width:1500px;height:1500px';scroller.append(content);el.append(scroller);
+ });
+ const scroller=qa.frameLocator('.node.board iframe').locator('#board-scroll-probe');
+ const scrollBox=await scroller.boundingBox();const camera=await qa.evaluate(()=>window.protaCanvas.getState().viewport);
+ await qa.mouse.move(scrollBox.x+40,scrollBox.y+40);await qa.mouse.wheel(100,100);
+ await qa.waitForFunction(()=>{const el=document.querySelector('.node.board iframe').contentDocument.getElementById('board-scroll-probe');return el.scrollLeft>0&&el.scrollTop>0;});
+ assert.deepEqual(await qa.evaluate(()=>window.protaCanvas.getState().viewport),camera,'native board scrolling leaves canvas camera unchanged');
+ await scroller.evaluate(el=>{el.scrollLeft=250;el.scrollTop=300;});
+ assert.deepEqual(await scroller.evaluate(el=>[el.scrollLeft,el.scrollTop]),[250,300],'board scrollbar offsets remain usable');
+ await scroller.evaluate(el=>el.remove());
+ await boardBody.dispatchEvent('keydown',{key:'Escape'});
  await qa.locator('.node.board .node-title').click({button:'right'});await qa.mouse.move(30,200);await qa.screenshot({path:path.join(evidence,'object-context-menu.png')});await qa.keyboard.press('Escape');
  await qa.locator('#fullscreen').click();await qa.waitForFunction(()=>Boolean(document.fullscreenElement));await qa.screenshot({path:path.join(evidence,'fullscreen.png')});await qa.locator('#fullscreen').click();await qa.setViewportSize({width:320,height:844});await qa.evaluate(()=>window.protaCanvas.fit());await qa.screenshot({path:path.join(evidence,'mobile-320.png')});
  // An empty area of a board offers creation and assigns ownership using world coordinates.
@@ -299,16 +448,20 @@ try {
  assert.equal(await qa.locator('#selection-frame[data-multi]').count(),1);assert.equal(await qa.locator('.node .resize').count(),0);
  const initialMulti=await qa.evaluate(()=>window.protaCanvas.getState().nodes);const multiHandle=await qa.locator('#selection-frame i[data-handle=se]').boundingBox();await qa.mouse.move(multiHandle.x+4,multiHandle.y+4);await qa.mouse.down();await qa.mouse.move(multiHandle.x+64,multiHandle.y+94,{steps:4});await qa.mouse.up();await qa.waitForFunction(()=>!window.protaCanvas.isDirty());
  const multiAfter=await qa.evaluate(()=>window.protaCanvas.getState().nodes),a0=initialMulti.find(n=>n.id===aId),b0=initialMulti.find(n=>n.id===bId),a1=multiAfter.find(n=>n.id===aId),b1=multiAfter.find(n=>n.id===bId);
- assert.ok(Math.abs(a1.width/a0.width-b1.width/b0.width)<.001);assert.ok(Math.abs((b1.y-a1.y)/(b0.y-a0.y)-a1.height/a0.height)<.001);
+ assert.ok(Math.abs(a1.width/a0.width-b1.width/b0.width)<.001);
+ // Widths and offsets scale together; the text box takes only the width and re-measures its content height.
+ assert.ok(Math.abs((b1.y-a1.y)/(b0.y-a0.y)-b1.height/b0.height)<.001);
+ const textMeasured=await qa.evaluate(id=>{const el=document.querySelector(`.node[data-id="${id}"] .node-content`);const inner=el.scrollHeight;return {measured:inner,stored:window.protaCanvas.getState().nodes.find(n=>n.id===id).height};},aId);
+ assert.ok(Math.abs(textMeasured.measured-textMeasured.stored)<=1,'text height follows its content, not the scale factor');
  await qa.keyboard.press('Control+z');assert.deepEqual(await qa.evaluate(()=>window.protaCanvas.getState().nodes),initialMulti);
  // Stale Agent output cannot replace a dirty local document; recovery needs an explicit conflict choice.
  await qa.waitForFunction(()=>!window.protaCanvas.isDirty());await qa.route('**/api/canvas/save',r=>r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'暂时离线'})}));
- await qa.locator(`.node[data-id="${aId}"] .node-content`).click();await qa.locator('#selection-tools [data-action=edit-text]').click();await qa.locator('.node.editing .node-content').fill('未保存的新修改');await qa.locator('.node.editing .node-content').press('Tab');await qa.waitForFunction(()=>document.querySelector('#save-status').textContent.includes('保存失败'));
+ await qa.locator(`.node[data-id="${aId}"] .node-content`).click();await qa.locator('#selection-tools [data-action=edit-text]').click();await qa.locator('.node.editing .node-content').fill('未保存的新修改');await qa.locator('.markdown-inline-tools').getByRole('button',{name:'完成',exact:true}).click();await qa.waitForFunction(()=>document.querySelector('#save-status').textContent.includes('保存失败'));
  const olderResult=JSON.parse((await fs.readFile(path.join(visualDir,'canvas-data.js'),'utf8')).replace('window.PROTA_CANVAS = ','').replace(/;\s*$/,''));olderResult.nodes.find(n=>n.id===aId).text='较旧 Agent 输出';await fs.writeFile(path.join(visualDir,'canvas-data.js'),'window.PROTA_CANVAS = '+JSON.stringify(olderResult)+';');
  assert.equal(await qa.evaluate(()=>window.protaCanvas.reloadFromDisk()),false);assert.equal(await qa.evaluate(id=>window.protaCanvas.getState().nodes.find(n=>n.id===id).text,aId),'未保存的新修改');
- await qa.locator('#notice').getByRole('button',{name:'读取最新版本',exact:true}).click();await qa.locator('#notice').getByRole('button',{name:'恢复备份',exact:true}).click();await qa.locator('#notice').getByRole('button',{name:'应用本机修改',exact:true}).waitFor();
- assert.ok((await fs.readFile(path.join(visualDir,'canvas-data.js'),'utf8')).includes('较旧 Agent 输出'),'a conflicting restore must wait for explicit confirmation');
- await qa.unroute('**/api/canvas/save');await qa.locator('#notice').getByRole('button',{name:'应用本机修改',exact:true}).click();await qa.waitForFunction(()=>!window.protaCanvas.isDirty());assert.equal(await qa.evaluate(id=>window.protaCanvas.getState().nodes.find(n=>n.id===id).text,aId),'未保存的新修改');
+ await qa.unroute('**/api/canvas/save');await qa.waitForFunction(()=>!window.protaCanvas.isDirty());
+ assert.equal(await qa.evaluate(id=>window.protaCanvas.getState().nodes.find(n=>n.id===id).text,aId),'未保存的新修改');
+ assert.ok((await fs.readFile(path.join(visualDir,'canvas-data.js'),'utf8')).includes('未保存的新修改'),'autosave reconciles stale Agent output without discarding manual text');
  // PPE: read-only sync during Agent work, immutable board updates and independent iframe state.
  const ppeDir=path.join(root,'src/pages/demo/design/v6');await fs.cp(visualDir,ppeDir,{recursive:true});
  await fs.mkdir(path.join(ppeDir,'boards/other'),{recursive:true});await fs.writeFile(path.join(ppeDir,'boards/other/index.html'),'<button onclick="this.textContent=\'retained\'">Independent</button>');
@@ -335,12 +488,49 @@ try {
  await pc.evaluate(()=>window.protaCanvas.agentState({active:false,previewManaged:true}));
  await pc.route('**/api/canvas/save',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"offline"}'}));
  await pc.locator('#fit').click();await pc.waitForTimeout(230);
- await pc.locator('.node[data-id="new-note"] .node-content').dblclick();await pc.locator('.node.editing .node-content').fill('Unsaved draft');await pc.locator('.node.editing .node-content').press('Tab');await pc.waitForFunction(()=>window.protaCanvas.isDirty());
+ await pc.locator('.node[data-id="new-note"] .node-content').click();await pc.locator('#selection-tools [data-action=edit-text]').click();await pc.locator('.node.editing .node-content').fill('Unsaved draft');await pc.locator('.node.editing .node-content').press('Tab');await pc.waitForFunction(()=>window.protaCanvas.isDirty());
  assert.equal(await pc.evaluate(()=>window.protaCanvas.reloadFromDisk(false,{previewSync:true})),false);assert.equal(await pc.evaluate(()=>window.protaCanvas.refreshBoards(['home'])),false);assert.equal(await pc.locator('.node[data-id="new-note"] .node-content').textContent(),'Unsaved draft');
+ // Agent-time editing: move/add stay live and deletion is withheld; the run outcome merges with local edits.
+ await pc.evaluate(()=>window.protaCanvas.agentState({active:true,targetIds:['first'],previewManaged:true}));
+ const noteBox=await pc.locator('.node[data-id="new-note"] .node-content').boundingBox();
+ await pc.mouse.move(noteBox.x+noteBox.width/2,noteBox.y+noteBox.height/2);await pc.mouse.down();
+ await pc.mouse.move(noteBox.x+noteBox.width/2+160,noteBox.y+noteBox.height/2+100,{steps:8});await pc.mouse.up();
+ const movedX=await pc.evaluate(()=>window.protaCanvas.getState().nodes.find(n=>n.id==='new-note').x);
+ assert.notEqual(movedX,1100,'objects stay draggable while the Agent runs');
+ await pc.locator('#add-note').click();
+ const addedId=(await pc.evaluate(()=>[...window.protaCanvas.getSelection()]))[0];
+ assert.ok(addedId,'objects stay addable while the Agent runs');
+ await pc.keyboard.press('Delete');
+ assert.ok((await pc.locator('#notice').textContent()).includes('Agent 正在处理'),'deletion is deferred until the run ends');
+ assert.ok(await pc.evaluate(id=>window.protaCanvas.getState().nodes.some(n=>n.id===id),addedId));
+ await pc.evaluate(()=>window.protaCanvas.agentState({active:true,targetIds:['new-note'],previewManaged:true}));
+ const heldBox=await pc.locator('.node[data-id="new-note"] .node-content').boundingBox();
+ await pc.mouse.move(heldBox.x+heldBox.width/2,heldBox.y+heldBox.height/2);await pc.mouse.down();
+ await pc.mouse.move(heldBox.x+heldBox.width/2+160,heldBox.y+heldBox.height/2+100,{steps:8});await pc.mouse.up();
+ assert.equal(await pc.evaluate(()=>window.protaCanvas.getState().nodes.find(n=>n.id==='new-note').x),movedX,'Agent targets are protected from local edits');
+ const ppeCanvasPath=path.join(ppeDir,'canvas-data.js');
+ const outcomeDoc=JSON.parse((await fs.readFile(ppeCanvasPath,'utf8')).replace('window.PROTA_CANVAS = ','').replace(/;\s*$/,''));
+ outcomeDoc.nodes.push({id:'agent-note2',type:'note',name:'Agent note 2',x:1500,y:700,width:140,height:90,text:'Agent 追加',color:'#fff1b8',fontSize:20});
+ await fs.writeFile(ppeCanvasPath,'window.PROTA_CANVAS = '+JSON.stringify(outcomeDoc)+';');
+ await pc.unroute('**/api/canvas/save');
+ await pc.evaluate(()=>window.protaCanvas.agentState({active:false,previewManaged:true}));
+ await pc.waitForFunction(()=>!window.protaCanvas.isDirty(),null,{timeout:5000});
+ const mergedIds=await pc.evaluate(()=>window.protaCanvas.getState().nodes.map(n=>n.id));
+ assert.ok(mergedIds.includes('agent-note2')&&mergedIds.includes(addedId),'agent additions and local additions coexist');
+ assert.equal(await pc.evaluate(()=>window.protaCanvas.getState().nodes.find(n=>n.id==='new-note').text),'Unsaved draft');
+ const savedOutcome=await fs.readFile(ppeCanvasPath,'utf8');
+ assert.ok(savedOutcome.includes('agent-note2')&&savedOutcome.includes('Unsaved draft'),'the merged document is persisted');
  await pc.close();await fs.rm(ppeCache,{recursive:true,force:true});
  // Readonly wrapper still permits preview / navigation and never exposes edit controls.
  const readonlyDir=path.join(root,'src/pages/demo/design/v5');await fs.cp(visualDir,readonlyDir,{recursive:true});const readonlyDoc=JSON.parse((await fs.readFile(path.join(visualDir,'canvas-data.js'),'utf8')).replace('window.PROTA_CANVAS = ','').replace(/;\s*$/,''));readonlyDoc.nodes=readonlyDoc.nodes.filter(n=>n.id==='visual_home');readonlyDoc.viewport={x:0,y:0,zoom:1};await fs.writeFile(path.join(readonlyDir,'canvas-data.js'),'window.PROTA_CANVAS = '+JSON.stringify(readonlyDoc)+';');
  await fs.writeFile(path.join(visualDir,'readonly.html'),'<script>window.shell={isShareMode:true}</script><iframe title="只读画布" src="../v5/index.html" style="border:0;width:100vw;height:100vh"></iframe>');const ro=await browser.newPage();await ro.goto(base+'/src/pages/demo/design/v3/readonly.html');const readonly=ro.frameLocator('iframe[title="只读画布"]');await readonly.locator('body.readonly').waitFor();assert.equal(await readonly.locator('.creation-tools').isVisible(),false);await readonly.locator('.node.board .node-title').click();assert.equal(await readonly.locator('#selection-tools [data-action=duplicate]').count(),0);assert.equal(await readonly.locator('#selection-tools [data-action=preview]').isVisible(),true);
+ assert.equal(await readonly.locator('.view-tools .divider').isVisible(),false,'readonly fullscreen has no orphan divider');
+ await readonly.locator('.node.board .node-title').dblclick();
+ await readonly.locator('.node.board.interacting').waitFor();
+ await ro.waitForTimeout(250);
+ const activeBoard=await readonly.locator('.node.board').boundingBox();
+ const readonlyStage=await readonly.locator('#stage').boundingBox();
+ assert.ok(Math.abs(activeBoard.x+activeBoard.width/2-readonlyStage.x-readonlyStage.width/2)<2,'double-click focuses and activates a shared board');
  assert.deepEqual(errors,[]);
  console.log('PASS: native canvas runtime — Markdown source/preview & blank double-click, unified actions per type & multi-select, shared frame scaling, alt-drag/undo/escape semantics, blank & object context menus, palette, zoom menu, fullscreen, conflict recovery, persistence, responsive 320/390/1440, board preview');
  console.log('Screenshot: '+path.join(evidence,'floating-canvas.png'));

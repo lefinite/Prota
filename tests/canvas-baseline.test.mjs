@@ -5,17 +5,19 @@ import vm from 'node:vm';
 import '../src/templates/infinite-canvas/canvas-core.js';
 import { CANVAS_FEATURE_DEFAULTS, resolveCanvasFeatures } from '../server/canvas-features.mjs';
 
-test('rollout contract is disabled by default and isolated to explicit test workspaces', () => {
+test('shipped board versions default on and experimental features require explicit workspaces', () => {
   assert.equal(Object.keys(CANVAS_FEATURE_DEFAULTS).length, 12);
-  assert.ok(Object.values(resolveCanvasFeatures()).every(value => value === false));
+  assert.equal(resolveCanvasFeatures().canvasSchemaV2, true);
+  assert.equal(resolveCanvasFeatures().boardRevisions, true);
+  assert.equal(resolveCanvasFeatures().canvasVirtualization, false);
   const options = { workspaceId: 'business', testWorkspaceIds: ['test'], overrides: { boardRevisions: true } };
-  assert.equal(resolveCanvasFeatures(options).boardRevisions, false);
+  assert.equal(resolveCanvasFeatures(options).boardRevisions, true);
   const flags = resolveCanvasFeatures({ ...options, workspaceId: 'test', overrides: { boardRevisions: true, canvasSchemaV2: 'true', unknown: true } });
   assert.equal(flags.boardRevisions, true);
   assert.equal(flags.canvasSchemaV2, false);
   assert.equal('unknown' in flags, false);
   assert.equal(Object.isFrozen(flags), true);
-  assert.equal(CANVAS_FEATURE_DEFAULTS.boardRevisions, false);
+  assert.equal(CANVAS_FEATURE_DEFAULTS.boardRevisions, true);
 });
 
 test('archived v1 fixture loads without changing IDs, hierarchy, source, or viewport', async () => {

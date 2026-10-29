@@ -62,7 +62,7 @@ try {
   await fs.cp(path.join(app, 'tests/fixtures/canvas-v1'), second, { recursive: true });
   await open('v2'); assert.equal((await state()).nodes[0].boardId, boardId, 'v1/v2 legacy copies share logical identity');
   assert.deepEqual(await fs.readFile(path.join(second, 'canvas-data.js')), original);
-  await fs.writeFile(config, '{}');
+  await fs.writeFile(config, JSON.stringify({ testWorkspaceIds: ['schema-test'], overrides: { canvasSchemaV2: false, boardRevisions: false } }));
   await open('v1'); assert.equal((await state()).schemaVersion, 2, 'flag off must still read existing v2');
   assert.equal((await state()).nodes[0].boardId, boardId);
   await open('v2'); assert.equal((await state()).schemaVersion, 1, 'flag off must keep legacy editing path');

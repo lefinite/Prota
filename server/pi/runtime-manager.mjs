@@ -110,7 +110,8 @@ export class PiRuntimeManager extends EventEmitter {
         const result = new Promise((resolve, reject) => { resolveRun = resolve; rejectRun = reject; });
         // Attach before writing prompt: a fast runtime can settle before its response.
         const complete = () => {
-            if (!accepted || !settled) return;
+            if (!accepted || !settled || runtime.pendingInputs) return;
+            runtime.acceptingInput = false;
             if (settled.aborted) rejectRun(runtimeError('Pi task was aborted', 'PI_ABORTED'));
             else if (lastAssistant?.stopReason === 'error' || lastAssistant?.stopReason === 'aborted') {
                 rejectRun(runtimeError(lastAssistant.errorMessage || 'Pi provider request failed', 'PI_PROVIDER_ERROR'));
@@ -119,13 +120,22 @@ export class PiRuntimeManager extends EventEmitter {
         const event = record => {
             try { onEvent?.(record); }
             catch (error) { rejectRun(error); return; }
+            if (record.type === 'agent_start') { settled = null; runtime.startSerial = (runtime.startSerial || 0) + 1; }
             if (record.type === 'message_end' && record.message?.role === 'assistant') lastAssistant = record.message;
             if (record.type === 'agent_settled') { settled = record; complete(); }
         };
+        runtime.acceptingInput = true;
+        runtime.pendingInputs = 0;
+        runtime.completeInput = complete;
+        runtime.prepareNextTurn = serial => { if (runtime.startSerial === serial) settled = null; };
         const disconnect = error => rejectRun(runtimeError(error.message, 'PI_DISCONNECTED'));
         const cancel = () => {
-            this.abort(sessionId).then(() => rejectRun(runtimeError('Pi task was aborted', 'PI_ABORTED')),
-                error => rejectRun(error));
+            // An accepted abort RPC only asks Pi to stop. Keep this run busy
+            // until agent_settled so an immediate retry cannot overlap native
+            // tool cleanup. The prompt timeout remains the recovery boundary.
+            this.abort(sessionId).then(() => {
+                if (!accepted) rejectRun(runtimeError('Pi task was aborted', 'PI_ABORTED'));
+            }, error => rejectRun(error));
         };
         runtime.rpc.on('event', event);
         runtime.rpc.on('disconnect', disconnect);
@@ -158,8 +168,28 @@ export class PiRuntimeManager extends EventEmitter {
             runtime.rpc.off('event', event);
             runtime.rpc.off('disconnect', disconnect);
             signal?.removeEventListener('abort', cancel);
+            runtime.acceptingInput = false;
+            runtime.completeInput = null;
             runtime.busy = false;
             runtime.lastUsedAt = Date.now();
+        }
+    }
+
+    async steer(sessionId, { message } = {}) {
+        const runtime = this.get(sessionId);
+        if (!runtime?.busy || !runtime.acceptingInput) throw runtimeError('当前任务已结束，请重新发送。', 'PI_IDLE');
+        runtime.pendingInputs++;
+        try {
+            // The native prompt command queues steering while streaming and
+            // starts a turn if the preceding turn settled just before receipt.
+            // Keep the original run listener until this acceptance completes.
+            const serial = runtime.startSerial;
+            const result = await runtime.rpc.request('prompt', { message, streamingBehavior: 'steer' });
+            if (result.disposition === 'started') runtime.prepareNextTurn(serial);
+            return result;
+        } finally {
+            runtime.pendingInputs--;
+            runtime.completeInput?.();
         }
     }
 

@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="modules/settings/settings.css?v=20261027">
-    <link rel="stylesheet" href="shell.css?v=20260909-roomy-page-selector">
-    <link rel="stylesheet" href="modules/prd/prd.css?v=20260827-narrow-header-fix-v1">
+    <link rel="stylesheet" href="shell.css?v=20261028-agent-scroll-width-v10">
+    <link rel="stylesheet" href="modules/prd/prd.css?v=20261028-doc-bindings-v8">
     <link rel="stylesheet" href="modules/sharing/dialog.css">
 </head>
 <body data-top-view="page">
@@ -499,7 +499,7 @@
 
                     <div class="agent-workbench__body">
                         <button id="agentJumpLatestBtn" class="agent-jump-latest" type="button" hidden>回到最新</button>
-                        <div id="agentTimeline" class="agent-timeline" aria-live="polite"></div>
+                        <div id="agentTimeline" class="agent-timeline" aria-live="polite" tabindex="0"></div>
                     </div>
 
                     <form id="agentComposer" class="agent-composer">
@@ -715,7 +715,7 @@
                         <details class="provider-advanced">
                             <summary>
                                 <span>高级设置</span>
-                                <small>名称、接口协议、SDK Options</small>
+                                <small>名称、接口协议、Agent Options</small>
                             </summary>
                             <div class="provider-advanced__body">
                                 <label class="agent-field">
@@ -731,7 +731,7 @@
                                     </datalist>
                                 </label>
                                 <label class="agent-field agent-field--sdk-options">
-                                    <span>SDK Options JSON</span>
+                                    <span>Agent Options JSON</span>
                                     <textarea id="agentSdkOptionsInput" rows="7" spellcheck="false" placeholder='{"permissionMode":"default","maxTurns":10,"tools":{"type":"preset","preset":"default"}}'></textarea>
                                 </label>
                                 <div class="agent-sdk-options-toolbar">
@@ -956,6 +956,6 @@
     <script src="agent/state.js"></script>
     <script src="agent/provider-config.js?v=20260828-provider-instance-v2"></script>
     <script src="agent/index.js"></script>
-    <script type="module" src="shell.js?v=20261013-auto-polish-v1"></script>
+    <script type="module" src="shell.js?v=20261028-markdown-editor-v15"></script>
 </body>
 </html>

@@ -42,7 +42,7 @@ export function adaptProvider(config, { catalog = [], capabilities = {} } = {}) 
     for (const [name, value] of Object.entries(options)) {
         if (value === undefined || value === null) continue;
         if (!businessOptions.has(name) && !modelOptions.has(name)) {
-            throw new Error(`SDK option ${name} has no supported Pi mapping; remove it or migrate it to a Pi Extension`);
+            throw new Error(`Agent option ${name} has no supported Pi mapping; remove it or migrate it to a Pi Extension`);
         }
     }
     const warnings = [];
@@ -50,8 +50,18 @@ export function adaptProvider(config, { catalog = [], capabilities = {} } = {}) 
     // Exact endpoint is the best evidence; otherwise preserve catalog capability
     // metadata for the same named model, but never copy its authentication/URL.
     const metadata = candidates.find(model => model.baseUrl?.replace(/\/$/, '') === config.baseURL.replace(/\/$/, '')) || candidates[0];
-    if (!metadata) warnings.push('Model capabilities are not in the pinned Pi catalog; default text-only metadata applies unless explicitly configured.');
+    // A custom endpoint may expose a catalogued model through a different API.
+    // Reuse only input modalities when all supported-API entries for this exact
+    // ID agree. Protocol options, token limits and costs remain API-specific.
+    const modalityCandidates = !metadata ? catalog.filter(model => model.id === config.model && supportedApis.has(model.api)) : [];
+    const fallbackInput = modalityCandidates[0]?.input;
+    const agreedInput = Array.isArray(fallbackInput) && modalityCandidates.every(model =>
+        Array.isArray(model.input) && JSON.stringify([...model.input].sort()) === JSON.stringify([...fallbackInput].sort()));
+    if (!metadata) warnings.push(agreedInput
+        ? 'Input modalities inherited from matching model IDs across supported APIs; other capabilities require explicit configuration.'
+        : 'Model capabilities are not in the pinned Pi catalog; default text-only metadata applies unless explicitly configured.');
     const model = { id: config.model };
+    if (agreedInput) model.input = structuredClone(fallbackInput);
     for (const name of metadataFields) {
         if (metadata?.[name] !== undefined) model[name] = structuredClone(metadata[name]);
         if (capabilities[name] !== undefined) model[name] = structuredClone(capabilities[name]);

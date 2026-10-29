@@ -6,7 +6,7 @@
   <div id="world"></div><div id="guides" aria-hidden="true"></div><div id="marquee" hidden></div>
   <div id="selection-frame" aria-hidden="true" hidden><i data-handle="nw"></i><i data-handle="n"></i><i data-handle="ne"></i><i data-handle="e"></i><i data-handle="se"></i><i data-handle="s"></i><i data-handle="sw"></i><i data-handle="w"></i></div>
   <div id="selection-tools" class="floating" role="toolbar" aria-label="选中对象操作" hidden></div>
-  <section id="property-popover" class="floating" aria-label="对象样式与尺寸" hidden><div class="popover-heading"><strong id="property-title">调整对象</strong><button id="close-properties" data-icon="x" aria-label="关闭属性"></button></div><div id="properties"></div></section>
+  <section id="property-popover" class="floating" aria-label="对象样式" hidden><div class="popover-heading"><strong id="property-title">调整对象</strong><button id="close-properties" data-icon="x" aria-label="关闭属性"></button></div><div id="properties"></div></section>
   <div id="empty"><span class="empty-symbol" data-icon="frame"></span><h1>把想法放到画布上</h1><p>添加画板、文字或图片，自由摆放。<br>需要设计时，直接交给当前 Agent。</p><div class="empty-actions"><button id="first-board" class="primary" data-icon="plus">添加画板</button><button id="empty-agent" data-icon="sparkles">交给 Agent</button></div><span class="empty-tip">空白处双击添加文本 · 右键添加对象 · ⌘K 打开命令面板</span></div>
 </main>
 <div class="canvas-identity"><span class="identity-icon" data-icon="canvas"></span><span id="document-name" title="画布名称">无限画布</span><span id="save-status" class="save-status" role="status" title="更改自动保存到本地">已保存</span></div>
@@ -20,7 +20,7 @@
   <button id="add-shape" data-icon="shapes" data-tip="添加形状" aria-label="形状" aria-haspopup="menu"></button>
   <button id="add-note" data-icon="sticky-note" data-tip="添加便签" aria-label="便签"></button>
   <button id="image" data-icon="image-plus" data-tip="插入图片" aria-label="图片"></button>
-  <button id="add-component" data-icon="component" data-tip="添加组件" aria-label="组件" aria-haspopup="menu"></button><span class="divider"></span>
+  <span class="divider"></span>
   <button id="more-tools" data-icon="ellipsis" data-tip="更多工具" aria-label="更多工具" aria-haspopup="menu"></button>
   <button id="ask-agent" class="agent" data-icon="sparkles" data-tip="交给当前 Agent" aria-label="Agent"></button>
 </nav>
@@ -49,7 +49,7 @@
     }
   });
   window.__protaCanvasStartupComplete = () => {
-    const missing = !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasCore ? 'canvas-core.js' : !window.CanvasConnections ? 'canvas-connections.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.marked ? 'marked.js' : !window.CanvasMarkdown ? 'markdown.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
+    const missing = !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasMarkdownEditor ? 'markdown.js' : !window.CanvasCore ? 'canvas-core.js' : !window.CanvasConnections ? 'canvas-connections.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.marked ? 'marked.js' : !window.CanvasMarkdown ? 'markdown.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
     if (!missing) { document.documentElement.dataset.protaCanvasReady = 'true'; return; }
     panel.hidden = false; panel.style.display = 'grid';
     detail.textContent = '未能加载 ' + missing + '。布局和业务画板未被修改，可重新加载或在 Prota 内修复编辑器。';

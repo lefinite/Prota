@@ -46,3 +46,8 @@ design-previews/
 _diag-*.mjs
 tmp_*.mjs
 skills-lock.json
+
+# Local test/debug artifacts.
+.playwright-mcp/
+debug-*.png
+docs/acceptance/

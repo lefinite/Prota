@@ -1,4 +1,6 @@
+import { requestPiChoice, flattenPiTree } from './agent/pi-session-dialog.js';
 import { PreviewController } from './preview/controller.js';
+import { resumePreview } from './preview/resume.js';
 /**
  * Readify Demo Shell Logic
  * Handles page/version switching and project management
@@ -9,8 +11,11 @@ import { ShareManager } from './modules/sharing/manager.js';
 import { UnifiedSettings } from './modules/settings/index.js';
 import { formatShareText, prepareShareDraft } from './modules/sharing/copy.js';
 import { requestShareOptions } from './modules/sharing/dialog.js';
+import { showShareProgress } from './modules/sharing/progress.js';
+import { renderShareNavigation } from './modules/sharing/navigation.js';
+import { downloadPageArchive } from './modules/sharing/download.js';
 import { VercelConnection } from './modules/settings/vercel.js';
-import { PRDModule } from './modules/prd/index.js?v=20261027-page-docs-v1';
+import { PRDModule } from './modules/prd/index.js?v=20261028-markdown-editor-v15';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
 import { MindmapModule } from './modules/mindmap/index.js?v=20260701-xmind-v12';
 
@@ -630,6 +635,7 @@ class DemoShell {
             prdContent: typeof raw.prdContent === 'string' ? raw.prdContent : null,
             prdPath: typeof raw.prdPath === 'string' ? raw.prdPath : null,
             prdFilename: typeof raw.prdFilename === 'string' ? raw.prdFilename : null,
+            documents: Array.isArray(raw.documents) ? raw.documents : null,
             diagramContent: typeof raw.diagramContent === 'string' ? raw.diagramContent : null,
             diagramPath: typeof raw.diagramPath === 'string' ? raw.diagramPath : null,
             diagramFilename: typeof raw.diagramFilename === 'string' ? raw.diagramFilename : null,
@@ -745,11 +751,6 @@ class DemoShell {
         const rawPages = Array.isArray(cfg.pages) ? cfg.pages : [];
         const rawFolders = Array.isArray(cfg.folders) ? cfg.folders : [];
 
-        if (rawPages.length === 0) {
-            // Nothing to share — fall back to whatever the host project has.
-            return;
-        }
-
         const sharePages = rawPages.map(p => ({
             id: String(p.id),
             name: String(p.name || p.id),
@@ -793,8 +794,8 @@ class DemoShell {
         }));
 
         const firstPage = [...sharePages].sort((a, b) => (a.order - b.order) || String(a.name).localeCompare(String(b.name), 'zh-CN'))[0];
-        this.shareConfig.pageId = firstPage.id;
-        this.shareConfig.version = firstPage.activeVersion;
+        this.shareConfig.pageId = firstPage?.id || '';
+        this.shareConfig.version = firstPage?.activeVersion || '';
 
         const projectName = cfg.projectName
             || (this.projects.projects || []).find(p => p.id === shareProjectId)?.name
@@ -809,7 +810,7 @@ class DemoShell {
                 folders: shareFolders
             }],
             activeProjectId: shareProjectId,
-            activePageId: firstPage.id
+            activePageId: firstPage?.id || null
         });
     }
 
@@ -1395,13 +1396,13 @@ class DemoShell {
                 this.writeShellNavigationState('pages', this.activeProjectId, initialTarget.page.id, initialTarget.version);
                 await this.switchPage(initialTarget.page.id, initialTarget.version);
             } else {
-                if (this.mainIframe) { this.previewController?.navigate(); this.mainIframe.src = 'about:blank'; }
+                if (this.mainIframe) { this.notifyPreviewNavigation(); this.mainIframe.src = 'about:blank'; }
                 if (this.currentPageNameEl) this.currentPageNameEl.textContent = '暂无页面';
                 this.renderVersionPanel(null);
                 this.writeShellNavigationState();
             }
         } else {
-            if (this.mainIframe) { this.previewController?.navigate(); this.mainIframe.src = 'about:blank'; }
+            if (this.mainIframe) { this.notifyPreviewNavigation(); this.mainIframe.src = 'about:blank'; }
             this.switchTopView(this.currentTopView);
         }
         if (!this.isShareMode) {
@@ -2291,7 +2292,7 @@ class DemoShell {
                 const folderId = folderShareAction.dataset.folderShare || '';
                 this.pageActionMenuOpenId = null;
                 this.renderSidebar();
-                this.createShareFolder(folderId, 'static');
+                this.createShareFolder(folderId, 'static', { projectId: this.activeProjectId });
                 return;
             }
 
@@ -2302,6 +2303,18 @@ class DemoShell {
                 const pageId = moreButton.dataset.pageMore || '';
                 this.pageActionMenuOpenId = this.pageActionMenuOpenId === pageId ? null : pageId;
                 this.renderSidebar();
+                return;
+            }
+
+            const pageShareAction = event.target.closest('[data-page-share]');
+            if (pageShareAction) {
+                event.preventDefault();
+                event.stopPropagation();
+                const pageId = pageShareAction.dataset.pageShare || '';
+                const projectId = this.activeProjectId;
+                this.pageActionMenuOpenId = null;
+                this.renderSidebar();
+                this.createSharePage('static', null, { projectId, pageId });
                 return;
             }
 
@@ -2475,51 +2488,16 @@ class DemoShell {
             if (url) window.open(url, '_blank');
         });
 
-        this.prdDownloadBtn?.addEventListener('click', () => {
-            const pageId = this.activePageId;
-            const version = this.activeVersion;
-            if (!pageId || !version) {
-                this.showToast('无法获取当前页面或版本信息', 'error');
-                return;
+        this.prdDownloadBtn?.addEventListener('click', async () => {
+            if (this.prdDownloadBtn.disabled) return;
+            this.prdDownloadBtn.disabled = true;
+            try {
+                await downloadPageArchive(this);
+            } catch (error) {
+                this.showToast(error.message || '下载失败，请稍后重试', 'error');
+            } finally {
+                this.prdDownloadBtn.disabled = false;
             }
-
-            const downloadViaApi = () => {
-                const baseUrl = this.isShareMode
-                    ? 'https://prota.example.com/api/agent/page/download-zip'
-                    : '/api/agent/page/download-zip';
-                const url = `${baseUrl}?pageId=${encodeURIComponent(pageId)}&version=${encodeURIComponent(version)}&projectId=${encodeURIComponent(this.activeProjectId)}`;
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${pageId}_${version}_prd.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
-
-            // Static shares ship a pre-built zip next to the HTML, so the download
-            // works without the backend tunnel (prota.*) being up. Fall back to the
-            // API only if that zip is missing (e.g. legacy shares).
-            if (this.isShareMode && this.shareConfig?.shareType === 'static') {
-                const zipName = this.shareConfig?.zipFilename
-                    || window.location.pathname.replace(/^.*\//, '').replace(/\.html$/i, '.zip');
-                const zipUrl = `/shares/${zipName}`;
-                fetch(zipUrl)
-                    .then((res) => (res.ok ? res.blob() : Promise.reject(new Error('zip not found'))))
-                    .then((blob) => {
-                        const objUrl = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = objUrl;
-                        a.download = zipName;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(objUrl);
-                    })
-                    .catch(() => downloadViaApi());
-                return;
-            }
-
-            downloadViaApi();
         });
 
         this.prdAiBtn?.addEventListener('click', () => {
@@ -2710,7 +2688,7 @@ class DemoShell {
         });
 
         // Listen for messages from injected iframe scripts
-        window.addEventListener('message', (e) => {
+        window.addEventListener('message', async (e) => {
             if (!e.data || !e.data.type) return;
             if (e.data.type === 'prota:canvas-selection') {
                 if (e.source !== this.mainIframe?.contentWindow || e.origin !== window.location.origin) return;
@@ -2734,6 +2712,21 @@ class DemoShell {
             if (e.data.type === 'prota:canvas-rename') {
                 if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
                 this.renameCanvasPage(e.data,e.source);
+                return;
+            }
+            if (e.data.type === 'prota:canvas-prd-saved') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
+                const state = this.prdModule.manager.state;
+                if ((encodeURI(state.path) === e.data.path || state.path === e.data.path) && !state.dirty) this.prdModule.manager.loadDocument({force:true,path:state.path});
+                return;
+            }
+            if (e.data.type === 'prota:canvas-open-prd') {
+                if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
+                const path = e.data.path;
+                if (typeof path !== 'string' || !this.prdModule.manager.state.documents.some(doc => encodeURI(doc.path) === path || doc.path === path)) return;
+                if (!(await this.prdModule.canNavigate())) return;
+                this.setDocDrawerMode('prd', {open:true});
+                this.prdModule.manager.loadDocument({force:true,path:decodeURI(path)});
                 return;
             }
             if (e.data.type === 'prota:canvas-fullscreen') {
@@ -2974,7 +2967,7 @@ class DemoShell {
             if (this.isAgentInputComposing()) {
                 return;
             }
-            if (this.agentRunState.active && !this.agentPendingQuestion) {
+            if (this.agentRunState.active && !this.agentPendingQuestion && !this.agentInput?.value.trim() && !this.feedbackItems.length && !this.agentPrdContext) {
                 this.interruptAgentRun();
                 return;
             }
@@ -3233,7 +3226,39 @@ class DemoShell {
             this.handleAgentTimelineScroll();
         });
 
+        // Mark intent before the scroll event fires, so a stream update in the
+        // same frame cannot pull an upward reader back to the bottom.
+        this.agentTimeline?.addEventListener('wheel', (event) => {
+            if (event.deltaY < 0) {
+                this.agentAutoScroll = false;
+                this.agentShowJumpLatest = true;
+                if (this.agentJumpLatestBtn) this.agentJumpLatestBtn.hidden = false;
+            }
+        }, { capture: true, passive: true });
+
+        this.agentTimeline?.addEventListener('touchmove', () => {
+            this.agentAutoScroll = false;
+            this.agentShowJumpLatest = true;
+            if (this.agentJumpLatestBtn) this.agentJumpLatestBtn.hidden = false;
+        }, { capture: true, passive: true });
+
+        this.agentTimeline?.addEventListener('keydown', (event) => {
+            if (!['ArrowUp', 'PageUp', 'Home'].includes(event.key)) return;
+            this.agentAutoScroll = false;
+            this.agentShowJumpLatest = true;
+            if (this.agentJumpLatestBtn) this.agentJumpLatestBtn.hidden = false;
+        }, { capture: true });
+
         this.agentTimeline?.addEventListener('pointerdown', (event) => {
+            const rect = this.agentTimeline.getBoundingClientRect();
+            const scrollbarWidth = this.agentTimeline.offsetWidth - this.agentTimeline.clientWidth;
+            const isScrollbarDrag = event.target === this.agentTimeline
+                && event.clientX >= rect.right - Math.max(scrollbarWidth, 18);
+            if (isScrollbarDrag) {
+                this.agentAutoScroll = false;
+                this.agentShowJumpLatest = true;
+                if (this.agentJumpLatestBtn) this.agentJumpLatestBtn.hidden = false;
+            }
             this.captureAgentFeedbackToggleAnchor(event);
         }, true);
 
@@ -3369,6 +3394,13 @@ class DemoShell {
                 this.toggleNewPageStyleMenu();
                 return;
             }
+            const blankCanvasBtn = event.target.closest('[data-new-page-blank-canvas]');
+            if (blankCanvasBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.quickCreateBlankCanvas();
+                return;
+            }
             if (this.isNewPageStylePickerActive()) return;
             const clearButton = event.target.closest('[data-agent-clear-scope]');
             if (clearButton) {
@@ -3390,6 +3422,8 @@ class DemoShell {
                 this.toggleNewPageStyleMenu();
                 return;
             }
+            // 让按钮原生 Enter/Space 触发 click，由 click 监听统一处理
+            if (event.target.closest?.('[data-new-page-blank-canvas]')) return;
             if (this.isNewPageStylePickerActive()) return;
             if (event.target.closest?.('[data-agent-clear-scope]')) return;
             event.preventDefault();
@@ -3625,30 +3659,49 @@ class DemoShell {
         }
     }
 
-    async createSharePage(shareType = 'local', triggerButton = null) {
-        if (shareType === 'static' && !await this.ensureShareSetup()) return;
-        if (!this.activePageId || !this.activeVersion) {
+    async runShareCreation(operation) {
+        if (this.shareCreationPending) return;
+        this.shareCreationPending = true;
+        try { return await operation(); }
+        finally { this.shareCreationPending = false; }
+    }
+
+    createSharePage(shareType = 'local', triggerButton = null, target = null) {
+        return this.runShareCreation(() => this.performSharePage(shareType, triggerButton, target));
+    }
+
+    async performSharePage(shareType = 'local', triggerButton = null, target = null) {
+        // Capture the selected row before settings/options await; sharing never changes navigation.
+        const projectId = target?.projectId ?? this.activeProjectId;
+        const pageId = target?.pageId ?? this.activePageId;
+        const page = this.getPageRecord(pageId, projectId);
+        const isCurrent = projectId === this.activeProjectId && pageId === this.activePageId;
+        const version = target?.version ?? (isCurrent ? this.activeVersion : this.getPreferredPageVersion(page));
+        let prdPath = isCurrent ? this.getPreferredPrdPathForShare() : '';
+        if (!isCurrent) {
+            try {
+                const remembered = window.localStorage.getItem(`readify:prd-last-doc:${projectId}:${pageId}`) || '';
+                if (remembered.startsWith(`/src/pages/${projectId}/${pageId}/`)) prdPath = remembered;
+            } catch { /* Use the server's default document when storage is unavailable. */ }
+        }
+        if (!page || page.deleted || !pageId || !version) {
             this.showToast('没有可分享的页面', true);
             return;
         }
-
-        const page = this.getPageRecord();
+        const shareTarget = { projectId, pageId, version, prdPath: target?.prdPath ?? prdPath };
+        if (shareType === 'static' && !await this.ensureShareSetup()) return;
         this.closeShareMenu();
-        const shareTarget = { projectId: this.activeProjectId, pageId: this.activePageId, version: this.activeVersion, prdPath: this.getPreferredPrdPathForShare() };
-        let access = shareType === 'static' ? await requestShareOptions(page?.name || shareTarget.pageId) : null;
+        const shareName = page?.name || shareTarget.pageId;
+        let access = shareType === 'static' ? (target?.access || await requestShareOptions(shareName)) : null;
         if (shareType === 'static' && !access) return;
+        const progress = showShareProgress(shareName, shareType === 'static');
         const previousContent = triggerButton?.innerHTML || '';
         if (triggerButton) {
             triggerButton.disabled = true;
+            triggerButton.textContent = '正在分享…';
+            triggerButton.setAttribute('aria-busy', 'true');
         }
 
-        if (shareType === 'static') {
-            this.showToast('正在生成分享页并发布到 Vercel…');
-        } else {
-            this.showToast('正在生成分享链接...');
-        }
-
-        let bridgeResponded = false;
         let draft = null;
         let copiedBeforePublish = false;
         try {
@@ -3658,9 +3711,10 @@ class DemoShell {
                 access = draft.access;
                 copiedBeforePublish = await this.copyTextToClipboard(draft.text);
                 if (!copiedBeforePublish) throw Error('无法复制分享信息，请允许剪贴板访问后重试。');
-                this.showToast('分享信息已复制，正在发布，完成后链接生效…');
+                progress.update('分享信息已复制 · 发布完成后生效');
             }
             const normalizedShareType = ['public', 'static'].includes(shareType) ? shareType : 'local';
+            if (shareType !== 'static') progress.update('正在生成分享文件');
             const response = await fetch('http://localhost:8080/api/share-page', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3676,7 +3730,6 @@ class DemoShell {
                 }),
                 signal: AbortSignal.timeout(normalizedShareType === 'static' ? 330000 : 8000)
             });
-            bridgeResponded = true;
 
             if (!response.ok) {
                 throw new Error(await response.text() || '分享页生成失败');
@@ -3691,30 +3744,27 @@ class DemoShell {
                 ? rawUrl
                 : new URL(rawUrl, window.location.href).href;
             const copied = draft ? copiedBeforePublish : await this.copyTextToClipboard(formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }));
-            this.closeShareMenu();
-            this.showToast(copied ? '已生成分享页，分享信息已复制' : '已生成分享页');
-            window.open(shareUrl, '_blank');
+            progress.finish({ url: shareUrl, copied,
+                text: draft?.text || formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }),
+                copy: text => this.copyTextToClipboard(text)
+            });
         } catch (error) {
             console.error('Share page generation failed:', error);
             const message = error instanceof Error ? error.message : String(error);
-            this.showToast(`${draft ? '发布失败，本次分享信息尚未生效' : '生成分享页失败'}：${message}`, true);
-            alert(
-                `无法生成${this.getShareTypeLabel(shareType)}分享页。\n\n` +
-                `错误原因：\n${message}\n\n` +
-                (bridgeResponded
-                    ? `Bridge 服务已响应。若 Vercel 部署失败，请检查 Vercel 登录、网络及项目权限配置。`
-                    : `请求未完成，请检查 Bridge 服务是否启动；发布也可能因 Vercel 部署耗时而超时。`)
-            );
+            progress.finish({ error: message,
+                retry: () => this.createSharePage(shareType, null, { ...shareTarget, access })
+            });
         } finally {
             if (triggerButton) {
                 triggerButton.disabled = false;
                 triggerButton.innerHTML = previousContent;
+                triggerButton.removeAttribute('aria-busy');
             }
         }
     }
 
-    collectFolderSharePages(folderId) {
-        const project = this.getProjectRecord();
+    collectFolderSharePages(folderId, projectId = this.activeProjectId) {
+        const project = this.getProjectRecord(projectId);
         if (!project) return [];
         const folders = (project.folders || []).filter(f => !f.deleted);
         const folderIds = new Set([folderId]);
@@ -3731,28 +3781,51 @@ class DemoShell {
         return (project.pages || []).filter(p => !p.deleted && p.parentId && folderIds.has(p.parentId));
     }
 
-    async createShareFolder(folderId, shareType = 'local') {
-        if (shareType === 'static' && !await this.ensureShareSetup()) return;
-        const folder = (this.getProjectRecord()?.folders || []).find(f => f.id === folderId);
+    // Folder shares are generated server-side from persisted state, so the
+    // per-page version/document choices that only live in this browser's
+    // localStorage must be sent along with the request.
+    collectFolderShareOverrides(pages, projectId = this.activeProjectId) {
+        const versions = {};
+        const prdPaths = {};
+        const versionMemory = this.readPageVersionMemory()[projectId] || {};
+        for (const page of pages) {
+            const remembered = versionMemory[page.id];
+            if (this.isUsablePageVersion(page, remembered)) versions[page.id] = remembered;
+            try {
+                const path = window.localStorage.getItem(`readify:prd-last-doc:${projectId}:${page.id}`) || '';
+                if (path.startsWith(`/src/pages/${projectId}/${page.id}/`)) prdPaths[page.id] = path;
+            } catch {
+                // Best-effort override; the share falls back to persisted state.
+            }
+        }
+        return { versions, prdPaths };
+    }
+
+    createShareFolder(folderId, shareType = 'local', target = null) {
+        return this.runShareCreation(() => this.performShareFolder(folderId, shareType, target));
+    }
+
+    async performShareFolder(folderId, shareType = 'local', target = null) {
+        const projectId = target?.projectId ?? this.activeProjectId;
+        const folder = (this.getProjectRecord(projectId)?.folders || []).find(f => f.id === folderId);
         if (!folder) {
             this.showToast('未找到该文件夹', true);
             return;
         }
-        const pageIds = this.collectFolderSharePages(folderId).map(p => p.id);
+        const sharePages = this.collectFolderSharePages(folderId, projectId);
+        const pageIds = sharePages.map(p => p.id);
         if (pageIds.length === 0) {
             this.showToast('文件夹内没有可分享的页面', true);
             return;
         }
-        const shareTarget = { projectId: this.activeProjectId, pageId: this.activePageId, version: this.activeVersion, prdPath: this.getPreferredPrdPathForShare() };
-        let access = shareType === 'static' ? await requestShareOptions(folder.name) : null;
+        const overrides = target?.overrides || this.collectFolderShareOverrides(sharePages, projectId);
+        const shareTarget = { projectId, pageId: this.activePageId, version: this.activeVersion, prdPath: this.getPreferredPrdPathForShare(), ...target };
+        if (shareType === 'static' && !await this.ensureShareSetup()) return;
+        const shareName = `${folder.name}（${pageIds.length} 个页面）`;
+        let access = shareType === 'static' ? (target?.access || await requestShareOptions(shareName)) : null;
         if (shareType === 'static' && !access) return;
+        const progress = showShareProgress(shareName, shareType === 'static');
         const normalizedShareType = ['public', 'static'].includes(shareType) ? shareType : 'local';
-        if (normalizedShareType === 'static') {
-            this.showToast(`正在生成文件夹分享（${pageIds.length} 个页面）...`);
-        } else {
-            this.showToast(`正在打包 ${pageIds.length} 个页面...`);
-        }
-        let bridgeResponded = false;
         let draft = null;
         let copiedBeforePublish = false;
         try {
@@ -3762,8 +3835,9 @@ class DemoShell {
                 access = draft.access;
                 copiedBeforePublish = await this.copyTextToClipboard(draft.text);
                 if (!copiedBeforePublish) throw Error('无法复制分享信息，请允许剪贴板访问后重试。');
-                this.showToast('分享信息已复制，正在发布，完成后链接生效…');
+                progress.update('分享信息已复制 · 发布完成后生效');
             }
+            if (shareType !== 'static') progress.update('正在生成分享文件');
             const response = await fetch('http://localhost:8080/api/share-folder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3774,11 +3848,12 @@ class DemoShell {
                     ...(access ? { access } : {}),
                     shareType: normalizedShareType,
                     public: normalizedShareType === 'public',
-                    prdPath: shareTarget.prdPath
+                    prdPath: shareTarget.prdPath,
+                    versionOverrides: overrides.versions,
+                    prdOverrides: overrides.prdPaths
                 }),
                 signal: AbortSignal.timeout(normalizedShareType === 'static' ? 330000 : 30000)
             });
-            bridgeResponded = true;
             if (!response.ok) {
                 throw new Error(await response.text() || '文件夹分享生成失败');
             }
@@ -3791,22 +3866,16 @@ class DemoShell {
                 ? rawUrl
                 : new URL(rawUrl, window.location.href).href;
             const copied = draft ? copiedBeforePublish : await this.copyTextToClipboard(formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }));
-            this.showToast(copied
-                ? `已生成文件夹分享（${result.pageCount || pageIds.length} 个页面），分享信息已复制`
-                : `已生成文件夹分享（${result.pageCount || pageIds.length} 个页面）`
-            );
-            window.open(shareUrl, '_blank');
+            progress.finish({ url: shareUrl, copied,
+                text: draft?.text || formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }),
+                copy: text => this.copyTextToClipboard(text)
+            });
         } catch (error) {
             console.error('Share folder generation failed:', error);
             const message = error instanceof Error ? error.message : String(error);
-            this.showToast(`${draft ? '发布失败，本次分享信息尚未生效' : '生成文件夹分享失败'}：${message}`, true);
-            alert(
-                `无法生成${this.getShareTypeLabel(shareType)}文件夹分享。\n\n` +
-                `错误原因：\n${message}\n\n` +
-                (bridgeResponded
-                    ? `Bridge 服务已响应。若 Vercel 部署失败，请检查 Vercel 登录、网络及项目权限配置。`
-                    : `请求未完成，请检查 Bridge 服务是否启动；发布也可能因 Vercel 部署耗时而超时。`)
-            );
+            progress.finish({ error: message,
+                retry: () => this.createShareFolder(folderId, shareType, { ...shareTarget, access, overrides })
+            });
         }
     }
 
@@ -4003,7 +4072,7 @@ class DemoShell {
 
     switchTopView(view) {
         if (!['projects', 'templates', 'skills', 'page'].includes(view)) return;
-        if (view !== 'page') this.previewController?.navigate();
+        if (view !== 'page') this.notifyPreviewNavigation();
         this.currentTopView = view;
         if (view === 'projects') {
             this.currentView = 'projects';
@@ -5283,6 +5352,39 @@ class DemoShell {
         this.agentInput.focus();
     }
 
+    async quickCreateBlankCanvas() {
+        if (this._quickCanvasCreating) return;
+        const projectId = this.activeProjectId;
+        if (!projectId) {
+            this.showToast('请先选择项目，再创建空白画布', true);
+            return;
+        }
+        const button = this.agentStatusContext?.querySelector('[data-new-page-blank-canvas]');
+        this._quickCanvasCreating = true;
+        if (button) button.disabled = true;
+        try {
+            const response = await fetch('http://localhost:8080/api/create-page', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ projectId, template: 'infinite-canvas' })
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload.error || '创建空白画布失败');
+            }
+            await this.loadData();
+            await this.syncFromDisk();
+            this.renderSidebar();
+            await this.switchPage(payload.pageId, payload.version || 'v1', { skipPrdDraftCheck: true });
+            this.showToast(`已创建空白画布「${payload.pageId}」`);
+        } catch (error) {
+            this.showToast(error instanceof Error ? error.message : String(error), true);
+        } finally {
+            this._quickCanvasCreating = false;
+            if (button?.isConnected) button.disabled = false;
+        }
+    }
+
     getNewPageExecutionInstructions() {
         if (this.agentActiveSkill?.id !== 'create-new-page') return '';
         const project = this.getProjectRecord(this.activeProjectId);
@@ -6040,6 +6142,10 @@ class DemoShell {
     }
 
     renderSidebar() {
+        if (this.isShareMode) {
+            renderShareNavigation(this);
+            return;
+        }
         if (this.trashListEl) {
             this.trashListEl.innerHTML = '';
         }
@@ -6210,6 +6316,10 @@ class DemoShell {
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
                             <span>重命名</span>
                         </button>
+                        <button type="button" class="nav-item__menu-btn" data-page-share="${this.escapeHtml(page.id)}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-3.4"></path><path d="m8.7 13.3 6.6 3.4"></path></svg>
+                            <span>分享</span>
+                        </button>
                         <button type="button" class="nav-item__menu-btn" data-page-delete="${this.escapeHtml(page.id)}">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
                             <span>删除页面</span>
@@ -6248,7 +6358,7 @@ class DemoShell {
     }
 
     enterProject(projectId) {
-        this.previewController?.navigate();
+        this.notifyPreviewNavigation();
         const project = this.projects?.projects?.find(p => p.id === projectId);
         if (!project) return;
         this.activeProjectId = projectId;
@@ -6273,7 +6383,7 @@ class DemoShell {
                 this.currentPageNameEl.textContent = '暂无页面';
             }
             if (this.mainIframe) {
-                { this.previewController?.navigate(); this.mainIframe.src = 'about:blank'; }
+                { this.notifyPreviewNavigation(); this.mainIframe.src = 'about:blank'; }
             }
             this.renderVersionPanel(null);
             this.resetPrdDocumentState();
@@ -6719,6 +6829,8 @@ class DemoShell {
     }
 
     async switchPage(pageId, version, { skipPrdDraftCheck = false, projectId = this.activeProjectId } = {}) {
+        if (this.isShareMode && (projectId !== this.activeProjectId
+            || !this.projects?.pages?.some(page => page.id === pageId && (!version || page.versions.includes(version))))) return;
         let project = this.getProjectRecord(projectId);
         let page = project?.pages?.find(p => p.id === pageId) || null;
 
@@ -6742,7 +6854,7 @@ class DemoShell {
             return;
         }
 
-        if (!this.confirmCanvasNavigation()) return;
+        if (!(await this.confirmCanvasNavigation())) return;
 
         if (project?.id && project.id !== this.activeProjectId) {
             this.activeProjectId = project.id;
@@ -6760,6 +6872,8 @@ class DemoShell {
 
         if (!page) return;
 
+        if (this.isShareMode) renderShareNavigation(this);
+
         this.currentPageNameEl.textContent = page.name;
 
         // Update Sidebar UI
@@ -6770,20 +6884,31 @@ class DemoShell {
         this.switchVersion(nextVersion || page.versions[0], { skipPrdDraftCheck: true, skipCanvasPrompt: true });
     }
 
-    confirmCanvasNavigation() {
+    async confirmCanvasNavigation() {
         try {
-            if (this.mainIframe?.contentWindow?.protaCanvas?.isDirty()) return window.confirm('画布有未保存的修改。离开将丢失这些修改，是否继续？');
-        } catch {}
-        return true;
+            const editor = this.mainIframe?.contentWindow?.protaCanvas;
+            if (!editor) return true;
+            if (editor.prepareNavigation) {
+                if (await editor.prepareNavigation()) return true;
+            } else {
+                await editor.save?.();
+                if (!editor.isDirty?.()) return true;
+            }
+            this.showToast('画布暂时无法保存，已保留当前页面，请稍后重试。', true);
+        } catch {
+            this.showToast('画布保存失败，已保留当前页面，请稍后重试。', true);
+        }
+        return false;
     }
 
     async switchVersion(version, { skipPrdDraftCheck = false, skipCanvasPrompt = false } = {}) {
-        if (!skipCanvasPrompt && version !== this.activeVersion && !this.confirmCanvasNavigation()) return;
+        if (this.isShareMode && !this.projects?.pages?.some(page => page.id === this.activePageId && page.versions.includes(version))) return;
+        if (!skipCanvasPrompt && version !== this.activeVersion && !(await this.confirmCanvasNavigation())) return;
         if (!skipPrdDraftCheck && this.activeVersion && version !== this.activeVersion && !(await this.confirmPrdDiscardIfDirty())) {
             return;
         }
 
-        this.previewController?.navigate();
+        this.notifyPreviewNavigation();
         this.activeVersion = version;
         const page = this.projects.pages.find(p => p.id === this.activePageId);
 
@@ -7142,18 +7267,19 @@ class DemoShell {
         event?.preventDefault();
         event?.stopPropagation();
         if (this.isShareMode) return;
-        // Infinite canvas owns its right-click gesture (board activation and
-        // board annotation); the portal never enters annotation from here.
-        if (this.isInfiniteCanvasPage()) return;
 
         // In annotation mode the first right click always exits immediately.
         // Outside annotation mode, require two nearby right clicks so the first
         // click cannot both exit and start a new entry gesture.
         if (this.annotationMode) {
+            event?.stopImmediatePropagation();
             this._annotationRightClick = null;
             this.exitAnnotationMode(source);
             return;
         }
+
+        // Infinite canvas owns entry gestures; an active annotation still exits above.
+        if (this.isInfiniteCanvasPage()) return;
 
         const currentClick = {
             timestamp: Date.now(),
@@ -7175,6 +7301,13 @@ class DemoShell {
         this._annotationRightClick = currentClick;
     }
 
+    notifyPreviewNavigation() {
+        if (this.agentRunState?.active) this._previewSuppressedRunId = this.agentRunState.runId;
+        this.previewController?.navigate();
+        clearTimeout(this._canvasLiveRetryTimer);
+        this._canvasLivePending = null;
+    }
+
     bindPreviewFrameEvents(frame) {
         frame.addEventListener('load', () => {
             if (frame !== this.mainIframe) return;
@@ -7186,6 +7319,18 @@ class DemoShell {
 
     async handleIframeLoad({ presentation = null } = {}) {
         this.teardownIframeObservers();
+        const infiniteCanvas = this.isInfiniteCanvasPage();
+        document.documentElement.classList.toggle('is-infinite-canvas', infiniteCanvas);
+        // Existing workspace canvases may predate the template's CSS rule.
+        const frameDoc = this.mainIframe?.contentDocument;
+        const overscrollStyleId = '__prota_canvas_overscroll';
+        frameDoc?.getElementById(overscrollStyleId)?.remove();
+        if (infiniteCanvas && frameDoc?.head) {
+            const style = frameDoc.createElement('style');
+            style.id = overscrollStyleId;
+            style.textContent = 'html, body { overscroll-behavior-x: none; }';
+            frameDoc.head.append(style);
+        }
         if (this.canvasAnnotationTarget) {
             // The canvas document was replaced; its runtime re-announces any
             // still-active board annotation. Drop the stale binding first.
@@ -7196,7 +7341,7 @@ class DemoShell {
         this._inspectorContext = null;
         const svg = this.versionRefreshBtn?.querySelector('svg');
         if (svg) { svg.style.transition = 'none'; svg.style.transform = ''; }
-        if (this.normalizePageTargetDevice(presentation?.targetDevice ?? this.getPageRecord()?.targetDevice) === 'mobile') {
+        if (!this.isInfiniteCanvasPage() && this.normalizePageTargetDevice(presentation?.targetDevice ?? this.getPageRecord()?.targetDevice) === 'mobile') {
             try { installProtaMobileFrameFit(this.mainIframe.contentWindow); }
             catch (error) { console.warn('Mobile preview fitting unavailable:', error); }
         }
@@ -7222,7 +7367,7 @@ class DemoShell {
 
         const script = iframeDoc.createElement('script');
         script.id = '__readify_shortcut_bridge';
-        const enableAnnotationShortcuts = !this.isShareMode && this.getPageRecord()?.pageMode !== 'infinite-canvas';
+        const enableAnnotationShortcuts = !this.isShareMode && !this.isInfiniteCanvasPage();
         script.textContent = `(function() {
             var enableAnnotationShortcuts = ${enableAnnotationShortcuts ? 'true' : 'false'};
             window.__readifyAnnotationRightClick = null;
@@ -7366,8 +7511,8 @@ class DemoShell {
     }
 
     async upgradeCanvasEditorIfNeeded({ force = false } = {}) {
-        if (this.previewController?.state.runId && !this.previewController.state.detached) return;
-        if (this.isShareMode || this.getPageRecord()?.pageMode !== 'infinite-canvas' || this._canvasUpgradePending) return;
+        if (this.agentRunState?.active || this.previewController?.busy) return;
+        if (this.isShareMode || !this.isInfiniteCanvasPage() || this._canvasUpgradePending) return;
         let context;
         try {
             const frame = this.mainIframe?.contentWindow;
@@ -7376,6 +7521,11 @@ class DemoShell {
             const expected = `/src/pages/${context.projectId}/${context.pageId}/${context.version}/index.html`;
             if (!frame || decodeURI(frame.location.pathname) !== expected || doc.readyState === 'loading') return;
             const editor = frame.protaCanvas;
+            // pageMode is shared by all versions. A historical version may still
+            // be a standard demo, so only repair a version that owns a canvas.
+            // Keep the script check: a broken editor may not publish its globals.
+            const hasCanvasDocument = frame.PROTA_CANVAS || doc.querySelector('script[src$="canvas-data.js"]');
+            if (!editor && !hasCanvasDocument) return;
             if (editor?.isDirty?.()) return;
             // A draft offered for recovery is also unsaved work, even if the
             // old editor has not initialized or reports a clean baseline.
@@ -7385,7 +7535,7 @@ class DemoShell {
             } catch { return; }
             // A partial installation may fail before publishing protaCanvas. Do not require
             // the broken editor to initialize before allowing its resources to be repaired.
-            const healthy = editor?.runtimeVersion >= 8 && frame.CanvasConnections?.editorVersion >= 2 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasCore && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.marked
+            const healthy = editor?.runtimeVersion >= 33 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 6 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasCore && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
                 && doc.querySelector('link[href*="styles.css"]')?.sheet;
             if (healthy && !force) return;
             const key = `${context.projectId}/${context.pageId}/${context.version}`;
@@ -7398,7 +7548,7 @@ class DemoShell {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || '修复失败');
-            if (Number(result.runtimeVersion) < 8) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            if (Number(result.runtimeVersion) < 33) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
             if (context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion) {
                 this.mainIframe.contentWindow.location.reload();
             }
@@ -7426,14 +7576,24 @@ class DemoShell {
     async focusExistingCanvasAgent(source) {
         try {
             const context = this.getAgentContext();
+            const ids = new Set((context.canvasSelection || []).map(node => node.id));
+            const samePage = item => item?.projectId === context.projectId && item?.pageId === context.pageId && item?.version === context.version;
+            const currentScope = this._canvasRunScope || this.agentSessionContext;
+            const currentMatches = this.agentRunState?.active && samePage(currentScope)
+                && (!ids.size || (currentScope?.canvasSelection || []).some(node => ids.has(node.id)));
+            if (!currentMatches && ids.size) {
+                const running = (this.agentSessionsList || []).find(session => samePage(session)
+                    && ['running', 'waiting_approval', 'waiting_user_answer'].includes(session.status)
+                    && (session.canvasTargetIds || []).some(id => ids.has(id)));
+                if (running) await this.switchAgentSession(running.id, { awaitRefresh: true });
+                else if (this.agentRunState?.active) await this.createAgentSession({ switchTo: true, sessionScope: 'page', awaitRefresh: true });
+            }
             if (!this.agentRunState?.active) {
-                if (source.protaCanvas?.isDirty() && !(await source.protaCanvas.save())) throw new Error('本地更改还未保存，请先处理画布提示。');
                 if (this.agentSessionId) await this.agentApi.setContext(this.agentSessionId, context);
                 this.agentSessionContext = context;
                 this.agentSessionScope = 'page';
                 this.agentActiveSkill = null;
             }
-            // Reuse the current session, provider, input draft and workbench.
             this.openAgentWorkbench();
             this.updateAgentContextLabel();
             this.agentInput?.focus();
@@ -7444,24 +7604,41 @@ class DemoShell {
 
     syncCanvasAgentStatus() {
         if (!this.canvasSelection || !this.mainIframe?.contentWindow) return;
-        const context = this.agentSessionContext || this.getAgentContext();
-        const belongs = context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion;
-        const state = { type: 'prota:canvas-agent-status', previewManaged: Boolean(this.previewController?.state.runId && !this.previewController.state.detached), targetIds: belongs && this.agentRunState?.active ? (this._canvasRunScope?.canvasSelection || context.canvasSelection || []).map(n=>n.id) : [], workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(belongs && this.agentRunState?.active), error: belongs ? String(this.agentRunState?.lastError || '') : '' };
+        const belongs = context => context?.projectId === this.activeProjectId && context?.pageId === this.activePageId && context?.version === this.activeVersion;
+        const background = (this.agentSessionsList || []).filter(session => session.id !== this.agentSessionId && belongs(session) && ['running', 'waiting_approval', 'waiting_user_answer'].includes(session.status));
+        const context = this._canvasRunScope || this.agentSessionContext || this.getAgentContext();
+        const currentActive = belongs(context) && this.agentRunState?.active;
+        const targetIds = [...new Set([
+            ...background.flatMap(session => session.canvasTargetIds || []),
+            ...(currentActive ? (context.canvasSelection || []).map(node => node.id) : [])
+        ])];
+        const state = { type: 'prota:canvas-agent-status', previewManaged: Boolean(this.previewController?.state.runId && !this.previewController.state.detached), targetIds, workbenchOpen: Boolean(this.agentWorkbenchOpen), active: Boolean(currentActive || background.length), error: belongs(context) ? String(this.agentRunState?.lastError || '') : '' };
         const key = JSON.stringify([this.activeProjectId, this.activePageId, this.activeVersion, state]);
         if (key === this._canvasAgentStatusKey) return;
         this._canvasAgentStatusKey = key;
         this.mainIframe.contentWindow.postMessage(state, location.origin);
     }
 
-    async refreshCurrentDemo() {
+    async refreshCurrentDemo({ previewSync = false, changes = null } = {}) {
         if (!this.mainIframe || !this.mainIframe.src) return;
         let editor;
         try { editor = this.mainIframe.contentWindow.protaCanvas; } catch {}
         if (editor?.reloadFromDisk) {
             try {
-                const synced = await editor.reloadFromDisk();
-                this._canvasRefreshPending = !synced;
-                return synced;
+                const prefix = this.getCurrentDemoPathPrefix();
+                const files = changes ? this.getChangedWorkspacePaths(changes).filter(file => file.startsWith(prefix)).map(file => file.slice(prefix.length)) : [];
+                const layout = !files.length || files.includes('canvas-data.js');
+                // Read-only external synchronization is independent of Agent's edit lock.
+                const synced = !previewSync || layout || !editor.refreshBoards
+                    ? await editor.reloadFromDisk(false, { previewSync }) : true;
+                let refreshed = synced;
+                if (synced && previewSync && editor.refreshBoards) {
+                    const boards = [...new Set(files.map(file => /^boards\/([^/]+)\//.exec(file)?.[1]).filter(Boolean))];
+                    const shared = files.some(file => file !== 'canvas-data.js' && !file.startsWith('boards/'));
+                    refreshed = await editor.refreshBoards(shared ? null : boards);
+                }
+                this._canvasRefreshPending = !refreshed;
+                return refreshed;
             } catch (error) {
                 this._canvasRefreshPending = true;
                 console.warn('Canvas refresh deferred:', error);
@@ -7521,15 +7698,20 @@ class DemoShell {
 
     scheduleAgentLiveDemoRefresh(changes = {}) {
         if (this.isShareMode) return;
+        const pending = this._agentLiveDemoChanges;
+        const files = new Map([...(pending?.files || []), ...(changes.files || [])].map(file => [file.path, file]));
+        this._agentLiveDemoChanges = { ...changes, files: [...files.values()] };
         window.clearTimeout(this._agentLiveDemoRefreshTimer);
         this._agentLiveDemoRefreshTimer = window.setTimeout(() => {
             this._agentLiveDemoRefreshTimer = null;
-            this.applyAgentLiveDemoRefresh(changes);
+            const latest = this._agentLiveDemoChanges; this._agentLiveDemoChanges = null;
+            this.applyAgentLiveDemoRefresh(latest);
         }, 450);
     }
 
-    async applyAgentLiveDemoRefresh(changes = {}) {
-        const refreshCatalog = this.shouldRefreshProjectCatalogForChanges(changes);
+    async applyAgentLiveDemoRefresh(changes = {}, { retryCanvas = false } = {}) {
+        const prefix = this.getCurrentDemoPathPrefix(), frame = this.mainIframe;
+        const refreshCatalog = !retryCanvas && this.shouldRefreshProjectCatalogForChanges(changes);
         const refreshDemo = this.shouldRefreshCurrentDemoForChanges(changes);
         const refreshPrd = this.shouldRefreshCurrentPrdForChanges(changes);
 
@@ -7538,8 +7720,18 @@ class DemoShell {
                 this._agentLiveProjectRefreshPromise = this.refreshProjectsAfterAgentRun();
                 await this._agentLiveProjectRefreshPromise;
             }
-            if (refreshDemo) {
-                await this.refreshCurrentDemo();
+            if (refreshDemo && frame === this.mainIframe && prefix === this.getCurrentDemoPathPrefix()) {
+                const pending = this._canvasLivePending?.prefix === prefix ? this._canvasLivePending.changes : {};
+                const files = new Map([...(pending.files || []), ...(changes.files || [])].map(file => [file.path, file]));
+                const latest = { ...changes, files: [...files.values()] };
+                const synced = await this.refreshCurrentDemo({ previewSync: true, changes: latest });
+                clearTimeout(this._canvasLiveRetryTimer);
+                if (synced === false) {
+                    this._canvasLivePending = { prefix, changes: latest };
+                    this._canvasLiveRetryTimer = setTimeout(() => {
+                        if (frame === this.mainIframe && prefix === this.getCurrentDemoPathPrefix()) this.applyAgentLiveDemoRefresh(this._canvasLivePending?.changes || latest, { retryCanvas: true });
+                    }, 750);
+                } else this._canvasLivePending = null;
             } else if (refreshPrd && this.docDrawerMode === 'prd' && this.annotationDrawerEnabled) {
                 this.loadPrdDocument({ force: true });
             }
@@ -7735,10 +7927,21 @@ class DemoShell {
             this.mainIframe.contentWindow.__readifyAnnotationRightClick = null;
         } catch {}
         if (enabled && this.isInfiniteCanvasPage() && !this.canvasAnnotationTarget) {
-            // Infinite canvas annotates one board at a time; entry happens through
-            // the canvas right-click gesture, not the toolbar toggle.
             this.syncAnnotationButtonState(false, btn, shellContainer);
-            this.showToast('在无限画布中，请在画板上连续右键进入该画板的标注');
+            const editor = this.mainIframe?.contentWindow?.protaCanvas;
+            const selected = editor?.getSelection?.() || [];
+            const boards = (editor?.getState?.()?.nodes || []).filter(node => node.type === 'board' && node.src && !node.hidden);
+            const selectedBoards = boards.filter(node => selected.includes(node.id));
+            const board = selectedBoards.length === 1 ? selectedBoards[0]
+                : selected.length ? null
+                : editor?.getActiveBoard?.() || (boards.length === 1 ? boards[0] : null);
+            if (board && editor?.enterBoardAnnotation) {
+                // Wait for the canvas to report its target before injecting
+                // the inspector into the board's nested document.
+                editor.enterBoardAnnotation(board.nodeId || board.id);
+            } else {
+                this.showToast('请先选中一个画板，再点击标注');
+            }
             return;
         }
         if (!enabled && this.canvasAnnotationTarget) {
@@ -7776,7 +7979,16 @@ class DemoShell {
     }
 
     isInfiniteCanvasPage() {
-        return this.getPageRecord()?.pageMode === 'infinite-canvas';
+        if (this.getPageRecord()?.pageMode === 'infinite-canvas') return true;
+        // Older/imported canvases may still carry mobile metadata. Inspect the
+        // loaded editor so annotation never targets its outer canvas controls.
+        try {
+            const frame = this.mainIframe?.contentWindow;
+            return Boolean(frame?.protaCanvas || (frame?.document?.querySelector('script[src$="canvas-data.js"]')
+                && frame.document.getElementById('stage') && frame.document.getElementById('world')));
+        } catch {
+            return false;
+        }
     }
 
     notifyCanvasAnnotationExit() {
@@ -8724,6 +8936,14 @@ class DemoShell {
                     }
                 }, '*');
             }
+
+            window.addEventListener('contextmenu', function(e) {
+                if (!window.__readifyInspecting) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.__readifyAnnotationRightClick = null;
+                window.parent.postMessage({ type: 'readify:exit-annotation' }, '*');
+            }, { capture: true, signal: inspectorAbort.signal });
 
             document.addEventListener('click', function(e) {
                 if (!window.__readifyInspecting) return;
@@ -9843,9 +10063,7 @@ class DemoShell {
             : '';
         const drawerItems = this.getAnnotationDrawerItems();
 
-        this.annotationDrawerMeta.innerHTML = totalCount > 0
-            ? scopeControl
-            : '当前版本还没有标注';
+        this.annotationDrawerMeta.innerHTML = scopeControl;
 
         if (totalCount === 0) {
             this.annotationDrawerBody.innerHTML = `
@@ -11926,7 +12144,7 @@ class DemoShell {
 
     async loadAgentCommands() {
         try {
-            const data = await this.agentApi.getCommands();
+            const data = await this.agentApi.getCommands(this.agentSessionId);
             const commands = Array.isArray(data.commands) ? data.commands : [];
             this.agentAvailableCommands = commands;
         } catch (error) {
@@ -11953,7 +12171,7 @@ class DemoShell {
         try {
             this.agentSdkInfo = await this.agentApi.getSdkInfo();
         } catch (error) {
-            console.warn('Failed to load agent SDK info:', error);
+            console.warn('Failed to load Agent runtime info:', error);
             this.agentSdkInfo = null;
         }
     }
@@ -11990,6 +12208,7 @@ class DemoShell {
             this.agentSessionNextCursor = data.nextCursor || null;
             this.agentSessionHasMore = Boolean(data.hasMore && this.agentSessionNextCursor);
             if (!query) this.cacheAgentSessionList(this.agentSessionsList.slice(0, this.agentSessionPageSize));
+            this.syncCanvasAgentStatus();
             if (prewarm) {
                 this.scheduleAgentSessionPrewarm(this.agentSessionsList);
             }
@@ -12525,6 +12744,11 @@ class DemoShell {
                             <svg class="new-page-style-control__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
                     </span>
+                ` : selectedDevice === 'infinite-canvas' ? `
+                    <button type="button" class="new-page-blank-canvas" data-new-page-blank-canvas="1" title="跳过 Agent，直接创建空白画布">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                        空白画布
+                    </button>
                 ` : `<span class="new-page-mode-hint">${selectedDevice === 'auto' ? '按需求选择呈现方式' : '按内容自由组织'}</span>`;
                 optionsHost.dataset.renderKey = optionsKey;
             }
@@ -12907,18 +13131,51 @@ class DemoShell {
         this.writeAgentStorage('session-list-cache', list);
     }
 
+    agentHistoryStoragePrefix() {
+        return this.getAgentStorageKey('session-history:');
+    }
+
+    pruneAgentSessionHistoryCache({ maxBytes = 2 * 1024 * 1024 } = {}) {
+        try {
+            const prefix = this.agentHistoryStoragePrefix();
+            const currentKey = this.agentSessionId ? `${prefix}${this.agentSessionId}` : '';
+            const entries = [];
+            for (let index = 0; index < window.localStorage.length; index++) {
+                const key = window.localStorage.key(index);
+                if (!key?.startsWith(prefix) || key === currentKey) continue;
+                const raw = window.localStorage.getItem(key) || '';
+                let savedAt = 0;
+                try { savedAt = Number(JSON.parse(raw)?.savedAt) || 0; } catch {}
+                entries.push({ key, raw, savedAt });
+            }
+            let totalBytes = entries.reduce((sum, entry) => sum + entry.raw.length, 0)
+                + (currentKey ? (window.localStorage.getItem(currentKey) || '').length : 0);
+            entries.sort((left, right) => left.savedAt - right.savedAt);
+            for (const entry of entries) {
+                if (totalBytes <= maxBytes) break;
+                window.localStorage.removeItem(entry.key);
+                totalBytes -= entry.raw.length;
+            }
+        } catch (error) {
+            console.warn('Failed to prune Agent history cache:', error);
+        }
+    }
+
     getCachedAgentSessionList() {
         return this.readAgentStorage('session-list-cache', []);
     }
 
     cacheAgentSessionHistory(sessionId, data) {
+        this.pruneAgentSessionHistoryCache({ maxBytes: 1.75 * 1024 * 1024 });
+        const key = this.getAgentStorageKey(`session-history:${sessionId}`);
+        const serialized = JSON.stringify({ ...data, savedAt: Date.now() });
         try {
-            window.localStorage.setItem(
-                this.getAgentStorageKey(`session-history:${sessionId}`),
-                JSON.stringify(data)
-            );
+            window.localStorage.setItem(key, serialized);
         } catch (error) {
             console.warn('Failed to cache session history:', error);
+            try { window.localStorage.removeItem(key); } catch {}
+            this.pruneAgentSessionHistoryCache({ maxBytes: 1.5 * 1024 * 1024 });
+            try { window.localStorage.setItem(key, serialized); } catch {}
         }
     }
 
@@ -12961,7 +13218,7 @@ class DemoShell {
         try {
             const parsed = JSON.parse(raw);
             if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-                throw new Error('SDK Options 必须是 JSON object');
+                throw new Error('Agent Options 必须是 JSON object');
             }
             if (this.agentSdkOptionsStatus) {
                 const count = Object.keys(parsed).length;
@@ -12991,7 +13248,7 @@ class DemoShell {
         current = { ...defaults, ...current };
         this.agentSdkOptionsInput.value = this.stringifyAgentSdkOptions(current);
         this.handleAgentConfigInput();
-        this.showToast('已套用推荐 SDK Options');
+        this.showToast('已套用推荐 Agent Options');
     }
 
     formatAgentSdkOptions() {
@@ -13275,6 +13532,11 @@ class DemoShell {
         }
         this.agentTicker = window.setInterval(() => {
             this.renderAgentChrome();
+            if (!this.agentSessionListLoading && Date.now() - (this._backgroundSessionPollAt || 0) >= 3000
+                && this.agentSessionsList?.some(session => session.id !== this.agentSessionId && ['running', 'waiting_approval', 'waiting_user_answer'].includes(session.status))) {
+                this._backgroundSessionPollAt = Date.now();
+                this.loadAgentSessions().then(() => this.renderAgentSessionList());
+            }
             if (this.agentRunState?.active) {
                 this.patchLiveAgentStatus();
             }
@@ -13367,11 +13629,12 @@ class DemoShell {
         if (this._agentCreatingSession) return;
         this._agentCreatingSession = true;
         try {
-            const reusableSessionId = this.findReusableAgentSessionId();
+            const sessionScope = this.currentTopView === 'page' ? 'page' : 'global';
+            const reusableSessionId = this.findReusableAgentSessionId({ sessionScope, context: sessionScope === 'page' ? this.getAgentContext() : null });
             if (reusableSessionId) {
                 await this.switchAgentSession(reusableSessionId);
             } else {
-                await this.createAgentSession({ switchTo: true });
+                await this.createAgentSession({ switchTo: true, sessionScope });
             }
             this.renderAgentWorkbench();
         } finally {
@@ -13886,7 +14149,7 @@ class DemoShell {
             const recent = recentIds
                 .map((id) => this.getAgentCommand(id))
                 .filter(Boolean);
-            const remaining = commands.filter((command) => !recent.some((item) => item.id === command.id));
+            const remaining = commands.filter((command) => !command.advanced && command.availability !== 'disabled' && !recent.some((item) => item.id === command.id));
             return {
                 recent,
                 filtered: remaining
@@ -13929,8 +14192,8 @@ class DemoShell {
             return { key: 'skill', label: 'Skill', order: 0 };
         }
         const category = String(command.category || '').toLowerCase();
-        if (category === 'sdk') {
-            return { key: 'sdk', label: 'SDK', order: 1 };
+        if (category === 'agent' || category === 'sdk') {
+            return { key: 'agent', label: 'Agent', order: 1 };
         }
         if (category === 'config') {
             return { key: 'config', label: 'Config', order: 2 };
@@ -14107,10 +14370,12 @@ class DemoShell {
             const hasPrdContext = Boolean(this.agentPrdContext);
             const hasFeedback = this.feedbackItems.length > 0;
             const hasSkillStarter = Boolean(this.agentActiveSkill?.defaultStarter);
-            const isRunning = active && !answeringQuestion;
+            const isRunning = active && !answeringQuestion && !hasMessage && !hasFeedback && !hasPrdContext;
+            this.agentSendBtn.title = isRunning ? '停止任务' : active ? '追加要求' : '发送';
+            this.agentSendBtn.setAttribute('aria-label', this.agentSendBtn.title);
             this.agentSendBtn.classList.toggle('is-running', isRunning);
             this.agentSendBtn.disabled =
-                this.agentTestingConnection || this._agentReasoningSaving ||
+                this.agentTestingConnection || this._agentReasoningSaving || this._agentSteering ||
                 (contextBlocked && !this.agentActiveSkill?.globalContext) ||
                 (!isRunning && !answeringQuestion && !hasMessage && !hasAttachments && !hasPrdContext && !hasFeedback && !this.agentActiveSkill) ||
                 (!isRunning && !answeringQuestion && !hasMessage && !hasAttachments && !hasPrdContext && !hasFeedback && Boolean(this.agentActiveSkill?.requiresMessage) && !hasSkillStarter);
@@ -14820,7 +15085,7 @@ class DemoShell {
     renderAgentTimeline() {
         if (!this.agentTimeline) return;
 
-        const previousDistance = this.agentTimeline.scrollHeight - this.agentTimeline.scrollTop - this.agentTimeline.clientHeight;
+        const scrollAnchor = this.captureAgentTimelineScrollAnchor();
         const groups = this.buildAgentTimelineGroups();
 
         if (!groups.length) {
@@ -14858,7 +15123,7 @@ class DemoShell {
         if (this.agentAutoScroll) {
             this.scrollAgentTimelineToLatest(false, true);
         } else {
-            this.agentTimeline.scrollTop = Math.max(0, this.agentTimeline.scrollHeight - this.agentTimeline.clientHeight - previousDistance);
+            this.restoreAgentTimelineScrollAnchor(scrollAnchor);
         }
 
         if (this.agentJumpLatestBtn) {
@@ -14882,8 +15147,8 @@ class DemoShell {
             this._assistantMessagePatchRaf = null;
             if (!this._pendingAssistantMessagePatches) return;
 
-            const previousDistance = this.agentTimeline ? (this.agentTimeline.scrollHeight - this.agentTimeline.scrollTop - this.agentTimeline.clientHeight) : 0;
-            const shouldStickToBottom = this.agentAutoScroll || previousDistance < 64;
+            const shouldStickToBottom = this.agentAutoScroll;
+            const scrollAnchor = shouldStickToBottom ? null : this.captureAgentTimelineScrollAnchor();
 
             for (const [id, event] of this._pendingAssistantMessagePatches) {
                 const escapedId = CSS.escape(id);
@@ -14896,6 +15161,8 @@ class DemoShell {
 
             if (shouldStickToBottom) {
                 this.scrollAgentTimelineToLatest(true, false);
+            } else {
+                this.restoreAgentTimelineScrollAnchor(scrollAnchor);
             }
 
             this.renderAgentChrome();
@@ -14909,8 +15176,8 @@ class DemoShell {
 
         const groups = this.buildAgentTimelineGroups();
         const signature = this.getAgentTimelineSignature();
-        const previousDistance = this.agentTimeline.scrollHeight - this.agentTimeline.scrollTop - this.agentTimeline.clientHeight;
-        const shouldStickToBottom = this.agentAutoScroll || previousDistance < 64;
+        const shouldStickToBottom = this.agentAutoScroll;
+        const scrollAnchor = shouldStickToBottom ? null : this.captureAgentTimelineScrollAnchor();
 
         // Empty state
         if (!groups.length) {
@@ -14949,7 +15216,8 @@ class DemoShell {
         if (shouldStickToBottom) {
             this.scrollAgentTimelineToLatest(true, false);
         } else {
-            this.agentTimeline.scrollTop = Math.max(0, this.agentTimeline.scrollHeight - this.agentTimeline.clientHeight - previousDistance);
+            // Content generated below must not move the history being read.
+            this.restoreAgentTimelineScrollAnchor(scrollAnchor);
         }
 
         if (this.agentJumpLatestBtn) {
@@ -14958,6 +15226,8 @@ class DemoShell {
     }
 
     fullRenderAgentTimeline(groups) {
+        const shouldStickToBottom = this.agentAutoScroll;
+        const scrollAnchor = shouldStickToBottom ? null : this.captureAgentTimelineScrollAnchor();
         this.agentTimeline.innerHTML = groups.map((group) => this.renderAgentTimelineGroup(group)).join('');
         this.patchTimelineSpinner();
 
@@ -14969,8 +15239,10 @@ class DemoShell {
             this.scrollElementToBottom(block);
         });
 
-        if (this.agentAutoScroll) {
+        if (shouldStickToBottom) {
             this.scrollAgentTimelineToLatest(false, true);
+        } else {
+            this.restoreAgentTimelineScrollAnchor(scrollAnchor);
         }
         if (this.agentJumpLatestBtn) {
             this.agentJumpLatestBtn.hidden = !this.agentShowJumpLatest;
@@ -15293,12 +15565,13 @@ class DemoShell {
     }
 
     isAgentProcessEvent(event) {
+        // Runtime startup is internal. Old sessions may still contain sdk_init,
+        // but neither event belongs in the user-facing process timeline.
         return [
             'tool_started',
             'tool_finished',
             'tool_call',
             'sdk_tool_result',
-            'sdk_init',
             'sdk_status',
             'sdk_rate_limit',
             'sdk_compact',
@@ -15348,8 +15621,7 @@ class DemoShell {
         if (lastEvent.type === 'tool_started') return this.normalizeAgentProcessSummary(payload.summary, payload.toolName) || `正在执行 ${payload.toolName || '工具'}`;
         if (lastEvent.type === 'tool_call') return this.normalizeAgentProcessSummary(payload.summary, payload.toolName) || `正在调用 ${payload.toolName || '工具'}`;
         if (lastEvent.type === 'sdk_tool_result') return `${payload.toolName || '工具'} 返回结果`;
-        if (lastEvent.type === 'sdk_init') return `SDK 初始化完成：${payload.model || ''}`;
-        if (lastEvent.type === 'sdk_status') return payload.message || 'SDK 状态更新';
+        if (lastEvent.type === 'sdk_status') return payload.message || 'Agent 状态更新';
         if (lastEvent.type === 'assistant_thinking') return '模型正在思考';
         if (lastEvent.type === 'sdk_rate_limit') return payload.message || 'Provider 速率限制';
         if (lastEvent.type === 'sdk_compact') return payload.summary || '上下文已压缩';
@@ -15406,6 +15678,8 @@ class DemoShell {
             flushProcess();
             if (event.type === 'assistant_message') {
                 segments.push({ type: 'assistant', event });
+            } else if (event.type === 'user_followup') {
+                segments.push({ type: 'user', event });
             } else if (resultTypes.has(event.type)) {
                 segments.push({ type: 'result', event });
             }
@@ -15426,6 +15700,7 @@ class DemoShell {
             && this.hasPendingAgentInteraction({ events: segment.events || [] })
         ));
         const parts = segments.map((segment, index) => {
+            if (segment.type === 'user') return this.renderAgentTimelineRow({ role: 'You', className: 'agent-timeline__row agent-timeline__row--user', eventId: segment.event.id, body: this.renderAgentUserMessage({ message: segment.event.payload.text }) });
             if (segment.type === 'assistant') return this.renderAgentAssistantMessage(segment.event);
             if (segment.type === 'result') return this.renderAgentResultEvent(segment.event);
             const segmentActive = this.isAgentGroupActive(group)
@@ -15510,7 +15785,7 @@ class DemoShell {
         if (payload.numTurns) parts.push(`${payload.numTurns} turns`);
         if (payload.totalCostUsd != null) parts.push(`$${Number(payload.totalCostUsd).toFixed(6)}`);
         if (payload.durationApiMs != null) parts.push(`${payload.durationApiMs}ms API`);
-        return parts.join(' · ') || 'SDK 运行结束';
+        return parts.join(' · ') || 'Agent 运行结束';
     }
 
     formatSdkResultDetails(payload = {}) {
@@ -15537,18 +15812,7 @@ class DemoShell {
         let tone = 'neutral';
         let actions = '';
 
-        if (event.type === 'sdk_init') {
-            const tools = Array.isArray(payload.tools) ? payload.tools : [];
-            title = 'SDK initialized';
-            summary = `${payload.model || 'model'} · ${tools.length} tools · ${payload.permissionMode || 'default'}`;
-            tone = 'success';
-            blocks.push(this.renderAgentCodeBlock([
-                `cwd: ${payload.cwd || ''}`,
-                `session: ${payload.sessionId || ''}`,
-                `tools: ${tools.join(', ') || '(none)'}`,
-                `mcp: ${(payload.mcpServers || []).map((server) => `${server.name}:${server.status}`).join(', ') || '(none)'}`
-            ].join('\n'), 'text', 'init'));
-        } else if (event.type === 'assistant_thinking') {
+        if (event.type === 'assistant_thinking') {
             title = 'Thinking';
             summary = '模型思考内容';
             tone = 'neutral';
@@ -15571,7 +15835,7 @@ class DemoShell {
             }
         } else if (event.type === 'sdk_status') {
             title = 'Status';
-            summary = payload.message || 'SDK 状态更新';
+            summary = payload.message || 'Agent 状态更新';
         } else if (event.type === 'sdk_rate_limit') {
             title = 'Rate limit';
             summary = payload.message || 'Provider 返回速率限制提示';
@@ -16785,12 +17049,69 @@ class DemoShell {
 
     handleAgentTimelineScroll() {
         if (!this.agentTimeline) return;
-        const nearBottom = this.agentTimeline.scrollHeight - this.agentTimeline.scrollTop - this.agentTimeline.clientHeight < 48;
+        const nearBottom = this.agentTimeline.scrollHeight - this.agentTimeline.scrollTop - this.agentTimeline.clientHeight < 4;
         this.agentAutoScroll = nearBottom;
         this.agentShowJumpLatest = !nearBottom;
         if (this.agentJumpLatestBtn) {
             this.agentJumpLatestBtn.hidden = nearBottom;
         }
+    }
+
+    captureAgentTimelineScrollAnchor() {
+        if (!this.agentTimeline) return null;
+        const scrollTop = this.agentTimeline.scrollTop;
+        const timelineRect = this.agentTimeline.getBoundingClientRect();
+        const candidates = [
+            ...this.agentTimeline.querySelectorAll('.agent-assistant-message[data-event-id]'),
+            ...this.agentTimeline.querySelectorAll('.agent-process-event[data-event-id]'),
+            ...this.agentTimeline.querySelectorAll('.agent-process[data-agent-process]'),
+            ...this.agentTimeline.querySelectorAll('.agent-result[data-event-id]'),
+            ...this.agentTimeline.querySelectorAll(':scope > .agent-run-group[data-run-group]')
+        ];
+        const anchor = candidates.find((element) => {
+            const rect = element.getBoundingClientRect();
+            return rect.bottom > timelineRect.top && rect.top < timelineRect.bottom;
+        });
+        if (!anchor) return { scrollTop, selector: '', offset: 0 };
+
+        const eventId = anchor.dataset.eventId;
+        const processId = anchor.dataset.agentProcess;
+        const runGroupId = anchor.dataset.runGroup;
+        let selector = '';
+        if (eventId && anchor.matches('.agent-assistant-message')) {
+            selector = `.agent-assistant-message[data-event-id="${CSS.escape(eventId)}"]`;
+        } else if (eventId && anchor.matches('.agent-process-event')) {
+            selector = `.agent-process-event[data-event-id="${CSS.escape(eventId)}"]`;
+        } else if (eventId && anchor.matches('.agent-result')) {
+            selector = `.agent-result[data-event-id="${CSS.escape(eventId)}"]`;
+        } else if (processId) {
+            selector = `.agent-process[data-agent-process="${CSS.escape(processId)}"]`;
+        } else if (runGroupId) {
+            selector = `.agent-run-group[data-run-group="${CSS.escape(runGroupId)}"]`;
+        }
+
+        return {
+            scrollTop,
+            selector,
+            offset: anchor.getBoundingClientRect().top - timelineRect.top
+        };
+    }
+
+    restoreAgentTimelineScrollAnchor(anchor) {
+        if (!this.agentTimeline || !anchor || this.agentAutoScroll) return;
+        const nextAnchor = anchor.selector
+            ? this.agentTimeline.querySelector(anchor.selector)
+            : null;
+        if (!nextAnchor) {
+            this.agentTimeline.scrollTop = anchor.scrollTop;
+            return;
+        }
+        const timelineTop = this.agentTimeline.getBoundingClientRect().top;
+        const nextOffset = nextAnchor.getBoundingClientRect().top - timelineTop;
+        this.agentTimeline.scrollTop = Math.max(
+            0,
+            anchor.scrollTop + nextOffset - anchor.offset
+        );
     }
 
     captureAgentFeedbackToggleAnchor(event) {
@@ -17176,12 +17497,15 @@ class DemoShell {
         } else {
             this.agentSessionContext = null;
         }
+        this._canvasRunScope = this.agentRunState.active ? this.agentRunState.descriptor?.context || data.context : null;
+        resumePreview(this, data);
         this.syncAgentConfigForm();
     }
 
     handleAgentStreamEvent(eventName, event) {
         const payload = event?.payload || {};
         if (eventName === 'run_started') {
+            this._previewSuppressedRunId = null;
             if (payload.progressivePreview && !this.isShareMode) {
                 this.previewController ||= new PreviewController(this);
                 this.previewController.start(event);
@@ -17189,7 +17513,13 @@ class DemoShell {
                 this.previewController.navigate(); this.previewController = null;
             }
         }
-        if (eventName === 'preview_revision') { this.previewController?.receive(payload); return; }
+        if (eventName === 'preview_observing') { resumePreview(this, payload, event.runId); return; }
+        if (['run_status', 'heartbeat', 'session_ready'].includes(eventName) && payload.runState?.active) resumePreview(this, payload, event.runId || payload.runState.runId);
+        if (eventName === 'preview_revision') {
+            const controller = this.previewController?.state.runId === event.runId ? this.previewController
+                : resumePreview(this, { progressivePreview: true, context: this.agentSessionContext }, event.runId || payload.runId);
+            controller?.receive(payload); return;
+        }
         if (eventName === 'preview_disabled') {
             if (this.previewController?.state.runId === event.runId) this.previewController.disable().catch(error => console.debug('[preview]', error));
             return;
@@ -17203,9 +17533,6 @@ class DemoShell {
             if (eventName === 'run_started') {
                 this._termQueue = []; // flush old queue on new run
                 this.addMiniTerminalLine('▶ run started', 'sys');
-            } else if (eventName === 'sdk_init') {
-                const modelName = payload.model || this.agentConfig?.model || 'model';
-                this.addMiniTerminalLine(`⚙ init  ${modelName}`, 'sys');
             } else if (eventName === 'assistant_thinking') {
                 this.addMiniTerminalLine('~ thinking…', 'prompt');
             } else if (eventName === 'assistant_delta' && payload.content) {
@@ -17259,7 +17586,15 @@ class DemoShell {
             this.clearOptimisticAgentRuns();
         }
 
-        if (!['assistant_delta', 'run_status', 'heartbeat', 'session_updated', 'run_live_changes'].includes(eventName)) {
+        if (![
+            'assistant_delta',
+            'run_status',
+            'heartbeat',
+            'session_updated',
+            'run_live_changes',
+            'agent_init',
+            'sdk_init'
+        ].includes(eventName)) {
             timelineChange = this.upsertAgentTimelineEvent(event);
         }
 
@@ -17312,6 +17647,7 @@ class DemoShell {
         }
 
         if (eventName === 'run_started') {
+            this._canvasRunScope = payload.descriptor?.context || payload.context || null;
             this.agentSessionScope = payload.sessionScope || (payload.context?.globalContext ? 'global' : this.agentSessionScope || 'page');
             if (payload.context?.pageId && payload.context?.version) {
                 const resolved = this.resolvePageProject(payload.context.pageId, payload.context.version, payload.context.projectId);
@@ -17410,16 +17746,6 @@ class DemoShell {
                 status: 'running',
                 sdkStatusMessage: payload.message || '',
                 stageMessage: payload.message || this.agentRunState.stageMessage
-            };
-        }
-
-        if (eventName === 'sdk_init') {
-            if (this.isAgentRunTerminal()) return;
-            this.agentRunState = {
-                ...this.agentRunState,
-                status: 'running',
-                sdkStatusMessage: '',
-                stageMessage: 'SDK 已初始化'
             };
         }
 
@@ -17528,13 +17854,14 @@ class DemoShell {
         this.renderAgentWorkbench();
     }
 
-    async consumeAgentStream(stream, { persistent = false } = {}) {
+    async consumeAgentStream(stream, { persistent = false, sessionId = this.agentSessionId, signal = null } = {}) {
         const reader = stream.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
 
         while (true) {
             const { value, done } = await reader.read();
+            if (sessionId !== this.agentSessionId || signal?.aborted) { await reader.cancel(); return; }
             buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
 
             let boundaryIndex = buffer.indexOf('\n\n');
@@ -17551,7 +17878,7 @@ class DemoShell {
         // For persistent streams (session-level SSE), try to reconnect if still active
         if (persistent && this.agentRunState.active && this.agentSessionId) {
             window.setTimeout(() => {
-                this.attachAgentSessionStream();
+                if (sessionId === this.agentSessionId && !signal?.aborted) this.attachAgentSessionStream();
             }, 1200);
             return;
         }
@@ -17616,6 +17943,7 @@ class DemoShell {
         const currentSession = (this.agentSessionsList || []).find((session) => session.id === this.agentSessionId);
         if (
             this.agentSessionId
+            && !this.agentRunState?.active
             && !this.hasMeaningfulAgentHistory()
             && matchesScope(currentSession || { sessionScope: this.agentSessionScope })
             && matchesContext(currentSession || this.agentSessionContext)
@@ -17640,6 +17968,14 @@ class DemoShell {
         if (!forceRefresh && sessionId === this.agentSessionId && this.agentTimelineEvents.length) {
             this.renderAgentWorkbench();
             return;
+        }
+        if (sessionId !== this.agentSessionId) {
+            const previous = (this.agentSessionsList || []).find(session => session.id === this.agentSessionId);
+            if (previous) {
+                const context = this._canvasRunScope || this.agentSessionContext || {};
+                Object.assign(previous, { status: this.agentRunState.status, canvasTargetIds: (context.canvasSelection || []).map(node => node.id) });
+            }
+            this.notifyPreviewNavigation(); this.previewController = null;
         }
         this.detachAgentSessionStream();
         if (this.agentEventStreamAbortController) {
@@ -17730,6 +18066,7 @@ class DemoShell {
         if (sessionId !== this.agentSessionId) return;
         this.agentTimelineLoading = false;
         this.hydrateAgentHistory(data);
+        await this.loadAgentCommands();
         this.renderAgentWorkbench();
         const isGlobalSession = data.sessionScope === 'global' || data.context?.globalContext || data.context?.pageId === '__global__';
         const targetPageId = isGlobalSession ? null : (data.context?.pageId || this.activePageId);
@@ -17933,19 +18270,20 @@ class DemoShell {
 
     async attachAgentSessionStream() {
         if (!this.agentSessionId || !this.agentRunState.active || this.agentSessionStreamAbortController) return;
+        const controller = new AbortController();
+        const sessionId = this.agentSessionId;
         try {
-            const controller = new AbortController();
             this.agentSessionStreamAbortController = controller;
-            const response = await this.agentApi.openSessionStream(this.agentSessionId, {
+            const response = await this.agentApi.openSessionStream(sessionId, {
                 signal: controller.signal
             });
-            await this.consumeAgentStream(response.body, { persistent: true });
+            await this.consumeAgentStream(response.body, { persistent: true, sessionId, signal: controller.signal });
         } catch (error) {
             if (error?.name !== 'AbortError') {
                 console.warn('Failed to attach agent session stream:', error);
             }
         } finally {
-            this.agentSessionStreamAbortController = null;
+            if (this.agentSessionStreamAbortController === controller) this.agentSessionStreamAbortController = null;
         }
     }
 
@@ -17985,15 +18323,15 @@ class DemoShell {
             this.agentRunState = {
                 ...this.getDefaultAgentRunState(),
                 status: 'ready',
-                stageMessage: 'SDK 上下文已清空，等待新的任务'
+                stageMessage: 'Agent 上下文已清空，等待新的任务'
             };
             this._needsFullTimelineRebuild = true;
-            this.showToast('SDK 上下文已清空');
+            this.showToast('Agent 上下文已清空');
             await this.loadAgentSessions();
             this.renderAgentWorkbench();
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            this.showToast(message || '清空 SDK 上下文失败', true);
+            this.showToast(message || '清空 Agent 上下文失败', true);
         }
     }
 
@@ -18047,7 +18385,7 @@ class DemoShell {
             console.warn('Failed to call agent.setPermissionMode:', error);
         }
         this.renderPermissionLabel();
-        this.showToast(`SDK 权限模式已切换为 ${mode}`);
+        this.showToast(`Agent 权限模式已切换为 ${mode}`);
     }
 
     parseSlashCommand(rawInput) {
@@ -18086,6 +18424,87 @@ class DemoShell {
         await this.executeSlashCommand(command, argumentsText);
     }
 
+    async executePiSessionCommand(command, args) {
+        await this.ensureAgentSession();
+        const call = (operation, payload) => this.agentApi.piSessionCommand(this.agentSessionId, operation, payload).then(data => data.result);
+        let operation = command.id;
+        let payload = {};
+        if (['tree', 'fork', 'rewind'].includes(operation)) {
+            const { tree, leafId } = await call('tree');
+            const { messages } = await call('forkMessages');
+            const selectable = new Set(messages.map(message => message.entryId));
+            let entryId = args;
+            if (!entryId || operation === 'tree') entryId = await requestPiChoice({
+                title: operation === 'tree' ? '会话历史树' : '从历史消息继续',
+                description: '选择用户消息，在该消息之前创建独立分支。原会话保留，工作区文件保持当前状态。',
+                items: flattenPiTree(tree, leafId, selectable), confirmLabel: '创建对话分支'
+            });
+            if (!entryId) return;
+            if (!selectable.has(entryId)) throw new Error('该节点不是可分叉的用户消息。');
+            operation = operation === 'rewind' ? 'rewind' : 'fork';
+            payload = { entryId };
+            if (operation === 'rewind') {
+                const mode = await requestPiChoice({ title: '选择回溯方式', description: '默认仅回溯对话。恢复文件会额外检查文件冲突并要求确认。', items: [
+                    { value: 'dialogue', label: '仅回溯对话，保留当前文件' },
+                    { value: 'files', label: '回溯对话并恢复文件检查点' }
+                ] });
+                if (!mode) return;
+                if (mode === 'files') {
+                    const preview = await call('rewind-preview', { entryId });
+                    const confirmed = await requestPiChoice({ title: '确认回溯对话并恢复文件',
+                        description: preview.files.map(file => `${file.path}\n${file.currentSha256?.slice(0, 12) || '不存在'} → ${file.targetSha256?.slice(0, 12) || '删除'}`).join('\n\n'),
+                        items: [{ value: 'confirm', label: `恢复 ${preview.files.length} 个文件并创建独立会话` }], confirmLabel: '确认回溯' });
+                    if (!confirmed) return;
+                    payload = { entryId, restoreFiles: true, confirmationToken: preview.token };
+                }
+            }
+
+        } else if (operation === 'thinking') {
+            const { levels } = await call('thinkingLevels');
+            const value = args || await requestPiChoice({ title: '推理等级', items: levels.map(level => ({ value: level, label: level })) });
+            if (!value) return;
+            payload = { value };
+        } else if (operation === 'auto-compact') {
+            const state = await call('state');
+            const value = args || await requestPiChoice({ title: '自动上下文压缩', description: `当前：${state.autoCompactionEnabled ? '开启' : '关闭'}`,
+                items: [{ value: 'on', label: '开启' }, { value: 'off', label: '关闭' }] });
+            if (!value) return;
+            if (!['on', 'off'].includes(value)) throw new Error('请使用 /auto-compact on 或 off。');
+            payload = { enabled: value === 'on' };
+        } else if (operation === 'name') payload = { value: args };
+        else if (operation === 'rollback') {
+            const events = this.agentTimelineEvents.filter(event => event.type === 'run_changes' && event.payload?.rollbackStatus === 'available');
+            const runId = args || await requestPiChoice({ title: '恢复文件检查点', description: '选择运行后预览文件清单。确认后恢复文件，对话上下文保持当前状态。',
+                items: events.map(event => ({ value: event.payload.runId, label: `${event.createdAt} · ${event.payload.summary || event.payload.runId}` })) });
+            if (!runId) return;
+            const { changes } = await this.agentApi.getRunChanges(this.agentSessionId, runId);
+            const files = changes?.files || [];
+            if (changes?.rollbackStatus !== 'available') throw new Error('该节点没有可恢复的文件检查点。');
+            const confirmed = await requestPiChoice({ title: '确认恢复文件', description: `${changes.summary || ''}\n${files.map(file => file.relativePath || file.path || '').join('\n')}`,
+                items: [{ value: 'confirm', label: '恢复所选运行之前的文件状态' }], confirmLabel: '恢复文件' });
+            if (confirmed) await this.rollbackAgentRun(runId, { mode: 'to_checkpoint' });
+            return;
+        }
+        const result = await call(operation, payload);
+        if (result.sessionId) {
+            await this.switchAgentSession(result.sessionId, { awaitRefresh: true });
+            this.agentInput.value = result.draft || '';
+            this.resizeAgentInput();
+            this.showToast(result.filesRestored ? '已创建独立会话并恢复文件检查点。' : '独立会话已创建，文件保持当前状态。');
+            if (result.filesRestored) this.refreshProjectsAfterAgentRun();
+        } else if (operation === 'copy') {
+            if (!result.text) throw new Error('当前没有可复制的助手回复。');
+            await navigator.clipboard.writeText(result.text); this.showToast('已复制最近回复。');
+        } else if (operation === 'export') {
+            const url = URL.createObjectURL(new Blob([result.html], { type: 'text/html;charset=utf-8' }));
+            const link = document.createElement('a'); link.href = url; link.download = `prota-session-${this.agentSessionId}.html`; link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } else {
+            await this.switchAgentSession(this.agentSessionId, { forceRefresh: true, awaitRefresh: true });
+            this.showToast(operation === 'thinking' ? `推理等级：${result.level || payload.value}` : '会话设置已更新。');
+        }
+    }
+
     async executeSlashCommand(command, argumentsText = '') {
         const args = String(argumentsText || '').trim();
         const attachmentPayloads = this.getAgentAttachmentPayloads();
@@ -18095,6 +18514,13 @@ class DemoShell {
 
         if (command.argumentMode === 'required-text' && !args && !hasAttachments && !this.agentPrdContext) {
             this.showToast(`命令 /${command.id} 需要补充参数。`, true);
+            return;
+        }
+
+        if (command.source === 'pi-rpc' && command.action === 'client') {
+            this.agentInput.value = '';
+            try { await this.executePiSessionCommand(command, args); }
+            catch (error) { this.showToast(error.message || 'Pi 会话操作失败', true); }
             return;
         }
 
@@ -18219,10 +18645,7 @@ class DemoShell {
             const desiredSessionScope = skill?.globalContext ? 'global' : 'page';
             await this.ensureAgentSession({ sessionScope: desiredSessionScope });
 
-            let skillMessage = args;
-            if (command.id === 'iterate' && !args) {
-                skillMessage = '请按迭代版本流程生成下一版页面方案并落地。';
-            }
+            const skillMessage = args;
 
             if (this.agentInput) {
                 this.agentInput.value = skillMessage;
@@ -18270,7 +18693,13 @@ class DemoShell {
             return;
         }
 
-        if (this.agentRunState.active) return;
+        const steering = Boolean(this.agentRunState.active);
+        if (this._agentSteering) return;
+        if (steering && (hasAttachments || message.startsWith('/'))) {
+            this.showToast('运行中可追加文字和标注；图片或命令请在新会话中发送。', true);
+            return;
+        }
+        const steeringDraft = steering ? { sessionId: this.agentSessionId, message, feedback: [...this.feedbackItems], prd: this.agentPrdContext } : null;
         if (contextState.blocked && !this.agentActiveSkill?.globalContext) {
             this.showToast(contextState.reason, true);
             return;
@@ -18279,6 +18708,11 @@ class DemoShell {
         const slashCommand = this.parseSlashCommand(message);
         if (slashCommand) {
             await this.executeSlashCommand(slashCommand.command, slashCommand.argumentsText);
+            return;
+        }
+
+        if (/^\/[A-Za-z0-9_-]+(?:\s|$)/.test(message)) {
+            this.showToast(`未知命令 ${message.split(/\s/)[0]}，输入 /help 查看可用命令。`, true);
             return;
         }
 
@@ -18291,7 +18725,7 @@ class DemoShell {
             return;
         }
 
-        const activeSkill = this.agentActiveSkill;
+        const activeSkill = steering ? null : this.agentActiveSkill;
         const continueAnsweredQuestionThread = !activeSkill && this.shouldContinueAnsweredQuestionThread();
         const nextMessage = message || activeSkill?.defaultStarter || (hasAttachments ? '请基于上传图片生成或调整当前原型。' : (this.agentPrdContext ? '请基于该 PRD 上下文生成或调整当前原型。' : ''));
         if (!nextMessage && this.feedbackItems.length === 0 && !hasAttachments && !this.agentPrdContext) return;
@@ -18381,6 +18815,27 @@ class DemoShell {
         this.clearAgentAttachments();
         this.closeAgentCommandMenu();
         this.openAgentWorkbench();
+        if (steering) {
+            this._agentSteering = true;
+            this.renderAgentControls();
+            try {
+                const result = await this.agentApi.steer(steeringDraft.sessionId, finalMessage);
+                if (this.agentSessionId === steeringDraft.sessionId && result.event) this.handleAgentStreamEvent('user_followup', result.event);
+            } catch (error) {
+                if (this.agentSessionId === steeringDraft.sessionId) {
+                    if (!this.agentInput.value) this.agentInput.value = steeringDraft.message;
+                    this.feedbackItems = [...steeringDraft.feedback, ...this.feedbackItems];
+                    if (!this.agentPrdContext) this.agentPrdContext = steeringDraft.prd;
+                    this.renderFeedbackPanel();
+                    this.renderAgentPrdContext();
+                }
+                this.showToast(error.message || '追加要求失败，请重试。', true);
+            } finally {
+                this._agentSteering = false;
+                this.renderAgentControls();
+            }
+            return;
+        }
         if (activeSkill) {
             await this.startAgentRun('skill', {
                 skillId: activeSkill.id,
@@ -18406,10 +18861,11 @@ class DemoShell {
     }
 
     async startAgentRun(kind, payload = {}) {
+        let runSessionId, runController;
         try {
             if (this.selectedProviderId === this.activeProviderId) {
                 if (this.parseAgentSdkOptions({ showError: true }) === null) {
-                    throw new Error('SDK Options JSON 格式无效');
+                    throw new Error('Agent Options JSON 格式无效');
                 }
                 this.handleAgentConfigInput();
             }
@@ -18437,8 +18893,10 @@ class DemoShell {
             await this.detachAgentSessionStream();
             const desiredSessionScope = globalRun ? 'global' : 'page';
             const sessionId = await this.ensureAgentSession({ sessionScope: desiredSessionScope });
+            runSessionId = sessionId;
             const endpoint = ReadifyAgent.RunRoutes.pathFor(sessionId, kind, payload);
             const controller = new AbortController();
+            runController = controller;
             this.agentEventStreamAbortController = controller;
 
             const optimisticRun = this.addOptimisticAgentRun(kind, payload);
@@ -18472,9 +18930,9 @@ class DemoShell {
                     signal: controller.signal
             });
 
-            await this.consumeAgentStream(response.body);
+            await this.consumeAgentStream(response.body, { sessionId, signal: controller.signal });
         } catch (error) {
-            if (error?.name === 'AbortError') return;
+            if (error?.name === 'AbortError' || (runSessionId && runSessionId !== this.agentSessionId)) return;
             const message = error instanceof Error ? error.message : String(error);
             this.agentRunState = {
                 ...this.agentRunState,
@@ -18486,8 +18944,10 @@ class DemoShell {
             this.showToast(message || 'Agent Gateway 不可用或配置无效，请检查 8081 服务与 Provider 配置', true);
             this.renderAgentWorkbench();
         } finally {
-            this.agentEventStreamAbortController = null;
-            try { this.mainIframe?.contentWindow?.protaCanvas?.setPreparing?.(false); } catch {}
+            if (this.agentEventStreamAbortController === runController) this.agentEventStreamAbortController = null;
+            if (!runSessionId || runSessionId === this.agentSessionId) {
+                try { this.mainIframe?.contentWindow?.protaCanvas?.setPreparing?.(false); } catch {}
+            }
         }
     }
 
@@ -18566,7 +19026,7 @@ class DemoShell {
         const draft = this.getAgentConfigDraft({ source: 'selected' });
         try {
             if (this.parseAgentSdkOptions({ showError: true }) === null) {
-                throw new Error('SDK Options JSON 格式无效');
+                throw new Error('Agent Options JSON 格式无效');
             }
             this.handleAgentConfigInput();
             this.agentTestingConnection = true;

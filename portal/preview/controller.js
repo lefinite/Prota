@@ -5,6 +5,8 @@ export class PreviewController {
     constructor(shell) { this.shell = shell; this.state = new PreviewState(); this.token = 0; }
     current() { const s = this.shell; return { projectId: s.activeProjectId, pageId: s.activePageId, version: s.activeVersion }; }
     start(event) {
+        clearTimeout(this.shell._canvasLiveRetryTimer);
+        this.shell._canvasLivePending = null;
         this.token++; this.state.start(event.runId); this.origin = scopeKey(this.current());
         this.context = event.payload.context || {}; this.latest = this.pending = this.shown = null;
         clearTimeout(this.retry); this.showStatus('原型生成中');
@@ -25,7 +27,13 @@ export class PreviewController {
         if (event.scope.projectId !== this.current().projectId) return;
         if (this.context.pageId && this.context.pageId !== '__global__' && event.scope.pageId !== this.context.pageId) return;
         if (this.latest && event.revision <= this.latest.revision) return;
-        this.latest = this.pending = event; this.drain();
+        const outstanding = [this.inFlight, this.pending].filter(item => item && scopeKey(item.scope) === scopeKey(event.scope));
+        const changes = { ...event.changes };
+        for (const item of outstanding) {
+            for (const name of ['layout', 'html', 'css', 'javascript', 'assets']) changes[name] ||= Boolean(item.changes[name]);
+        }
+        changes.boardIds = [...new Set([...outstanding.flatMap(item => item.changes.boardIds || []), ...(event.changes.boardIds || [])])];
+        this.latest = this.pending = { ...event, changes }; this.drain();
     }
     async swap(url, token, scope = this.latest?.scope || this.current()) {
         const s = this.shell;
@@ -43,7 +51,7 @@ export class PreviewController {
     }
     async drain() {
         if (this.busy || !this.pending || this.state.detached) return;
-        this.busy = true; const event = this.pending, token = this.token; this.pending = null; this.state.status = 'updating';
+        this.busy = true; const event = this.pending, token = this.token; this.pending = null; this.inFlight = event; this.state.status = 'updating';
         let ok = false;
         try {
             const s = this.shell, editor = s.mainIframe?.contentWindow?.protaCanvas;
@@ -63,6 +71,7 @@ export class PreviewController {
             }
         } catch (error) { console.debug('[preview]', error); }
         finally {
+            if (this.inFlight === event) this.inFlight = null;
             this.busy = false;
             if (!ok && token === this.token && !this.state.detached) {
                 this.pending ||= event;

@@ -76,7 +76,7 @@ class CanvasSchemaTests(unittest.TestCase):
         self.assertEqual(list(outside.iterdir()), [])
 
     def test_disabled_rollout_rejects_first_migration_but_keeps_legacy_save(self):
-        (self.root / 'data/canvas-features.json').write_text('{}')
+        (self.root / 'data/canvas-features.json').write_text(json.dumps({'testWorkspaceIds': ['schema-test'], 'overrides': {'boardRevisions': False, 'canvasSchemaV2': False}}))
         self.assertEqual(save_canvas(self.root, self.params())[0], 409)
         self.assertEqual(self.file.read_bytes(), self.raw)
         self.assertFalse((self.directory / '.canvas-migrations').exists())

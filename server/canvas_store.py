@@ -67,12 +67,26 @@ def save_canvas(root, params):
             recover_transactions(directory.parent)
         except Conflict as error:
             return 409, {'error': str(error)}
+        autosave = params.get('autosave') is True
+        journal = None
+        if autosave:
+            from server.canvas_autosave import record_edits, apply_operations, write_journal
+            journal = record_edits(directory, params)
         original_bytes = file.read_bytes()
         raw = original_bytes.decode('utf-8').strip()
-        if not raw.startswith(PREFIX):
-            raise ValueError('无法识别画布文件')
-        current = json.loads(raw[len(PREFIX):].removesuffix(';'))
-        if current.get('revision', 0) != params.get('revision') or params.get('baseline') != current:
+        try:
+            if not raw.startswith(PREFIX):
+                raise ValueError('无法识别画布文件')
+            current = validate_state(json.loads(raw[len(PREFIX):].removesuffix(';')))
+        except ValueError:
+            if autosave:
+                return 202, {'durable': True, 'deferred': True}
+            raise
+        if autosave:
+            state = apply_operations(current, journal['operations'])
+            if params['state']['schemaVersion'] == 2 and state['schemaVersion'] == 1:
+                state = migrate_document(state, parts[0], parts[1])
+        if not autosave and (current.get('revision', 0) != params.get('revision') or params.get('baseline') != current):
             return 409, {'error': '画布已被其他窗口或 AI 修改，请保留本机草稿并读取最新版本。'}
         validate_state(current)
         if current['schemaVersion'] == 2 and state['schemaVersion'] != 2:
@@ -82,6 +96,10 @@ def save_canvas(root, params):
             for node in state['nodes']:
                 if node['type'] == 'board' and node['id'] in boards and node['boardId'] != boards[node['id']]['boardId']:
                     raise ValueError('既有画板的逻辑身份不能在保存时改变')
+        for node in state['nodes']:
+            previous = boards.get(node['id']) if node['type'] == 'board' else None
+            if previous and node.get('boardVersionId') != previous.get('boardVersionId'):
+                raise ValueError('请通过画板版本菜单切换版本')
         migrating = current['schemaVersion'] == 1 and state['schemaVersion'] == 2
         if migrating:
             if not feature_enabled(root, 'canvasSchemaV2'):
@@ -163,10 +181,28 @@ def save_canvas(root, params):
                 else:
                     temporary.replace(file)
             except Conflict as error:
+                if autosave:
+                    return 202, {'durable': True, 'deferred': True}
                 return 409, {'error': str(error)}
             finally:
                 temporary.unlink(missing_ok=True)
-    return 200, {'revision': state['revision'], **({'assets': assets} if assets else {})}
+        if autosave:
+            # Receipts must refer to the durable asset, otherwise an active
+            # Agent overlay would continually re-import the original data URL.
+            for asset in assets:
+                for encoded, operation in journal['operations'].items():
+                    path = json.loads(encoded)
+                    if path[:2] != ['nodes', asset['id']]:
+                        continue
+                    if path == ['nodes', asset['id'], 'src'] and 'value' in operation:
+                        operation['value'] = asset['src']
+                    if len(path) == 2 and isinstance(operation.get('value'), dict):
+                        operation['value']['src'] = asset['src']
+                    if isinstance(operation.get('node'), dict):
+                        operation['node']['src'] = asset['src']
+            journal['pending'] = False
+            write_journal(directory, journal)
+    return 200, {'revision': state['revision'], **({'state': state, 'durable': True} if autosave else {}), **({'assets': assets} if assets else {})}
 
 
 def upgrade_runtime(root, params, template):
@@ -206,4 +242,8 @@ def upgrade_runtime(root, params, template):
         # Dependencies first, HTML entry last. No partial bundle is installed if staging fails.
         for temporary,target in staged:
             temporary.replace(target)
-    return {'runtimeVersion': 8}
+    # 版本号以模板 app.js 自报值为准，避免与模板升级脱节的硬编码。
+    match = re.search(r'runtimeVersion:\s*(\d+)', (template / 'app.js').read_text(encoding='utf-8'))
+    if not match:
+        raise ValueError('编辑器安装包缺少版本标识')
+    return {'runtimeVersion': int(match.group(1))}

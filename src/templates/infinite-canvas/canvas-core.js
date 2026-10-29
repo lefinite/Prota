@@ -51,6 +51,7 @@
         c.originBoardId = c.boardId;
         c.boardId = "b_" + crypto.randomUUID().replaceAll("-", "");
         c.boardRevisionId = null;
+        delete c.boardVersionId;
       }
       if (c.type === "board" && c.src) {
         c.cloneFrom = c.src;
@@ -60,8 +61,8 @@
     });
     return { nodes: copies, selected: rootNodes.map((n) => mapping.get(n.id)), mapping: Object.fromEntries(mapping) };
   };
-  function duplicateEdges(edges, mapping) {
-    return edges.filter(e => Object.hasOwn(mapping,e.fromInstanceId) && Object.hasOwn(mapping,e.toInstanceId)).map(e => ({...copy(e), id: "e_" + crypto.randomUUID().replaceAll("-", ""), fromInstanceId: mapping[e.fromInstanceId], toInstanceId: mapping[e.toInstanceId]}));
+  function duplicateEdges(edges, mapping, offset = {x:32,y:32}) {
+    return edges.filter(e => Object.hasOwn(mapping,e.fromInstanceId) && Object.hasOwn(mapping,e.toInstanceId)).map(e => ({...copy(e), id: "e_" + crypto.randomUUID().replaceAll("-", ""), fromInstanceId: mapping[e.fromInstanceId], toInstanceId: mapping[e.toInstanceId], ...(e.manualRoute ? {manualRoute:e.manualRoute.map(p=>({x:p.x+offset.x,y:p.y+offset.y}))} : {})}));
   }
   function reparent(nodes, ids, parentId) {
     const parents = nodes.filter((n) => n.id === parentId && ["board", "group"].includes(n.type));

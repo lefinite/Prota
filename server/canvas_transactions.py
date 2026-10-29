@@ -166,7 +166,9 @@ def install_operation(page, transaction, operation, ordinal):
     if fingerprint(staged) != operation['after']:
         raise ValueError('事务暂存内容校验失败')
     target.parent.mkdir(parents=True, exist_ok=True)
-    if current is not None:
+    # File replacement is atomic and keeps the old file intact if rename fails.
+    # Directories need displacement because a nonempty directory cannot be replaced.
+    if current is not None and (target.is_dir() or staged.is_dir()):
         displaced = transaction / 'displaced' / str(ordinal)
         displaced.parent.mkdir(exist_ok=True)
         target.replace(displaced)
@@ -201,7 +203,10 @@ def rollback(page, transaction, journal):
         target = journal_target(page, operation)
         if fingerprint(target) == operation['before']:
             continue
-        if target.exists():
+        # Preserve an existing file until its verified backup is ready for atomic
+        # replacement, including when the process exits during backup copying.
+        backup = transaction / 'before' / str(ordinal)
+        if target.exists() and (target.is_dir() or backup.is_dir() or operation['before'] is None):
             saved = transaction / 'quarantine' / str(ordinal)
             saved.parent.mkdir(exist_ok=True)
             target.replace(saved)

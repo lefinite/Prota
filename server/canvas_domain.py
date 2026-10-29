@@ -56,6 +56,8 @@ def validate_document(state):
         if state['schemaVersion'] == 2 and node['type'] == 'board':
             if not identity(node.get('boardId')) or 'boardRevisionId' not in node or (node['boardRevisionId'] is not None and not identity(node['boardRevisionId'])):
                 raise ValueError('画板版本身份无效')
+            if 'boardVersionId' in node and (not isinstance(node['boardVersionId'], str) or not re.fullmatch(r'v[1-9]\d*', node['boardVersionId'])):
+                raise ValueError('画板版本号无效')
             if 'originBoardId' in node and not identity(node['originBoardId']):
                 raise ValueError('画板来源身份无效')
     by_id = {node['id']: node for node in nodes}
@@ -83,6 +85,19 @@ def validate_document(state):
             for key in ('fromPort', 'toPort'):
                 if key in edge and edge[key] not in ('auto', 'left', 'right', 'top', 'bottom'):
                     raise ValueError('连线连接位置无效')
+            for key in ('fromAnchor', 'toAnchor'):
+                anchor = edge.get(key)
+                if anchor is not None:
+                    if (not isinstance(anchor, dict) or not all(isinstance(anchor.get(k), str) for k in ('selector', 'tag', 'text', 'page', 'src'))
+                            or not 1 <= len(anchor['selector']) <= 1024 or len(anchor['tag']) > 40 or len(anchor['text']) > 256 or len(anchor['page']) > 2048
+                            or not re.fullmatch(r'boards/[a-zA-Z0-9_-]+/index\.html', anchor['src'])):
+                        raise ValueError('控件连接点无效')
+            route = edge.get('manualRoute')
+            if route is not None:
+                if (not isinstance(route, list) or not 2 <= len(route) <= 256
+                        or any(not isinstance(p, dict) or not number(p.get('x'), -1e7, 1e7) or not number(p.get('y'), -1e7, 1e7) for p in route)
+                        or any(p['x'] != q['x'] and p['y'] != q['y'] for p, q in zip(route, route[1:]))):
+                    raise ValueError('连线折点无效')
             if 'fontSize' in edge and not number(edge['fontSize'], 8, 64):
                 raise ValueError('连线字号无效')
             ids.add(edge['id'])
@@ -114,7 +129,8 @@ def migrate_document(document, project_id='', page_id=''):
 
 
 def feature_enabled(root, name):
-    """Explicit workspace opt-in; malformed or absent configuration stays off."""
+    """Shipped features default on; workspace overrides retain an explicit rollback."""
+    default = name in {'canvasSchemaV2', 'boardRevisions'}
     from pathlib import Path
     root = Path(root)
     try:
@@ -122,9 +138,13 @@ def feature_enabled(root, name):
         configuration = json.loads((root / 'data/canvas-features.json').read_text())
         workspace_id = workspace.get('id')
         allowed = configuration.get('testWorkspaceIds', [])
-        return isinstance(workspace_id, str) and bool(workspace_id) and isinstance(allowed, list) and workspace_id in allowed and configuration.get('overrides', {}).get(name) is True
+        if isinstance(workspace_id, str) and workspace_id and isinstance(allowed, list) and workspace_id in allowed:
+            overrides = configuration.get('overrides', {})
+            if name in overrides:
+                return overrides[name] is True
+        return default
     except (OSError, ValueError, TypeError, AttributeError):
-        return False
+        return default
 
 
 def schema_enabled(root):

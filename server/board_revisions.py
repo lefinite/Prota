@@ -62,10 +62,10 @@ def document(working):
 
 def mutation_context(root, params, working):
     if not feature_enabled(root, 'boardRevisions'):
-        return 403, {'error': '此测试工作区尚未启用 boardRevisions'}
+        return 403, {'error': '当前工作区已关闭画板版本功能'}
     raw, state = document(working)
     if state['schemaVersion'] != 2:
-        return 409, {'error': '请先通过 S1 安全保存为 Schema v2'}
+        return 409, {'error': '请先保存画布以启用画板版本'}
     if params.get('revision') != state.get('revision', 0) or params.get('baseline') != state:
         return 409, {'error': '画布已变化，请保留本机草稿并读取最新版本'}
     node = next((n for n in state['nodes'] if n['id'] == params['nodeId']), None)
@@ -314,6 +314,36 @@ def verified_package(page, board_id, revision_id, only=None):
     return manifest, files
 
 
+def version_catalog(record):
+    """Business versions are stable slots; immutable recovery packages stay internal."""
+    if 'versions' in record:
+        versions = record['versions']
+        if (not isinstance(versions, dict) or not versions
+                or any(not re.fullmatch(r'v[1-9]\d*', name) or not isinstance(item, dict)
+                       or 'revisionId' not in item or (item['revisionId'] is not None and not identity(item['revisionId']))
+                       for name, item in versions.items())):
+            raise ValueError('画板版本目录无效')
+        return copy.deepcopy(versions)
+    snapshots = [r for r in record.get('revisions', []) if r.get('kind') == 'snapshot']
+    return {f'v{i + 1}': {'revisionId': r['revisionId']} for i, r in enumerate(snapshots)} or {'v1': {'revisionId': None}}
+
+
+def active_version(record, node, versions):
+    active = node.get('boardVersionId')
+    if active in versions:
+        return active
+    pointer = node.get('boardRevisionId')
+    history = {r['revisionId']: r for r in record.get('revisions', [])}
+    seen = set()
+    while pointer and pointer not in seen:
+        seen.add(pointer)
+        for name, item in versions.items():
+            if item['revisionId'] == pointer:
+                return name
+        pointer = history.get(pointer, {}).get('parentRevisionId')
+    return next(iter(versions))
+
+
 def list_revisions(root, params):
     page = context(root, params, version=False)
     board_id = params.get('boardId')
@@ -321,7 +351,8 @@ def list_revisions(root, params):
         raise ValueError('画板身份无效')
     with LOCK, page_lock(page):
         recover_transactions(page)
-        return {'boardId': board_id, 'revisions': copy.deepcopy(read_index(page)['boards'].get(board_id, {}).get('revisions', []))}
+        record = read_index(page)['boards'].get(board_id, {})
+        return {'boardId': board_id, 'revisions': copy.deepcopy(record.get('revisions', [])), 'versions': version_catalog(record)}
 
 
 def preview_revision(root, params):
@@ -354,6 +385,31 @@ def _execute(root, params, restore=False):
         raw, state, node = loaded
         index = read_index(page)
         index_before = fingerprint(safe_path(page, 'board-history/index.json'))
+        action = params.get('versionAction')
+        versions = None
+        if action is not None:
+            if action not in {'fork', 'switch', 'delete'}:
+                raise ValueError('画板版本操作无效')
+            record = index['boards'].setdefault(node['boardId'], {'revisions': []})
+            versions = version_catalog(record)
+            current_version = active_version(record, node, versions)
+            requested = params.get('targetVersion', current_version)
+            if requested not in versions:
+                raise ValueError('画板版本不存在')
+            if action == 'delete' and len(versions) <= 1:
+                raise ValueError('至少保留一个画板版本')
+            target_version = requested
+            if action == 'delete':
+                target_version = max((name for name in versions if name != requested), key=lambda name: int(name[1:])) if requested == current_version else current_version
+            if action == 'fork':
+                next_number = max(record.get('nextVersion', 1), max(int(name[1:]) for name in versions) + 1)
+                target_version = f'v{next_number}'
+                record['nextVersion'] = next_number + 1
+            elif action == 'switch' and target_version == current_version:
+                return 200, dict(revision=state['revision'], revisionId=node['boardRevisionId'], boardVersionId=current_version)
+            source_version = requested if action == 'fork' else target_version
+            restore = source_version != current_version
+            params = dict(params, revisionId=versions[source_version]['revisionId'])
         parent = params.get('parentRevisionId', node['boardRevisionId'])
         if parent is not None:
             verified_package(page, node['boardId'], parent)
@@ -388,6 +444,12 @@ def _execute(root, params, restore=False):
                 (directory / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False))
                 recovery_package = directory
             recovery_id = manifest['revisionId'] if restore and recovery_diagnostic is None else None
+            if versions is not None and recovery_diagnostic is None:
+                versions[current_version]['revisionId'] = manifest['revisionId']
+            if versions is not None and action == 'fork' and not restore:
+                directory, manifest = package(temporary, params, node, files, external, manifest['revisionId'], 'snapshot')
+                manifests.append(manifest)
+                replacements.append((f'board-history/{node["boardId"]}/{manifest["revisionId"]}', directory))
             if restore:
                 # Rewrite only the package namespace of the board itself when an instance ID differs.
                 # Cross-directory references cannot be renamed safely without changing business code.
@@ -403,6 +465,12 @@ def _execute(root, params, restore=False):
                         replacements.append((params['version'] + '/' + name, directory / 'files' / name))
             for item in manifests:
                 index['boards'].setdefault(node['boardId'], {'revisions': []})['revisions'].append(summary(item))
+            if versions is not None:
+                if action == 'delete':
+                    del versions[requested]
+                versions[target_version] = {'revisionId': manifest['revisionId']}
+                record['versions'] = versions
+                node['boardVersionId'] = target_version
             index['generation'] += 1
             staged_index = temporary / 'index.json'
             staged_index.write_text(json.dumps(index, ensure_ascii=False))
@@ -423,6 +491,8 @@ def _execute(root, params, restore=False):
 
             transaction_id = commit(page, replacements, verify, recovery=recovery_package)
             result = dict(summary(manifest), revision=state['revision'], recoveryRevisionId=recovery_id, transactionId=transaction_id)
+            if versions is not None:
+                result['boardVersionId'] = target_version
             if recovery_package:
                 result['recoveryDraft'] = {'transactionId': transaction_id, 'path': f'.board-trash/{transaction_id}/recovery-draft', 'runnable': False, 'diagnostic': recovery_diagnostic}
             return 200, result

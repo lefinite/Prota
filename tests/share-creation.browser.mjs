@@ -3,7 +3,8 @@ import {chromium} from 'playwright';
 const browser = await chromium.launch({headless:true});
 try {
     const context = await browser.newContext({permissions:['clipboard-read','clipboard-write']});
-    const page = await context.newPage({viewport:{width:1200,height:900}});
+    const page = await context.newPage();
+    await page.setViewportSize({width:1200,height:900});
     const requests = [];
     const pending = [];
     for (const kind of ['page','folder']) await page.route(`**/api/share-${kind}`, async route => {
@@ -11,24 +12,34 @@ try {
         await new Promise(resolve=>pending.push(resolve));
         return route.fulfill({contentType:'application/json',body:JSON.stringify({url:`https://share.example.com/shares/${kind==='page'?'reader-v1-static':'fixture-folder-folder-static'}.html`,pageCount:1,access:{expiresAt:request.access.expiresAt ?? null,passwordRequired:!!request.access.password}})});
     });
-    await page.goto('http://localhost:8080/portal/index.html');
+    await page.goto(`${process.env.PROTA_TEST_ORIGIN || 'http://localhost:8080'}/portal/index.html`);
     await page.waitForFunction(()=>window.shell);
     await page.evaluate(()=>{
         const shell=window.shell;
         shell.ensureShareSetup=async()=>true;shell.settings.staticDomain='share.example.com';
         shell.activeProjectId='fixture';shell.activePageId='reader';shell.activeVersion='v1';
         shell.getPageRecord=()=>({id:'reader',name:'Fixture Reader'});
-        shell.getProjectRecord=()=>({folders:[{id:'folder',name:'Fixture Folder'}],pages:[{id:'reader',parentId:'folder'}]});
+        const project={id:'fixture',name:'悦读 · 产品设计',folders:[{id:'folder',name:'阅读体验'}],pages:[{id:'reader',name:'阅读器',parentId:'folder',versions:['v1'],activeVersion:'v1'},{id:'library',name:'书架',versions:['v1'],activeVersion:'v1'}]};
+        shell.projects={projects:[project]};
+        shell.getProjectRecord=()=>project;
+        shell.currentView='pages';shell.switchTopView('page');shell.renderSidebar();
+        window.shareToasts=[];shell.showToast=(message)=>window.shareToasts.push(message);
         shell.getPreferredPrdPathForShare=()=>'';
-        window.opened=0;window.open=()=>{window.opened++;};
+        window.opened=0;window.openedShares=[];window.open=(...args)=>{window.opened++;window.openedShares.push(args);};
         window.copyCount=0;const copy=shell.copyTextToClipboard.bind(shell);
         shell.copyTextToClipboard=async text=>{window.copyCount++;return copy(text);};
         window.operation=shell.createSharePage('static');
     });
-    await page.getByLabel('设置访问密码').check();
+    await page.evaluate(()=>{window.shareSurface=document.querySelector('.share-access-dialog');});
+    const setupBounds=await page.locator('.share-access-dialog').boundingBox();
+    assert.equal(await page.locator('.share-access-dialog').evaluate(node=>node.matches(':modal')),true);
+    assert.ok(Math.abs(setupBounds.x+setupBounds.width/2-600)<1);
+    assert.ok(Math.abs(setupBounds.y+setupBounds.height/2-450)<1);
+    await page.screenshot({path:'/tmp/prota-share-unified-settings.png'});
+    await page.getByRole('switch',{name:'设置访问密码'}).check();
     const generated=await page.locator('#sharePassword').inputValue();
     assert.match(generated,/^[2-9A-HJ-NP-Z]{4}$/);
-    await page.getByRole('button',{name:'创建分享链接'}).click();
+    await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
     await page.waitForFunction(()=>window.copyCount===1);
     // The server has not completed publishing: the real clipboard must already be ready.
     const message=await page.evaluate(()=>navigator.clipboard.readText());
@@ -36,15 +47,61 @@ try {
     assert.ok(message.endsWith(`\n密码：${generated}`));
     assert.equal(await page.evaluate(()=>window.opened),0);
     while (!pending.length) await new Promise(resolve=>setTimeout(resolve,10));
+    const progress = page.locator('.share-progress');
+    await progress.getByText('分享中',{exact:true}).first().waitFor();
+    assert.equal(await progress.getByRole('progressbar').count(),0);
+    assert.equal(await progress.locator('[data-expand], [data-toggle], .share-flow-compact').count(),0);
+    assert.equal(await progress.locator('.share-status-spinner').count(),1);
+    assert.equal(await progress.getByRole('button',{name:'关闭分享进度'}).isVisible(),false);
+    assert.equal(await progress.getByText('已复制',{exact:true}).first().count(),0,'draft copy must not look like completed publishing');
+    await page.waitForFunction(()=>!document.querySelector('[data-elapsed]').textContent.includes('0 秒'));
+    await page.evaluate(()=>window.shell.createShareFolder('folder','static'));
+    assert.equal(await page.locator('.share-access-dialog').count(),1,'pending share must prevent duplicate creation');
+    assert.equal(await page.evaluate(()=>window.shareSurface.isConnected),false,'configuration modal must close before the progress toast appears');
+    const publishingBounds=await progress.boundingBox();
+    assert.ok(Math.abs(publishingBounds.x+publishingBounds.width/2-600)<1);
+    assert.equal(publishingBounds.y,32);
+    assert.equal(await progress.evaluate(node=>node.matches(':modal')),false);
+    assert.equal(await page.evaluate(()=>document.elementFromPoint(20,20)?.closest('.share-progress')===null),true);
+    assert.equal(requests.length,1);
+    assert.equal(await progress.getByRole('progressbar').count(),0);
+    await page.evaluate(()=>{
+        const input=document.createElement('input'); input.id='parallel-work'; document.body.append(input);
+        window.blockingAlerts=0; window.alert=()=>{window.blockingAlerts++;};
+    });
+    await page.locator('#parallel-work').fill('分享时继续编辑');
+    assert.equal(await page.locator('#parallel-work').inputValue(),'分享时继续编辑');
+    await page.screenshot({path:'/tmp/prota-share-progress-desktop.png'});
+    await progress.screenshot({path:'/tmp/prota-share-unified-publishing.png'});
+    await page.setViewportSize({width:390,height:844});
+    await page.waitForFunction(()=>{const r=document.querySelector('.share-progress').getBoundingClientRect();return r.left>=0 && r.right<=innerWidth;});
+    const bounds=await progress.boundingBox();
+    assert.ok(bounds.x>=0 && bounds.x+bounds.width<=390);
+    assert.ok(Math.abs(bounds.x+bounds.width/2-195)<1);
+    assert.equal(bounds.y,32);
+    await page.screenshot({path:'/tmp/prota-share-progress-mobile.png'});
+    await page.setViewportSize({width:1200,height:900});
     assert.equal(requests[0].access.password,generated);assert.equal(requests[0].access.expiresInDays,30);
     assert.ok(requests[0].access.expiresAt>Date.now());
     pending.shift()();await page.evaluate(()=>window.operation);
+    assert.deepEqual(await page.evaluate(()=>window.openedShares),[
+        ['https://share.example.com/shares/reader-v1-static.html','_blank','noopener,noreferrer']
+    ],'a successful share must open the published URL once');
     assert.equal(await page.evaluate(()=>window.copyCount),1,'success must not overwrite the clipboard again');
+    await progress.getByText('已复制',{exact:true}).first().waitFor();
+    assert.equal(await progress.locator('.share-status-spinner').count(),0);
+    assert.equal(await progress.getByRole('progressbar').count(),0);
+    assert.equal(await progress.getByRole('link',{name:'打开',exact:true}).isVisible(),true);
+    assert.equal(await page.evaluate(()=>window.shareToasts.length),0,'sharing must not emit separate toasts');
+    await progress.getByRole('button',{name:'复制分享信息',exact:true}).click();
+    assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),message);
+    await page.screenshot({path:'/tmp/prota-share-unified-success.png'});
+    await progress.screenshot({path:'/tmp/prota-share-minimal-success.png'});
     // A second share uses the same link and the manually changed password, before publishing.
     await page.evaluate(()=>{window.operation=window.shell.createSharePage('static');});
-    await page.getByLabel('设置访问密码').check();await page.locator('#sharePassword').fill('new4');
-    await page.getByRole('button',{name:'创建分享链接'}).click();
-    await page.waitForFunction(()=>window.copyCount===2);
+    await page.getByRole('switch',{name:'设置访问密码'}).check();await page.locator('#sharePassword').fill('new4');
+    await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
+    await page.waitForFunction(()=>window.copyCount===3);
     const changed=await page.evaluate(()=>navigator.clipboard.readText());
     assert.ok(changed.startsWith('链接：https://share.example.com/shares/reader-v1-static.html\n'));
     assert.ok(changed.endsWith('\n密码：new4'));
@@ -52,10 +109,130 @@ try {
     pending.shift()();await page.evaluate(()=>window.operation);
     await page.evaluate(()=>{window.operation=window.shell.createShareFolder('folder','static');});
     await page.getByRole('radio',{name:'永久有效',exact:true}).check();
-    await page.getByRole('button',{name:'创建分享链接'}).click();
-    await page.waitForFunction(()=>window.copyCount===3);
+    await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
+    await page.waitForFunction(()=>window.copyCount===4);
     assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),'链接：https://share.example.com/shares/fixture-folder-folder-static.html');
     while (!pending.length) await new Promise(resolve=>setTimeout(resolve,10));
+    await page.locator('#parallel-work').fill('继续编辑文件夹分享');
     pending.shift()();await page.evaluate(()=>window.operation);
+    assert.equal(await page.locator('#parallel-work').evaluate(node=>node===document.activeElement),true,'completion must preserve editing focus');
+    // Failure remains visible and unlocks sharing for another attempt.
+    await page.unroute('**/api/share-page');
+    await page.route('**/api/share-page', route=>route.fulfill({status:500,body:'测试发布失败'}));
+    page.on('dialog', dialog=>dialog.accept());
+    await page.evaluate(()=>{window.operation=window.shell.createSharePage('static');});
+    await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
+    await page.evaluate(()=>window.operation);
+    await progress.getByText('分享失败',{exact:true}).first().waitFor();
+    await progress.getByRole('button',{name:'查看失败原因',exact:true}).click();
+    await progress.getByText('测试发布失败',{exact:true}).waitFor();
+    assert.equal(await page.evaluate(()=>window.shareToasts.length),0,'failure must remain in the same surface without a toast');
+    await page.screenshot({path:'/tmp/prota-share-unified-failure.png'});
+    assert.equal(await page.evaluate(()=>window.shell.shareCreationPending),false);
+    assert.equal(await page.evaluate(()=>window.blockingAlerts),0);
+    assert.equal(await page.evaluate(()=>window.opened),3,'failed publishing must not open another window');
+    assert.equal(await page.evaluate(()=>window.openedShares[2][0]),'https://share.example.com/shares/fixture-folder-folder-static.html','folder shares must also open on success');
+    // Retry stays in the same position and reuses the selected page/version/access settings.
+    await page.unroute('**/api/share-page');
+    let retryRequest;
+    await page.route('**/api/share-page', route=>{
+        retryRequest=route.request().postDataJSON();
+        return route.fulfill({contentType:'application/json',body:JSON.stringify({url:'https://share.example.com/shares/reader-v1-static.html'})});
+    });
+    await page.evaluate(()=>{window.shell.activePageId='library';window.shell.activeVersion='v9';});
+    await progress.getByRole('button',{name:'重试',exact:true}).click();
+    await progress.getByText('已复制',{exact:true}).first().waitFor();
+    assert.equal(retryRequest.pageId,'reader');assert.equal(retryRequest.version,'v1');
+    assert.equal(await page.evaluate(()=>window.opened),4,'a successful retry must open its published result');
+    assert.equal(retryRequest.access.expiresInDays,30);
+    assert.equal(await page.evaluate(()=>window.shell.activePageId),'library');
+    assert.equal(await page.locator('.share-access-dialog form').count(),0);
+    assert.equal(await page.evaluate(()=>window.shareToasts.length),0);
+    await progress.getByRole('button',{name:'关闭分享进度'}).click();
+    assert.equal(await progress.count(),0);
+    // Sharing a different row must use that page's version/document without navigating to it.
+    await page.unroute('**/api/share-page');
+    let rowRequest, completeRow;
+    await page.route('**/api/share-page', async route=>{
+        rowRequest=route.request().postDataJSON();
+        await new Promise(resolve=>{completeRow=resolve;});
+        return route.fulfill({contentType:'application/json',body:JSON.stringify({url:'https://share.example.com/shares/library-v2-static.html'})});
+    });
+    await page.evaluate(()=>{
+        const shell=window.shell;
+        shell.getProjectRecord=Object.getPrototypeOf(shell).getProjectRecord.bind(shell);
+        shell.getPageRecord=Object.getPrototypeOf(shell).getPageRecord.bind(shell);
+        shell.projects={projects:[{id:'fixture',name:'分享测试',folders:[],pages:[
+            {id:'reader',name:'阅读器',versions:['v1'],activeVersion:'v1'},
+            {id:'library',name:'书架',versions:['v1','v2'],activeVersion:'v2'}
+        ]}]};
+        shell.activeProjectId='fixture';shell.activePageId='reader';shell.activeVersion='v1';
+        localStorage.setItem('readify:prd-last-doc:fixture:library','/src/pages/fixture/library/v2/review.md');
+        shell.currentView='pages';shell.switchTopView('page');shell.renderSidebar();
+    });
+    await page.locator('[data-page-more="library"]').click();
+    await page.locator('[data-page-share="library"]').click();
+    await page.locator('.share-access-dialog').getByRole('heading',{name:'链接分享',exact:true}).waitFor();
+    assert.equal(await page.locator('.share-access-dialog [data-name]').count(),0);
+    assert.equal(await page.evaluate(()=>window.shell.activePageId),'reader');
+    const rowSettings=await page.locator('.share-access-dialog').boundingBox();
+    assert.ok(Math.abs(rowSettings.x+rowSettings.width/2-600)<1,'all share configuration opens as a centered modal');
+    assert.ok(Math.abs(rowSettings.y+rowSettings.height/2-450)<1);
+    assert.equal(rowSettings.width,440);
+    assert.equal(await page.locator('.share-flow-steps').count(),0);
+    await page.screenshot({path:'/tmp/prota-share-list-settings.png'});
+    await page.locator('.share-access-dialog').screenshot({path:'/tmp/prota-share-config-restored.png'});
+    await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
+    await progress.getByText('分享中',{exact:true}).first().waitFor();
+    const rowProgress=await progress.boundingBox();
+    assert.ok(rowProgress.height<=44 && rowProgress.width<=220,'publishing needs only a small status panel');
+    assert.ok(Math.abs(rowProgress.x+rowProgress.width/2-600)<1,'publishing is a small centered toast regardless of entry point');
+    assert.equal(rowProgress.y,32);
+    while (!completeRow) await new Promise(resolve=>setTimeout(resolve,10));
+    await page.screenshot({path:'/tmp/prota-share-list-progress.png'});
+    await progress.screenshot({path:'/tmp/prota-share-compact-progress.png'});
+    completeRow();
+    await progress.getByText('已复制',{exact:true}).first().waitFor();
+    await page.screenshot({path:'/tmp/prota-share-list-result.png'});
+    assert.equal(rowRequest.pageId,'library');
+    assert.equal(rowRequest.version,'v2');
+    assert.equal(rowRequest.prdPath,'/src/pages/fixture/library/v2/review.md');
+    assert.equal(await page.evaluate(()=>window.shell.activePageId),'reader');
+    assert.equal(await page.evaluate(()=>window.shell.activeVersion),'v1');
+    await progress.getByRole('button',{name:'关闭分享进度'}).click();
+    // Every entry uses the same full configuration modal.
+    await page.evaluate(()=>{
+        const shell=window.shell;const project=shell.getProjectRecord();
+        project.folders=[{id:'review',name:'评审文件夹'}];project.pages[0].parentId='review';shell.renderSidebar();
+    });
+    await page.locator('[data-folder-more="review"]').click();
+    await page.locator('[data-folder-share="review"]').click();
+    await page.locator('.share-access-dialog form').waitFor();
+    const folderBounds=await page.locator('.share-access-dialog').boundingBox();
+    assert.ok(Math.abs(folderBounds.x+folderBounds.width/2-600)<1);
+    assert.ok(Math.abs(folderBounds.y+folderBounds.height/2-450)<1);
+    await page.locator('.share-access-dialog').getByRole('button',{name:'取消',exact:true}).click();
+    // The toolbar also opens the normal centered modal.
+    await page.locator('#shareMenuTrigger').click();
+    await page.locator('[data-share-type="static"]').click();
+    await page.locator('.share-access-dialog form').waitFor();
+    const toolbarPanel=await page.locator('.share-access-dialog').boundingBox();
+    assert.ok(Math.abs(toolbarPanel.x+toolbarPanel.width/2-600)<1);
+    assert.ok(Math.abs(toolbarPanel.y+toolbarPanel.height/2-450)<1);
+    await page.locator('.share-access-dialog').getByRole('button',{name:'取消',exact:true}).click();
+    await page.mouse.move(0,0);
+    await page.locator('#parallel-work').fill('继续编辑，不被提示打断');
+    await page.evaluate(async()=>{
+        const {showShareProgress}=await import('/portal/modules/sharing/progress.js');
+        const toast=showShareProgress('自动收起验证',true);
+        toast.finish({url:'https://share.example.com/ready',copied:true});
+    });
+    assert.equal(await page.locator('#parallel-work').evaluate(node=>node===document.activeElement),true);
+    await page.locator('.share-progress').waitFor({state:'detached',timeout:6000});
+    assert.equal(await page.locator('#parallel-work').inputValue(),'继续编辑，不被提示打断');
+    console.log('Top-centered nonmodal toast, responsive position, retained editing focus and automatic success dismissal passed');
+    console.log('Full centered sharing configuration from page, folder and toolbar entries passed');
+    console.log('Page list share uses selected row, its version/document, and preserves navigation');
+    console.log('Persistent share progress, elapsed time, duplicate prevention, success, failure, responsive layout passed');
     console.log('Share creation: generated password, manual replacement, unchanged URL, real clipboard before publishing, no repeat copy, and folder copy passed');
 } finally {await browser.close();}

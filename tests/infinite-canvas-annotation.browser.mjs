@@ -55,7 +55,8 @@ try {
   await write('workspace.json', JSON.stringify({ id: 'annotation-fixture', formatVersion: 1 }));
   await write('data/projects.json', JSON.stringify({
     projects: [{ id: 'demo', name: '标注验证', pages: [
-      { id: 'design', name: '无限画布', targetDevice: 'canvas', pageMode: 'infinite-canvas', versions: ['v1', 'v2'], activeVersion: 'v1' },
+      // Imported canvases can retain legacy mobile metadata and omit pageMode.
+      { id: 'design', name: '无限画布', targetDevice: 'mobile', versions: ['v1', 'v2'], activeVersion: 'v1' },
       { id: 'normal', name: '普通页面', targetDevice: 'mobile', versions: ['v1'], activeVersion: 'v1' },
       { id: 'web', name: '普通 Web', targetDevice: 'web', versions: ['v1'], activeVersion: 'v1' }
     ] }], activeProjectId: 'demo', activePageId: 'design'
@@ -91,9 +92,10 @@ try {
   await page.evaluate(async () => { window.shell.switchTopView('page'); await window.shell.switchPage('design', 'v1'); });
 
   await wait(() => page.evaluate(() => {
-    const editor = document.getElementById('mainIframe')?.contentWindow?.protaCanvas;
-    return Boolean(editor && editor.runtimeVersion >= 8 && editor.getBoardFrame('board_a')?.iframe?.contentDocument?.querySelector('#submit-button'));
-  }), 'canvas runtime v8 with boards loaded');
+    const canvas = document.getElementById('mainIframe')?.contentWindow;
+    const editor = canvas?.protaCanvas;
+    return Boolean(editor && editor.runtimeVersion >= 11 && canvas.CanvasConnections?.editorVersion >= 6 && editor.getBoardFrame('board_a')?.iframe?.contentDocument?.querySelector('#submit-button'));
+  }), 'canvas runtime v10 with boards loaded');
 
   // --- Helpers -----------------------------------------------------------
   // Board iframes report rects in the canvas document's viewport; add the
@@ -155,6 +157,42 @@ try {
   console.log('Annotation scenario 1');
   const pointA = await boardPoint('board_a');
   const pointB = await boardPoint('board_b');
+  // Keep an Agent active across toolbar, menu, gestures, persistence and
+  // board-isolation checks. Its own target must remain annotatable too.
+  await page.evaluate(() => {
+    const editor = document.getElementById('mainIframe').contentWindow.protaCanvas;
+    editor.agentState({ active: true, targetIds: ['node_a'], previewManaged: true });
+    editor.setPreparing(true);
+  });
+  // Toolbar entry must select board contents, not the outer canvas DOM.
+  await page.locator('#annotatorBtn').click();
+  assert.equal(await isAnnotating(), false, 'multiple unselected boards require an explicit target');
+  await page.mouse.click(pointA.x, pointA.y);
+  await page.locator('#annotatorBtn').click();
+  await wait(() => page.evaluate(() => window.shell.getAnnotationFrameContext().window?.__readifyInspecting), 'toolbar enters selected board inspector');
+  assert.equal((await canvasState()).annotation.boardId, 'board_a');
+  await page.mouse.click(pointA.x, pointA.y);
+  await page.locator('.annotation-dialog').waitFor({ state: 'visible' });
+  assert.equal(await page.evaluate(() => window.shell.pendingAnnotation.selector), '#submit-button');
+  await page.locator('.annotation-dialog__textarea').fill('Agent 运行期间的标注草稿');
+  await page.evaluate(() => {
+    const editor = document.getElementById('mainIframe').contentWindow.protaCanvas;
+    editor.agentState({ active: true, targetIds: ['node_b'], previewManaged: true });
+    editor.agentState({ active: true, targetIds: ['node_a'], previewManaged: true });
+  });
+  assert.equal(await page.locator('.annotation-dialog__textarea').inputValue(), 'Agent 运行期间的标注草稿', 'Agent target updates preserve the annotation draft');
+  assert.equal(await isAnnotating(), true, 'Agent target updates preserve annotation mode');
+  await page.evaluate(() => window.shell.cancelAnnotation());
+  await page.locator('#annotatorBtn').click();
+  await wait(async () => !(await isAnnotating()), 'toolbar exits board annotation');
+  await leavePreview();
+  await page.mouse.click(pointA.x, pointA.y);
+  const annotateAction = page.frameLocator('#mainIframe').locator('#selection-tools').getByRole('button', { name: '标注', exact: true });
+  await annotateAction.click();
+  await wait(() => page.evaluate(() => window.shell.getAnnotationFrameContext().window?.__readifyInspecting), 'board action enters inspector');
+  await page.locator('#annotatorBtn').click();
+  await wait(async () => !(await isAnnotating()), 'board action exits through toolbar');
+  await leavePreview();
   await rightClick(pointA.x, pointA.y);
   let state = await canvasState();
   assert.equal(state.annotation.active, false, 'first right click only activates');
@@ -258,44 +296,85 @@ try {
 
   // --- 5. Single right click exits annotation, board stays activated -----
   console.log('Annotation scenario 5');
+  // A board's own context menu must not receive the exit gesture.
+  await page.frameLocator('#mainIframe').locator('.node[data-id="node_a"] iframe').evaluate(frame => {
+    frame.contentWindow.__contextMenuCalls = 0;
+    frame.contentDocument.addEventListener('contextmenu', () => { frame.contentWindow.__contextMenuCalls++; }, true);
+  });
   await rightClick(pointA.x, pointA.y);
   await wait(async () => {
     const next = await shellState();
     return !next.mode && next.target === null;
   }, 'portal exits annotation mode with the canvas');
+  await page.waitForTimeout(550);
+  assert.equal(await page.frameLocator('#mainIframe').locator('#context-menu').isVisible(), false, 'exit does not open a deferred canvas menu');
+  assert.equal(await page.frameLocator('#mainIframe').locator('.node[data-id="node_a"] iframe').evaluate(frame => frame.contentWindow.__contextMenuCalls), 0, 'exit does not trigger the board context menu');
   state = await canvasState();
   assert.equal(state.interacting, 1, 'board remains activated after exiting annotation');
 
-  // --- 6. Single right click still opens the (deferred) board menu -------
+  // --- 6. Focused single clicks exit everywhere without any menu ---------
   console.log('Annotation scenario 6');
-  await rightClick(pointA.x, pointA.y);
   const canvasMenu = page.frameLocator('#mainIframe').locator('#context-menu');
-  await canvasMenu.waitFor({ state: 'visible' });
-  assert.equal(await canvasMenu.getByRole('menuitem').count() > 0, true, 'deferred board menu keeps regular actions');
-  assert.equal((await canvasState()).interacting, 1, 'deferred menu preserves board activation');
-  await closeCanvasMenu();
-  await canvasMenu.waitFor({ state: 'hidden' });
+  const activateBoard = async () => {
+    await leavePreview();
+    const point = await boardPoint('board_a');
+    await rightClick(point.x, point.y);
+    await canvasMenu.waitFor({ state: 'visible' });
+    await closeCanvasMenu();
+  };
+  for (const surface of ['board', 'title', 'other-board', 'blank', 'toolbar']) {
+    await activateBoard();
+    if (surface === 'board') {
+      const point = await boardPoint('board_a');
+      await rightClick(point.x, point.y);
+    } else {
+      await page.evaluate(surface => {
+        const doc = document.getElementById('mainIframe').contentDocument;
+        const selector = { title: '.node[data-id="node_a"] .node-title', 'other-board': '.node[data-id="node_b"]', blank: '#stage', toolbar: '#selection-tools' }[surface];
+        doc.querySelector(selector).dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 30, clientY: 30, button: 2 }));
+      }, surface);
+    }
+    assert.equal((await canvasState()).interacting, 1, `${surface}: waits for second click`);
+    assert.equal(await canvasMenu.isVisible(), false, `${surface}: no immediate menu`);
+    await wait(async () => (await canvasState()).interacting === 0, `${surface}: single click exits focus`);
+    assert.equal(await canvasMenu.isVisible(), false, `${surface}: no deferred menu`);
+    assert.equal(await isAnnotating(), false);
+  }
 
-  // --- 7. Gesture resets: timeout, cross-board, distance -----------------
+  // --- 7. Two clicks within tolerance annotate the focused board ---------
   console.log('Annotation scenario 7');
-  // Timeout: one click then nothing → the deferred menu opens, never annotation.
-  await rightClick(pointA.x, pointA.y);
-  await canvasMenu.waitFor({ state: 'visible' });
-  assert.equal(await isAnnotating(), false, 'timeout leaves the gesture unfinished');
-  await leavePreview();
-  // Cross-board: click A then B does not accumulate into one gesture.
-  await rightClick(pointA.x, pointA.y);
-  await rightClick(pointB.x, pointB.y);
-  await page.waitForTimeout(560);
-  state = await canvasState();
-  assert.equal(state.annotation.active, false, 'cross-board clicks never enter annotation');
-  assert.equal(state.interacting, 1, 'last clicked board owns the activation');
-  // Distance: two clicks 40px apart on an active board restart the count.
-  await rightClick(pointB.x, pointB.y);
-  await rightClick(pointB.x + 40, pointB.y);
-  await page.waitForTimeout(560);
+  for (const surface of ['board', 'blank', 'other-board']) {
+    await activateBoard();
+    if (surface === 'board') {
+      const point = await boardPoint('board_a');
+      await rightClick(point.x, point.y);
+      await page.waitForTimeout(180);
+      await rightClick(point.x, point.y);
+    } else {
+      await page.evaluate(surface => {
+        const doc = document.getElementById('mainIframe').contentDocument;
+        const target = doc.querySelector(surface === 'blank' ? '#stage' : '.node[data-id="node_b"]');
+        window.__focusedRightClick = () => target.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 30, clientY: 30, button: 2 }));
+        window.__focusedRightClick();
+      }, surface);
+      await page.waitForTimeout(180);
+      await page.evaluate(() => { window.__focusedRightClick(); delete window.__focusedRightClick; });
+    }
+    await wait(isAnnotating, `${surface}: double click annotates`);
+    assert.equal((await canvasState()).annotation.boardId, 'board_a', 'focused board owns annotation');
+    await page.waitForTimeout(560);
+    assert.equal(await isAnnotating(), true, 'second click cancels delayed exit');
+    assert.equal(await canvasMenu.isVisible(), false);
+    await dispatchEscape('canvas');
+    await leavePreview();
+  }
+  // Movement beyond the gesture tolerance restarts the count, then exits.
+  await activateBoard();
+  const movedPoint = await boardPoint('board_a');
+  await rightClick(movedPoint.x, movedPoint.y);
+  await rightClick(movedPoint.x + 40, movedPoint.y);
+  await wait(async () => (await canvasState()).interacting === 0, 'distant clicks exit focus');
   assert.equal(await isAnnotating(), false, 'beyond 12px resets the gesture');
-  await leavePreview();
 
   // --- 8. Two clicks on an already-active board; Esc exits from both docs -
   console.log('Annotation scenario 8');
@@ -327,6 +406,8 @@ try {
   await wait(() => page.evaluate(() => window.shell.currentAnnotations.length === 2), 'two board annotations coexist');
   await rightClick(pointB.x, pointB.y); // exit annotation
   await wait(async () => !(await isAnnotating()), 'B exit before A update');
+  // Leave B's focus before targeting A: right clicks anywhere belong to B while focused.
+  await leavePreview();
   // Board A update: same selector must update A's record, never B's.
   await enterAnnotation(pointA);
   await page.mouse.click(pointA.x, pointA.y);
@@ -347,6 +428,7 @@ try {
 
   // --- 10. Markers stay accurate through zoom and pan --------------------
   console.log('Annotation scenario 10');
+  await page.evaluate(() => document.getElementById('mainIframe').contentWindow.protaCanvas.agentState({ active: false, previewManaged: true }));
   await page.evaluate(() => window.shell.openDocumentDrawer('annotations'));
   await page.locator('.annotation-marker').first().waitFor({ state: 'visible' });
   const expectMarker = async label => {
@@ -389,13 +471,15 @@ try {
   await page.evaluate(() => document.getElementById('mainIframe').contentWindow.protaCanvas.getBoardFrame('board_a').iframe.contentWindow.scrollTo(0, 0));
   await page.waitForTimeout(150);
   const zoomTo = async targetZoom => {
-    const anchor = await boardPoint('board_a');
-    await page.evaluate(({ targetZoom, anchor }) => {
-      const main = document.getElementById('mainIframe'), base = main.getBoundingClientRect();
+    await page.evaluate((targetZoom) => {
+      const main = document.getElementById('mainIframe');
       const canvas = main.contentWindow;
-      const deltaY = -Math.log(targetZoom / canvas.protaCanvas.getState().viewport.zoom) / 0.008;
-      canvas.document.querySelector('#stage').dispatchEvent(new WheelEvent('wheel', { deltaY, ctrlKey: true, clientX: anchor.x - base.left, clientY: anchor.y - base.top, bubbles: true, cancelable: true }));
-    }, { targetZoom, anchor });
+      canvas.document.querySelector('#zoom-reset').click();
+      const option = [...canvas.document.querySelectorAll('#context-menu button')]
+        .find(button => button.textContent.trim() === `${targetZoom * 100}%`);
+      if (!option) throw new Error(`Zoom option ${targetZoom * 100}% not found`);
+      option.click();
+    }, targetZoom);
     await page.waitForTimeout(200);
     assert.ok(Math.abs(await page.evaluate(() => document.getElementById('mainIframe').contentWindow.protaCanvas.getState().viewport.zoom) - targetZoom) < 0.001);
   };
@@ -446,7 +530,8 @@ try {
   await page.evaluate(() => document.getElementById('mainIframe').contentWindow.protaCanvas.focus(['node_a']));
   await page.waitForTimeout(300);
   const feedbackPoint = await boardPoint('board_a');
-  await enterAnnotation(feedbackPoint);
+  await page.locator('#annotatorBtn').click();
+  await wait(() => page.evaluate(() => window.shell.getAnnotationFrameContext().window?.__readifyInspecting), 'toolbar ready for Agent feedback');
   await page.mouse.click(feedbackPoint.x, feedbackPoint.y);
   await page.locator('.annotation-dialog').waitFor({ state: 'visible' });
   await page.locator('.annotation-dialog__textarea').fill('把提交按钮改成胶囊形状');
@@ -499,13 +584,14 @@ try {
   await page.locator('.annotation-dialog__save').click();
   assert.equal(await page.evaluate(() => window.shell.currentAnnotations[0].target), undefined);
 
-  // --- 15. Old canvas runtime auto-upgrades to V8 ------------------------
+  // --- 15. Old canvas runtime auto-upgrades to V10 -----------------------
   console.log('Annotation scenario 15');
   await page.evaluate(() => window.shell.switchPage('design', 'v2'));
   await wait(() => page.evaluate(() => {
-    const editor = document.getElementById('mainIframe')?.contentWindow?.protaCanvas;
-    return Boolean(editor && editor.runtimeVersion >= 8 && editor.getBoardFrame('board_a')?.iframe);
-  }), 'legacy canvas upgraded to runtime v8');
+    const canvas = document.getElementById('mainIframe')?.contentWindow;
+    const editor = canvas?.protaCanvas;
+    return Boolean(editor && editor.runtimeVersion >= 11 && canvas.CanvasConnections?.editorVersion >= 6 && editor.getBoardFrame('board_a')?.iframe);
+  }), 'legacy canvas upgraded to runtime v10');
   assert.equal(await fs.readFile(path.join(root, 'src/pages/demo/design/v2/boards/board_a/index.html'), 'utf8'), v2BoardBefore, 'board source untouched by upgrade');
   assert.equal(await fs.readFile(path.join(root, 'src/pages/demo/design/v2/canvas-data.js'), 'utf8'), v2DataBefore, 'canvas layout untouched by upgrade');
   assert.equal(await fs.readFile(path.join(root, 'src/pages/demo/design/v2/annotations.json'), 'utf8'), v2AnnotationsBefore, 'annotations untouched by upgrade');
@@ -545,7 +631,7 @@ try {
   });
 
   assert.deepEqual(errors, []);
-  console.log('PASS: infinite-canvas board annotation — gesture entry/exit, nested-iframe inspector, boardId+selector isolation, zoom/pan markers, locate, delete, agent feedback context, runtime v8 auto-upgrade, normal-page regression');
+  console.log('PASS: infinite-canvas board annotation — gesture entry/exit, nested-iframe inspector, boardId+selector isolation, zoom/pan markers, locate, delete, agent feedback context, runtime v10 auto-upgrade, normal-page regression');
 } finally {
   await browser?.close();
   for (const child of children) child.kill();

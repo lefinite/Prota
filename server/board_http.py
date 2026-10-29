@@ -70,6 +70,8 @@ def mutate(handler, workspace):
                         raise ValueError('仅支持显式回滚，外部内容先备份到回收站')
                     return handler.workspace_reply(200, {'recovered': [resolve_transaction(page, params.get('transactionId'), params.get('expectedCurrent'))]})
                 return handler.workspace_reply(200, {'recovered': recover_transactions(page)})
+        if endpoint.endswith('/manage') and params.get('versionAction') not in {'fork', 'switch', 'delete'}:
+            raise ValueError('画板版本操作无效')
         function = boards.restore_revision if endpoint.endswith('/restore') else boards.create_revision
         code, result = function(root, params)
         return handler.workspace_reply(code, result)

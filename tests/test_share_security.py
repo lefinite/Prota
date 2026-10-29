@@ -91,7 +91,7 @@ class ProtectedPublishTests(unittest.TestCase):
 
 
 class ShareApiTests(unittest.TestCase):
-    def invoke(self, folder=False, **changes):
+    def invoke(self, folder=False, page=None, **changes):
         from contextlib import ExitStack
         from io import BytesIO
         from unittest.mock import patch
@@ -108,7 +108,7 @@ class ShareApiTests(unittest.TestCase):
         handler.send_response = lambda status: setattr(handler, 'status', status)
         handler.send_header = lambda *args: None
         handler.end_headers = lambda: None
-        page = {'id': 'reader', 'name': 'Reader', 'activeVersion': 'v1', 'parentId': 'folder'}
+        page = page or {'id': 'reader', 'name': 'Reader', 'activeVersion': 'v1', 'parentId': 'folder'}
         project = {'id': 'demo', 'folders': [{'id': 'folder', 'name': 'Folder'}], 'pages': [page]}
         with ExitStack() as stack:
             for name, value in {'get_project_root': str(root), 'sync_projects': None,
@@ -138,6 +138,22 @@ class ShareApiTests(unittest.TestCase):
                 self.assertNotIn('passwordHash', html)
                 self.assertNotIn('passwordHash', json.dumps(response))
                 self.assertIn('/portal/modules/sharing/dialog.css', html)
+
+    def test_folder_share_prefers_valid_version_override(self):
+        import re
+        page = {'id': 'reader', 'name': 'Reader', 'versions': ['v2', 'v1'], 'activeVersion': 'v1', 'parentId': 'folder'}
+
+        def embedded_version(**changes):
+            handler, root, deploy = self.invoke(folder=True, page=page, **changes)
+            self.assertEqual(handler.status, 200, handler.wfile.getvalue())
+            html = (root / json.loads(handler.wfile.getvalue())['path']).read_text()
+            payload = json.loads(re.search(r'window\.__READIFY_SHARE__ = (.*?);</script>', html, re.S).group(1).replace('<\\/', '</'))
+            return payload['pages'][0]['version']
+
+        self.assertEqual(embedded_version(versionOverrides={'reader': 'v2'}), 'v2')
+        self.assertEqual(embedded_version(versionOverrides={'reader': 'v9'}), 'v1')
+        self.assertEqual(embedded_version(versionOverrides='bad'), 'v1')
+        self.assertEqual(embedded_version(), 'v1')
 
     def test_invalid_options_and_unsupported_share_types_cannot_publish(self):
         for changes in [{'access': {'password': 'abc'}}, {'access': 'bad'}, {'shareType': 'local'}, {'shareType': 'public'}]:

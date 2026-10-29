@@ -6,9 +6,9 @@ function run(args) {
     app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
     const fm = $.NSFileManager.defaultManager;
     const environment = $.NSProcessInfo.processInfo.environment;
-    const cacheOverride = environment.objectForKey('PROTA_LAUNCHER_CACHE_DIR');
+    const cacheOverride = ObjC.unwrap(environment.objectForKey('PROTA_LAUNCHER_CACHE_DIR'));
     const testUi = ObjC.unwrap(environment.objectForKey('PROTA_LAUNCHER_TEST_UI')) === '1';
-    const base = cacheOverride ? ObjC.unwrap(cacheOverride) : ObjC.unwrap($.NSHomeDirectory()) + '/Library/Caches/Prota';
+    const base = cacheOverride || ObjC.unwrap($.NSHomeDirectory()) + '/Library/Caches/Prota';
     fm.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(base, true, $.NSDictionary.dictionary, null);
     const statusPath = base + '/launch-' + ObjC.unwrap($.NSUUID.UUID.UUIDString) + '.json';
     const logPath = base + '/launcher.log';
@@ -27,7 +27,8 @@ function run(args) {
         worker.launchPath = '/bin/bash'; worker.arguments = [args[0] + '/scripts/bootstrap-macos.sh', args[0], statusPath];
         worker.standardOutput = log; worker.standardError = log; worker.launch;
         let error = null;
-        while (worker.running) {
+        // Read once after exit as well: the worker can publish its error between polls.
+        function readStatus() {
             const raw = $.NSString.stringWithContentsOfFileEncodingError(statusPath, $.NSUTF8StringEncoding, null);
             if (raw) {
                 try {
@@ -41,9 +42,13 @@ function run(args) {
                     if (state.state === 'error') error = state.detail;
                 } catch (_) {}
             }
+        }
+        while (worker.running) {
+            readStatus();
             const event = app.nextEventMatchingMaskUntilDateInModeDequeue($.NSEventMaskAny, $.NSDate.dateWithTimeIntervalSinceNow(.2), $.NSDefaultRunLoopMode, true);
             if (event) app.sendEvent(event);
         }
+        readStatus();
         if (testUi) fm.copyItemAtPathToPathError(statusPath, statusPath + '.result', null);
         if (worker.terminationStatus === 0 && !error) { window.orderOut(null); fm.removeItemAtPathError(statusPath, null); return; }
         if (testUi) throw new Error(error || 'Prota preparation worker exited ' + worker.terminationStatus);

@@ -4,10 +4,11 @@
   const route = decodeURI(location.pathname).match(/\/src\/pages\/([^/]+)\/([^/]+)\/(v\d+)\//);
   const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) && Boolean(route);
   const identityScope = route ? { projectId: route[1], pageId: route[2] } : { projectId: "", pageId: location.pathname.replace(/\/v\d+\/.*$/, "") };
-  let schemaEnabled = false;
+  let schemaEnabled = false, boardVersionsEnabled = false, boardVersionBusy = false;
+  const boardTitleVersions = new Map();
   let connections = null;
   const materialize = (document, force = schemaEnabled) => D.load(document, identityScope, { migrate: force || document.schemaVersion === 2 });
-  const AUTOSAVE_DELAY = 300;
+  const AUTOSAVE_DELAY = 100;
   const floatingPanels = ["#context-menu", "#property-popover", "#command-palette"];
   const $ = (s) => document.querySelector(s), clone = (value) => JSON.parse(JSON.stringify(value));
   let startupError = null;
@@ -22,7 +23,9 @@
   catch (error) { startupError = error; prepared = { schemaVersion: 1, revision: 0, nodes: [], viewport: { x: 100, y: 80, zoom: 1 } }; }
   let state = prepared, baseline = clone(initialDocument), selected = /* @__PURE__ */ new Set(), history = [], future = [], dirty = false, saving = false, readOnly = Boolean(startupError), space = false, gesture = null, interacting = null;
   const stage = $("#stage"), world = $("#world"), properties = $("#properties");
+  let renameOnly = false;
   let propertyEdit = null, propertiesSelection = "", menuInvoker = null, fullscreenFallback = false, imageInsertionPoint = null, imageReplaceTarget = null, groupContext = null, paletteIndex = 0, paletteItems = [], renderFrame = 0, viewAnim = 0;
+  let draftRecovery = null, recoveringDraft = false;
   let tool = "select", autoTimer, savePromise = null, conflict = false, agentBusy = false, agentPending = false, clipboard = null, editing = null, panelKey = "";
   const nodeEls = /* @__PURE__ */ new Map(), touches = /* @__PURE__ */ new Map(), boardStamps = /* @__PURE__ */ new Map();
   const boardPreviewUrls = new Map();
@@ -35,13 +38,62 @@
   const draftKey = "prota-canvas-draft:" + location.pathname, clipboardKey = "prota-canvas-clipboard";
   let nodeIndex = D.createIndex(state.nodes);
   const effectiveLocked = (n) => C.locked(state.nodes, n, nodeIndex);
+  // Agent targets are mid-rewrite: selecting and viewing stay open, mutating them does not.
+  const agentHeld = (n) => {
+    if (!agentBusy || !n) return false;
+    let item = n;
+    const seen = /* @__PURE__ */ new Set();
+    while (item && !seen.has(item.id)) {
+      if (agentTargets.has(item.id)) return true;
+      seen.add(item.id);
+      item = state.nodes.find((p) => p.id === item.parentId);
+    }
+    return false;
+  };
   const selectedRoots = () => C.roots(state.nodes, selected);
   const movable = () => {
-    const roots = selectedRoots().filter((n) => !effectiveLocked(n));
+    const roots = selectedRoots().filter((n) => !effectiveLocked(n) && !agentHeld(n));
     const ids = C.descendants(state.nodes, roots.map((n) => n.id));
     return state.nodes.filter((n) => ids.has(n.id));
   };
-  const canEdit = () => !readOnly && !agentBusy && !agentPending && !annotationBoardId;
+  // While an Agent run is active the canvas stays editable (move/add/restyle);
+  // only deletion is withheld until the run settles.
+  const canEdit = () => !readOnly && !recoveringDraft && !agentPending && !annotationBoardId && !boardVersionBusy;
+
+  // Annotations are stored separately from board source and layout. Agent
+  // preparation, target locks and active runs do not block this interaction.
+  const canAnnotateBoard = (node) => !readOnly && !boardVersionBusy && node?.type === "board" && Boolean(node.src) && !effectiveLocked(node) && (!annotationBoardId || annotationBoardId === node.id);
+
+ let textTools = null, expandedEditor = null, linkedSavePromise = null, linkedTimer = null, linkedConflict = false;
+  const linkedPrds = new Map();
+  const prdPath = n => n?.type === "text" ? n.prdPath || n.markdownSource || "" : "";
+  const displayText = n => linkedPrds.get(prdPath(n)) ?? n.text ?? "";
+  const documentUrl = path => {
+    const url = new URL(String(path).replace(/^src\//, "/src/"), location.href);
+    if (url.origin !== location.origin || !url.pathname.startsWith("/src/pages/") || !/\.md$/i.test(url.pathname)) throw new Error("PRD 路径无效");
+    return url;
+  };
+  let syncingPrds = false;
+  async function syncPrds() {
+    if (!local || readOnly || syncingPrds || document.hidden) return;
+    syncingPrds = true;
+    let updated = false;
+    try {
+      await Promise.all([...new Set(state.nodes.map(prdPath).filter(Boolean))].map(async path => {
+        try {
+          const response = await fetch(documentUrl(path), { cache: "no-store", signal: AbortSignal.timeout(5000) });
+          if (!response.ok) return; // Keep the last available content if the source is unavailable.
+          const text = await response.text();
+          if (editing && prdPath(state.nodes.find(n => n.id === editing.id) || {}) === path) return;
+          if (linkedPrds.get(path) !== text) { linkedPrds.set(path, text); updated = true; }
+        } catch { /* A later refresh retries without replacing the document with an error page. */ }
+      }));
+      if (updated) render({ panels: false });
+    } finally { syncingPrds = false; }
+  }
+  setInterval(syncPrds, 2000);
+  window.addEventListener("focus", syncPrds);
+  document.addEventListener("visibilitychange", syncPrds);
 
   const names = { group: "分组", board: "画板", text: "文本", note: "便签", rect: "矩形", ellipse: "圆形", image: "图片" };
   const uid = () => "n_" + crypto.randomUUID().replaceAll("-", "");
@@ -50,6 +102,67 @@
     el.textContent = text;
     el.classList.toggle("busy", kind === "busy");
     el.classList.toggle("error", kind === "error");
+  }
+  const isStorageQuotaError = (error) => error?.name === "QuotaExceededError" || error?.name === "NS_ERROR_DOM_QUOTA_REACHED" || error?.code === 22;
+  function readStoredValue(key) {
+    try {
+      const value = localStorage.getItem(key);
+      if (value !== null) return value;
+    } catch {}
+    try {
+      return sessionStorage.getItem(key);
+    } catch {}
+    return null;
+  }
+  function writeStoredValue(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      try { sessionStorage.removeItem(key); } catch {}
+      return { ok: true, mode: "local" };
+    } catch {}
+    // Replacing a large draft can fail while the old value still occupies its
+    // quota. The current key is derived data, so free it before one retry.
+    try {
+      localStorage.removeItem(key);
+      localStorage.setItem(key, value);
+      try { sessionStorage.removeItem(key); } catch {}
+      return { ok: true, mode: "local" };
+    } catch {}
+    try {
+      sessionStorage.setItem(key, value);
+      return { ok: true, mode: "session" };
+    } catch (error) {
+      return { ok: false, mode: "none", error };
+    }
+  }
+  function removeStoredValue(key) {
+    try { localStorage.removeItem(key); } catch {}
+    try { sessionStorage.removeItem(key); } catch {}
+  }
+  function persistDraft({ announce = true, requireLocal = false } = {}) {
+    if (readOnly || !dirty) return true;
+    let value;
+    try {
+      value = JSON.stringify({ state, baseline, savedAt: Date.now() });
+    } catch {
+      if (announce) status("本机恢复副本不可用，请保持页面打开", "error");
+      return false;
+    }
+    const result = writeStoredValue(draftKey, value);
+    if (result.ok && (!requireLocal || result.mode === "local")) return true;
+    if (announce) status(isStorageQuotaError(result.error)
+      ? "本机恢复副本空间不足，请保持页面打开"
+      : "本机恢复副本不可用，请保持页面打开", "error");
+    return false;
+  }
+  async function prepareNavigation() {
+    if (draftRecovery) await draftRecovery;
+    if (readOnly) return true;
+    if ((await finishText()) === false) return false;
+    if (linkedSavePromise && (await linkedSavePromise) === false) return false;
+    if (await save()) return dirty ? prepareNavigation() : true;
+    // An Agent lock or an offline server must not discard edits on navigation.
+    return persistDraft();
   }
   function checkpoint() {
     history.push(clone(state));
@@ -63,15 +176,12 @@
     }
     updateGroupBounds();
     dirty = true;
-    status(local ? "等待保存…" : "已暂存在当前浏览器", "busy");
-    try {
-      localStorage.setItem(draftKey, JSON.stringify({ state, baseline, savedAt: Date.now() }));
-    } catch {
-      status("恢复备份空间不足，请及时保存", "error");
-    }
+    status(local ? "正在保存…" : "已暂存在当前浏览器", "busy");
+    const draftSaved = persistDraft({ announce: false });
+    if (!draftSaved && !local) status("本机恢复副本不可用，请及时备份", "error");
     render({ panels });
     clearTimeout(autoTimer);
-    if (local && !conflict && !agentBusy) autoTimer = setTimeout(() => save(), AUTOSAVE_DELAY);
+    if (local && !conflict) autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
   }
   function mutate(fn) {
     if (!canEdit()) return;
@@ -102,8 +212,8 @@
   }
   for (const el of document.querySelectorAll("[data-icon]")) decorate(el, el.dataset.icon, el.textContent.trim());
   const actions = {
-    agent: { label: (ctx) => ctx.single?.type === "board" && !ctx.single.src ? "Agent 生成" : "Agent 修改", icon: "sparkles", agent: true, when: (ctx) => !readOnly && !ctx.nodes.some(effectiveLocked), disabled: () => agentBusy, run: () => focusAgent() },
-    "edit-text": { label: "编辑文字", icon: "pen-line", shortcut: "双击", when: (ctx) => ctx.single && ["text", "note"].includes(ctx.single.type) && ctx.editable, run: (ctx) => startText(ctx.single.id) },
+    agent: { label: "Prota", icon: "sparkles", agent: true, when: (ctx) => !readOnly && !ctx.nodes.some(effectiveLocked), run: () => focusAgent() },
+    "edit-text": { label: "编辑 Markdown", icon: "pen-line", when: (ctx) => ctx.single && ["text", "note"].includes(ctx.single.type) && ctx.editable, run: (ctx) => startText(ctx.single.id) },
     style: { label: "样式", icon: "sliders-horizontal", when: (ctx) => ctx.single && ["text", "note", "rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties() },
     fill: { label: "填充", icon: "paint-bucket", when: (ctx) => ctx.single && ["rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties("填充") },
     color: { label: "颜色", icon: "paint-bucket", when: (ctx) => ctx.single?.type === "note" && ctx.editable, run: () => openProperties("便签颜色 #fff1b8") },
@@ -113,7 +223,8 @@
     } },
     "fit-image": { label: "适应比例", icon: "crop", when: (ctx) => ctx.single?.type === "image" && ctx.editable, run: (ctx) => fitImageRatio(ctx.single) },
     preview: { label: "预览", icon: "play", shortcut: "双击", when: (ctx) => ctx.single?.type === "board" && ctx.single.src, run: (ctx) => previewBoard(ctx.single) },
-    adjust: { label: "调整", icon: "sliders-horizontal", when: (ctx) => ctx.editable && ctx.single, run: () => openProperties() },
+    annotate: { label: "标注", icon: "pen-line", when: (ctx) => canAnnotateBoard(ctx.single), run: (ctx) => enterBoardAnnotation(ctx.single.id) },
+    adjust: { label: "调整", icon: "sliders-horizontal", when: (ctx) => ctx.editable && ctx.single && ctx.single.type !== "board", run: () => openProperties() },
     rename: { label: "重命名", icon: "pencil", shortcut: "F2", when: (ctx) => ctx.editable && ctx.single, run: () => focusName() },
     group: { label: "编组", icon: "group", shortcut: "⌘ G", when: (ctx) => ctx.editable && ctx.roots > 1, run: () => groupSelection() },
     ungroup: { label: "取消编组", icon: "ungroup", shortcut: "⌘ ⇧ G", when: (ctx) => ctx.editable && ctx.nodes.length > 0 && ctx.nodes.every((n) => n.type === "group"), run: () => ungroupSelection() },
@@ -122,6 +233,7 @@
       showMenu(alignmentActions(), r.left, r.bottom + 6);
     } },
     duplicate: { label: "复制", icon: "copy", shortcut: "⌘ D", when: (ctx) => ctx.editable, run: () => duplicateSelection() },
+    "copy-image": { label: "复制到剪贴板", icon: "copy", shortcut: /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ ⇧ C" : "Ctrl Shift C", when: (ctx) => ctx.single?.type === "image", run: (ctx) => copyImageToClipboard(ctx.single) },
     lock: { label: "锁定", icon: "lock", when: (ctx) => ctx.editable, run: () => mutate(() => current().forEach((n) => n.locked = true)) },
     unlock: { label: "解锁", icon: "lock-open", when: (ctx) => ctx.nodes.length > 0 && ctx.nodes.some(effectiveLocked) && canEdit(), run: () => mutate(() => {
       for (const n of current()) {
@@ -144,11 +256,214 @@
     } },
     "enter-group": { label: "进入分组", icon: "group", when: (ctx) => ctx.single?.type === "group", run: (ctx) => enterGroup(ctx.single) },
     focus: { label: "聚焦选中", icon: "focus", when: (ctx) => ctx.nodes.length > 0, run: () => fit(current(), { animate: true }) },
-    delete: { label: "删除", icon: "trash-2", shortcut: "⌫", danger: true, when: (ctx) => ctx.editable, run: () => removeSelection() }
+    delete: { label: "删除", icon: "trash-2", shortcut: "⌫", danger: true, when: (ctx) => ctx.editable, disabled: () => agentBusy, run: () => removeSelection() }
   };
+  function renderNodeTitle(title, node) {
+    if (node.type !== "board") { title.textContent = node.name || ""; return; }
+    let name = title.querySelector(".node-name");
+    if (!name) {
+      title.replaceChildren();
+      name = document.createElement("span");
+      name.className = "node-name";
+      title.append(name);
+    }
+    name.textContent = node.name || "";
+    let button = title.querySelector(".board-version");
+    if (!node.src || (!node.boardRevisionId && !(local && boardVersionsEnabled))) { button?.remove(); return; }
+    if (!button) {
+      button = document.createElement("button");
+      button.className = "board-version";
+      button.type = "button";
+      button.setAttribute("aria-haspopup", "menu");
+      button.addEventListener("pointerdown", e => e.stopPropagation());
+      button.addEventListener("dblclick", e => e.stopPropagation());
+      button.onclick = e => {
+        e.stopPropagation();
+        const currentNode = state.nodes.find(n => n.id === node.id);
+        if (!currentNode || !canEdit() || effectiveLocked(currentNode) || agentHeld(currentNode)) return;
+        if (!$("#context-menu").hidden && $("#context-menu").dataset.boardVersions === node.id) {
+          setFloatingPanel("#context-menu", false);
+          return;
+        }
+        finishText();
+        exitInteraction();
+        selected = new Set([node.id]);
+        render();
+        openBoardVersions(node.id, button.getBoundingClientRect());
+      };
+      title.append(button);
+    }
+    const cached = boardTitleVersions.get(node.boardId);
+    const label = currentBoardVersion(node, cached).toUpperCase();
+    button.textContent = label;
+    if (local && boardVersionsEnabled) {
+      const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      chevron.setAttribute("viewBox", "0 0 24 24");
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.innerHTML = '<path d="M6 9l6 6 6-6"/>';
+      button.append(chevron);
+    }
+    button.setAttribute("aria-expanded", String(!$("#context-menu").hidden && $("#context-menu").dataset.boardVersions === node.id));
+    button.setAttribute("aria-label", `${node.name || "画板"}，${label}，切换版本`);
+    button.disabled = !local || !boardVersionsEnabled || !canEdit() || effectiveLocked(node) || agentHeld(node);
+    if (local && boardVersionsEnabled && node.boardId && cached?.pointer !== node.boardRevisionId) {
+      boardTitleVersions.set(node.boardId, { ...cached, pointer: node.boardRevisionId });
+      loadBoardVersions(node).catch(() => { /* The dropdown retries explicitly on the next click. */ });
+    }
+  }
+  function currentBoardVersion(node, catalog = boardTitleVersions.get(node.boardId)) {
+    const versions = catalog?.versions || { v1: { revisionId: null } };
+    if (node.boardVersionId && (versions[node.boardVersionId] || (!catalog?.versions && /^v\d+$/.test(node.boardVersionId)))) return node.boardVersionId;
+    let pointer = node.boardRevisionId;
+    const seen = new Set();
+    while (pointer && !seen.has(pointer)) {
+      seen.add(pointer);
+      const match = Object.keys(versions).find(name => versions[name].revisionId === pointer);
+      if (match) return match;
+      pointer = catalog?.revisions?.find(r => r.revisionId === pointer)?.parentRevisionId;
+    }
+    return Object.keys(versions)[0] || "v1";
+  }
+  function boardParams(node) {
+    return { projectId: route[1], pageId: route[2], version: route[3], nodeId: node.id, boardId: node.boardId };
+  }
+  async function loadBoardVersions(node) {
+    const query = new URLSearchParams(boardParams(node));
+    const response = await fetch("/api/boards/versions?" + query, { cache: "no-store" });
+    const payload = await response.json();
+    if (!response.ok) throw Error(payload?.error || "读取画板版本失败");
+    const result = D.normalizeBoardVersions(payload);
+    boardTitleVersions.set(node.boardId, { ...result, pointer: node.boardRevisionId });
+    for (const board of state.nodes) if (board.type === "board" && board.boardId === node.boardId) {
+      const title = nodeEls.get(board.id)?.querySelector(".node-title");
+      if (title) renderNodeTitle(title, board);
+    }
+    return result;
+  }
+  async function changeBoardVersion(nodeId, versionAction, targetVersion) {
+    if (!local || !boardVersionsEnabled || !canEdit()) return false;
+    const board = state.nodes.find(node => node.id === nodeId);
+    if (boardTitleVersions.get(board?.boardId)?.manageSupported === false) {
+      notice("本地服务版本较旧，历史版本可查看；请在当前生成任务结束后重新启动 Prota，再进行迭代、切换或删除。");
+      return false;
+    }
+    finishText();
+    exitInteraction();
+    if (baseline.schemaVersion === 1 && state.schemaVersion === 2) dirty = true;
+    if (!await save()) return false;
+    const node = state.nodes.find(n => n.id === nodeId && n.type === "board");
+    if (!node || effectiveLocked(node) || agentHeld(node) || !canEdit()) return false;
+    boardVersionBusy = true;
+    renderInspector();
+    status(versionAction === "fork" ? "正在创建版本…" : versionAction === "delete" ? "正在删除版本…" : "正在切换版本…", "busy");
+    try {
+      const response = await fetch("/api/boards/versions/manage", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...boardParams(node), revision: baseline.revision, baseline: clone(baseline), versionAction, targetVersion })
+      });
+      const result = await response.json();
+      if (!response.ok) throw Error(result.error || "画板版本操作失败");
+      // Install only the committed pointer and layout revision. Do not discard local layout
+      // or race a subsequent disk read; the server compares the complete saved baseline.
+      const savedNode = baseline.nodes.find(n => n.id === nodeId);
+      savedNode.boardRevisionId = result.revisionId;
+      node.boardRevisionId = result.revisionId;
+      savedNode.boardVersionId = node.boardVersionId = result.boardVersionId;
+      baseline.revision = state.revision = result.revision;
+      history = []; future = [];
+      boardStamps.set(node.id, Date.now());
+      boardPreviewUrls.delete(node.id);
+      status(versionAction === "fork" ? `已创建 ${result.boardVersionId.toUpperCase()}` : versionAction === "delete" ? "已删除版本" : "已切换版本");
+      $("#notice").hidden = true;
+      return true;
+    } catch (error) {
+      status("画板版本操作失败", "error");
+      notice(error.message);
+      return false;
+    } finally {
+      boardVersionBusy = false;
+      render();
+    }
+  }
+  async function deleteBoardVersion(nodeId, version) {
+    let confirmed;
+    const options = { title: `删除版本 ${version.toUpperCase()}`, message: "该版本将从画板版本列表中删除。", okText: "确认删除" };
+    try {
+      confirmed = parent !== window && parent.shell?.showConfirm ? await parent.shell.showConfirm(options) : window.confirm(options.title + "？");
+    } catch { confirmed = window.confirm(options.title + "？"); }
+    if (confirmed) await changeBoardVersion(nodeId, "delete", version);
+  }
+  async function openBoardVersions(nodeId, rect) {
+    const node = state.nodes.find(n => n.id === nodeId);
+    if (!node || !canEdit() || effectiveLocked(node) || agentHeld(node)) return;
+    try {
+      const catalog = await loadBoardVersions(node);
+      if (current()[0]?.id !== nodeId || !canEdit()) return;
+      const active = currentBoardVersion(node, catalog);
+      const names = Object.keys(catalog.versions).sort((a, b) => Number(b.slice(1)) - Number(a.slice(1)));
+      const menu = $("#context-menu");
+      closePalette();
+      setFloatingPanel("#property-popover", false);
+      menu.replaceChildren();
+      menu.removeAttribute("data-selection-tools");
+      menu.style.removeProperty("max-height");
+      menu.dataset.boardVersions = nodeId;
+      menuInvoker = nodeEls.get(nodeId)?.querySelector(".board-version");
+      const list = document.createElement("div");
+      list.className = "version-panel__list";
+      const close = () => setFloatingPanel("#context-menu", false);
+      for (const version of names) {
+        const row = document.createElement("div");
+        row.className = "version-row" + (version === active ? " is-active" : "");
+        row.dataset.version = version;
+        const select = document.createElement("button");
+        select.className = "version-row__label";
+        select.textContent = version.toUpperCase();
+        select.setAttribute("role", "menuitemradio");
+        select.setAttribute("aria-checked", String(version === active));
+        select.dataset.action = "board-version-switch-" + version;
+        const switchToVersion = () => { close(); if (version !== active) changeBoardVersion(nodeId, "switch", version); };
+        select.onclick = switchToVersion;
+        row.onclick = event => { if (!event.target.closest("button")) switchToVersion(); };
+        const actions = document.createElement("div");
+        actions.className = "version-row__actions";
+        const fork = document.createElement("button");
+        fork.className = "version-row__btn version-row__btn--fork";
+        fork.title = `基于 ${version.toUpperCase()} 迭代`;
+        fork.setAttribute("aria-label", fork.title);
+        fork.dataset.action = "board-version-fork-" + version;
+        decorate(fork, "plus");
+        fork.onclick = () => { close(); changeBoardVersion(nodeId, "fork", version); };
+        const remove = document.createElement("button");
+        remove.className = "version-row__btn version-row__btn--delete";
+        remove.title = `删除 ${version.toUpperCase()}`;
+        remove.setAttribute("aria-label", remove.title);
+        remove.dataset.action = "board-version-delete-" + version;
+        remove.disabled = names.length <= 1;
+        decorate(remove, "trash-2");
+        remove.onclick = () => { close(); deleteBoardVersion(nodeId, version); };
+        actions.append(fork, remove);
+        row.append(select, actions);
+        list.append(row);
+      }
+      const footer = document.createElement("div");
+      footer.className = "version-panel__footer";
+      const forkCurrent = document.createElement("button");
+      forkCurrent.className = "version-panel__action";
+      forkCurrent.dataset.action = "board-version-fork-current";
+      decorate(forkCurrent, "plus", `基于 ${active.toUpperCase()} 迭代`);
+      forkCurrent.onclick = () => { close(); changeBoardVersion(nodeId, "fork", active); };
+      footer.append(forkCurrent);
+      menu.append(list, footer);
+      const anchor = rect || menuInvoker.getBoundingClientRect();
+      placeFloating(menu, anchor.left, anchor.bottom + 6);
+      menuInvoker?.setAttribute("aria-expanded", "true");
+      list.querySelector('.is-active .version-row__label')?.focus({ preventScroll: true });
+    } catch (error) { notice(error.message); }
+  }
   function actionContext() {
     const nodes = current(), single = nodes.length === 1 ? nodes[0] : null;
-    return { nodes, single, roots: selectedRoots().length, editable: canEdit() && nodes.length > 0 && nodes.every((n) => !effectiveLocked(n)) };
+    return { nodes, single, roots: selectedRoots().length, editable: canEdit() && nodes.length > 0 && nodes.every((n) => !effectiveLocked(n) && !agentHeld(n)) };
   }
   function resolveAction(id) {
     const def = actions[id], ctx = actionContext();
@@ -165,17 +480,17 @@
     };
     if (ctx.nodes.some(effectiveLocked)) {
       push(primary, "unlock");
+      push(primary, "copy-image");
       push(primary, "focus");
       return { primary, more };
     }
     if (ctx.single?.type === "board" && !ctx.single.src) {
       push(primary, "agent");
-      push(primary, "adjust");
       push(primary, "duplicate");
     } else if (ctx.single?.type === "board") {
-      push(primary, "preview");
       push(primary, "agent");
-      push(primary, "adjust");
+      push(primary, "preview");
+      push(primary, "annotate");
       push(primary, "duplicate");
     } else if (ctx.single && ["text", "note"].includes(ctx.single.type)) {
       push(primary, "edit-text");
@@ -189,6 +504,7 @@
       push(primary, "duplicate");
     } else if (ctx.single?.type === "image") {
       push(primary, "replace");
+      push(primary, "copy-image");
       push(primary, "agent");
       push(primary, "duplicate");
     } else if (ctx.single?.type === "group") {
@@ -215,7 +531,7 @@
   function runAction(id, event, rect) {
     const action = resolveAction(id);
     if (!action || action.disabled) {
-      notice(current().some(effectiveLocked) ? "对象已锁定，请先解锁。" : agentBusy ? "Agent 正在处理，完成后可继续编辑。" : "请先选择适用的对象。");
+      notice(current().some(effectiveLocked) ? "对象已锁定，请先解锁。" : agentBusy ? "Agent 正在处理，结束后才能删除对象。" : "请先选择适用的对象。");
       return false;
     }
     setFloatingPanel("#context-menu", false);
@@ -226,6 +542,11 @@
     const button = document.createElement("button");
     decorate(button, action.icon, action.label);
     button.dataset.action = action.id;
+    if (!menu && action.id === "more") {
+      button.setAttribute("aria-haspopup", "menu");
+      button.setAttribute("aria-controls", "context-menu");
+      button.setAttribute("aria-expanded", String(!$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")));
+    }
     button.disabled = Boolean(action.disabled);
     if (action.agent) button.classList.add("agent");
     if (action.danger) button.classList.add("danger");
@@ -238,6 +559,10 @@
     }
     button.onclick = (e) => {
       const rect = button.getBoundingClientRect();
+      if (!menu && action.id === "more" && !$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")) {
+        setFloatingPanel("#context-menu", false);
+        return;
+      }
       setFloatingPanel("#context-menu", false);
       actions[action.id] ? runAction(action.id, e, rect) : action.run(e, rect);
       if (document.activeElement === button) stage.focus();
@@ -258,6 +583,7 @@
     updateSelectionFrame();
     positionSelectionTools();
     connections?.schedule();
+    positionTextTools();
     // Portal annotation markers must follow viewport pan/zoom; coalesce to one message per frame.
     if (parent !== window && !viewNotifyFrame) {
       viewNotifyFrame = requestAnimationFrame(() => {
@@ -267,7 +593,7 @@
     }
   }
   function notify() {
-    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { text: String(n.text || "").slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 8 }, location.origin === "null" ? "*" : location.origin);
+    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 33 }, location.origin === "null" ? "*" : location.origin);
   }
   function exitInteraction() {
     resetBoardRightGesture();
@@ -287,9 +613,9 @@
     if (parent !== window) parent.postMessage(payload, location.origin);
   }
   function enterBoardAnnotation(id) {
-    if (annotationBoardId && annotationBoardId !== id) return;
-    resetBoardRightGesture();
     const node = state.nodes.find((n) => n.id === id && n.type === "board");
+    if (!canAnnotateBoard(node)) return;
+    resetBoardRightGesture();
     const el = nodeEls.get(id);
     const frame = el?.querySelector("iframe");
     if (!node || !frame || !boardFolderOf(node)) {
@@ -345,7 +671,7 @@
   }
   function deferBoardMenu(run) {
     cancelDeferredBoardMenu();
-    deferredBoardMenu = { timer: setTimeout(() => { deferredBoardMenu = null; run(); }, RIGHT_GESTURE_INTERVAL) };
+    deferredBoardMenu = { run, timer: setTimeout(() => { deferredBoardMenu = null; run?.(); }, RIGHT_GESTURE_INTERVAL) };
   }
   // Unified right-click counter: the 1st click may land on the canvas while the
   // board is inactive, follow-ups land inside the board iframe. Both feed this
@@ -355,6 +681,7 @@
       exitBoardAnnotation();
       return;
     }
+    showMenu ||= deferredBoardMenu?.run;
     setFloatingPanel("#context-menu", false);
     const outerFrame = window.frameElement;
     if (outerFrame) {
@@ -373,9 +700,10 @@
     g.lastX = screenX;
     g.lastY = screenY;
     const node = state.nodes.find((n) => n.id === boardId && n.type === "board");
-    if (!node || !canEdit() || effectiveLocked(node)) {
+    if (!canAnnotateBoard(node)) {
       resetBoardRightGesture();
-      showMenu?.();
+      if (interacting) exitInteraction();
+      else showMenu?.();
       return;
     }
     if (g.count >= g.required) {
@@ -398,7 +726,33 @@
       deferBoardMenu(showMenu);
       return;
     }
-    deferBoardMenu(showMenu);
+    // A sequence started in preview waits for a possible second click before
+    // leaving. Sequences started on an inactive board keep their three clicks.
+    deferBoardMenu(g.required === 2 ? () => {
+      exitInteraction();
+      updateSelectionFrame();
+      positionSelectionTools();
+      stage.focus({ preventScroll: true });
+    } : showMenu);
+  }
+  // Capture before board scripts, object menus, and floating controls. Frame
+  // coordinates are converted to the same canvas space as outer-document clicks.
+  function consumeFocusedContextMenu(e, frame = null) {
+    if (!annotationBoardId && !interacting) return false;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (annotationBoardId) {
+      exitBoardAnnotation();
+      return true;
+    }
+    let x = e.clientX, y = e.clientY;
+    if (frame) {
+      const rect = frame.getBoundingClientRect();
+      x = rect.left + x * rect.width / Math.max(1, frame.contentWindow.innerWidth);
+      y = rect.top + y * rect.height / Math.max(1, frame.contentWindow.innerHeight);
+    }
+    handleBoardContextMenu(interacting, x, y);
+    return true;
   }
   // Same-origin board frames report their own contextmenu/Escape events here.
   // Cross-origin or unavailable documents simply never bind; the editor keeps working.
@@ -425,6 +779,15 @@
     doc.addEventListener("pointermove", (e) => {
       if (e.buttons) resetBoardRightGesture();
     }, options);
+    // Keep native board scrolling, but route pinch / modified-wheel zoom to
+    // the canvas camera. Frame events do not bubble into the canvas document.
+    doc.addEventListener("wheel", (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const rect = frame.getBoundingClientRect();
+      const width = frame.contentWindow.innerWidth || frame.clientWidth || 1;
+      const height = frame.contentWindow.innerHeight || frame.clientHeight || 1;
+      handleCanvasWheel(e, rect.left + e.clientX * rect.width / width, rect.top + e.clientY * rect.height / height);
+    }, { ...options, passive: false });
     doc.addEventListener("scroll", () => {
       if (parent !== window) parent.postMessage({ type: "prota:canvas-view" }, location.origin);
     }, options);
@@ -442,6 +805,9 @@
       exitInteraction();
       stage.focus();
     }, options);
+    frame.contentWindow.addEventListener("contextmenu", (e) => {
+      consumeFocusedContextMenu(e, frame);
+    }, options);
     doc.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -458,13 +824,16 @@
         if (annotationBoardId === nodeId) exitBoardAnnotation();
         return;
       }
-      if (readOnly || !canEdit()) return;
+      if (!canAnnotateBoard(state.nodes.find(n => n.id === nodeId))) return;
       handleBoardContextMenu(nodeId, screenX, screenY, () => openNodeMenu(nodeEls.get(nodeId), screenX, screenY, { includeBoardAdd: true }));
     }, options);
     if (annotationBoardId === nodeId) {
       annotationFrameEl = frame;
       postAnnotationState(true, { rebind: true });
     }
+  }
+  function nodeContentSignature(n) {
+    return JSON.stringify([n.type, n.type === "board" ? "" : displayText(n), n.prdPath, n.markdownSource, n.src, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
   }
   function render(options = {}) {
     if (options.panels === false) {
@@ -497,7 +866,7 @@
       const connectionLayers = ["connection-container", "connection-top-port", "connection-source", "connection-target"].filter(name => el.classList.contains(name));
       el.className = `node ${n.type}${selected.has(n.id) ? " selected" : ""}${effectiveLocked(n) ? " locked" : ""}${interacting === n.id ? " interacting" : ""}${n.hidden ? " hidden-node" : ""}${editing?.id === n.id ? " editing" : ""}${agentTargets.has(n.id) ? " agent-target" : ""}${n.id === groupContext ? " context" : ""}${contextMembers && !contextMembers.has(n.id) ? " dimmed" : ""}` + (connectionLayers.length ? " " + connectionLayers.join(" ") : "");
       Object.assign(el.style, { left: `${n.x}px`, top: `${n.y}px`, width: `${n.width}px`, height: `${n.height}px`, background: n.color || "", fontSize: `${n.fontSize || 20}px`, opacity: n.opacity ?? 1, borderRadius: n.type === "ellipse" ? "50%" : `${n.radius || 0}px`, color: n.textColor || "#30323a", fontWeight: n.fontWeight || 400, textAlign: n.textAlign || "left" });
-      const signature = JSON.stringify([n.type, n.type === "board" ? "" : n.text, n.src, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
+      const signature = nodeContentSignature(n);
       if (el.dataset.signature !== signature && editing?.id !== n.id) {
         el.dataset.signature = signature;
         el.querySelectorAll("iframe").forEach(detachBoardFrameEvents);
@@ -547,14 +916,17 @@
             img.alt = n.name;
             content.append(img);
           }
-        } else if (n.type === "text") content.append(window.CanvasMarkdown.render(n.text || ""));
+        } else if (n.type === "text") {
+          content.append(window.CanvasMarkdown.render(displayText(n), { baseUrl: prdPath(n) }));
+          for (const image of content.querySelectorAll("img")) image.addEventListener("load", () => scheduleFit(new Set([n.id])));
+        }
         else content.textContent = n.text || "";
       }
       const inner = el.querySelector(".node-content");
       if (inner && n.padding !== void 0) inner.style.padding = n.padding + "px";
       const placeholder = el.querySelector(".board-placeholder");
       if (placeholder) placeholder.hidden = state.nodes.some((child) => child.parentId === n.id);
-      el.querySelector(".node-title").textContent = n.name;
+      renderNodeTitle(el.querySelector(".node-title"), n);
       if (world.children[index] !== el) world.insertBefore(el, world.children[index] || null);
     }
     previous.forEach((el) => {
@@ -562,6 +934,8 @@
       nodeEls.delete(el.dataset.id);
       el.remove();
     });
+    // Text renders Markdown, so its intrinsic height is only known once the DOM is in place.
+    if (state.nodes.some(textAutoHeight)) scheduleFit();
     world.append($("#selection-frame"));
     $("#empty").hidden = state.nodes.length > 0;
     $("#undo").disabled = !history.length;
@@ -607,7 +981,7 @@
     const { primary, more } = contextActions();
     if (innerWidth < 480 && primary.length > 3) more.unshift(...primary.splice(3));
     primary.forEach((action) => {
-      if (action.agent) {
+      if (action.agent && box.childElementCount > 0) {
         const divider = document.createElement("span");
         divider.className = "divider";
         box.append(divider);
@@ -620,7 +994,7 @@
       box.append(divider);
       box.append(actionButton({ id: "more", label: "更多", icon: "ellipsis", run: (_, rect) => {
         const r = rect || box.getBoundingClientRect();
-        showMenu(more, r.left, r.bottom + 6);
+        showMenu(more, r.left, r.bottom + 6, box.querySelector('[data-action="more"]'), { keepSelectionTools: true });
       } }));
     }
     if (propertiesSelection !== [...selected].join(",")) {
@@ -632,14 +1006,15 @@
     panelKey = signature;
     positionSelectionTools();
   }
-  const boardPresets = [["", "自定义尺寸"], ["390x844", "iPhone 390 × 844"], ["412x915", "Android 412 × 915"], ["834x1194", "平板 834 × 1194"], ["1440x900", "Web 1440 × 900"]];
+  const boardPresets = [["", "自定义"], ["390x844", "iPhone"], ["412x915", "Android"], ["834x1194", "平板"], ["1440x900", "Web"]];
   const noteSwatches = ["#fff1b8", "#ffd9d2", "#d4ecec", "#dde6ff", "#f0ddff", "#ffffff"];
   function renderProperties(focusLabel = "") {
     const n = current()[0];
     properties.replaceChildren();
     if (!n || current().length !== 1) return;
-    $("#property-title").textContent = n.name || names[n.type];
-    if (n.type === "note" && canEdit() && !effectiveLocked(n)) {
+    $("#property-title").textContent = renameOnly ? "重命名" : n.name || names[n.type];
+    $("#property-popover").setAttribute("aria-label", renameOnly ? "重命名" : "对象样式");
+    if (!renameOnly && n.type === "note" && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
       const row = document.createElement("div");
       row.className = "swatch-row";
       for (const color of noteSwatches) {
@@ -655,16 +1030,19 @@
       }
       properties.append(row);
     }
-    let fields = [["name", "名称", "text"], ["x", "X", "number"], ["y", "Y", "number"], ["width", "宽", "number"], ["height", "高", "number"], ["color", "填充", "color"], ["opacity", "不透明度", "number"], ["radius", "圆角", "number"]];
-    if (n.type === "group") fields = fields.filter(([key]) => ["name", "x", "y"].includes(key));
+    let fields = [["name", "名称", "text"], ["color", "填充", "color"], ["opacity", "不透明度", "number"], ["radius", "圆角", "number"]];
+    if (n.type === "group") fields = fields.filter(([key]) => key === "name");
     if (n.type === "ellipse") fields = fields.filter(([key]) => key !== "radius");
     if (n.type === "text") fields = fields.filter(([key]) => !["color", "radius"].includes(key));
     if (n.type === "image" || n.type === "board") fields = fields.filter(([key]) => key !== "color" && key !== "radius");
     if (["text", "note", "rect", "ellipse"].includes(n.type)) fields.push(["text", "内容", "textarea"], ["fontSize", "字号", "number"], ["textColor", "文字颜色", "color"]);
+    if (prdPath(n)) fields = fields.filter(([key]) => key !== "text");
+    if (renameOnly) fields = fields.filter(([key]) => key === "name");
     if (n.type === "board") {
       const row = document.createElement("label");
       row.textContent = "设备预设";
       const select = document.createElement("select");
+      select.setAttribute("aria-label", "设备预设");
       for (const [value, label] of boardPresets) {
         const option = document.createElement("option");
         option.value = value;
@@ -672,7 +1050,7 @@
         select.append(option);
       }
       select.value = boardPresets.find(([value]) => value === `${n.width}x${n.height}`)?.[0] ?? "";
-      select.disabled = !canEdit() || effectiveLocked(n);
+      select.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
       select.onchange = () => {
         const [width, height] = select.value.split("x").map(Number);
         if (!width) return;
@@ -691,7 +1069,7 @@
       if (type !== "textarea") input.type = type;
       input.value = n[key] ?? (key === "color" ? "#ffffff" : key === "textColor" ? "#424650" : key === "opacity" ? 1 : key === "radius" ? 0 : "");
       input.setAttribute("aria-label", label);
-      input.disabled = !canEdit() || effectiveLocked(n);
+      input.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
       if (key === "opacity") {
         input.min = 0;
         input.max = 1;
@@ -705,20 +1083,16 @@
           if (value.trim() === "") return;
           value = Number(value);
           if (!Number.isFinite(value) || Math.abs(value) > 1e6) return;
-          if (["width", "height"].includes(key)) value = Math.max(16, value);
           if (key === "fontSize") value = Math.max(8, Math.min(400, value));
           if (key === "opacity") value = Math.max(0, Math.min(1, value));
           if (key === "radius") value = Math.max(0, Math.min(1e3, value));
         }
-        if (!canEdit() || effectiveLocked(n) || n[key] === value) return;
+        if (!canEdit() || effectiveLocked(n) || agentHeld(n) || n[key] === value) return;
         if (!propertyEdit || propertyEdit.node !== n.id || propertyEdit.key !== key) {
           checkpoint();
           propertyEdit = { node: n.id, key };
         }
-        if (key === "x" || key === "y") {
-          const delta = value - n[key], ids = C.descendants(state.nodes, [n.id]);
-          state.nodes.filter((item) => ids.has(item.id)).forEach((item) => item[key] += delta);
-        } else n[key] = value;
+        n[key] = value;
         changed({ panels: false });
       };
       input.addEventListener("input", applyValue);
@@ -727,7 +1101,7 @@
         propertyEdit = null;
       });
     }
-    if (["text", "note"].includes(n.type) && canEdit() && !effectiveLocked(n)) {
+    if (!renameOnly && ["text", "note"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
       const section = document.createElement("details");
       section.className = "property-section";
       const summary = document.createElement("summary");
@@ -754,8 +1128,9 @@
     }
     if (focusLabel) properties.querySelector(`[aria-label="${focusLabel}"]`)?.focus();
   }
-  function openProperties(focusLabel = "") {
+  function openProperties(focusLabel = "", options = {}) {
     finishText();
+    renameOnly = Boolean(options.renameOnly);
     propertiesSelection = [...selected].join(",");
     renderProperties(focusLabel);
     const popover = $("#property-popover");
@@ -768,7 +1143,7 @@
   }
   function focusName() {
     if (current().length !== 1) return;
-    openProperties();
+    openProperties("", { renameOnly: true });
     const input = properties.querySelector('[aria-label="名称"]');
     input?.focus();
     input?.select();
@@ -843,6 +1218,10 @@
     });
   }
   function removeSelection() {
+    if (agentBusy) {
+      notice("Agent 正在处理，结束后才能删除对象。");
+      return;
+    }
     mutate(() => {
       const ids = C.descendants(state.nodes, selectedRoots().filter((n) => !effectiveLocked(n)).map((n) => n.id));
       state.nodes = state.nodes.filter((n) => !ids.has(n.id));
@@ -934,11 +1313,12 @@
     if (annotationBoardId) return;
     exitInteraction();
     const el = nodeEls.get(n.id);
-    if (!el?.querySelector("iframe")) return;
+    if (!el) return;
     interacting = n.id;
     el.classList.add("interacting");
-    $("#interaction-hint").textContent = "预览中 · Esc 返回画布";
-    el.querySelector("iframe").focus();
+    $("#interaction-hint").textContent = el.querySelector("iframe") ? "预览中 · Esc 返回画布" : "画板已激活 · Esc 返回画布";
+    el.querySelector("iframe")?.focus();
+    updateSelectionFrame();
     positionSelectionTools();
   }
   function stopViewAnimation() {
@@ -973,7 +1353,6 @@
   stage.addEventListener("pointerdown", rememberZoomAnchor);
   function zoom(factor, x = zoomAnchor?.x ?? stage.clientWidth / 2, y = zoomAnchor?.y ?? stage.clientHeight / 2, animate = false) {
     stopViewAnimation();
-    if (!annotationBoardId) exitInteraction();
     const v = state.viewport, z = Math.max(0.05, Math.min(4, v.zoom * factor));
     const target = { zoom: z, x: x - (x - v.x) * z / v.zoom, y: y - (y - v.y) * z / v.zoom };
     if (animate) animateView(target, 190, () => {
@@ -1020,6 +1399,12 @@
   stage.addEventListener("pointerdown", (e) => {
     if (e.target.closest("#canvas-connections") && !space && tool !== "hand" && e.button !== 1) return;
     if (e.button === 2 || e.target.closest("button,.floating,#selection-tools") || e.target.closest(".interacting") || e.target.isContentEditable) return;
+    if (e.button === 0 && tool === "select" && !space && !e.target.closest(".node,#selection-frame") && !$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")) {
+      setFloatingPanel("#context-menu", false);
+      stage.focus({ preventScroll: true });
+      e.preventDefault();
+      return;
+    }
     stopViewAnimation();
     resetBoardRightGesture();
     // While annotating a board, canvas editing gestures stay disabled;
@@ -1061,7 +1446,7 @@
     } else if (e.button !== 0) return;
     else if (handleEl && canEdit() && selected.size) {
       const items = movable().map((item) => ({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height }));
-      const base = C.bounds(selectedRoots().filter((item) => !effectiveLocked(item)));
+      const base = C.bounds(selectedRoots().filter((item) => !effectiveLocked(item) && !agentHeld(item)));
       if (base && items.length) gesture = { kind: "scale", handle: handleEl.dataset.handle, base, items, start: p };
     } else if (tool !== "select" && canEdit()) {
       const beforeDraw = { preState: clone(state), preSelection: [...selected], historyLength: history.length, preFuture: future.slice(), wasDirty: dirty };
@@ -1069,22 +1454,30 @@
       if (made) {
         made.x = p.x;
         made.y = p.y;
-        made.width = 16;
-        made.height = 16;
-        gesture = { kind: "draw", id: made.id, start: p, started: true, ...beforeDraw };
+        if (textAutoHeight(made)) {
+          // A text box keeps its writing width; dragging only sets that width, the height follows.
+          gesture = { kind: "draw", id: made.id, start: p, started: true, widthOnly: true, ...beforeDraw };
+        } else {
+          made.width = 16;
+          made.height = 16;
+          gesture = { kind: "draw", id: made.id, start: p, started: true, ...beforeDraw };
+        }
         render();
       }
       setTool("select");
     } else if (n) {
+      // Shift-click toggles selection only after we know this is not a drag.
+      const pendingDeselect = e.shiftKey && selected.has(n.id) && canEdit() && !effectiveLocked(n) && !agentHeld(n);
       if (e.shiftKey) {
-        selected.has(n.id) ? selected.delete(n.id) : selected.add(n.id);
+        if (!pendingDeselect) selected.has(n.id) ? selected.delete(n.id) : selected.add(n.id);
       } else if (!selected.has(n.id)) {
         selected = /* @__PURE__ */ new Set([n.id]);
         groupContext = null;
       }
       render();
-      if (canEdit() && !effectiveLocked(n) && selected.size) {
+      if (canEdit() && !effectiveLocked(n) && !agentHeld(n) && selected.size) {
         gesture = { kind: "move", start: p, pendingAlt: e.altKey, nodes: movable().map((item) => ({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height })), started: false };
+        if (pendingDeselect) gesture.deselectTarget = n.id;
         if (!e.shiftKey && selected.size > 1) gesture.clickTarget = n.id;
       }
     } else {
@@ -1116,8 +1509,10 @@
       n.x = Math.min(p.x, g.start.x);
       n.y = Math.min(p.y, g.start.y);
       n.width = Math.max(16, Math.abs(p.x - g.start.x));
-      n.height = Math.max(16, Math.abs(p.y - g.start.y));
+      // A text box drawn with the tool only takes the width; its height answers to the content.
+      if (!g.widthOnly) n.height = Math.max(16, Math.abs(p.y - g.start.y));
       updatePositions([g.id]);
+      if (g.widthOnly) fitContentHeight(n);
       return;
     }
     if (g.kind === "pan") {
@@ -1131,7 +1526,7 @@
       box.hidden = false;
       Object.assign(box.style, { left: `${Math.min(g.cx, e.clientX) - r.left}px`, top: `${Math.min(g.cy, e.clientY) - r.top}px`, width: `${Math.abs(e.clientX - g.cx)}px`, height: `${Math.abs(e.clientY - g.cy)}px` });
       selected = new Set(g.selected);
-      for (const n of state.nodes) if (!n.parentId && !effectiveLocked(n) && !n.hidden && n.x <= Math.max(p.x, g.start.x) && n.x + n.width >= Math.min(p.x, g.start.x) && n.y <= Math.max(p.y, g.start.y) && n.y + n.height >= Math.min(p.y, g.start.y)) selected.add(n.id);
+      for (const n of state.nodes) if (!n.parentId && !effectiveLocked(n) && !n.hidden && n.x >= Math.min(p.x, g.start.x) && n.x + n.width <= Math.max(p.x, g.start.x) && n.y >= Math.min(p.y, g.start.y) && n.y + n.height <= Math.max(p.y, g.start.y)) selected.add(n.id);
       render({ panels: false });
       return;
     }
@@ -1143,8 +1538,18 @@
       }
       const transformed = C.resizeSelection(g.base, g.items, g.handle, dx, dy, e.shiftKey);
       const map = new Map(state.nodes.map((n) => [n.id, n]));
-      for (const next of transformed) Object.assign(map.get(next.id), next);
+      // Text and note boxes only take the new width; their height answers to the content.
+      const autoFit = g.items.map((item) => map.get(item.id)).filter(textAutoHeight);
+      const autoFitIds = new Set(autoFit.map((n) => n.id));
+      // A handle that only drags vertically has nothing to change on a content-sized box.
+      const verticalOnly = !g.handle.includes("e") && !g.handle.includes("w") && autoFit.length === g.items.length;
+      if (verticalOnly) return;
+      for (const next of transformed) {
+        if (autoFitIds.has(next.id)) Object.assign(map.get(next.id), { x: next.x, y: next.y, width: next.width });
+        else Object.assign(map.get(next.id), next);
+      }
       updatePositions(g.items.map((n) => n.id));
+      for (const n of autoFit) fitContentHeight(n);
       return;
     }
     if (g.kind === "move") {
@@ -1155,7 +1560,7 @@
         if (g.pendingAlt) {
           const copies = C.duplicate(state.nodes, selected, 0);
           state.nodes.push(...copies.nodes);
-          if(state.edges) state.edges.push(...C.duplicateEdges(state.edges, copies.mapping));
+          if(state.edges) state.edges.push(...C.duplicateEdges(state.edges, copies.mapping, {x:0,y:0}));
           selected = new Set(copies.selected);
           g.nodes = copies.nodes.map((item) => ({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height }));
           renderNow({ panels: false });
@@ -1209,18 +1614,12 @@
     $("#guides").replaceChildren();
     stage.classList.remove("panning");
     if (dirty) {
-      try {
-        localStorage.setItem(draftKey, JSON.stringify({ state, baseline, savedAt: Date.now() }));
-      } catch {
-      }
+      persistDraft({ announce: false });
       clearTimeout(autoTimer);
-      autoTimer = setTimeout(() => save(), AUTOSAVE_DELAY);
+      autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
     } else {
       clearTimeout(autoTimer);
-      try {
-        localStorage.removeItem(draftKey);
-      } catch {
-      }
+      removeStoredValue(draftKey);
       status("已保存");
     }
     render();
@@ -1232,6 +1631,11 @@
     $("#guides").replaceChildren();
     stage.classList.remove("panning");
     updateSelectionFrame();
+    if (g?.kind === "move" && !g.started && g.deselectTarget) {
+      selected.delete(g.deselectTarget);
+      render();
+      return;
+    }
     if (g?.kind === "move" && !g.started && g.clickTarget) {
       selected = /* @__PURE__ */ new Set([g.clickTarget]);
       render();
@@ -1246,7 +1650,7 @@
       }
       changed();
       if (g.kind === "draw" && state.nodes.find((n) => n.id === g.id)?.type === "text") startText(g.id);
-    } else if (g && ["scale", "move", "draw"].includes(g.kind)) render();
+    } else if (g && ["scale", "move", "draw", "select"].includes(g.kind)) render();
     if (["pan", "pinch"].includes(g?.kind) && !readOnly) persistView();
   }
   stage.addEventListener("pointerup", (e) => {
@@ -1274,36 +1678,34 @@
       if (made) startText(made.id);
       return;
     }
-    if (n.type === "board" && el.querySelector("iframe")) {
-      resetBoardRightGesture();
-      interacting = n.id;
-      el.classList.add("interacting");
-      $("#interaction-hint").textContent = "预览中 · Esc 返回";
-      el.querySelector("iframe").focus();
-    } else if (n.type === "board") {
-      selected = /* @__PURE__ */ new Set([n.id]);
-      render();
-      focusAgent();
-    } else if (n.type === "group") enterGroup(n);
-    else if (canEdit() && !effectiveLocked(n) && ["text", "note"].includes(n.type)) startText(n.id);
+    e.preventDefault();
+    if (["text", "note"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
+      startText(n.id);
+      return;
+    }
+    selected = new Set([n.id]);
+    render();
+    fit([n], { animate: true });
+    if (n.type === "board") previewBoard(n);
   });
-  stage.addEventListener("wheel", (e) => {
-    if (e.target.closest(".interacting")) return;
+  function handleCanvasWheel(e, clientX = e.clientX, clientY = e.clientY) {
+    if (!(e.ctrlKey || e.metaKey) && e.target.closest(".interacting")) return;
     e.preventDefault();
     stopViewAnimation();
-    const r = stage.getBoundingClientRect();
-    if (!e.shiftKey || e.ctrlKey || e.metaKey) {
-      zoomAnchor = { x: e.clientX - r.left, y: e.clientY - r.top };
-      const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stage.clientHeight : 1);
-      zoom(Math.exp(-delta * (e.ctrlKey || e.metaKey ? 8e-3 : 1.5e-3)), zoomAnchor.x, zoomAnchor.y);
+    const factor = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stage.clientHeight : 1;
+    // macOS pinch and driver-mapped zoom wheels arrive as modified wheel events.
+    if (e.ctrlKey || e.metaKey) {
+      const r = stage.getBoundingClientRect();
+      zoomAnchor = { x: clientX - r.left, y: clientY - r.top };
+      zoom(Math.exp(-e.deltaY * factor * 8e-3), zoomAnchor.x, zoomAnchor.y);
+      return;
     }
-    else {
-      state.viewport.x -= e.deltaX;
-      state.viewport.y -= e.deltaY;
-      view();
-      if (!readOnly) persistView();
-    }
-  }, { passive: false });
+    state.viewport.x -= (e.shiftKey ? e.deltaY : e.deltaX) * factor;
+    state.viewport.y -= (e.shiftKey ? 0 : e.deltaY) * factor;
+    view();
+    if (!readOnly) persistView();
+  }
+  stage.addEventListener("wheel", (e) => handleCanvasWheel(e), { passive: false });
   document.addEventListener("keydown", (e) => {
     if (e.isComposing || e.keyCode === 229) return;
     const mod = e.metaKey || e.ctrlKey;
@@ -1375,7 +1777,8 @@
     }
     if (mod && e.key.toLowerCase() === "c") {
       e.preventDefault();
-      copySelection();
+      if (e.shiftKey) runAction("copy-image");
+      else copySelection();
       return;
     }
     if (mod && e.key.toLowerCase() === "v") {
@@ -1493,6 +1896,170 @@
     }
     return read(el);
   }
+  // Text and note boxes own their content: the width is fixed, the height follows the text.
+  const textAutoHeight = (n) => n.type === "text" || n.type === "note";
+  // A box only needs re-measuring when what it renders has changed; zoom is a CSS transform.
+  const fitSignatures = new Map();
+  const fitSignature = (n) => JSON.stringify([displayText(n), n.width, n.fontSize || 20, n.fontWeight || 400, n.textAlign || "left", n.padding ?? null]);
+  function fitContentHeight(n, el = nodeEls.get(n.id)) {
+    const inner = el?.querySelector(".node-content");
+    if (!inner || !el.isConnected) return false;
+    inner.style.height = "auto";
+    // scrollHeight covers the padding and ignores any leftover scroll offset.
+    const height = Math.max(16, Math.ceil(inner.scrollHeight - 0.5));
+    inner.style.height = `${height}px`;
+    const resized = n.height !== height || Math.abs(Number.parseFloat(el.style.height) - height) >= 1;
+    n.height = height;
+    el.style.height = `${height}px`;
+    return resized;
+  }
+  function fitTextNodes(only = null) {
+    let resized = false;
+    for (const n of state.nodes) {
+      if (!textAutoHeight(n)) continue;
+      if (only && !only.has(n.id)) continue;
+      const signature = fitSignature(n);
+      if (!only && fitSignatures.get(n.id) === signature) continue;
+      fitSignatures.set(n.id, signature);
+      resized = fitContentHeight(n) || resized;
+    }
+    if (resized) {
+      updateGroupBounds();
+      updatePositions(state.nodes.filter((n) => n.type === "group").map((n) => n.id));
+      updateSelectionFrame();
+      positionSelectionTools();
+    }
+    return resized;
+  }
+  let fitFrame = 0;
+  let fitPending = null;
+  const scheduleFit = (ids = null) => {
+    if (ids) fitPending = fitPending ? new Set([...fitPending, ...ids]) : new Set(ids);
+    else fitPending = "all";
+    if (fitFrame) return;
+    fitFrame = requestAnimationFrame(() => {
+      fitFrame = 0;
+      const only = fitPending === "all" ? null : fitPending;
+      fitPending = null;
+      fitTextNodes(only);
+    });
+  };
+  let fontTimer = 0;
+  // A late web font changes every line box, so the cached signatures are dropped first.
+  const refitAfterFonts = () => {
+    fitSignatures.clear();
+    scheduleFit();
+  };
+  if (document.fonts?.ready) document.fonts.ready.then(() => refitAfterFonts());
+  document.fonts?.addEventListener?.("loadingdone", () => {
+    clearTimeout(fontTimer);
+    fontTimer = setTimeout(refitAfterFonts, 60);
+  });
+  function positionTextTools() {
+    if (!textTools || !editing) return;
+    const rect = nodeEls.get(editing.id)?.getBoundingClientRect();
+    if (!rect) return;
+    const width = Math.min(textTools.offsetWidth || 510, innerWidth - 24);
+    textTools.style.left = Math.max(12, Math.min(rect.left, innerWidth - width - 12)) + "px";
+    textTools.style.top = Math.max(12, Math.min(rect.top - 48, innerHeight - 60)) + "px";
+  }
+  async function saveLinkedMarkdown(path, content, original, { background = false } = {}) {
+    if (!local || readOnly) throw new Error("当前不可保存原文档，请在本机重试");
+    const url = documentUrl(path), match = decodeURI(url.pathname).match(/^\/src\/pages\/([^/]+)\/([^/]+)\/(docs|v\d+)\//);
+    if (!match) throw new Error("原文档路径无效");
+    const latest = await fetch(url, {cache:"no-store"});
+    if (!latest.ok) throw new Error("原文档无法读取，修改已保留在编辑器中");
+    if ((await latest.text()) !== original) throw new Error("原文档已被修改，请保留当前草稿，读取最新原文后合并");
+    const response = await fetch("/api/prd-doc", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:match[1],pageId:match[2],version:match[3] === "docs" ? route[3] : match[3],path:decodeURI(url.pathname),content,expectedContent:original,autosave:background || agentBusy || agentPending})});
+    if (!response.ok) throw new Error(response.status === 409 ? "原文档已被修改，请保留当前草稿并合并最新内容" : "原文档保存失败，请重试");
+    linkedPrds.set(path, content);
+    if (parent !== window) parent.postMessage({type:"prota:canvas-prd-saved",path,content}, location.origin);
+  }
+  async function saveLinkedWithCurrentDisk(path, content, original, version, autosave) {
+    const response = await fetch("/api/prd-doc", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId: route[1], pageId: route[2], version, path, content, expectedContent: original, autosave }) });
+    if (!response.ok) throw new Error(response.status === 409 ? "原文档已被修改，请保留当前草稿并合并最新内容" : "原文档保存失败，请重试");
+    linkedPrds.set(path, content);
+  }
+  function queueLinkedSave(edit, node, delay = AUTOSAVE_DELAY) {
+    if (!local || readOnly || linkedConflict || linkedSavePromise) return;
+    clearTimeout(linkedTimer);
+    linkedTimer = setTimeout(() => {
+      if (editing !== edit || node.text === edit.original) return;
+      void flushLinkedSave(edit, node, { background: true });
+    }, delay);
+  }
+  function flushLinkedSave(edit, node, { background = false, content = node.text, original = edit.original, retry = false } = {}) {
+    if (linkedSavePromise) return linkedSavePromise;
+    if (!local || readOnly || content === original) return Promise.resolve(true);
+    const version = edit.prdPath.includes(`/${route[2]}/docs/`) ? route[3] : edit.prdPath.match(/^\/src\/pages\/[^/]+\/[^/]+\/(v\d+)\//)?.[1];
+    const attempt = expected => saveLinkedWithCurrentDisk(edit.prdPath, content, expected, version, true);
+    const request = retry ? attempt(original).catch(async error => {
+      const latest = await fetch(documentUrl(edit.prdPath), { cache: "no-store" });
+      if (!latest.ok) throw error;
+      const disk = await latest.text();
+      // A stale Agent rewrite between the user save and the journal repair is
+      // expected; any unrelated external source still opens the merge dialog.
+      if (disk !== original && disk !== content) throw error;
+      return attempt(disk);
+    }) : attempt(original);
+    linkedSavePromise = request.then(() => {
+      edit.original = content;
+      linkedPrds.set(edit.prdPath, content);
+      linkedConflict = false;
+      status("已保存");
+      return true;
+    }).catch(error => {
+      linkedConflict = true;
+      status("原文档保存失败 · 已保留本机备份", "error");
+      if (!background) notice(error.message);
+      return false;
+    }).finally(() => {
+      linkedSavePromise = null;
+    });
+    return linkedSavePromise;
+  }
+  function applyTextCommand(command) {
+    const el = editing && nodeEls.get(editing.id)?.querySelector(".node-content");
+    if (!el) return;
+    const selection = getSelection(), active = selection.rangeCount ? selection.getRangeAt(0) : null;
+    if (!active || !el.contains(active.commonAncestorContainer)) return;
+    const before = active.cloneRange();before.selectNodeContents(el);before.setEnd(active.startContainer, active.startOffset);
+    const start = before.toString().length, end = start + active.toString().length;
+    const source = textSource(el), edit = window.CanvasMarkdownEditor.transform(source,start,end,command);
+    // Normalize plaintext DOM before selecting a source range; this also handles Enter-created DIVs.
+    el.textContent = source;
+    const node = el.firstChild || el.appendChild(document.createTextNode(""));
+    const range = document.createRange();range.setStart(node,edit.start);range.setEnd(node,edit.end);
+    selection.removeAllRanges();selection.addRange(range);el.focus();
+    document.execCommand("insertText",false,edit.text);
+    if (edit.select && el.firstChild?.nodeType === Node.TEXT_NODE && edit.select[1] <= el.firstChild.length) {
+      const range = document.createRange();range.setStart(el.firstChild,edit.select[0]);range.setEnd(el.firstChild,edit.select[1]);selection.removeAllRanges();selection.addRange(range);
+    }
+    el.oninput?.();
+  }
+  function mountTextTools() {
+    textTools?.remove();
+    textTools = document.createElement("div");textTools.className = "markdown-inline-tools";
+    textTools.append(window.CanvasMarkdownEditor.toolbar(applyTextCommand));
+    const expand = document.createElement("button");expand.type="button";expand.textContent="展开编辑";expand.setAttribute("aria-label","展开 Markdown 编辑器");
+    expand.onpointerdown=e=>e.preventDefault();
+    expand.onclick=()=>{
+      const edit = editing, n = edit && state.nodes.find(n=>n.id===edit.id), el = n && nodeEls.get(n.id)?.querySelector(".node-content");
+      if (!n || !el) return;
+      expandedEditor={};
+      expandedEditor=window.CanvasMarkdownEditor.dialog({title:n.name || "编辑 Markdown",source:textSource(el),baseUrl:prdPath(n),
+        onSave:async source=>{
+          if (edit.prdPath && source !== edit.original) {
+            if (linkedSavePromise) await linkedSavePromise;
+            if (edit.prdPath && source !== edit.original) await saveLinkedMarkdown(edit.prdPath,source,edit.original);
+          }
+          edit.prdPath="";el.textContent=source;el.oninput?.();finishText();expandedEditor=null;
+        },
+        onCancel:()=>{expandedEditor=null;el.focus();}});
+    };
+    const done = document.createElement("button");done.type="button";done.textContent="完成";done.onpointerdown=e=>e.preventDefault();done.onclick=()=>finishText();
+    textTools.append(expand,done);document.body.append(textTools);positionTextTools();
+  }
   function startText(id) {
     if (!canEdit()) return;
     finishText();
@@ -1504,8 +2071,9 @@
     render();
     const el = nodeEls.get(id)?.querySelector(".node-content");
     if (!el) return;
+    if (prdPath(n)) n.text = displayText(n);
     checkpoint();
-    editing = { id, original: n.text || "", historyLength: history.length - 1, composing: false };
+    editing = { id, prdPath: prdPath(n), original: n.text || "", historyLength: history.length - 1, composing: false };
     // Editing always uses the saved source, never the rendered Markdown DOM.
     el.textContent = n.text || "";
     el.contentEditable = "plaintext-only";
@@ -1518,7 +2086,7 @@
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-    el.onblur = () => finishText();
+    el.onblur = () => { if (!expandedEditor) finishText(); };
     el.oncompositionstart = () => {
       if (editing) editing.composing = true;
     };
@@ -1526,25 +2094,51 @@
       if (editing) editing.composing = false;
     };
     el.oninput = () => {
-      n.text = textSource(el);
+      // Startup schema migration can replace node objects while this editor
+      // stays focused. Always write into the current document.
+      const node = state.nodes.find(item => item.id === id);
+      if (editing?.id !== id || !node) return;
+      node.text = textSource(el);
+      if (prdPath(node)) linkedPrds.set(prdPath(node), node.text);
+      // Keep the caret in view when the box grows past the viewport edge.
+      const overflowing = el.scrollHeight > el.clientHeight + 1;
+      const atBottom = overflowing && el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+      if (textAutoHeight(node)) fitContentHeight(node, el.parentElement);
+      if (atBottom) el.scrollTop = el.scrollHeight;
       dirty = true;
       status("等待保存…", "busy");
-      try {
-        localStorage.setItem(draftKey, JSON.stringify({ state, baseline, savedAt: Date.now() }));
-      } catch {
-      }
+      persistDraft({ announce: false });
       clearTimeout(autoTimer);
-      autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
+      if (prdPath(node)) queueLinkedSave(editing, node);
+      else autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
     };
+    if (n.type === "text") {
+      mountTextTools();
+      el.onkeydown = event => {
+        if (event.isComposing) return;
+        if ((event.metaKey || event.ctrlKey) && ["b","i","k"].includes(event.key.toLowerCase())) {
+          event.preventDefault();event.stopPropagation();applyTextCommand({b:"bold",i:"italic",k:"link"}[event.key.toLowerCase()]);
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {event.preventDefault();event.stopPropagation();finishText();}
+        if (event.key === "Tab") {event.preventDefault();document.execCommand("insertText",false,"  ");}
+      };
+    }
     positionSelectionTools();
   }
   function finishText(cancel = false) {
     if (!editing) return;
     const edit = editing;
-    editing = null;
-    clearTimeout(autoTimer);
     const n = state.nodes.find((item) => item.id === edit.id), el = nodeEls.get(edit.id)?.querySelector(".node-content");
     if (el) {
+      n.text = textSource(el);
+      if (edit.prdPath) linkedPrds.set(edit.prdPath, n.text);
+    }
+    editing = null;
+    textTools?.remove();textTools=null;
+    clearTimeout(autoTimer);
+    clearTimeout(linkedTimer);
+    if (el) {
+      el.onkeydown = null;
       el.onblur = null;
       el.oninput = null;
       el.oncompositionstart = null;
@@ -1554,6 +2148,37 @@
       delete el.parentElement.dataset.signature;
     }
     if (!n) return;
+    if (edit.prdPath && !cancel && n.text === edit.original && !linkedConflict) {
+      render();
+      return true;
+    }
+    if (edit.prdPath && !cancel && n.text !== edit.original) {
+      if (linkedSavePromise) {
+        return linkedSavePromise.then(async saved => {
+          if (saved !== false && edit.prdPath && n.text !== edit.original) {
+            await flushLinkedSave(edit, n);
+            changed();
+          }
+          return saved;
+        });
+      }
+      const content = n.text;
+      n.text = edit.original;
+      linkedSavePromise = flushLinkedSave(edit, n, { content, original: edit.original, retry: true }).then(saved=>{
+        if (!saved) throw new Error("原文档保存失败，请保留当前草稿后重试");
+        return true;
+      }).catch(error=>{
+        notice(error.message);
+        expandedEditor=window.CanvasMarkdownEditor.dialog({title:n.name,source:content,baseUrl:edit.prdPath,onSave:async value=>{
+          n.text=value;
+          if (!(await flushLinkedSave(edit,n,{content:value}))) throw new Error("原文档保存失败，请保留当前草稿后重试");
+          expandedEditor=null;changed();
+        },onCancel:()=>{expandedEditor=null;render();}});
+        return false;
+      }).finally(()=>{linkedSavePromise=null;});
+      render();
+      return linkedSavePromise;
+    }
     if (cancel) n.text = edit.original;
     if (n.text !== edit.original) {
       changed();
@@ -1564,12 +2189,38 @@
     if (stillDirty) changed();
     else {
       dirty = false;
-      try {
-        localStorage.removeItem(draftKey);
-      } catch {
-      }
+      removeStoredValue(draftKey);
       status("已保存");
       render();
+    }
+  }
+  async function copyImageToClipboard(node) {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+      notice("当前环境不支持复制图片，请使用 HTTPS 或本机地址打开画布。");
+      return;
+    }
+    try {
+      const src = node.src;
+      if (!/^(data:image\/(png|jpeg|webp|gif);base64,|assets\/[a-zA-Z0-9_.-]+$)/.test(src || "")) throw new Error("图片地址无效");
+      const png = (async () => {
+        const image = new Image();
+        image.src = src;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("无法读取图片");
+        context.drawImage(image, 0, 0);
+        return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("图片转换失败")), "image/png"));
+      })();
+      // Start the clipboard write during the user gesture; Safari requires this
+      // even when image decoding and PNG conversion are still pending.
+      png.catch(() => {});
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+      notice("图片已复制到剪贴板");
+    } catch {
+      notice("图片复制失败，请检查图片是否可读取并允许剪贴板访问后重试。");
     }
   }
   function copySelection() {
@@ -1602,17 +2253,19 @@
     mutate(() => {
       const copies = C.duplicate(source.nodes, source.selected, 40);
       for (const n of copies.nodes) if (n.parentId && !copies.nodes.some((p) => p.id === n.parentId)) n.parentId = null;
+      const edgeOffset={x:40,y:40};
       let target = at;
       if (!target && source.sourcePath !== location.pathname) target = point(innerWidth / 2, innerHeight / 2);
       if (target) {
         const b = C.bounds(C.roots(copies.nodes, copies.selected)), dx = target.x - b.x - b.width / 2, dy = target.y - b.y - b.height / 2;
+        edgeOffset.x+=dx;edgeOffset.y+=dy;
         for (const n of copies.nodes) {
           n.x += dx;
           n.y += dy;
         }
       }
       state.nodes.push(...copies.nodes);
-      const copiedEdges=C.duplicateEdges(source.edges || [], copies.mapping);
+      const copiedEdges=C.duplicateEdges(source.edges || [], copies.mapping, edgeOffset);
       if(copiedEdges.length)(state.edges ||= []).push(...copiedEdges);
       selected = new Set(copies.selected);
     });
@@ -1652,10 +2305,40 @@
       changed();
     }
   }
-  stage.addEventListener("dragover", (e) => e.preventDefault());
+  const prdDragType = "application/x-prota-prd+json";
+  async function dropPrd(raw, at) {
+    if (!canEdit()) throw new Error(readOnly ? "当前画布只读" : "正在准备 Agent 任务，请稍候再拖入 PRD");
+    const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!payload || typeof payload.path !== "string") throw new Error("PRD 拖拽数据无效");
+    const source = documentUrl(payload.path);
+    const response = await fetch(source.href, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+    if (!response.ok) throw new Error(`PRD 读取失败（${response.status}），请检查原文档是否存在`);
+    const content = await response.text();
+    if (!canEdit()) throw new Error("画布暂不可编辑，请稍后再拖入");
+    finishText();
+    linkedPrds.set(source.pathname, content);
+    mutate(() => {
+      const node = { id: uid(), type: "text", name: String(payload.name || decodeURIComponent(source.pathname.split("/").pop())),
+        x: Math.round(at.x), y: Math.round(at.y), width: 720, height: 100,
+        text: content, prdPath: source.pathname, markdownSource: source.pathname, color: "#ffffff", fontSize: 16, padding: 28 };
+      state.nodes.push(node);
+      selected = new Set([node.id]);
+    });
+    return true;
+  }
+  stage.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    if (e.dataTransfer?.types.includes(prdDragType)) e.dataTransfer.dropEffect = canEdit() ? "copy" : "none";
+  });
   stage.addEventListener("drop", (e) => {
     e.preventDefault();
-    images(e.dataTransfer.files, point(e.clientX, e.clientY)).catch(() => status("图片读取失败", "error"));
+    if (!e.dataTransfer) return;
+    const at = point(e.clientX, e.clientY);
+    if (e.dataTransfer.types.includes(prdDragType)) {
+      dropPrd(e.dataTransfer.getData(prdDragType), at).catch(error => notice(error.message || "PRD 读取失败，请重试"));
+      return;
+    }
+    images(e.dataTransfer.files, at).catch(() => status("图片读取失败", "error"));
   });
   document.addEventListener("paste", (e) => {
     if (e.target.matches("input,textarea") || e.target.isContentEditable) return;
@@ -1666,21 +2349,24 @@
       images(files).catch(() => status("图片读取失败", "error"));
     } else if (pasteSelection()) e.preventDefault();
   });
-  async function save({ preserveEditing = false } = {}) {
+  // Background saves persist the current source without committing the editor.
+  // Explicit saves and outside clicks still finish editing.
+  async function save({ preserveEditing = false, keepalive = false } = {}) {
     clearTimeout(autoTimer);
     if (gesture) {
-      autoTimer = setTimeout(() => save(), AUTOSAVE_DELAY);
+      autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
       return false;
     }
     if (preserveEditing && editing?.composing) {
       autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
       return false;
     }
-    if (!preserveEditing) finishText();
+    if (!preserveEditing && (await finishText()) === false) return false;
+    if (linkedSavePromise && (await linkedSavePromise) === false) return false;
     if (readOnly) return false;
     if (savePromise) {
       await savePromise;
-      return dirty && !conflict ? save({ preserveEditing }) : !dirty;
+      return dirty && !conflict ? save({ preserveEditing, keepalive }) : !dirty;
     }
     if (!local) {
       status("已暂存在当前浏览器");
@@ -1692,7 +2378,7 @@
     const snapshot = clone(state), original = clone(baseline);
     savePromise = (async () => {
       try {
-        const response = await fetch("/api/canvas/save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId: route[1], pageId: route[2], version: route[3], revision: baseline.revision, baseline: original, state: snapshot }) });
+        const response = await fetch("/api/canvas/save", { method: "POST", keepalive, signal: AbortSignal.timeout(10000), headers: { "Content-Type": "application/json" }, body: JSON.stringify({ projectId: route[1], pageId: route[2], version: route[3], revision: baseline.revision, baseline: original, state: snapshot, autosave: true }) });
         const result = await response.json();
         if (!response.ok) {
           conflict = response.status === 409;
@@ -1708,15 +2394,37 @@
             if (item?.src === old) item.src = asset.src;
           }
         }
-        snapshot.revision = result.revision;
-        state.revision = result.revision;
-        baseline = clone(snapshot);
+        if (result.deferred) {
+          // The server fsynced the manual receipt before acknowledging it. Its
+          // worker reconciles partial Agent writes even after this iframe closes.
+          baseline = clone(original);
+        } else if (result.state) {
+          const persisted = materialize(result.state, schemaEnabled || result.state.schemaVersion === 2);
+          const rebased = C.mergeDocuments(snapshot, state, persisted).state;
+          // Property controls retain node references while the user is typing.
+          // Adopt acknowledged fields without invalidating those live controls.
+          const existing = new Map(state.nodes.map(node => [node.id, node]));
+          rebased.nodes = rebased.nodes.map(node => {
+            const live = existing.get(node.id);
+            if (!live) return node;
+            for (const key of Object.keys(live)) if (!(key in node)) delete live[key];
+            return Object.assign(live, node);
+          });
+          state = rebased;
+          state.revision = persisted.revision;
+          baseline = clone(result.state);
+          render({ panels: false });
+        } else {
+          const revision = Number(result.revision);
+          if (!Number.isSafeInteger(revision)) throw Error("保存失败，请重试");
+          baseline = clone(snapshot);
+          baseline.revision = revision;
+          state.revision = revision;
+        }
         conflict = false;
+        if (dirty) persistDraft();
         if (!dirty) {
-          try {
-            localStorage.removeItem(draftKey);
-          } catch {
-          }
+          removeStoredValue(draftKey);
           $("#notice").hidden = true;
         }
         status(dirty ? "有新的修改待保存" : "已保存", dirty ? "busy" : "");
@@ -1738,11 +2446,24 @@
       } finally {
         saving = false;
         savePromise = null;
-        if (dirty && !conflict && JSON.stringify(state) !== JSON.stringify(snapshot)) autoTimer = setTimeout(() => save(), AUTOSAVE_DELAY);
+        if (dirty && !conflict) autoTimer = setTimeout(() => save({ preserveEditing: true }), JSON.stringify(state) !== JSON.stringify(snapshot) ? AUTOSAVE_DELAY : 3000);
       }
     })();
     return savePromise;
   }
+  // A sustained typing session must keep reaching disk without waiting for a
+  // pause in input. The single in-flight save rebases any edits made meanwhile.
+  setInterval(() => {
+    if (local && !readOnly && !gesture && !editing?.composing && !recoveringDraft) {
+      if (editing?.prdPath) {
+        const node = state.nodes.find(item => item.id === editing.id);
+        if (node) queueLinkedSave(editing, node, 0);
+        return;
+      }
+      if (!dirty || saving || conflict) return;
+      void save({ preserveEditing: true });
+    }
+  }, 150);
   function backupLocal() {
     try {
       localStorage.setItem(draftKey + ":conflict-backup", JSON.stringify({ state, baseline, savedAt: Date.now() }));
@@ -1822,13 +2543,52 @@
       notice("请在 Prota 中使用当前 Agent。");
       return;
     }
-    if (dirty && !await save()) {
-      notice("更改还未写入本地，请先处理保存提示。");
-      return;
-    }
     if (document.fullscreenElement) await document.exitFullscreen();
     if (fullscreenFallback) parent.postMessage({ type: "prota:canvas-fullscreen", active: false }, location.origin);
     parent.postMessage({ type: "prota:canvas-open-agent" }, location.origin);
+  }
+  // When the Agent run settles, fold its disk writes into local edits without discarding either
+  // side; unresolved objects keep the local version and the merged document autosaves right after.
+  async function syncAgentOutcome() {
+    clearTimeout(autoTimer);
+    if (savePromise) {
+      try {
+        await savePromise;
+      } catch {
+      }
+    }
+    if (conflict) return;
+    try {
+      finishText();
+    } catch {
+    }
+    if (linkedSavePromise) {
+      try {
+        await linkedSavePromise;
+      } catch {
+      }
+    }
+    if (!dirty) return;
+    try {
+      const disk = await fetchDiskDocument();
+      const useV2 = schemaEnabled || state.schemaVersion === 2 || disk.schemaVersion === 2;
+      const [before, ours, theirs] = await Promise.all([baseline, clone(state), disk].map(doc => materialize(doc, useV2)));
+      const merged = C.mergeDocuments(before, ours, theirs);
+      const viewport = clone(state.viewport);
+      checkpoint();
+      state = merged.state;
+      state.viewport = viewport;
+      baseline = clone(disk);
+      state.revision = disk.revision;
+      selected = new Set([...selected].filter((id) => state.nodes.some((n) => n.id === id)));
+      conflict = false;
+      dirty = true;
+      state.nodes.filter((n) => n.type === "board").forEach((n) => boardStamps.set(n.id, Date.now()));
+      changed();
+      notice(merged.conflicts.length ? `Agent 的修改与你的编辑在 ${merged.conflicts.length} 个对象上冲突，冲突处已保留你的修改。` : "已合并 Agent 的修改，正在保存…");
+    } catch (error) {
+      notice(error.message || "同步 Agent 修改失败", [{ label: "读取最新版本", run: reloadLatestKeepBackup }]);
+    }
   }
   function agentState(data) {
     const wasBusy = agentBusy, previousTargets = [...agentTargets];
@@ -1837,21 +2597,30 @@
     if (data.active || wasBusy) agentPending = false;
     agentBusy = Boolean(data.active);
     document.body.classList.toggle("agent-working", agentBusy);
-    if (agentBusy) status("Agent 正在修改", "busy");
+    if (agentBusy && !dirty && !saving) status("已保存 · Agent 正在修改");
     else if (wasBusy) {
       if (data.error) notice("任务未完成，可在当前 Agent 中查看详情。");
-      if (!data.previewManaged) reloadFromDisk(false, { targetIds: previousTargets.length ? previousTargets : null });
+      const settle = () => {
+        if (!data.previewManaged && !(dirty || editing)) reloadFromDisk(false, { targetIds: previousTargets.length ? previousTargets : null });
+      };
+      if (dirty || editing || saving) syncAgentOutcome().finally(settle);
+      else settle();
     }
-    document.querySelectorAll("#add-board,#add-shape,#add-note,#add-component,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = agentBusy || readOnly);
+    document.querySelectorAll("#add-board,#add-shape,#add-note,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = readOnly);
     renderInspector();
   }
-  // Transient surfaces own the interaction until dismissed. Keep selection itself
-  // intact, but never let its toolbar reappear behind a menu during a render.
+  // Context menus replace the toolbar; its own More menu expands underneath it.
   function setFloatingPanel(selector, open) {
     if (open) {
       for (const other of floatingPanels) if (other !== selector) $(other).hidden = true;
     }
     $(selector).hidden = !open;
+    if (selector === "#context-menu" && !open) {
+      delete $(selector).dataset.boardVersions;
+      document.querySelectorAll('.board-version[aria-expanded="true"]').forEach(button => button.setAttribute("aria-expanded", "false"));
+    }
+    const more = $('#selection-tools [data-action="more"]');
+    more?.setAttribute("aria-expanded", String(!$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")));
     positionSelectionTools();
   }
   function placeFloating(element, x, y) {
@@ -1860,12 +2629,15 @@
     element.style.left = Math.max(10, Math.min(innerWidth - w - 10, x)) + "px";
     element.style.top = Math.max(10, Math.min(innerHeight - h - 10, y)) + "px";
   }
-  function showMenu(items, x, y, invoker = document.activeElement) {
+  function showMenu(items, x, y, invoker = document.activeElement, { keepSelectionTools = false } = {}) {
     if (!invoker || invoker === document.body) invoker = stage;
     closePalette();
     setFloatingPanel("#property-popover", false);
     const menu = $("#context-menu");
     menu.replaceChildren();
+    delete menu.dataset.boardVersions;
+    menu.toggleAttribute("data-selection-tools", keepSelectionTools);
+    menu.style.removeProperty("max-height");
     menuInvoker = invoker;
     for (const item of items) {
       if (item.divider) {
@@ -1880,6 +2652,7 @@
       } else menu.append(actionButton(item, true));
     }
     placeFloating(menu, x, y);
+    if (keepSelectionTools) positionSelectionTools();
     menu.querySelector("button:not(:disabled)")?.focus({ preventScroll: true });
   }
   function insertAt(kind, at) {
@@ -1894,7 +2667,7 @@
     }
   }
   function creationActions(at = null, category = "all") {
-    const defs = [["mobile", "手机画板", "frame", "boards"], ["web", "Web 画板", "frame", "boards"], ["board", "自由画板", "frame", "boards"], ["text", "文本", "type", "content"], ["note", "便签", "sticky-note", "content"], ["rect", "矩形", "shapes", "shapes"], ["ellipse", "圆形", "shapes", "shapes"], ["image", "图片", "image-plus", "content"], ["component-button", "按钮组件", "component", "components"], ["component-input", "输入框组件", "component", "components"], ["component-card", "信息卡组件", "component", "components"], ["component-nav", "导航栏组件", "component", "components"]];
+    const defs = [["mobile", "手机画板", "frame", "boards"], ["web", "Web 画板", "frame", "boards"], ["board", "自由画板", "frame", "boards"], ["text", "文本", "type", "content"], ["note", "便签", "sticky-note", "content"], ["rect", "矩形", "shapes", "shapes"], ["ellipse", "圆形", "shapes", "shapes"], ["image", "图片", "image-plus", "content"]];
     return defs.filter(([, , , group]) => category === "all" || category === group).map(([kind, label, icon]) => ({ id: "add-" + kind, label, icon, disabled: !canEdit(), run: () => {
       if (kind === "image") {
         imageReplaceTarget = null;
@@ -1909,10 +2682,9 @@
   }
   $("#add-board").onclick = (e) => openCreateMenu(e.currentTarget, "boards");
   $("#add-shape").onclick = (e) => openCreateMenu(e.currentTarget, "shapes");
-  $("#add-component").onclick = (e) => openCreateMenu(e.currentTarget, "components");
   $("#more-tools").onclick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    showMenu(creationActions().filter((a) => ["add-note", "add-image"].includes(a.id) || a.id.startsWith("add-component")), rect.left, rect.top - 300, e.currentTarget);
+    showMenu(creationActions().filter((a) => ["add-note", "add-image"].includes(a.id)), rect.left, rect.top - 300, e.currentTarget);
   };
   $("#add-note").onclick = () => add("note");
   $("#ask-agent").onclick = focusAgent;
@@ -1946,6 +2718,9 @@
     }
     showMenu(items, clientX, clientY);
   }
+  window.addEventListener("contextmenu", (e) => {
+    consumeFocusedContextMenu(e);
+  }, true);
   stage.addEventListener("contextmenu", (e) => {
     if (e.target.isContentEditable || e.target.closest("#property-popover,#selection-tools,.floating")) return;
     e.preventDefault();
@@ -1956,7 +2731,7 @@
     }
     const el = e.target.closest(".node");
     const boardNode = el ? state.nodes.find((n) => n.id === el.dataset.id && n.type === "board" && el.querySelector("iframe")) : null;
-    if (boardNode && !e.target.closest(".node-title") && !readOnly && canEdit() && !effectiveLocked(boardNode)) {
+    if (boardNode && !e.target.closest(".node-title") && canAnnotateBoard(boardNode)) {
       const includeBoardAdd = !e.target.closest(".node-title");
       handleBoardContextMenu(boardNode.id, e.clientX, e.clientY, () => {
         openNodeMenu(el, e.clientX, e.clientY, { includeBoardAdd });
@@ -2101,7 +2876,7 @@
   }
   function positionSelectionTools() {
     const box = $("#selection-tools");
-    if (!current().length || editing || gesture || interacting || floatingPanels.some((selector) => !$(selector).hidden)) {
+    if (!current().length || editing || gesture || interacting || floatingPanels.some((selector) => !$(selector).hidden && !(selector === "#context-menu" && $(selector).hasAttribute("data-selection-tools")))) {
       box.hidden = true;
       return;
     }
@@ -2115,20 +2890,32 @@
     box.style.left = pos.x + "px";
     box.style.top = pos.y + "px";
     box.dataset.placement = pos.placement;
+    const menu = $("#context-menu");
+    if (!menu.hidden && menu.hasAttribute("data-selection-tools")) {
+      const rect = box.getBoundingClientRect();
+      menu.style.left = Math.max(10, Math.min(innerWidth - menu.offsetWidth - 10, rect.right - menu.offsetWidth)) + "px";
+      menu.style.top = rect.bottom + 6 + "px";
+      menu.style.maxHeight = Math.max(0, innerHeight - rect.bottom - 16) + "px";
+    }
   }
   function notice(text, actionList = []) {
     $("#notice-text").textContent = text;
     const container = $("#notice-actions");
-    container.replaceChildren();
     const list = Array.isArray(actionList) ? actionList : actionList ? [actionList] : [];
-    for (const action of list) {
-      const button = document.createElement("button");
+    // Autosave retries republish the same notice; keep buttons mounted so a
+    // user click is not racing periodic DOM replacement.
+    while (container.children.length > list.length) container.lastElementChild.remove();
+    for (const [index, action] of list.entries()) {
+      let button = container.children[index];
+      if (!button) {
+        button = document.createElement("button");
+        container.append(button);
+      }
       button.className = "notice-action";
-      button.id = container.children.length ? "notice-action-secondary" : "notice-action";
+      button.id = button.previousElementSibling ? "notice-action-secondary" : "notice-action";
       button.textContent = action.label;
       if (action.primary) button.classList.add("primary");
       button.onclick = action.run;
-      container.append(button);
     }
     $("#notice").hidden = false;
   }
@@ -2194,7 +2981,7 @@
     state.nodes.forEach(visit);
   }
   async function reloadFromDisk(discard = false, { targetIds = null, previewSync = false, snapshotUrl = null } = {}) {
-    if (!local || (!previewSync && (agentBusy || agentPending))) return false;
+    if (!local || boardVersionBusy || (!previewSync && (agentBusy || agentPending))) return false;
     if (previewSync && (editing || dirty || saving)) return false;
     if (saving) await savePromise;
     if (editing || dirty) {
@@ -2246,10 +3033,7 @@
       status("已同步");
       $("#notice").hidden = true;
       $("#save-status").classList.remove("error");
-      try {
-        localStorage.removeItem(draftKey);
-      } catch {
-      }
+      removeStoredValue(draftKey);
       return true;
     } catch (error) {
       notice(error.message, [{ label: "重试", run: () => reloadFromDisk(discard) }]);
@@ -2266,6 +3050,12 @@
       if (!node || !/^boards\/[a-zA-Z0-9_-]+\/index\.html$/.test(node.src || "")) continue;
       const old = nodeEls.get(id)?.querySelector("iframe");
       const url = snapshotUrl ? new URL(node.src, new URL(snapshotUrl, location.href)).href : node.src;
+      if (snapshotUrl && old && new URL(old.src, location.href).pathname === new URL(url, location.href).pathname) {
+        boardPreviewUrls.set(id, url);
+        const el = nodeEls.get(id);
+        if (el) el.dataset.signature = nodeContentSignature(node);
+        continue;
+      }
       if (old) {
         const next = old.cloneNode(false);
         next.loading = "eager";
@@ -2290,7 +3080,7 @@
       if (snapshotUrl) boardPreviewUrls.set(id, url); else boardPreviewUrls.delete(id);
       // Mark the rendered signature without rerendering unrelated boards.
       const el = nodeEls.get(id);
-      if (el) el.dataset.signature = JSON.stringify([node.type, "", node.src, boardPreviewUrls.get(id) || "", boardStamps.get(id) || 0]);
+      if (el) el.dataset.signature = nodeContentSignature(node);
     }
     return ok;
   }
@@ -2396,8 +3186,22 @@
     const node = state.nodes.find((n) => n.id === annotationBoardId);
     parent.postMessage({ ...data, protaBoardId: boardFolderOf(node), protaBoardPath: node?.src || "", protaAnnotationNodeId: annotationBoardId }, location.origin);
   });
+  function saveOnHide() {
+    if (readOnly || !dirty) return;
+    persistDraft();
+    void save({ preserveEditing: true, keepalive: true });
+  }
+  window.addEventListener("pagehide", saveOnHide);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) saveOnHide();
+  });
+  window.addEventListener("online", () => {
+    if (dirty && !conflict) void save({ preserveEditing: true });
+  });
   window.addEventListener("beforeunload", (e) => {
-    if (dirty && !readOnly) {
+    // Browser shutdown cannot wait for a request. The synchronous draft is
+    // restored automatically on the next visit, even if keepalive fails.
+    if (dirty && !readOnly && (!persistDraft() || editing?.prdPath || linkedSavePromise)) {
       e.preventDefault();
       e.returnValue = "";
     }
@@ -2430,26 +3234,32 @@
   } catch {
   }
   try {
-    const draft = JSON.parse(localStorage.getItem(draftKey) || "null");
-    if (draft && !readOnly && JSON.stringify(draft.state.nodes) !== JSON.stringify(state.nodes)) notice("找到未保存的本机修改。", [{ label: "恢复修改", primary: true, run: async () => {
+    const draft = JSON.parse(readStoredValue(draftKey) || "null");
+    if (draft?.state && !readOnly) {
       C.validate(draft.state);
-      if (JSON.stringify(draft.baseline) !== JSON.stringify(window.PROTA_CANVAS)) {
-        try {
-          localStorage.setItem(draftKey + ":conflict-backup", JSON.stringify(draft));
-        } catch {
-          notice("本机备份空间不足，修改仍保留在恢复草稿中。");
-          return;
-        }
-        restoreLocalOverConflict();
-        return;
+      C.validate(draft.baseline);
+      const sameContent = (a, b) => {
+        const { revision: ar, viewport: av, ...ac } = a;
+        const { revision: br, viewport: bv, ...bc } = b;
+        return JSON.stringify(ac) === JSON.stringify(bc);
+      };
+      if (sameContent(draft.state, state)) removeStoredValue(draftKey);
+      else if (JSON.stringify(draft.baseline) === JSON.stringify(initialDocument)) {
+        state = materialize(draft.state, schemaEnabled || state.schemaVersion === 2);
+        baseline = clone(draft.baseline);
+        changed();
+      } else {
+        // Merge independent disk changes automatically; conflicting fields
+        // still require a choice and retain both the draft and disk backup.
+        writeStoredValue(draftKey + ":conflict-backup", JSON.stringify(draft));
+        recoveringDraft = true;
+        draftRecovery = restoreLocalOverConflict().finally(() => {
+          recoveringDraft = false;
+          draftRecovery = null;
+          render();
+        });
       }
-      checkpoint();
-      state = materialize(draft.state, schemaEnabled || state.schemaVersion === 2);
-      baseline = draft.baseline;
-      conflict = false;
-      changed();
-      $("#notice").hidden = true;
-    } }]);
+    }
   } catch {
   }
   if ($("#notice").hidden) offerConflictBackupRestore();
@@ -2476,16 +3286,20 @@
     const iframe = nodeEls.get(node.id)?.querySelector("iframe") || null;
     return { boardId: boardFolderOf(node), boardPath: node.src || "", nodeId: node.id, iframe };
   }
-  window.protaCanvas = { runtimeVersion: 8, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
+  window.protaCanvas = { runtimeVersion: 33, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
     agentPending = Boolean(value);
     panelKey = "";
     renderInspector();
   } };
+  syncPrds();
   window.protaCanvasSchemaReady = (async () => {
     if (!local || startupError) return;
     try {
       const response = await fetch("/api/canvas/features", { cache: "no-store", signal: AbortSignal.timeout(2000) });
-      if (!response.ok || (await response.json()).canvasSchemaV2 !== true) return;
+      if (!response.ok) return;
+      const features = await response.json();
+      boardVersionsEnabled = features.boardRevisions === true;
+      if (features.canvasSchemaV2 !== true) { render(); return; }
       const prepared = materialize(state, true);
       const past = history.map(doc => materialize(doc, true)), next = future.map(doc => materialize(doc, true));
       state = prepared; history = past; future = next; schemaEnabled = true;

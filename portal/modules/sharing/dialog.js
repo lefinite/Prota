@@ -1,3 +1,4 @@
+import { removeShareSurface } from './surface.js';
 /** Access options are transient: plaintext passwords are never saved in browser storage. */
 let activeRequest = null;
 const icon = paths => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
@@ -19,11 +20,13 @@ function openShareOptions(name) {
     return new Promise(resolve => {
         const previousFocus = document.activeElement;
         const dialog = document.createElement('dialog');
+        removeShareSurface(document.querySelector('.share-flow'));
         dialog.className = 'share-access-dialog';
+        dialog.contentEditable = 'false';
         dialog.setAttribute('aria-labelledby', 'shareAccessTitle');
         dialog.innerHTML = `<form novalidate>
             <header class="share-access-heading">
-                <div><h2 id="shareAccessTitle" tabindex="-1">链接分享</h2><p data-name></p></div>
+                <div class="share-access-title"><span class="share-access-emblem">${icon('<path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.5 1.5M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/>')}</span><div><h2 id="shareAccessTitle">链接分享</h2></div></div>
                 <button class="share-access-icon" type="button" data-cancel aria-label="关闭">${icon('<path d="m6 6 12 12M18 6 6 18"/>')}</button>
             </header>
             <div class="share-access-body">
@@ -52,7 +55,6 @@ function openShareOptions(name) {
             </div>
             <footer class="share-access-actions"><button type="button" data-cancel>取消</button><button type="submit">创建分享链接</button></footer>
         </form>`;
-        dialog.querySelector('[data-name]').textContent = name;
         const form = dialog.querySelector('form');
         const password = form.elements.password;
         const protection = form.elements.protected;
@@ -63,8 +65,8 @@ function openShareOptions(name) {
             if (settled) return;
             settled = true;
             if (dialog.open) dialog.close();
-            dialog.remove();
-            if (previousFocus?.isConnected) previousFocus.focus();
+            removeShareSurface(dialog);
+            if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
             resolve(value);
         };
         const clearError = () => { error.hidden = true; error.textContent = ''; password.removeAttribute('aria-invalid'); };
@@ -120,6 +122,6 @@ function openShareOptions(name) {
         };
         document.body.append(dialog);
         dialog.showModal();
-        dialog.querySelector('h2').focus({ preventScroll: true });
+        form.querySelector('input[name=expiry]:checked').focus({ preventScroll: true });
     });
 }

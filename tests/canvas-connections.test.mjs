@@ -41,3 +41,38 @@ test('automatic and fixed-side endpoints are always the exact center of a side',
  const edges=[edge('e0','a','b'),...['left','right','top','bottom'].map((side,i)=>({...edge('e'+(i+1),'a','b'),fromPort:side,toPort:side}))];
  for(const e of edges){const r=R.routeEdges(nodes,[e])[0];assert.ok(!r.unroutable);assert.ok(midpoints(nodes[0]).some(p=>p.x===r.points[0].x&&p.y===r.points[0].y));assert.ok(midpoints(nodes[1]).some(p=>p.x===r.points.at(-1).x&&p.y===r.points.at(-1).y));}
 });
+
+test('control anchors route from control edges and disappear when unresolved',()=>{
+ const nodes=[board('a',0,0,400,400),board('b',800,0,400,400)];
+ const anchor={selector:'#next',tag:'BUTTON',text:'继续',page:'step1',src:'boards/a/index.html'};
+ const e={...edge('control','a','b'),fromAnchor:anchor,fromPort:'right'};
+ const routes=R.routeEdges(nodes,[e],{resolveAnchor:()=>({x:40,y:90,width:160,height:44})});
+ assert.equal(routes.length,1);assert.deepEqual(routes[0].points[0],{x:200,y:112});assert.deepEqual(R.routeEdges(nodes,[e],{resolveAnchor:()=>null}),[]);
+ const document={schemaVersion:1,revision:0,viewport:{x:0,y:0,zoom:1},nodes,edges:[e]};C.validate(document);
+ assert.throws(()=>C.validate({...document,edges:[{...e,fromAnchor:{...anchor,selector:'x'.repeat(1025)}}]}));
+ const duplicated=C.duplicate(nodes,['a','b']);assert.deepEqual(C.duplicateEdges([e],duplicated.mapping)[0].fromAnchor,anchor);
+});
+
+
+test('dragging interior and terminal segments preserves anchors and orthogonality',()=>{
+ const points=[{x:200,y:100},{x:300,y:100},{x:300,y:400},{x:800,y:400},{x:800,y:100},{x:900,y:100}];
+ const middle=R.moveSegment(points,2,460);assert.equal(middle[2].y,460);assert.equal(middle[3].y,460);
+ for(const [path,index,value]of [[points,0,150],[points,4,170],[[{x:200,y:100},{x:900,y:100}],0,200]]){
+  const next=R.moveSegment(path,index,value);assert.deepEqual(next[0],path[0]);assert.deepEqual(next.at(-1),path.at(-1));
+  assert.ok(next.some(p=>p.y===value));for(let i=1;i<next.length;i++)assert.ok(next[i-1].x===next[i].x||next[i-1].y===next[i].y);
+ }
+ assert.deepEqual(points[2],{x:300,y:400},'dragging never mutates the saved route');
+});
+test('manual routes survive node motion, duplication, reversal and reset',()=>{
+ const nodes=[board('a',0,0),board('b',900,0)];
+ const points=[{x:200,y:100},{x:260,y:100},{x:260,y:350},{x:840,y:350},{x:840,y:100},{x:900,y:100}];
+ const e={...edge('manual','a','b'),fromPort:'right',toPort:'left',manualRoute:points};
+ assert.deepEqual(R.routeEdges(nodes,[e])[0].points,points);
+ const copied=C.duplicate(nodes,['a','b']),copiedEdge=C.duplicateEdges([e],copied.mapping)[0];assert.deepEqual(copiedEdge.manualRoute,points.map(p=>({x:p.x+32,y:p.y+32})));assert.deepEqual(R.routeEdges(copied.nodes,[copiedEdge])[0].points,copiedEdge.manualRoute);
+ const translated=nodes.map(n=>({...n,x:n.x+32,y:n.y+32}));assert.deepEqual(R.routeEdges(translated,[e])[0].points,points.map(p=>({x:p.x+32,y:p.y+32})));
+ const moved=R.routeEdges([{...nodes[0],y:80},nodes[1]],[e])[0].points;assert.deepEqual(moved[0],{x:200,y:180});assert.equal(moved[1].y,180);assert.equal(moved[2].y,350);
+ const reversed={...e,fromInstanceId:'b',toInstanceId:'a',fromPort:'left',toPort:'right',manualRoute:[...points].reverse()};assert.deepEqual(R.routeEdges(nodes,[reversed])[0].points,[...points].reverse());
+ const automatic=R.routeEdges(nodes,[{...e,manualRoute:null,fromPort:'auto',toPort:'auto'}])[0].points;assert.equal(automatic.length,2);
+ const base={schemaVersion:1,revision:0,viewport:{x:0,y:0,zoom:1},nodes,edges:[e]};C.validate(base);
+ for(const invalid of [[{x:0,y:0}],points.map((p,i)=>i===2?{x:NaN,y:2}:p),[{x:0,y:0},{x:2,y:3}],Array(257).fill({x:0,y:0})])assert.throws(()=>C.validate({...base,edges:[{...e,manualRoute:invalid}]}));
+});

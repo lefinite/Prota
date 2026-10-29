@@ -39,6 +39,7 @@
       if ('textAlign' in n && !['left','center','right','justify'].includes(n.textAlign)) throw Error('文字对齐属性无效');
       if (state.schemaVersion === 2 && n.type === 'board') {
         if (!identity(n.boardId) || !('boardRevisionId' in n) || (n.boardRevisionId !== null && !identity(n.boardRevisionId))) throw Error('画板版本身份无效');
+        if ('boardVersionId' in n && (typeof n.boardVersionId !== 'string' || !/^v[1-9]\d*$/.test(n.boardVersionId))) throw Error('画板版本号无效');
         if ('originBoardId' in n && !identity(n.originBoardId)) throw Error('画板来源身份无效');
       }
     }
@@ -60,6 +61,11 @@
         if ('label' in edge && (typeof edge.label !== 'string' || edge.label.length > 200)) throw Error('连线文案最多 200 字');
         if ('kind' in edge && !['main','secondary','exception'].includes(edge.kind)) throw Error('连线类型无效');
         for (const key of ['fromPort','toPort']) if (key in edge && !['auto','left','right','top','bottom'].includes(edge[key])) throw Error('连线连接位置无效');
+        for (const key of ['fromAnchor','toAnchor']) if (edge[key] != null) {
+          const a=edge[key];
+          if (!a || typeof a!=='object' || Array.isArray(a) || !['selector','tag','text','page','src'].every(k=>typeof a[k]==='string') || !a.selector || a.selector.length>1024 || a.tag.length>40 || a.text.length>256 || a.page.length>2048 || !full(/^boards\/[a-zA-Z0-9_-]+\/index\.html$/,a.src)) throw Error('控件连接点无效');
+        }
+        if (edge.manualRoute != null && (!Array.isArray(edge.manualRoute) || edge.manualRoute.length < 2 || edge.manualRoute.length > 256 || edge.manualRoute.some((p,i,points)=>!p || !number(p.x,-1e7,1e7) || !number(p.y,-1e7,1e7) || (i>0 && p.x!==points[i-1].x && p.y!==points[i-1].y)))) throw Error('连线折点无效');
         if ('fontSize' in edge && !number(edge.fontSize, 8, 64)) throw Error('连线字号无效');
         edges.add(edge.id);
       }
@@ -127,5 +133,24 @@
     validate(result);
     return result;
   }
-  root.CanvasDomain = Object.freeze({ schemaVersion: 2, validate, load, createIndex });
+  function normalizeBoardVersions(value) {
+    const object = item => item !== null && typeof item === 'object' && !Array.isArray(item);
+    if (!object(value)) throw Error('画板版本数据无效，请刷新后重试。');
+    const revisions = Array.isArray(value.revisions) ? value.revisions.filter(item => object(item) && identity(item.revisionId)) : [];
+    if (value.versions != null && !object(value.versions)) throw Error('画板版本数据无效，请刷新后重试。');
+    const entries = Object.entries(value.versions || {});
+    const manageSupported = entries.length > 0;
+    let versions;
+    if (manageSupported) {
+      if (entries.some(([name, item]) => !/^v[1-9]\d*$/.test(name) || !object(item) || !('revisionId' in item) || (item.revisionId !== null && !identity(item.revisionId)))) {
+        throw Error('画板版本数据无效，请刷新后重试。');
+      }
+      versions = Object.fromEntries(entries.map(([name, item]) => [name, { ...item }]));
+    } else {
+      const snapshots = revisions.filter(item => item.kind === 'snapshot');
+      versions = snapshots.length ? Object.fromEntries(snapshots.map((item, i) => [`v${i + 1}`, { revisionId: item.revisionId }])) : { v1: { revisionId: null } };
+    }
+    return { ...value, revisions, versions, manageSupported };
+  }
+  root.CanvasDomain = Object.freeze({ schemaVersion: 2, validate, load, createIndex, normalizeBoardVersions });
 })(globalThis);
