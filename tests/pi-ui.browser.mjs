@@ -66,7 +66,7 @@ try {
     await page.route(/fonts\.google/, route => route.abort());
     await page.route(/http:\/\/(localhost|127\.0\.0\.1):8081\//, route => route.continue({ url: route.request().url().replace(/:8081\//, `:${agentPort}/`) }));
     await page.goto(base + '/portal/index.html', { waitUntil: 'domcontentloaded' });
-    await wait(() => page.evaluate(() => Boolean(window.shell?.agentProviderPersistenceReady && window.shell?.agentApi)), 'Portal');
+    await wait(() => page.evaluate(() => Boolean(window.shell?.agentProviderPersistenceReady && window.shell?.agentApi && window.shell.agentAvailableCommands?.some(command => command.id === 'runtime'))), 'Portal');
     await page.evaluate(() => window.shell.openAgentWorkbench());
     const commandIds = await page.evaluate(() => window.shell.agentAvailableCommands.map(command => command.id));
     assert.ok(commandIds.includes('runtime'));

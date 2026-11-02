@@ -1,6 +1,7 @@
 name: Magpie integration
 on:
   push:
+    branches: ['main']
     paths:
       - 'server/**'
       - 'portal/agent/**'
