@@ -20,7 +20,7 @@ FILES = ['Prota.exe', 'package.json', 'package-lock.json', 'LICENSE', 'README.md
          'data/agent-provider-presets.json', 'data/agent-sdk-extension.mjs', 'data/templates.json',
          'docs/workspace-and-publishing.md', 'docs/share-setup-guide.md', 'docs/sharing-flow.mmd', 'docs/sharing-flow.svg',
          'docs/developer-setup.md', 'docs/workspace-storage.md', 'docs/unified-settings-design.md', 'docs/provider-model-discovery.md',
-         '.gitmodules', 'pi-version.json', 'THIRD_PARTY_NOTICES.md', 'docs/agent-pi-architecture.md', 'docs/agent-pi-upgrade.md']
+         'docs/magpie-integration.md', '.gitmodules', 'pi-version.json', 'THIRD_PARTY_NOTICES.md', 'docs/agent-pi-architecture.md', 'docs/agent-pi-upgrade.md']
 PRIVATE_PARTS = {'node_modules', '__pycache__', '.git', '.DS_Store', 'user-preferences.md', '.readify-skills.json', 'skill-backups'}
 SIGNALS = [r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',
            r'gh[pousr]_[A-Za-z0-9]{25,}', r'sk-[A-Za-z0-9_-]{24,}']

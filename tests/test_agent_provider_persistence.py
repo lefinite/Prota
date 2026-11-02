@@ -90,5 +90,30 @@ class AgentProviderPersistenceTest(unittest.TestCase):
             bridge.normalize_agent_provider_config({'providers': {}})
 
 
+class MagpiePersistenceTests(unittest.TestCase):
+    def test_magpie_is_singleton_and_credential_free(self):
+        from server.bridge import normalize_agent_provider_config
+        result = normalize_agent_provider_config({'providers': [
+            {'id': 'integration:magpie', 'model': 'bad', 'apiKey': 'bad', 'baseURL': 'https://bad.example'},
+            {'id': 'duplicate', 'adapter': 'magpie', 'apiKey': 'bad'}
+        ], 'activeProviderId': 'integration:magpie'})
+        self.assertEqual(len(result['providers']), 1)
+        self.assertEqual(result['providers'][0]['apiKey'], '')
+        self.assertEqual(result['providers'][0]['model'], '')
+        self.assertEqual(result['providers'][0]['adapter'], 'magpie')
+
+    def test_capabilities_explicit_whitelist(self):
+        from server.bridge import normalize_agent_provider_config
+        result = normalize_agent_provider_config({'providers': [{'id': 'custom', 'modelCapabilities': {
+            'input': ['text', 'image', 'other'], 'reasoning': True, 'contextWindow': 128000, 'maxTokens': 1024,
+            'efforts': ['high', 'fake'], 'apiKey': 'no', 'baseURL': 'https://bad.example'
+        }}]})['providers'][0]['modelCapabilities']
+        self.assertEqual(result['input'], ['text', 'image'])
+        self.assertEqual(result['contextWindow'], 128000)
+        self.assertEqual(result['efforts'], ['high'])
+        self.assertNotIn('apiKey', result)
+        self.assertNotIn('baseURL', result)
+
+
 if __name__ == '__main__':
     unittest.main()

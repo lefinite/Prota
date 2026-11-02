@@ -29,7 +29,7 @@ export function readPiModelCatalog(directory = path.join(piRuntime, 'node_module
     return models;
 }
 
-export function adaptProvider(config, { catalog = [], capabilities = {} } = {}) {
+export function adaptProvider(config, { catalog = [], capabilities = config.modelCapabilities || {} } = {}) {
     if (!supportedApis.has(config.apiType)) throw new Error(`Unsupported Pi provider API: ${config.apiType}`);
     if (!config.model || typeof config.model !== 'string') throw new Error('A model ID is required');
     const url = new URL(config.baseURL);
@@ -105,7 +105,7 @@ export function adaptProvider(config, { catalog = [], capabilities = {} } = {}) 
         if (typeof id !== 'string' || id === model.id) continue;
         const alternative = adaptProvider({ ...config, model: id, models: [], sdkOptions: {
             ...options, model: id, reasoningEffort: undefined, effort: undefined, thinking: undefined
-        } }, { catalog });
+        } }, { catalog, capabilities: {} });
         models.push(alternative.model);
     }
     return { providerId, model, thinkingLevel, settings, warnings,

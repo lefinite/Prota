@@ -1,3 +1,4 @@
+import { MagpieController, MAGPIE_ID, isMagpie, statusText, applyBindingView, effectiveReasoningConfig } from './agent/magpie.js';
 import { requestPiChoice, flattenPiTree } from './agent/pi-session-dialog.js';
 import { PreviewController } from './preview/controller.js';
 import { resumePreview } from './preview/resume.js';
@@ -2818,6 +2819,10 @@ class DemoShell {
         });
 
         this.agentModelDropdown?.addEventListener('click', (e) => {
+            if (e.target.closest('[data-magpie-refresh]')) { this.magpieClient?.refresh(true).then(() => this.renderModelDropdown()); return; }
+            const follow = e.target.closest('[data-magpie-policy]'), pinned = e.target.closest('[data-magpie-model]');
+            if (follow || pinned) { this.magpieClient?.choose(follow ? 'follow' : 'pinned', pinned?.dataset.magpieModel); return; }
+
             const item = e.target.closest('[data-provider-id]');
             const settingsBtn = e.target.closest('[data-action="settings"]');
             if (settingsBtn) {
@@ -2832,6 +2837,26 @@ class DemoShell {
             }
         });
 
+        this.agentModelToggle?.addEventListener('keydown', event => {
+            if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+            event.preventDefault(); this.closeAgentInlineDropdowns({ except: 'model' }); this.agentModelDropdownOpen = true; this.renderModelDropdown();
+            const items = this.agentModelDropdown.querySelectorAll('button:not(:disabled)');
+            (event.key === 'ArrowUp' ? items[items.length - 1] : items[0])?.focus();
+        });
+        this.agentModelDropdown?.addEventListener('input', event => {
+            if (!event.target.matches('.magpie-model-search')) return;
+            const query = event.target.value.trim().toLowerCase();
+            this.agentModelDropdown.querySelectorAll('[data-magpie-model]').forEach(item => { item.hidden = !item.textContent.toLowerCase().includes(query); });
+        });
+        this.agentModelDropdown?.addEventListener('keydown', event => {
+            if (event.key === 'Escape') { this.closeAgentInlineDropdowns(); this.agentModelToggle.focus(); return; }
+            if (event.key === 'Tab') { this.closeAgentInlineDropdowns(); return; }
+            if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+            const items = [...this.agentModelDropdown.querySelectorAll('button:not(:disabled), input')].filter(item => !item.hidden && item.getClientRects().length);
+            if (!items.length) return; event.preventDefault();
+            const i = items.indexOf(document.activeElement), next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (i + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length;
+            items[next].focus();
+        });
         window.addEventListener('resize', () => { if (this.agentReasoningDropdownOpen) this.positionAgentReasoningMenu(); });
         this.agentReasoningToggle?.addEventListener('click', () => this.toggleAgentReasoningMenu());
         this.agentReasoningToggle?.addEventListener('keydown', event => {
@@ -12402,7 +12427,7 @@ class DemoShell {
                         <span class="provider-list-item__indicator"></span>
                         <span class="provider-list-item__main">
                             <span class="provider-list-item__label">${this.escapeHtml(provider.label)}</span>
-                            <span class="provider-list-item__meta">${this.escapeHtml(provider.model || '未指定模型')}</span>
+                            <span class="provider-list-item__meta">${this.escapeHtml(isMagpie(provider) ? (this.magpieClient?.state.defaultModel || statusText(this.magpieClient?.state)) : provider.model || '未指定模型')}</span>
                         </span>
                         <span class="provider-list-item__state">${provider.id === active?.id ? '当前' : ''}</span>
                         ${provider.id === active?.id ? '' : `<span class="provider-list-item__switch" data-switch-provider-id="${this.escapeHtml(provider.id)}">使用</span>`}
@@ -12533,26 +12558,31 @@ class DemoShell {
     }
 
     async activateProvider(id = this.selectedProviderId, { silent = false, confirmed = false } = {}) {
-        if (this._agentReasoningSaving) return;
+        if (this._agentReasoningSaving || this._agentModelSwitching || this.agentRunState.active) return;
         if (!confirmed && this.unifiedSettings?.guardModels(() => this.activateProvider(id, { silent, confirmed: true }))) return;
-        this.newProviderDraft = null;
-        this.editProviderDraft = null;
-        this.unifiedSettings?.userTouched.delete('models');
-        this.clearAgentStatusResults();
-        const provider = this.agentProviderStore?.activateProvider(id);
-        if (!provider) return;
-        this.syncAgentProviderStoreState();
-        this.agentConfig = this.buildAgentConfigFromActiveProvider();
-        this.syncAgentConfigForm();
-        this.renderAgentWorkbench();
-        this.unifiedSettings?.markSaved('models');
-        if (this.agentSessionId) {
-            await this.updateSdkAgentProvider(this.buildAgentConfigFromActiveProvider());
-        }
-        if (!silent) this.showToast(`当前供应商已切换为 ${provider.label}`);
+        if (id === MAGPIE_ID) return this.magpieClient?.choose();
+        const provider = this.agentProviderStore?.providers.find(p => p.id === id);
+        if (!provider) return false;
+        this._agentModelSwitching = true; this.renderModelLabel();
+        try {
+            if (this.agentSessionId) {
+                const result = await this.agentApi.setProvider(this.agentSessionId, this.agentProviderStore.buildConfig(provider));
+                applyBindingView(this, result);
+                this.agentSessionProviderConfig = result.providerConfig;
+            }
+            this.agentProviderStore.activateProvider(id);
+            this.newProviderDraft = null; this.editProviderDraft = null;
+            this.unifiedSettings?.userTouched.delete('models'); this.clearAgentStatusResults();
+            this.syncAgentProviderStoreState(); this.agentConfig = this.buildAgentConfigFromActiveProvider();
+            this.syncAgentConfigForm(); this.renderAgentWorkbench(); this.unifiedSettings?.markSaved('models');
+            if (!silent) this.showToast(`当前供应商已切换为 ${provider.label}`);
+            return true;
+        } catch (error) { this.showToast(error.message || '模型切换失败，保留原选择。', true); return false; }
+        finally { this._agentModelSwitching = false; this.renderModelLabel(); }
     }
 
     async saveActiveProvider() {
+        if (isMagpie(this.getSelectedProvider())) return false;
         if (this._agentProviderSaving || !this.agentProviderPersistenceReady) return false;
         const selected = this.getSelectedProvider();
         if (!selected) return false;
@@ -12637,6 +12667,7 @@ class DemoShell {
     }
 
     async deleteProvider(id = this.selectedProviderId, confirmed = false) {
+        if (id === MAGPIE_ID) return;
         if (!confirmed && this.unifiedSettings?.guardModels(() => this.deleteProvider(id, true))) return;
         if (!confirmed) {
             const label = this.getSelectedProvider()?.label || '这项';
@@ -13259,6 +13290,7 @@ class DemoShell {
     }
 
     getAgentConfigDraft({ source = 'active' } = {}) {
+        if (source === 'active' && isMagpie(this.getActiveProvider())) return this.agentProviderStore.buildConfig();
         const provider = source === 'selected'
             ? this.getSelectedProvider()
             : this.getActiveProvider();
@@ -13271,11 +13303,13 @@ class DemoShell {
         const sdkOptions = useFormValues ? this.parseAgentSdkOptions({ showError: false }) : null;
         return {
             provider: provider.presetId || provider.id,
+            providerId: provider.id,
             apiType: (useFormValues ? this.agentApiTypeInput?.value : '') || provider.apiType || 'anthropic-messages',
             model: useFormValues ? (this.getAgentModelFormValue() || '') : (provider.model || ''),
             baseURL: useFormValues ? (this.agentBaseUrlInput?.value.trim() || '') : (provider.baseURL || ''),
             apiKey: useFormValues ? (this.agentApiKeyInput?.value.trim() || '') : (provider.apiKey || ''),
             sdkOptions: (useFormValues ? sdkOptions : null) || provider.sdkOptions || {},
+            modelCapabilities: provider.modelCapabilities || {},
             endpointCandidates: this.getMergedAgentEndpointCandidates(provider)
         };
     }
@@ -13337,6 +13371,7 @@ class DemoShell {
         if (this.unifiedSettings && !this.unifiedSettings.userTouched.has('models') && !this.newProviderDraft) this.editProviderDraft = structuredClone(this.agentProviderStore?.getSelectedProvider() || null);
         this.renderProviderList();
         const selected = this.getSelectedProvider();
+        if (this.magpieClient?.renderDetails()) return;
         if (this.providerFormContent) this.providerFormContent.hidden = !selected;
         if (this.providerFormEmpty) this.providerFormEmpty.hidden = Boolean(selected);
         if (this.agentBalanceResultEl) {
@@ -13578,6 +13613,7 @@ class DemoShell {
             this.renderAgentWorkbench({ deferHeavy: true });
         }
         await this.restoreAgentSession();
+        if (!this.isShareMode) { this.magpieClient = new MagpieController(this); this.magpieClient.start().catch(() => {}); }
         this.finishAgentPetHydration();
     }
 
@@ -14442,8 +14478,12 @@ class DemoShell {
     }
 
     async setAgentReasoning(value) {
-        const active = this.getActiveProvider();
+        const active = effectiveReasoningConfig(this);
         if (!active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving) return;
+        if (this.agentModelView?.providerBinding?.kind === 'magpie') {
+            const binding = this.agentModelView.providerBinding;
+            await this.magpieClient.choose(binding.policy, binding.pinnedModelId, value); return;
+        }
         if (!getReasoningCapability(active).options.some(option => option.value === value)) return;
         this.closeAgentInlineDropdowns();
         this.agentReasoningToggle.focus();
@@ -14479,11 +14519,11 @@ class DemoShell {
 
     renderAgentReasoning() {
         if (!this.agentReasoningToggle) return;
-        const active = this.getActiveProvider();
+        const active = effectiveReasoningConfig(this);
         const capability = getReasoningCapability(active || {});
         const selection = getReasoningSelection(active || {});
-        const locked = !active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving;
-        if (this.agentModelToggle) this.agentModelToggle.disabled = Boolean(this._agentReasoningSaving);
+        const locked = !active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving || this._agentModelSwitching;
+        if (this.agentModelToggle) this.agentModelToggle.disabled = Boolean(this._agentReasoningSaving || this._agentModelSwitching);
         this.agentReasoningToggle.disabled = Boolean(locked);
         const effectiveValue = selection.value === 'default' ? capability.defaultValue || 'default' : selection.value;
         const effectiveSelection = capability.options.find(option => option.value === effectiveValue) || selection;
@@ -14542,11 +14582,14 @@ class DemoShell {
 
     renderModelLabel() {
         if (!this.agentModelLabel) return;
-        const active = this.getActiveProvider();
-        if (active) {
-            this.agentModelLabel.textContent = active.model || active.label || '--';
-        } else {
-            this.agentModelLabel.textContent = '--';
+        const view = this.agentModelView, active = this.getActiveProvider(), effective = view?.effectiveModel;
+        this.agentModelLabel.textContent = this._agentModelSwitching ? '切换中…' : effective?.name || effective?.modelId || (isMagpie(active) ? this.magpieClient?.state.defaultModel || 'Magpie' : active?.model || active?.label || '--');
+        if (this.agentModelToggle) {
+            const policy = view?.providerBinding?.policy;
+            this.agentModelToggle.title = [effective?.modelId, effective?.source === 'magpie' ? `Magpie（${policy === 'pinned' ? '本会话固定' : '跟随'}）` : active?.label,
+                view?.pendingModelChange ? `Magpie 已改为 ${view.pendingModelChange.modelId} · 下轮生效` : '',
+                view?.modelBindingError ? 'Magpie 不可用，请重新连接或选择其他服务商' : ''].filter(Boolean).join(' · ');
+            this.agentModelToggle.disabled = Boolean(this._agentModelSwitching || this._agentReasoningSaving);
         }
     }
 
@@ -14555,6 +14598,11 @@ class DemoShell {
         if (!this.agentModelDropdownOpen) {
             this.agentModelDropdown.hidden = true;
             return;
+        }
+        if (this.magpieClient) {
+            this.agentModelDropdown.innerHTML = this.magpieClient.menu();
+            this.agentModelDropdown.setAttribute('role', 'menu');
+            this.agentModelDropdown.hidden = false; return;
         }
         const active = this.getActiveProvider();
         const allProviders = this.agentProviderStore?.providers || [];
@@ -15751,6 +15799,8 @@ class DemoShell {
         const countText = processEvents.length ? `${processEvents.length} 步` : '启动中';
         const showStatus = active || pending;
         const headline = active ? '进行中' : (pending ? '等待处理' : this.getAgentProcessHeadline(processEvents));
+        const historicalModel = (group.events || []).find(event => event.type === 'run_started')?.payload?.runModelSnapshot;
+        const modelDetails = historicalModel ? `<p class="magpie-menu-status" title="${this.escapeHtml(historicalModel.resolvedProtocol || '')}">${this.escapeHtml(historicalModel.requestedModel)} · ${this.escapeHtml(historicalModel.source)}</p>` : '';
         const items = processEvents.length
             ? processEvents.map((event) => this.renderAgentProcessEvent(event)).join('')
             : `
@@ -15773,6 +15823,7 @@ class DemoShell {
                     ${showStatus ? `<span class="agent-process__status">${this.escapeHtml(summary)}</span>` : ''}
                 </summary>
                 <div class="agent-process__items">
+                    ${modelDetails}
                     ${items}
                 </div>
             </details>
@@ -17413,6 +17464,7 @@ class DemoShell {
     }
 
     hydrateAgentHistory(data) {
+        applyBindingView(this, data, { reset: true });
         const nextTimeline = Array.isArray(data.timeline) ? data.timeline : [];
         const previousSignature = this.getAgentTimelineSignature();
         this.agentTimelineEvents = nextTimeline;
@@ -17600,6 +17652,7 @@ class DemoShell {
 
         // ── Always process (can transition to any state) ──
 
+        if (eventName === 'agent_model_binding_changed' || eventName === 'session_ready' || eventName === 'run_started') applyBindingView(this, payload);
         if (eventName === 'session_ready') {
             this.agentSessionScope = payload.sessionScope || (payload.context?.globalContext || payload.context?.pageId === '__global__' ? 'global' : this.agentSessionScope || 'page');
             if (this.agentSessionScope === 'global') {
@@ -17983,6 +18036,7 @@ class DemoShell {
             this.agentEventStreamAbortController = null;
         }
         this.agentSessionId = sessionId;
+        this.agentModelView = null;
         this.agentAutoScroll = true; // Reset auto-scroll to true when switching sessions
         this.writeAgentStorage('session-id', sessionId);
         const listSession = (this.agentSessionsList || []).find((session) => session.id === sessionId);
@@ -18569,7 +18623,7 @@ class DemoShell {
         if (command.id === 'model') {
             this.agentInput.value = '';
             if (!args) {
-                const currentModel = this.getAgentConfigDraft().model || '未指定';
+                const currentModel = this.agentModelView?.effectiveModel?.modelId || this.getAgentConfigDraft().model || '未指定';
                 const active = this.getActiveProvider();
                 const models = Array.from(new Set((active?.models || []).concat(this.getAgentPreset(active?.presetId)?.models || []))).filter(Boolean);
                 this.showAgentChoicePrompt({

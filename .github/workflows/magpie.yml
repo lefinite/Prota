@@ -1,0 +1,38 @@
+name: Magpie integration
+on:
+  push:
+    paths:
+      - 'server/**'
+      - 'portal/agent/**'
+      - 'portal/shell.*'
+      - 'tests/magpie-*'
+      - '.github/workflows/magpie.yml'
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'portal/**'
+      - 'tests/magpie-*'
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run pi:build
+      - run: npm run pi:verify
+      - run: npm run agent:test
+      - run: npm run magpie:test
+      - run: node --test tests/agent-provider-config.test.mjs tests/provider-models.test.mjs tests/provider-reasoning.test.mjs
+      - run: python3 -m unittest tests.test_agent_provider_persistence
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/magpie-ui.browser.mjs
+      - run: node tests/pi-ui.browser.mjs

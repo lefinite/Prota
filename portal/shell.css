@@ -11912,3 +11912,20 @@ body[data-top-view="page"] .top-tabs {
 body.canvas-focused #pageViewportContainer { position: fixed; inset: 0; z-index: 4000; width: 100vw; height: 100dvh; }
 body.canvas-focused #pageViewportContainer .viewport-stage { flex: 1; width: 100%; opacity: 1; pointer-events: auto; }
 body.canvas-focused #pageViewportContainer #annotationDrawer { display: none !important; }
+
+/* Magpie shares the existing provider panel and composer menu. */
+.magpie-details h3 { display:flex; align-items:baseline; gap:12px; }
+.magpie-details small, .magpie-menu-status { color:var(--text-secondary, #777); font-size:12px; }
+.magpie-details p { overflow-wrap:anywhere; margin:16px 0; }
+.magpie-details .agent-config-panel__actions { flex-wrap:wrap; }
+.magpie-menu-status { padding:8px 12px; }
+.magpie-model-search { box-sizing:border-box; width:calc(100% - 16px); margin:6px 8px; padding:8px; border:1px solid var(--border-color,#ddd); border-radius:6px; background:transparent; color:inherit; }
+.magpie-model-results { max-height:240px; overflow-y:auto; }
+.agent-model-dropdown__item:disabled { opacity:.5; cursor:default; }
+
+.agent-model-dropdown { width:min(340px, calc(100vw - 32px)); max-height:min(540px, 70vh); overflow-y:auto; }
+
+.unified-settings .magpie-details { gap:12px; }
+.magpie-details p, .magpie-details h3 { margin:0; }
+.magpie-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.unified-settings:has(.magpie-details:not([hidden])) #usModelActions { display:none; }

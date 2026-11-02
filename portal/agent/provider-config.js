@@ -464,7 +464,12 @@ class AgentProviderConfigStore {
     normalizeProviderInstances(providers) {
         if (!Array.isArray(providers)) return [];
         const usedIds = new Set();
-        return providers.filter((provider) => provider && typeof provider === 'object').map((provider) => {
+        return providers.filter((provider) => provider && typeof provider === 'object').filter(provider => {
+            if (provider.id !== 'integration:magpie' && provider.adapter !== 'magpie') return true;
+            if (usedIds.has('integration:magpie')) return false;
+            usedIds.add('integration:magpie'); return true;
+        }).map((provider) => {
+            if (provider.id === 'integration:magpie' || provider.adapter === 'magpie') return { id: 'integration:magpie', kind: 'integration', adapter: 'magpie', label: 'Magpie', presetId: null, apiType: 'openai-responses', model: '', baseURL: '', apiKey: '', sdkOptions: {}, models: [], endpointCandidates: [] };
             const normalized = cloneAgentProviderValue(provider, { ...provider });
             let id = String(normalized.id || '').trim();
             if (!id || usedIds.has(id)) id = createAgentProviderInstanceId();
@@ -674,6 +679,7 @@ class AgentProviderConfigStore {
     }
 
     deleteProvider(id = this.selectedProviderId) {
+        if (id === 'integration:magpie') return null;
         const index = this.providers.findIndex((item) => item.id === id);
         if (index === -1) return null;
         const [removed] = this.providers.splice(index, 1);
@@ -689,7 +695,7 @@ class AgentProviderConfigStore {
 
     updateSelectedProvider(draft) {
         const provider = this.getSelectedProvider();
-        if (!provider) return null;
+        if (!provider || provider.id === 'integration:magpie') return null;
         const has = (key) => Object.prototype.hasOwnProperty.call(draft, key);
         if (has('presetId')) provider.presetId = draft.presetId || null;
         if (has('models')) provider.models = [...new Set(draft.models || [])];
@@ -708,9 +714,11 @@ class AgentProviderConfigStore {
 
     buildConfig(provider = this.getActiveProvider()) {
         if (!provider) return { provider: '', apiType: 'anthropic-messages', model: '', baseURL: '', apiKey: '', sdkOptions: {} };
+        if (provider.id === 'integration:magpie') return { provider: 'integration:magpie', kind: 'integration', adapter: 'magpie', sdkOptions: {} };
         const preset = provider.presetId ? this.getPreset(provider.presetId) : null;
         return {
             provider: provider.presetId || provider.id,
+            providerId: provider.id,
             apiType: provider.apiType || preset?.apiType || 'anthropic-messages',
             model: provider.model || '',
             baseURL: provider.baseURL || '',
