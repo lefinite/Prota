@@ -64,6 +64,25 @@ def get_agent_provider_config_path():
     return str(workspace.CONFIG_DIR / 'agent-provider-config.json')
 
 
+def normalize_model_capabilities(raw):
+    if not isinstance(raw, dict):
+        return {}
+    result = {}
+    for name in ('contextWindow', 'maxTokens'):
+        value = raw.get(name)
+        if isinstance(value, int) and not isinstance(value, bool) and 0 < value <= 100000000:
+            result[name] = value
+    if isinstance(raw.get('reasoning'), bool):
+        result['reasoning'] = raw['reasoning']
+    if isinstance(raw.get('name'), str):
+        result['name'] = raw['name'][:300]
+    if isinstance(raw.get('input'), list):
+        result['input'] = [v for v in raw['input'] if v in ('text', 'image')]
+    if isinstance(raw.get('efforts'), list):
+        result['efforts'] = [v for v in raw['efforts'] if v in ('off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max')]
+    return result
+
+
 def normalize_agent_provider_config(data):
     if not isinstance(data, dict):
         raise ValueError('Provider config must be an object')
@@ -72,12 +91,23 @@ def normalize_agent_provider_config(data):
         raise ValueError('providers must be an array')
 
     providers = []
+    magpie_seen = False
     for raw in raw_providers[:50]:
         if not isinstance(raw, dict):
             continue
         provider_id = str(raw.get('id', '')).strip()[:200]
         if not provider_id:
             continue
+        if provider_id == 'integration:magpie' or raw.get('adapter') == 'magpie':
+            if magpie_seen:
+                continue
+            magpie_seen = True
+            providers.append({'id': 'integration:magpie', 'kind': 'integration', 'adapter': 'magpie',
+                              'label': 'Magpie', 'presetId': None, 'apiType': 'openai-responses',
+                              'model': '', 'baseURL': '', 'apiKey': '', 'sdkOptions': {}, 'models': [], 'endpointCandidates': []})
+            continue
+        if raw.get('kind') not in (None, 'provider') or raw.get('adapter') not in (None, ''):
+            raise ValueError('Invalid provider kind or adapter')
         sdk_options = raw.get('sdkOptions', {})
         if not isinstance(sdk_options, dict):
             sdk_options = {}
@@ -96,6 +126,7 @@ def normalize_agent_provider_config(data):
             'baseURL': str(raw.get('baseURL', '')).strip()[:2000],
             'apiKey': str(raw.get('apiKey', '')).strip()[:10000],
             'sdkOptions': sdk_options,
+            'modelCapabilities': normalize_model_capabilities(raw.get('modelCapabilities', {})),
             'models': [
                 str(item).strip()[:300]
                 for item in raw_models[:500]
@@ -119,6 +150,7 @@ def normalize_agent_provider_config(data):
         selected_provider_id = active_provider_id
 
     return {
+        'schemaVersion': 2,
         'providers': providers,
         'activeProviderId': active_provider_id,
         'selectedProviderId': selected_provider_id
