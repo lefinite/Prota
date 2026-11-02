@@ -46,10 +46,10 @@ jobs:
       - run: node --test tests/desktop-launcher.test.mjs tests/runtime-archive.test.mjs
       - name: Archive runtime without losing executable modes or internal links
         shell: bash
-        run: tar -czf "$RUNNER_TEMP/pi-runtime.tar.gz" -C runtime pi
+        run: tar -czf pi-runtime.tar.gz -C runtime pi
       - name: Preserve verified runtime for platform release packaging
         uses: actions/upload-artifact@v6
         with:
           name: pi-runtime-${{ runner.os }}-${{ runner.arch }}
-          path: ${{ runner.temp }}/pi-runtime.tar.gz
+          path: pi-runtime.tar.gz
           retention-days: 7
