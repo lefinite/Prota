@@ -31,6 +31,15 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Fetch the pinned Pi release tag for shallow submodules
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const { tag } = JSON.parse(readFileSync('pi-version.json', 'utf8'));
+          execFileSync('git', ['-C', 'vendor/pi', 'fetch', '--depth=1', 'origin', `refs/tags/${tag}:refs/tags/${tag}`], { stdio: 'inherit' });
+          JS
       - run: npm run pi:build
       - run: npm run pi:verify
       - run: npm run agent:test
