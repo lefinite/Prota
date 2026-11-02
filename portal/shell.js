@@ -18411,6 +18411,7 @@ class DemoShell {
     }
 
     getActivePermissionMode() {
+        if (this.agentModelView?.runtimePreferences?.permissionMode) return this.agentModelView.runtimePreferences.permissionMode;
         const active = this.getActiveProvider();
         return active?.sdkOptions?.permissionMode || this.agentConfig?.sdkOptions?.permissionMode || 'default';
     }
@@ -18420,6 +18421,15 @@ class DemoShell {
         const allowed = new Set(['default', 'acceptEdits', 'dontAsk', 'bypassPermissions', 'plan']);
         if (!allowed.has(mode)) {
             this.showToast('权限模式可选：default / acceptEdits / dontAsk / bypassPermissions / plan', true);
+            return;
+        }
+        if (this.agentModelView?.providerBinding?.kind === 'magpie') {
+            try {
+                const sessionId = await this.ensureCurrentAgentSession();
+                await this.agentApi.setPermissionMode(sessionId, mode);
+                await this.magpieClient.refresh(); this.renderPermissionLabel();
+                this.showToast(`Agent 权限模式已切换为 ${mode}`);
+            } catch (error) { this.showToast(error.message || '权限模式切换失败', true); }
             return;
         }
         const active = this.getActiveProvider();

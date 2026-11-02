@@ -10,7 +10,7 @@ export function applyBindingView(shell, data, { reset = false } = {}) {
     if (!data || (!reset && (data.bindingRevision ?? -1) < (shell.agentModelView?.bindingRevision ?? -1))) return;
     const previous = shell.agentModelView;
     shell.agentModelView = { providerBinding: data.providerBinding || { kind: 'direct-legacy' }, effectiveModel: data.effectiveModel || null,
-        pendingModelChange: data.pendingModelChange || null, modelBindingError: data.modelBindingError || null, bindingRevision: data.bindingRevision || 0 };
+        pendingModelChange: data.pendingModelChange || null, modelBindingError: data.modelBindingError || null, bindingRevision: data.bindingRevision || 0, runtimePreferences: data.runtimePreferences || {} };
     if (!reset && previous?.providerBinding?.policy === 'follow' && data.providerBinding?.policy === 'follow'
         && previous.effectiveModel?.modelId && previous.effectiveModel.modelId !== data.effectiveModel?.modelId && !data.modelBindingError) {
         shell.showToast(`已跟随 Magpie 切换到 ${data.effectiveModel.name || data.effectiveModel.modelId}`);

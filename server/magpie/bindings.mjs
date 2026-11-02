@@ -16,7 +16,8 @@ export function bindingView(session) {
         effectiveModel: session.effectiveModel || (session.providerConfig?.model ? { providerId: session.providerConfig.provider, modelId: session.providerConfig.model,
             apiType: session.providerConfig.apiType, source: 'direct', status: 'applied' } : null),
         pendingModelChange: session.pendingModelChange || null, modelBindingError: session.modelBindingError || null,
-        bindingRevision: session.bindingRevision || 0 };
+        bindingRevision: session.bindingRevision || 0,
+        runtimePreferences: { permissionMode: session.providerConfig?.sdkOptions?.permissionMode || 'default' } };
 }
 export class ModelBindings {
     constructor({ bridge, gateway, persist, emit, resolveDirect }) { Object.assign(this, { bridge, gateway, persist, emit, resolveDirect }); }

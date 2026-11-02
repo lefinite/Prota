@@ -83,6 +83,10 @@ try {
     assert.equal(await page.locator('#agentDeleteProviderBtn').isVisible(), false);
     assert.equal(await page.locator('#agentSaveProviderBtn').isVisible(), false);
     assert.equal(await page.locator('#providerFormContent').isVisible(), false);
+    assert.equal(await page.evaluate(() => window.shell.getActivePermissionMode()), 'default');
+    await page.evaluate(() => window.shell.updateSdkPermissionMode('acceptEdits'));
+    assert.equal(await page.evaluate(() => window.shell.getActivePermissionMode()), 'acceptEdits');
+    assert.deepEqual(await page.evaluate(() => window.shell.agentProviderStore.providers.find(p => p.id === 'integration:magpie').sdkOptions), {});
     assert.equal(await page.locator('.magpie-details input[type="password"]').count(), 0);
     await page.evaluate(() => { window.shell.unifiedSettings?.close?.(); window.shell.openAgentWorkbench(); });
     // Use the production rendering and interaction handlers; the server is real.
