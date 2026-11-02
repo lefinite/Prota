@@ -7,7 +7,7 @@ try {
  let fail=false;
  await page.route(/\/api\/shares(?:\/manage)?$/,async route=>{
   const body=route.request().postDataJSON();
-  if(body?.action==='copy') { const item=items.find(item=>item.id===body.ids[0]);return route.fulfill({contentType:'application/json',body:JSON.stringify({share:{url:item.url,expiresAt:item.expiresAt,password:item.passwordRequired?'a4B9':''}})}); }
+  if(body?.action==='copy') { const item=items.find(item=>item.id===body.ids[0]);return route.fulfill({contentType:'application/json',body:JSON.stringify({share:{url:item.url,expiresAt:item.expiresAt,password:item.passwordRequired?'a4B9':'',...(item.shareType==='static'?{mcpUrl:'https://sample.vercel.app/mcp/'+'a'.repeat(43)}:{})}})}); }
   if(body && fail) return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'部署失败，请重试'})});
   if(body?.action==='revoke') for(const item of items) if(body.ids.includes(item.id)) item.status='revoked';
   if(body?.action==='annotate') items.find(item=>item.id===body.ids[0]).note=body.note;
@@ -20,7 +20,8 @@ try {
  assert.equal(await page.locator('tbody tr').count(),3);
  await page.locator('[data-copy="reader-v1-static.html"]').click();
  await page.waitForFunction(()=>window.copiedShare?.includes('密码：a4B9'));
- assert.match(await page.evaluate(()=>window.copiedShare),/有效期：截至/);
+ assert.ok((await page.evaluate(()=>window.copiedShare)).includes('.html#pwd=a4B9\n'));
+ assert.match(await page.evaluate(()=>window.copiedShare),/\nMCP：https:\/\/sample\.vercel\.app\/mcp\/[a-z]{43}\n有效期：截至/);
  await page.locator('[data-copy="folder.html"]').click();
  await page.waitForFunction(()=>window.copiedShare==='链接：http://localhost/shares/folder.html');
  assert.equal(await page.locator('.sm-stats').count(),0);

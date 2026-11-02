@@ -1,0 +1,74 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { scryptSync } from 'node:crypto';
+import { chromium } from 'playwright';
+import { createShareHandler } from '../server/share_gateway.mjs';
+import { passwordShareUrl } from '../portal/modules/sharing/copy.js';
+
+const root = await mkdtemp(join(tmpdir(), 'prota-password-link-'));
+await mkdir(join(root, 'shares'));
+await writeFile(join(root, 'shares/page.html'), '<h1>分享内容</h1><iframe src="/prototype.html"></iframe>');
+await writeFile(join(root, 'prototype.html'), '<p>原型内容</p>');
+const password = '中文 &+#=%?🔑';
+const salt = 'a'.repeat(32);
+let now = Date.now();
+const policy = {id:'test', sessionKey:'test session secret', salt,
+    passwordHash:scryptSync(password, Buffer.from(salt,'hex'),32).toString('hex'),
+    expiresAt:now + 86400000, entries:['/shares/page.html'], files:['/shares/page.html','/prototype.html']};
+const handler = createShareHandler({shares:[policy]},root,{now:()=>now,secureCookies:false});
+const requests = [];
+const server = createServer((req,res)=>{requests.push([req.method,req.url]);return handler(req,res);});
+await new Promise(done=>server.listen(0,'127.0.0.1',done));
+const origin = `http://127.0.0.1:${server.address().port}`;
+const url = origin + '/shares/page.html';
+const browser = await chromium.launch();
+try {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const errors=[]; page.on('pageerror',error=>errors.push(error.message));
+    await page.goto('about:blank');
+    await page.goto(passwordShareUrl(url,password));
+    await page.getByRole('heading',{name:'分享内容'}).waitFor();
+    await page.frameLocator('iframe').getByText('原型内容').waitFor();
+    assert.equal(page.url(),url);
+    assert.equal(requests.filter(([method])=>method==='POST').length,1);
+    assert.ok(requests.every(([,path])=>!path.includes('pwd') && !path.includes('#')));
+    await page.goto('about:blank');
+    await context.clearCookies();
+    await page.goto(passwordShareUrl(url,'wrong'));
+    await page.getByRole('alert').waitFor();
+    assert.equal(page.url(),url);
+    const posts=requests.filter(([method])=>method==='POST').length;
+    await page.goto('about:blank');
+    await page.goto(url);
+    assert.equal(requests.filter(([method])=>method==='POST').length,posts,'failed passwords must not auto-submit again');
+    await page.getByLabel('访问密码',{exact:true}).fill(password);
+    await page.getByRole('button',{name:'查看分享',exact:true}).click();
+    await page.getByRole('heading',{name:'分享内容'}).waitFor();
+    await page.goto('about:blank');
+    await context.clearCookies();
+    await page.goto(url);
+    await page.getByLabel('访问密码',{exact:true}).waitFor();
+    assert.equal(requests.filter(([method])=>method==='POST').length,posts+1,'bare links keep manual password entry');
+    for(let i=0;i<5;i++) await page.request.post(url,{form:{password:'bad'}});
+    const beforeThrottle=requests.filter(([method])=>method==='POST').length;
+    await page.goto('about:blank');
+    await page.goto(passwordShareUrl(url,password));
+    await page.getByRole('heading',{name:'稍等一下，再来试试'}).waitFor();
+    assert.equal(requests.filter(([method])=>method==='POST').length,beforeThrottle+1,'auto-entry respects throttling');
+    now=policy.expiresAt;
+    const beforeExpiry=requests.filter(([method])=>method==='POST').length;
+    await page.goto('about:blank');
+    await page.goto(passwordShareUrl(url,password));
+    await page.getByRole('heading',{name:'这份分享已到期'}).waitFor();
+    assert.equal(requests.filter(([method])=>method==='POST').length,beforeExpiry,'expired shares never submit');
+    assert.deepEqual(errors,[]);
+    console.log('Password links: automatic authentication, encoded passwords, private resources, clean URL, manual fallback, throttling and expiry passed');
+} finally {
+    await browser.close();
+    await new Promise(done=>server.close(done));
+    await rm(root,{recursive:true,force:true});
+}

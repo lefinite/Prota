@@ -1,12 +1,16 @@
 export function pageArchiveRequest(host) {
+    if (host.isShareMode && host.shareConfig?.mode === 'folder') {
+        const filename = host.shareConfig.zipFilename;
+        if (!filename || !/^[A-Za-z0-9_-]+\.zip$/.test(filename)) {
+            throw new Error('此文件夹分享未包含完整下载包，请联系分享者重新分享');
+        }
+        return { url: `/shares/${filename}`, filename };
+    }
     const { activeProjectId: projectId, activePageId: pageId, activeVersion: version } = host;
     if (!projectId || !pageId || !version) throw new Error('无法获取当前页面或版本信息');
     if (host.isShareMode && host.shareConfig?.shareType === 'static') {
         const config = host.shareConfig;
-        const page = config.mode === 'folder'
-            ? config.pages?.find(page => (page.id || page.pageId) === pageId && page.version === version)
-            : config;
-        const filename = page?.zipFilename;
+        const filename = config.zipFilename;
         if (!filename || !/^[A-Za-z0-9_-]+\.zip$/.test(filename)) {
             throw new Error('此分享未包含下载包，请联系分享者重新分享');
         }

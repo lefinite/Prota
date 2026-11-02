@@ -17,6 +17,7 @@
   <button data-tool="connect" data-icon="waypoints" data-tip="连线 · L" aria-label="连线工具"></button>
   <button id="add-board" data-icon="frame" data-tip="添加画板" aria-haspopup="menu" aria-label="添加画板"></button>
   <button data-tool="text" data-icon="type" data-tip="文字 · T" aria-label="文本工具"></button>
+  <button id="add-flowchart" data-icon="flowchart" data-tip="流程图" aria-label="流程图" aria-haspopup="menu"></button>
   <button id="add-shape" data-icon="shapes" data-tip="添加形状" aria-label="形状" aria-haspopup="menu"></button>
   <button id="add-note" data-icon="sticky-note" data-tip="添加便签" aria-label="便签"></button>
   <button id="image" data-icon="image-plus" data-tip="插入图片" aria-label="图片"></button>
@@ -49,7 +50,7 @@
     }
   });
   window.__protaCanvasStartupComplete = () => {
-    const missing = !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasMarkdownEditor ? 'markdown.js' : !window.CanvasCore ? 'canvas-core.js' : !window.CanvasConnections ? 'canvas-connections.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.marked ? 'marked.js' : !window.CanvasMarkdown ? 'markdown.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
+    const missing = !window.CanvasBoardState ? 'board-state.js' : !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasMarkdownEditor ? 'markdown.js' : !window.CanvasCore ? 'canvas-core.js' : !window.CanvasConnections ? 'canvas-connections.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.marked ? 'marked.js' : !window.CanvasMarkdown ? 'markdown.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
     if (!missing) { document.documentElement.dataset.protaCanvasReady = 'true'; return; }
     panel.hidden = false; panel.style.display = 'grid';
     detail.textContent = '未能加载 ' + missing + '。布局和业务画板未被修改，可重新加载或在 Prota 内修复编辑器。';
@@ -58,6 +59,6 @@
   };
 })();
 </script>
-<script src="./canvas-data.js"></script><script src="./canvas-domain.js"></script><script src="./canvas-core.js"></script><script src="./canvas-connections.js"></script><script src="./icons.js"></script><script src="./marked.js"></script><script src="./markdown.js"></script><script src="./app.js"></script>
+<script src="./canvas-data.js"></script><script src="./canvas-domain.js"></script><script src="./canvas-core.js"></script><script src="./canvas-connections.js"></script><script src="./icons.js"></script><script src="./marked.js"></script><script src="./markdown.js"></script><script src="./board-state.js"></script><script src="./app.js"></script>
 <script>window.__protaCanvasStartupComplete();</script>
 </body></html>

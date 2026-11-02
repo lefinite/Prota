@@ -2,15 +2,20 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { pageArchiveRequest, downloadPageArchive } from '../portal/modules/sharing/download.js';
 const host = { activeProjectId: 'company', activePageId: 'reader', activeVersion: 'v1', isShareMode: true,
-    shareConfig: { shareType: 'static', mode: 'folder', pages: [
+    shareConfig: { shareType: 'static', mode: 'folder', zipFilename: 'folder.zip', pages: [
         { id: 'reader', version: 'v1', zipFilename: 'reader.zip' },
         { id: 'other', version: 'v2', zipFilename: 'other.zip' }
     ] } };
 
-test('folder downloads follow the selected page and selected version', () => {
-    assert.equal(pageArchiveRequest(host).url, '/shares/reader.zip');
-    assert.equal(pageArchiveRequest({ ...host, activePageId: 'other', activeVersion: 'v2' }).url, '/shares/other.zip');
-    assert.throws(() => pageArchiveRequest({ ...host, activeVersion: 'v3' }), /重新分享/);
+test('folder downloads always use the whole folder archive across pages and share types', () => {
+    for (const shareType of ['static', 'local', 'public']) {
+        const folderHost = { ...host, shareConfig: { ...host.shareConfig, shareType } };
+        assert.equal(pageArchiveRequest(folderHost).url, '/shares/folder.zip');
+        assert.equal(pageArchiveRequest({ ...folderHost, activePageId: 'other', activeVersion: 'v2' }).url, '/shares/folder.zip');
+        assert.equal(pageArchiveRequest({ ...folderHost, activePageId: null, activeVersion: null }).url, '/shares/folder.zip');
+    }
+    assert.throws(() => pageArchiveRequest({ ...host, shareConfig: { ...host.shareConfig, zipFilename: undefined } }), /重新分享/);
+    assert.throws(() => pageArchiveRequest({ ...host, shareConfig: { ...host.shareConfig, zipFilename: '../secret.zip' } }), /重新分享/);
     assert.equal(pageArchiveRequest({ ...host, shareConfig: { shareType: 'static', zipFilename: 'single.zip' } }).url, '/shares/single.zip');
 });
 

@@ -67,6 +67,46 @@ try {
  await page.waitForFunction(()=>!window.protaCanvas.isDirty());
  assert.equal((await disk()).description,'external addition');
  assert.equal((await disk()).nodes[0].text,'保留本机输入');
+ // A full localStorage must not turn a successful disk save into a UI failure.
+ // Older servers can acknowledge an autosave with revision only.
+ await page.route('**/api/canvas/save',async route=>{
+  const response=await route.fetch();
+  const result=await response.json();
+  await route.fulfill({response,body:JSON.stringify({revision:result.revision})});
+ });
+ await page.evaluate(()=>{
+  window.realStorageSetForQuota=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+   if(this===window.localStorage)throw new DOMException('QuotaExceededError');
+   return window.realStorageSetForQuota.call(this,key,value);
+  };
+ });
+ await page.locator('.node.text .node-content').dblclick();
+ await page.locator('.node.editing .node-content').fill('恢复副本失败但仍保存');
+ assert.equal(await page.evaluate(()=>window.protaCanvas.prepareNavigation()),true);
+ assert.equal((await disk()).nodes[0].text,'恢复副本失败但仍保存');
+ assert.equal(await page.evaluate(()=>document.querySelector('#save-status').classList.contains('error')),false);
+ assert.equal(await page.evaluate(()=>document.querySelector('#save-status').textContent.includes('恢复备份空间不足')),false);
+ await page.evaluate(()=>{Storage.prototype.setItem=window.realStorageSetForQuota;});
+ await page.unroute('**/api/canvas/save');
+ // If the server is also unavailable, a full localStorage falls back to the
+ // current tab's sessionStorage instead of discarding the edit.
+ await page.route('**/api/canvas/save',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"offline"}'}));
+ await page.evaluate(()=>{
+  window.realStorageSetForFallback=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+   if(this===window.localStorage)throw new DOMException('QuotaExceededError');
+   return window.realStorageSetForFallback.call(this,key,value);
+  };
+ });
+ await page.locator('.node.text .node-content').dblclick();
+ await page.locator('.node.editing .node-content').fill('空间不足时保留当前标签页');
+ assert.equal(await page.evaluate(()=>window.protaCanvas.prepareNavigation()),true);
+ assert.equal(await page.evaluate(k=>JSON.parse(sessionStorage.getItem(k)).state.nodes[0].text,key),'空间不足时保留当前标签页');
+ await page.evaluate(()=>{Storage.prototype.setItem=window.realStorageSetForFallback;});
+ await page.unroute('**/api/canvas/save');
+ assert.equal(await page.evaluate(()=>window.protaCanvas.prepareNavigation()),true);
+ assert.equal((await disk()).nodes[0].text,'空间不足时保留当前标签页');
  // A backup quota failure must keep the current page if the server also fails.
  await page.route('**/api/canvas/save',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"offline"}'}));
  await page.locator('.node.text .node-content').dblclick();

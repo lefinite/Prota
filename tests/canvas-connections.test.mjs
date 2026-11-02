@@ -76,3 +76,12 @@ test('manual routes survive node motion, duplication, reversal and reset',()=>{
  const base={schemaVersion:1,revision:0,viewport:{x:0,y:0,zoom:1},nodes,edges:[e]};C.validate(base);
  for(const invalid of [[{x:0,y:0}],points.map((p,i)=>i===2?{x:NaN,y:2}:p),[{x:0,y:0},{x:2,y:3}],Array(257).fill({x:0,y:0})])assert.throws(()=>C.validate({...base,edges:[{...e,manualRoute:invalid}]}));
 });
+
+test('fixed facing ports connect across narrow gaps without penetrating physical objects',()=>{
+ for(const gap of [1,8,16,32]){
+  const nodes=[board('a',0,0),board('b',200+gap,0)];
+  const r=R.routeEdges(nodes,[{...edge('narrow','a','b',''),fromPort:'right',toPort:'left'}])[0];
+  assert.ok(!r.unroutable,`gap ${gap}`);assert.deepEqual(r.points[0],{x:200,y:100});assert.deepEqual(r.points.at(-1),{x:200+gap,y:100});
+  for(let i=1;i<r.points.length;i++)for(const n of nodes)assert.ok(!R.intersects(r.points[i-1],r.points[i],n));
+ }
+});

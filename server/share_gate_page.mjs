@@ -39,5 +39,15 @@ const form=document.querySelector('form'),field=document.querySelector('#passwor
 visibility.addEventListener('click',()=>{const visible=field.type==='password';field.type=visible?'text':'password';visibility.setAttribute('aria-pressed',String(visible));visibility.setAttribute('aria-label',visible?'隐藏密码':'显示密码');});
 form.addEventListener('submit',()=>{const button=form.querySelector('.submit');button.disabled=true;button.querySelector('span').textContent='正在验证…';form.setAttribute('aria-busy','true');});
 window.addEventListener('pageshow',()=>{const button=form.querySelector('.submit');button.disabled=false;button.querySelector('span').textContent='查看分享';form.removeAttribute('aria-busy');});
+const fragment=new URLSearchParams(location.hash.slice(1));
+if(fragment.has('pwd')){
+    const password=fragment.get('pwd');
+    fragment.delete('pwd');
+    history.replaceState(null,'',location.pathname+location.search+(fragment.size?'#'+fragment.toString():''));
+    if(document.body.dataset.state==='locked' && password && [...password].length<=128){
+        field.value=password;
+        form.requestSubmit();
+    }
+}
 </script>` : ''}</body></html>`;
 }

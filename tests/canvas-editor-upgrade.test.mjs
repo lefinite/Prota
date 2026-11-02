@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const source = readFileSync(new URL('../portal/shell.js', import.meta.url), 'utf8');
 const method = source.slice(source.indexOf('    async upgradeCanvasEditorIfNeeded('), source.indexOf('    async renameCanvasPage('));
 
-async function checkUpgrade({ canvasScript = false, state, editor, force = false, draft = null, healthy = false } = {}) {
+async function checkUpgrade({ canvasScript = false, state, editor, force = false, draft = null, healthy = false, connectionVersion = 7 } = {}) {
     const requests = [];
     const errors = [];
     let reloads = 0;
@@ -20,16 +20,16 @@ async function checkUpgrade({ canvasScript = false, state, editor, force = false
         postMessage() {},
     };
     if (healthy) {
-        frame.CanvasConnections = { editorVersion: 6 };
+        frame.CanvasConnections = { editorVersion: connectionVersion };
         frame.CanvasDomain = { schemaVersion: 2 };
-        for (const key of ['CanvasCore', 'ProtaCanvasIcons', 'CanvasMarkdown', 'CanvasMarkdownEditor', 'marked']) frame[key] = {};
+        for (const key of ['CanvasBoardState', 'CanvasCore', 'ProtaCanvasIcons', 'CanvasMarkdown', 'CanvasMarkdownEditor', 'marked']) frame[key] = {};
         frame.document.querySelector = () => ({ sheet: {} });
     }
     const upgrade = vm.runInNewContext(`({${method}}).upgradeCanvasEditorIfNeeded`, {
         location: { origin: 'http://localhost' },
         fetch: async (url, options) => {
             requests.push({ url, body: JSON.parse(options.body) });
-            return { ok: true, json: async () => ({ runtimeVersion: 33 }) };
+            return { ok: true, json: async () => ({ runtimeVersion: 37 }) };
         },
     });
     const shell = {
@@ -64,11 +64,17 @@ test('canvas repairs preserve dirty editor state and pending recovery drafts', a
     }
 });
 
-test('existing healthy canvases upgrade to the freely zoomable board preview runtime, while current editors stay loaded', async () => {
-    for (const runtimeVersion of [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]) {
+test('existing healthy canvases upgrade to the pinned board state runtime, while current editors stay loaded', async () => {
+    for (const runtimeVersion of [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]) {
         const result = await checkUpgrade({ healthy: true, state: { nodes: [] }, editor: { runtimeVersion, previewSyncVersion: 2, isDirty: () => false } });
-        assert.equal(result.requests.length, runtimeVersion < 33 ? 1 : 0);
-        assert.equal(result.reloads, runtimeVersion < 33 ? 1 : 0);
+        assert.equal(result.requests.length, runtimeVersion < 37 ? 1 : 0);
+        assert.equal(result.reloads, runtimeVersion < 37 ? 1 : 0);
         assert.deepEqual(result.errors, []);
     }
+});
+
+test('a current runtime with the previous connection editor receives the interaction upgrade', async () => {
+    const result = await checkUpgrade({ healthy: true, connectionVersion: 6, state: { nodes: [] }, editor: { runtimeVersion: 37, previewSyncVersion: 2, isDirty: () => false } });
+    assert.equal(result.requests.length, 1);
+    assert.equal(result.reloads, 1);
 });

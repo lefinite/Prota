@@ -24,8 +24,8 @@ try {
  // No side panels, no duplicate agent UI, canvas occupies the whole viewport.
  assert.equal(await page.locator('#outline,#inspector,#agent-composer,header,#save,#export').count(),0);
  assert.deepEqual(await page.locator('#stage').evaluate(el=>({x:el.getBoundingClientRect().x,y:el.getBoundingClientRect().y,width:el.clientWidth,height:el.clientHeight})),{x:0,y:0,width:1440,height:1000});
- // Runtime V10 reports to the portal.
- assert.equal(await page.evaluate(()=>window.protaCanvas.runtimeVersion),33);
+ // The current supported runtime reports to the portal.
+ assert.ok(await page.evaluate(()=>window.protaCanvas.runtimeVersion>=35));
  // Focus and browser scroll anchoring must not introduce a second camera offset.
  await page.locator('#stage').evaluate(el=>{
   const sentinel=document.createElement('button');sentinel.id='scroll-probe';

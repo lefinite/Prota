@@ -7,6 +7,8 @@
   let schemaEnabled = false, boardVersionsEnabled = false, boardVersionBusy = false;
   const boardTitleVersions = new Map();
   let connections = null;
+  let boardStateBusy = false;
+  const restoringBoardStates = new WeakSet();
   const materialize = (document, force = schemaEnabled) => D.load(document, identityScope, { migrate: force || document.schemaVersion === 2 });
   const AUTOSAVE_DELAY = 100;
   const floatingPanels = ["#context-menu", "#property-popover", "#command-palette"];
@@ -58,7 +60,7 @@
   };
   // While an Agent run is active the canvas stays editable (move/add/restyle);
   // only deletion is withheld until the run settles.
-  const canEdit = () => !readOnly && !recoveringDraft && !agentPending && !annotationBoardId && !boardVersionBusy;
+  const canEdit = () => !readOnly && !recoveringDraft && !agentPending && !annotationBoardId && !boardVersionBusy && !boardStateBusy;
 
   // Annotations are stored separately from board source and layout. Agent
   // preparation, target locks and active runs do not block this interaction.
@@ -105,14 +107,15 @@
   }
   const isStorageQuotaError = (error) => error?.name === "QuotaExceededError" || error?.name === "NS_ERROR_DOM_QUOTA_REACHED" || error?.code === 22;
   function readStoredValue(key) {
-    try {
-      const value = localStorage.getItem(key);
-      if (value !== null) return value;
-    } catch {}
-    try {
-      return sessionStorage.getItem(key);
-    } catch {}
-    return null;
+    let persistent = null, session = null;
+    try { persistent = localStorage.getItem(key); } catch {}
+    try { session = sessionStorage.getItem(key); } catch {}
+    if (persistent === null) return session;
+    if (session === null) return persistent;
+    const savedAt = value => {
+      try { return Number(JSON.parse(value)?.savedAt) || 0; } catch { return 0; }
+    };
+    return savedAt(session) >= savedAt(persistent) ? session : persistent;
   }
   function writeStoredValue(key, value) {
     try {
@@ -120,14 +123,7 @@
       try { sessionStorage.removeItem(key); } catch {}
       return { ok: true, mode: "local" };
     } catch {}
-    // Replacing a large draft can fail while the old value still occupies its
-    // quota. The current key is derived data, so free it before one retry.
-    try {
-      localStorage.removeItem(key);
-      localStorage.setItem(key, value);
-      try { sessionStorage.removeItem(key); } catch {}
-      return { ok: true, mode: "local" };
-    } catch {}
+    // Keep the previous durable copy until a replacement succeeds.
     try {
       sessionStorage.setItem(key, value);
       return { ok: true, mode: "session" };
@@ -213,7 +209,7 @@
   for (const el of document.querySelectorAll("[data-icon]")) decorate(el, el.dataset.icon, el.textContent.trim());
   const actions = {
     agent: { label: "Prota", icon: "sparkles", agent: true, when: (ctx) => !readOnly && !ctx.nodes.some(effectiveLocked), run: () => focusAgent() },
-    "edit-text": { label: "编辑 Markdown", icon: "pen-line", when: (ctx) => ctx.single && ["text", "note"].includes(ctx.single.type) && ctx.editable, run: (ctx) => startText(ctx.single.id) },
+    "edit-text": { label: (ctx) => ctx.single?.type === "text" ? "编辑 Markdown" : "编辑文字", icon: "pen-line", when: (ctx) => ctx.single && ["text", "note", "rect"].includes(ctx.single.type) && ctx.editable, run: (ctx) => startText(ctx.single.id) },
     style: { label: "样式", icon: "sliders-horizontal", when: (ctx) => ctx.single && ["text", "note", "rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties() },
     fill: { label: "填充", icon: "paint-bucket", when: (ctx) => ctx.single && ["rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties("填充") },
     color: { label: "颜色", icon: "paint-bucket", when: (ctx) => ctx.single?.type === "note" && ctx.editable, run: () => openProperties("便签颜色 #fff1b8") },
@@ -223,6 +219,10 @@
     } },
     "fit-image": { label: "适应比例", icon: "crop", when: (ctx) => ctx.single?.type === "image" && ctx.editable, run: (ctx) => fitImageRatio(ctx.single) },
     preview: { label: "预览", icon: "play", shortcut: "双击", when: (ctx) => ctx.single?.type === "board" && ctx.single.src, run: (ctx) => previewBoard(ctx.single) },
+    "pin-state": { label: (ctx) => ctx.single?.pinnedState ? "更新固定状态" : "固定当前状态", icon: "pin", when: (ctx) => ctx.editable && ctx.single?.type === "board" && ctx.single.src, run: (ctx) => pinBoardState(ctx.single) },
+    "copy-state": { label: "以当前状态复制", icon: "copy", when: (ctx) => ctx.editable && ctx.single?.type === "board" && ctx.single.src, run: (ctx) => pinBoardState(ctx.single, true) },
+    "reset-state": { label: "回到固定状态", icon: "undo-2", when: (ctx) => Boolean(ctx.single?.pinnedState) && ctx.single.type === "board", run: (ctx) => resetPinnedBoard(ctx.single) },
+    "unpin-state": { label: "取消固定", icon: "pin-off", when: (ctx) => ctx.editable && Boolean(ctx.single?.pinnedState), run: (ctx) => mutate(() => { delete ctx.single.pinnedState; }) },
     annotate: { label: "标注", icon: "pen-line", when: (ctx) => canAnnotateBoard(ctx.single), run: (ctx) => enterBoardAnnotation(ctx.single.id) },
     adjust: { label: "调整", icon: "sliders-horizontal", when: (ctx) => ctx.editable && ctx.single && ctx.single.type !== "board", run: () => openProperties() },
     rename: { label: "重命名", icon: "pencil", shortcut: "F2", when: (ctx) => ctx.editable && ctx.single, run: () => focusName() },
@@ -268,6 +268,7 @@
       title.append(name);
     }
     name.textContent = node.name || "";
+    renderBoardStateButton(title, node);
     let button = title.querySelector(".board-version");
     if (!node.src || (!node.boardRevisionId && !(local && boardVersionsEnabled))) { button?.remove(); return; }
     if (!button) {
@@ -281,6 +282,7 @@
         e.stopPropagation();
         const currentNode = state.nodes.find(n => n.id === node.id);
         if (!currentNode || !canEdit() || effectiveLocked(currentNode) || agentHeld(currentNode)) return;
+        $('#notice').hidden = true;
         if (!$("#context-menu").hidden && $("#context-menu").dataset.boardVersions === node.id) {
           setFloatingPanel("#context-menu", false);
           return;
@@ -498,6 +500,7 @@
       push(primary, "agent");
       push(primary, "duplicate");
     } else if (ctx.single && ["rect", "ellipse"].includes(ctx.single.type)) {
+      push(primary, "edit-text");
       push(primary, "fill");
       push(primary, "style");
       push(primary, "agent");
@@ -522,7 +525,7 @@
       push(primary, "adjust");
       push(primary, "duplicate");
     }
-    for (const id of ["rename", "enter-group", "preview", "fit-image", "front", "back", "detach", "select-parent", "focus", "lock", "delete"]) {
+    for (const id of ["pin-state", "copy-state", "reset-state", "unpin-state", "rename", "enter-group", "preview", "fit-image", "front", "back", "detach", "select-parent", "focus", "lock", "delete"]) {
       const action = resolveAction(id);
       if (action && !primary.some((p) => p.id === id)) more.push(action);
     }
@@ -593,14 +596,113 @@
     }
   }
   function notify() {
-    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 33 }, location.origin === "null" ? "*" : location.origin);
+    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { flowShape: n.flowShape || null, prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 37 }, location.origin === "null" ? "*" : location.origin);
   }
   function exitInteraction() {
+    const previous = state.nodes.find(n => n.id === interacting);
     resetBoardRightGesture();
     if (annotationBoardId) exitBoardAnnotation();
     interacting = null;
     document.querySelectorAll(".interacting").forEach((n) => n.classList.remove("interacting"));
     $("#interaction-hint").textContent = "";
+    if (previous?.pinnedState) resetPinnedBoard(previous);
+  }
+  function renderBoardStateButton(title, node) {
+    let button = title.querySelector('.board-state-pin');
+    const allowed = canEdit() && !effectiveLocked(node) && !agentHeld(node);
+    if (!node.src || !allowed) { button?.remove(); return; }
+    if (!button) {
+      button = document.createElement('button');
+      button.type = 'button'; button.className = 'board-state-pin';
+      decorate(button, 'pin');
+      for (const type of ['pointerdown', 'dblclick']) button.addEventListener(type, e => e.stopPropagation());
+      button.onclick = e => {
+        e.stopPropagation();
+        const currentNode = state.nodes.find(n => n.id === node.id);
+        if (!currentNode || !canEdit() || effectiveLocked(currentNode) || agentHeld(currentNode)) return;
+        $('#notice').hidden = true;
+        selected = new Set([currentNode.id]); renderInspector(); notify();
+        if (!currentNode.pinnedState) { pinBoardState(currentNode); return; }
+        const rect = button.getBoundingClientRect();
+        showMenu(['pin-state','copy-state','reset-state','unpin-state'].map(resolveAction).filter(Boolean), rect.left, rect.bottom + 4, button);
+      };
+      title.append(button);
+    }
+    button.classList.toggle('is-pinned', Boolean(node.pinnedState));
+    button.title = node.pinnedState ? '已固定状态' : '固定当前状态';
+    button.setAttribute('aria-label', button.title);
+    button.setAttribute('aria-pressed', String(Boolean(node.pinnedState)));
+    button.setAttribute('aria-haspopup', node.pinnedState ? 'menu' : 'false');
+  }
+  async function pinBoardState(node, duplicate = false) {
+    if (!canEdit() || effectiveLocked(node) || agentHeld(node)) return false;
+    const frame = nodeEls.get(node.id)?.querySelector('iframe');
+    if (!frame || restoringBoardStates.has(frame) || frame.dataset.statePending) { notice('画板正在恢复状态，请稍后重试'); return false; }
+    const src = node.src, version = node.boardVersionId, sourceDocument = frame.contentDocument;
+    boardStateBusy = true;
+    try {
+      const pinnedState = await window.CanvasBoardState.capture(frame, boardPreviewUrls.get(node.id) || src);
+      D.validate({...state, nodes: state.nodes.map(n => n === node ? {...n, pinnedState} : n)});
+      if (!state.nodes.includes(node) || node.src !== src || node.boardVersionId !== version || frame.contentDocument !== sourceDocument || readOnly || agentHeld(node)) throw Error('画板已变化，请重新固定');
+      boardStateBusy = false;
+      if (duplicate) {
+        mutate(() => {
+          const row = state.nodes.filter(n => n.parentId === node.parentId && n.y < node.y + node.height && n.y + n.height > node.y);
+          const offset = Math.max(node.x + node.width + 64, ...row.map(n => n.x + n.width + 64)) - node.x;
+          const copied = C.duplicate(state.nodes, new Set([node.id]), offset);
+          for (const child of copied.nodes) child.y -= offset;
+          copied.nodes.find(n => n.id === copied.selected[0]).pinnedState = pinnedState;
+          state.nodes.push(...copied.nodes);
+          if (state.edges) state.edges.push(...C.duplicateEdges(state.edges, copied.mapping, {x:offset,y:0}));
+          selected = new Set(copied.selected);
+        });
+      } else {
+        checkpoint(); node.pinnedState = pinnedState;
+        exitInteraction(); changed();
+      }
+      const saved = await save();
+      if (saved && !dirty) notice(duplicate ? '已复制并固定状态' : '已固定当前状态');
+      return true;
+    } catch (error) {
+      notice(error.message || '状态固定失败，请重试', [{label:'适配状态保存', run: () => {
+        selected = new Set([node.id]); render(); notify(); focusAgent(true);
+      }}]);
+      return false;
+    } finally { boardStateBusy = false; render(); }
+  }
+  function resetPinnedBoard(node) {
+    if (!node.pinnedState) return;
+    const frame = nodeEls.get(node.id)?.querySelector('iframe');
+    if (!frame || restoringBoardStates.has(frame)) return;
+    try {
+      const url = new URL(window.CanvasBoardState.urlFor(node.pinnedState, boardPreviewUrls.get(node.id) || node.src));
+      // Assigning an unchanged hash URL can be a same-document navigation and
+      // never fire load. A transient query forces a fresh JS realm; restore
+      // removes it with replaceState before applying the saved data.
+      url.searchParams.set('__prota_restore', crypto.randomUUID());
+      nodeEls.get(node.id)?.classList.add('restoring-state');
+      frame.dataset.statePending = 'true';
+      frame.src = url.href;
+    }
+    catch (error) { notice(error.message); }
+  }
+  async function restorePinnedBoard(nodeId, frame) {
+    const node = state.nodes.find(n => n.id === nodeId);
+    if (!node?.pinnedState || interacting === nodeId || restoringBoardStates.has(frame) || !frame.isConnected || nodeEls.get(nodeId)?.querySelector('iframe') !== frame) return;
+    restoringBoardStates.add(frame);
+    nodeEls.get(nodeId)?.classList.add('restoring-state');
+    try {
+      await window.CanvasBoardState.restore(frame, node.pinnedState, boardPreviewUrls.get(nodeId) || node.src);
+      delete frame.dataset.stateError;
+    } catch (error) {
+      frame.dataset.stateError = 'true';
+      notice(`${node.name || '画板'}：${error.message}。可进入交互后重新固定。`);
+    } finally {
+      restoringBoardStates.delete(frame);
+      delete frame.dataset.statePending;
+      if (nodeEls.get(nodeId)?.querySelector('iframe') === frame) nodeEls.get(nodeId)?.classList.remove('restoring-state');
+      connections?.schedule();
+    }
   }
   function boardFolderOf(node) {
     const match = /^boards\/([a-zA-Z0-9_-]+)\/index\.html$/.exec(node?.src || "");
@@ -714,8 +816,7 @@
     if (interacting !== boardId) {
       // First right click activates the board (same as preview double-click);
       // the regular menu still opens after the gesture window expires.
-      interacting = null;
-      document.querySelectorAll(".interacting").forEach((n) => n.classList.remove("interacting"));
+      exitInteraction();
       selected = /* @__PURE__ */ new Set([boardId]);
       groupContext = null;
       render();
@@ -832,8 +933,42 @@
       postAnnotationState(true, { rebind: true });
     }
   }
+  const flowShapes = {
+    terminator: { label: "开始 / 结束", text: "开始", width: 180, height: 64, icon: "flow-terminator" },
+    process: { label: "流程矩形", text: "处理步骤", width: 220, height: 88, icon: "flow-process" },
+    decision: { label: "判断", text: "是否满足条件？", width: 220, height: 152, icon: "flow-decision" },
+    subprocess: { label: "子流程", text: "子流程", width: 220, height: 88, icon: "flow-subprocess" },
+    connector: { label: "连接圆点", text: "A", width: 64, height: 64, icon: "flow-connector" }
+  };
+  function renderFlowGeometry(el, node) {
+    el.classList.toggle("flowchart", Boolean(node.flowShape));
+    if (!node.flowShape) { delete el.dataset.flowShape; return; }
+    el.dataset.flowShape = node.flowShape;
+    let svg = el.querySelector(":scope > .flow-geometry");
+    if (!svg) {
+      svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.classList.add("flow-geometry"); svg.setAttribute("aria-hidden", "true"); el.prepend(svg);
+    }
+    const signature = JSON.stringify([node.flowShape, node.width, node.height, node.color]);
+    if (svg.dataset.geometry === signature) return;
+    svg.dataset.geometry = signature;
+    const w = node.width, h = node.height;
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`); svg.setAttribute("preserveAspectRatio", "none"); svg.replaceChildren();
+    const shape = (tag, attrs) => {
+      const child = document.createElementNS(svg.namespaceURI, tag);
+      for (const [key, value] of Object.entries(attrs)) child.setAttribute(key, value);
+      child.setAttribute("vector-effect", "non-scaling-stroke"); svg.append(child); return child;
+    };
+    const fill = node.color || "#ffffff";
+    if (node.flowShape === "decision") shape("path", {d: `M${w/2} 0L${w} ${h/2}L${w/2} ${h}L0 ${h/2}Z`, fill});
+    else if (node.flowShape === "connector") shape("ellipse", {cx:w/2, cy:h/2, rx:w/2, ry:h/2, fill});
+    else {
+      shape("rect", {x:0, y:0, width:w, height:h, rx:node.flowShape === "terminator" ? Math.min(w,h)/2 : 3, fill});
+      if (node.flowShape === "subprocess") { const inset = Math.min(16,w/8); shape("path", {d:`M${inset} 0V${h}M${w-inset} 0V${h}`, fill:"none", "pointer-events":"none"}); }
+    }
+  }
   function nodeContentSignature(n) {
-    return JSON.stringify([n.type, n.type === "board" ? "" : displayText(n), n.prdPath, n.markdownSource, n.src, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
+    return JSON.stringify([n.type, n.flowShape, n.type === "board" ? "" : displayText(n), n.prdPath, n.markdownSource, n.src, n.pinnedState, n.cloneFrom ? baseline.nodes.some(saved => saved.id === n.id) : null, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
   }
   function render(options = {}) {
     if (options.panels === false) {
@@ -879,18 +1014,24 @@
         content.className = "node-content";
         el.append(content);
         if (n.type === "board") {
-          if (/^boards\/[a-zA-Z0-9_-]+\/index\.html$/.test(n.src || "")) {
+          if (n.cloneFrom && !baseline.nodes.some(saved => saved.id === n.id)) {
+            content.textContent = "正在复制…";
+          } else if (/^boards\/[a-zA-Z0-9_-]+\/index\.html$/.test(n.src || "")) {
             const frame = document.createElement("iframe");
             const stamp = boardStamps.get(n.id) || 0;
             frame.src = (boardPreviewUrls.get(n.id) || n.src) + (stamp ? "?canvas=" + stamp : "");
+            if (n.pinnedState) frame.src = window.CanvasBoardState.urlFor(n.pinnedState, boardPreviewUrls.get(n.id) || n.src);
             frame.title = n.name;
-            frame.loading = "lazy";
+            // Anchored routes need DOM geometry even when their board is outside the viewport.
+            frame.loading = state.edges?.some(edge => edge.fromInstanceId === n.id && edge.fromAnchor || edge.toInstanceId === n.id && edge.toAnchor) ? "eager" : "lazy";
             frame.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
             content.append(frame);
             el.classList.add("loading");
             frame.addEventListener("load", () => {
               el.classList.remove("loading");
               attachBoardFrameEvents(n.id, frame);
+              restorePinnedBoard(n.id, frame);
+              connections?.schedule();
             });
           } else {
             const placeholder2 = document.createElement("div");
@@ -922,6 +1063,7 @@
         }
         else content.textContent = n.text || "";
       }
+      renderFlowGeometry(el, n);
       const inner = el.querySelector(".node-content");
       if (inner && n.padding !== void 0) inner.style.padding = n.padding + "px";
       const placeholder = el.querySelector(".board-placeholder");
@@ -949,6 +1091,7 @@
       const n = state.nodes.find((item) => item.id === id), el = nodeEls.get(id);
       if (!n || !el) continue;
       Object.assign(el.style, { left: `${n.x}px`, top: `${n.y}px`, width: `${n.width}px`, height: `${n.height}px` });
+      if (n.flowShape) renderFlowGeometry(el, n);
     }
     updateSelectionFrame();
     connections?.schedule();
@@ -1032,7 +1175,7 @@
     }
     let fields = [["name", "名称", "text"], ["color", "填充", "color"], ["opacity", "不透明度", "number"], ["radius", "圆角", "number"]];
     if (n.type === "group") fields = fields.filter(([key]) => key === "name");
-    if (n.type === "ellipse") fields = fields.filter(([key]) => key !== "radius");
+    if (n.type === "ellipse" || n.flowShape) fields = fields.filter(([key]) => key !== "radius");
     if (n.type === "text") fields = fields.filter(([key]) => !["color", "radius"].includes(key));
     if (n.type === "image" || n.type === "board") fields = fields.filter(([key]) => key !== "color" && key !== "radius");
     if (["text", "note", "rect", "ellipse"].includes(n.type)) fields.push(["text", "内容", "textarea"], ["fontSize", "字号", "number"], ["textColor", "文字颜色", "color"]);
@@ -1101,7 +1244,7 @@
         propertyEdit = null;
       });
     }
-    if (!renameOnly && ["text", "note"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
+    if (!renameOnly && ["text", "note", "rect"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
       const section = document.createElement("details");
       section.className = "property-section";
       const summary = document.createElement("summary");
@@ -1111,6 +1254,7 @@
         const row = document.createElement("label");
         row.textContent = label;
         const select = document.createElement("select");
+        select.setAttribute("aria-label", label);
         for (const [value, text] of options) {
           const option = document.createElement("option");
           option.value = value;
@@ -1150,6 +1294,7 @@
   }
   function add(kind, at) {
     if (!canEdit()) return;
+    if (kind.startsWith("flow-")) return insertFlowShape(kind.slice(5), at);
     if (kind.startsWith("component-")) return insertComponent(kind, at);
     const p = at || point(stage.getBoundingClientRect().left + stage.clientWidth / 2, stage.getBoundingClientRect().top + stage.clientHeight / 2);
     const type = ["mobile", "web"].includes(kind) ? "board" : kind;
@@ -1171,6 +1316,29 @@
       state.nodes.push(n);
       selected = /* @__PURE__ */ new Set([n.id]);
     });
+    return n;
+  }
+  function insertFlowShape(shape, at) {
+    const preset = flowShapes[shape];
+    if (!preset || !canEdit()) return;
+    finishText(); exitInteraction(); setTool("select");
+    const previous = current().length === 1 ? current()[0] : null;
+    const center = at || point(stage.clientWidth / 2, stage.clientHeight / 2);
+    const n = { id: uid(), type: "rect", flowShape: shape, name: preset.label,
+      x: Math.round(!at && previous ? previous.x + previous.width + 80 : center.x - preset.width / 2),
+      y: Math.round(!at && previous ? previous.y + (previous.height - preset.height) / 2 : center.y - preset.height / 2),
+      width: preset.width, height: preset.height, text: preset.text, color: "#ffffff", fontSize: 16, textAlign: "center", textColor: "#344155" };
+    if (!at) for (let attempt = 0; attempt <= state.nodes.length; attempt++) {
+      const collision = state.nodes.find(item => !item.hidden && item.type !== "group" && n.x < item.x+item.width+24 && n.x+n.width+24 > item.x && n.y < item.y+item.height+24 && n.y+n.height+24 > item.y);
+      if (!collision) break;
+      n.x = collision.x + collision.width + 80;
+    }
+    // Flow steps remain independent of the selected board so that its outgoing edge is routable.
+    mutate(() => { state.nodes.push(n); selected = new Set([n.id]); });
+    const v = state.viewport, left = n.x*v.zoom+v.x, top = n.y*v.zoom+v.y;
+    const dx = left < 48 ? 48-left : Math.min(0, stage.clientWidth-48-left-n.width*v.zoom);
+    const dy = top < 100 ? 100-top : Math.min(0, stage.clientHeight-120-top-n.height*v.zoom);
+    if (dx || dy) { v.x += dx; v.y += dy; persistView(); }
     return n;
   }
   function insertComponent(kind, at) {
@@ -1311,6 +1479,9 @@
   }
   function previewBoard(n) {
     if (annotationBoardId) return;
+    const activeFrame = nodeEls.get(n.id)?.querySelector('iframe');
+    if (restoringBoardStates.has(activeFrame) || activeFrame?.dataset.statePending) { notice('画板正在恢复状态，请稍后重试'); return; }
+    if (interacting === n.id) return;
     exitInteraction();
     const el = nodeEls.get(n.id);
     if (!el) return;
@@ -1526,7 +1697,7 @@
       box.hidden = false;
       Object.assign(box.style, { left: `${Math.min(g.cx, e.clientX) - r.left}px`, top: `${Math.min(g.cy, e.clientY) - r.top}px`, width: `${Math.abs(e.clientX - g.cx)}px`, height: `${Math.abs(e.clientY - g.cy)}px` });
       selected = new Set(g.selected);
-      for (const n of state.nodes) if (!n.parentId && !effectiveLocked(n) && !n.hidden && n.x >= Math.min(p.x, g.start.x) && n.x + n.width <= Math.max(p.x, g.start.x) && n.y >= Math.min(p.y, g.start.y) && n.y + n.height <= Math.max(p.y, g.start.y)) selected.add(n.id);
+      for (const n of state.nodes) if (!n.parentId && !n.hidden && n.x >= Math.min(p.x, g.start.x) && n.x + n.width <= Math.max(p.x, g.start.x) && n.y >= Math.min(p.y, g.start.y) && n.y + n.height <= Math.max(p.y, g.start.y)) selected.add(n.id);
       render({ panels: false });
       return;
     }
@@ -1679,7 +1850,7 @@
       return;
     }
     e.preventDefault();
-    if (["text", "note"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
+    if (["text", "note", "rect"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
       startText(n.id);
       return;
     }
@@ -2066,7 +2237,7 @@
     setFloatingPanel("#property-popover", false);
     setFloatingPanel("#context-menu", false);
     const n = state.nodes.find((n2) => n2.id === id);
-    if (!n || effectiveLocked(n)) return;
+    if (!n || !["text", "note", "rect"].includes(n.type) || effectiveLocked(n) || agentHeld(n)) return;
     selected = /* @__PURE__ */ new Set([id]);
     render();
     const el = nodeEls.get(id)?.querySelector(".node-content");
@@ -2078,7 +2249,7 @@
     el.textContent = n.text || "";
     el.contentEditable = "plaintext-only";
     el.spellcheck = false;
-    el.setAttribute("aria-label", n.type === "text" ? "编辑 Markdown 文本" : "编辑便签");
+    el.setAttribute("aria-label", n.type === "text" ? "编辑 Markdown 文本" : n.flowShape ? "编辑流程图文字" : n.type === "rect" ? "编辑矩形文字" : "编辑便签");
     el.parentElement.classList.add("editing");
     el.focus();
     const range = document.createRange();
@@ -2415,23 +2586,26 @@
           baseline = clone(result.state);
           render({ panels: false });
         } else {
-          const revision = Number(result.revision);
-          if (!Number.isSafeInteger(revision)) throw Error("保存失败，请重试");
+          const revision = result.revision;
+          if (!Number.isSafeInteger(revision) || revision < 0) throw Error("保存失败，请重试");
           baseline = clone(snapshot);
           baseline.revision = revision;
           state.revision = revision;
         }
         conflict = false;
-        if (dirty) persistDraft();
+        if (dirty) persistDraft({ announce: false });
         if (!dirty) {
           removeStoredValue(draftKey);
           $("#notice").hidden = true;
         }
+        if (snapshot.nodes.some(n => n.cloneFrom)) render({panels:false});
         status(dirty ? "有新的修改待保存" : "已保存", dirty ? "busy" : "");
         notify();
         return true;
       } catch (error) {
-        status(conflict ? "保存冲突" : "保存失败 · 已保留本机备份", "error");
+        dirty = true;
+        const backedUp = persistDraft({ announce: false });
+        status(conflict ? "保存冲突" : backedUp ? "保存失败 · 已保留本机备份" : "保存失败 · 请保持页面打开", "error");
         if (conflict) {
           try {
             backupLocal();
@@ -2466,7 +2640,8 @@
   }, 150);
   function backupLocal() {
     try {
-      localStorage.setItem(draftKey + ":conflict-backup", JSON.stringify({ state, baseline, savedAt: Date.now() }));
+      const result = writeStoredValue(draftKey + ":conflict-backup", JSON.stringify({ state, baseline, savedAt: Date.now() }));
+      if (!result.ok) throw result.error;
     } catch {
       notice("本机备份空间不足，当前修改仍保留在画布中。");
       throw Error("无法备份当前修改");
@@ -2493,7 +2668,7 @@
   }
   async function restoreLocalOverConflict() {
     try {
-      const backup = JSON.parse(localStorage.getItem(draftKey + ":conflict-backup") || "null");
+      const backup = JSON.parse(readStoredValue(draftKey + ":conflict-backup") || "null");
       if (!backup?.state) throw Error("未找到本机备份");
       const disk = await fetchDiskDocument();
       C.validate(backup.state);
@@ -2503,7 +2678,7 @@
       const apply = () => {
         checkpoint();
         try {
-          localStorage.setItem(draftKey + ":conflict-backup", JSON.stringify({ ...backup, disk }));
+          writeStoredValue(draftKey + ":conflict-backup", JSON.stringify({ ...backup, disk }));
         } catch {
         }
         const viewport = state.viewport;
@@ -2528,7 +2703,7 @@
   }
   function offerConflictBackupRestore() {
     try {
-      const backup = JSON.parse(localStorage.getItem(draftKey + ":conflict-backup") || "null");
+      const backup = JSON.parse(readStoredValue(draftKey + ":conflict-backup") || "null");
       if (!backup?.state) return;
       const at = new Date(backup.savedAt || Date.now());
       const time = `${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}`;
@@ -2536,7 +2711,7 @@
     } catch {
     }
   }
-  async function focusAgent() {
+  async function focusAgent(adaptBoardState = false) {
     if (readOnly) return;
     finishText();
     if (parent === window) {
@@ -2545,7 +2720,7 @@
     }
     if (document.fullscreenElement) await document.exitFullscreen();
     if (fullscreenFallback) parent.postMessage({ type: "prota:canvas-fullscreen", active: false }, location.origin);
-    parent.postMessage({ type: "prota:canvas-open-agent" }, location.origin);
+    parent.postMessage({ type: "prota:canvas-open-agent", adaptBoardState: adaptBoardState === true }, location.origin);
   }
   // When the Agent run settles, fold its disk writes into local edits without discarding either
   // side; unresolved objects keep the local version and the merged document autosaves right after.
@@ -2606,7 +2781,7 @@
       if (dirty || editing || saving) syncAgentOutcome().finally(settle);
       else settle();
     }
-    document.querySelectorAll("#add-board,#add-shape,#add-note,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = readOnly);
+    document.querySelectorAll("#add-board,#add-shape,#add-flowchart,#add-note,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = readOnly);
     renderInspector();
   }
   // Context menus replace the toolbar; its own More menu expands underneath it.
@@ -2636,6 +2811,7 @@
     const menu = $("#context-menu");
     menu.replaceChildren();
     delete menu.dataset.boardVersions;
+    delete menu.dataset.flowchart;
     menu.toggleAttribute("data-selection-tools", keepSelectionTools);
     menu.style.removeProperty("max-height");
     menuInvoker = invoker;
@@ -2668,6 +2844,7 @@
   }
   function creationActions(at = null, category = "all") {
     const defs = [["mobile", "手机画板", "frame", "boards"], ["web", "Web 画板", "frame", "boards"], ["board", "自由画板", "frame", "boards"], ["text", "文本", "type", "content"], ["note", "便签", "sticky-note", "content"], ["rect", "矩形", "shapes", "shapes"], ["ellipse", "圆形", "shapes", "shapes"], ["image", "图片", "image-plus", "content"]];
+    defs.push(...Object.entries(flowShapes).map(([shape, preset]) => ["flow-"+shape, preset.label, preset.icon, "flowchart"]));
     return defs.filter(([, , , group]) => category === "all" || category === group).map(([kind, label, icon]) => ({ id: "add-" + kind, label, icon, disabled: !canEdit(), run: () => {
       if (kind === "image") {
         imageReplaceTarget = null;
@@ -2682,6 +2859,14 @@
   }
   $("#add-board").onclick = (e) => openCreateMenu(e.currentTarget, "boards");
   $("#add-shape").onclick = (e) => openCreateMenu(e.currentTarget, "shapes");
+  function openFlowchartMenu(button, at = null) {
+    const r = button.getBoundingClientRect();
+    showMenu(creationActions(at, "flowchart"), r.left, r.top-300, button);
+    const menu = $("#context-menu"); menu.dataset.flowchart = "true";
+    menu.style.left = Math.max(10, Math.min(innerWidth-menu.offsetWidth-10, r.left)) + "px";
+    menu.style.top = Math.max(10, r.top-menu.offsetHeight-10) + "px";
+  }
+  $("#add-flowchart").onclick = e => openFlowchartMenu(e.currentTarget);
   $("#more-tools").onclick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     showMenu(creationActions().filter((a) => ["add-note", "add-image"].includes(a.id)), rect.left, rect.top - 300, e.currentTarget);
@@ -2749,7 +2934,8 @@
       showMenu([
         { heading: "添加到这里" },
         { id: "add-board", label: "画板", icon: "frame", disabled: !canEdit(), run: () => showMenu(creationActions(at, "boards"), e.clientX, e.clientY) },
-        ...creationActions(at).filter((a) => !["add-mobile", "add-web", "add-board"].includes(a.id) && !a.id.startsWith("add-component")),
+        ...creationActions(at).filter((a) => !["add-mobile", "add-web", "add-board"].includes(a.id) && !a.id.startsWith("add-component") && !a.id.startsWith("add-flow-")),
+        { id: "flowchart", label: "流程图", icon: "flowchart", disabled: !canEdit(), run: () => showMenu(creationActions(at, "flowchart"), e.clientX, e.clientY) },
         { divider: true },
         { id: "paste", label: "粘贴", icon: "clipboard-paste", shortcut: "⌘ V", disabled: !loadClipboard() || !canEdit(), run: () => pasteSelection(at) },
         { divider: true },
@@ -2792,7 +2978,7 @@
       const { primary, more } = contextActions();
       for (const action of [...primary, ...more].filter((a) => !a.disabled)) push(action.label, action.icon, action.shortcut || "", (event, rect) => action.run(event, rect || $("#selection-tools").getBoundingClientRect()), "ctx-" + action.id);
     }
-    if (!readOnly && localStorage.getItem(draftKey + ":conflict-backup")) push("恢复冲突前的本机备份", "undo-2", "", restoreLocalOverConflict);
+    if (!readOnly && readStoredValue(draftKey + ":conflict-backup")) push("恢复冲突前的本机备份", "undo-2", "", restoreLocalOverConflict);
     if (!readOnly) push("交给当前 Agent", "sparkles", "", () => focusAgent());
     return list;
   }
@@ -3073,11 +3259,13 @@
         if (!loaded || dirty || editing || saving || !old.isConnected) { next.remove(); ok = false; continue; }
         next.onload = next.onerror = null;
         // The replacement keeps the same Escape/annotation behavior as an original board.
-        next.addEventListener("load", () => attachBoardFrameEvents(id, next));
+        next.addEventListener("load", () => { attachBoardFrameEvents(id, next); restorePinnedBoard(id, next); });
         attachBoardFrameEvents(id, next);
         old.replaceWith(next); next.removeAttribute("style");
       }
       if (snapshotUrl) boardPreviewUrls.set(id, url); else boardPreviewUrls.delete(id);
+      const activeFrame = nodeEls.get(id)?.querySelector("iframe");
+      if (activeFrame) restorePinnedBoard(id, activeFrame);
       // Mark the rendered signature without rerendering unrelated boards.
       const el = nodeEls.get(id);
       if (el) el.dataset.signature = nodeContentSignature(node);
@@ -3188,7 +3376,7 @@
   });
   function saveOnHide() {
     if (readOnly || !dirty) return;
-    persistDraft();
+    persistDraft({ announce: false });
     void save({ preserveEditing: true, keepalive: true });
   }
   window.addEventListener("pagehide", saveOnHide);
@@ -3199,9 +3387,8 @@
     if (dirty && !conflict) void save({ preserveEditing: true });
   });
   window.addEventListener("beforeunload", (e) => {
-    // Browser shutdown cannot wait for a request. The synchronous draft is
-    // restored automatically on the next visit, even if keepalive fails.
-    if (dirty && !readOnly && (!persistDraft() || editing?.prdPath || linkedSavePromise)) {
+    // A session copy survives refresh but not closing this browser tab.
+    if (dirty && !readOnly && (!persistDraft({ requireLocal: true }) || editing?.prdPath || linkedSavePromise)) {
       e.preventDefault();
       e.returnValue = "";
     }
@@ -3251,7 +3438,8 @@
       } else {
         // Merge independent disk changes automatically; conflicting fields
         // still require a choice and retain both the draft and disk backup.
-        writeStoredValue(draftKey + ":conflict-backup", JSON.stringify(draft));
+        const backup = writeStoredValue(draftKey + ":conflict-backup", JSON.stringify(draft));
+        if (!backup.ok) throw backup.error;
         recoveringDraft = true;
         draftRecovery = restoreLocalOverConflict().finally(() => {
           recoveringDraft = false;
@@ -3270,7 +3458,7 @@
     notice(startupError.message, [{ label: "刷新重试", run: () => location.reload() }]);
   }
   connections = window.CanvasConnections.install({
-    state: () => state, canEdit, focus: ids => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), tool: () => tool, panning: () => space || tool === "hand",
+    state: () => state, canEdit, blocked: n => effectiveLocked(n) || agentHeld(n), panBy: (dx, dy) => { state.viewport.x += dx; state.viewport.y += dy; persistView(); }, focus: ids => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), tool: () => tool, panning: () => space || tool === "hand",
     mutate: fn => mutate(() => fn(state)), setTool,
     clearSelection: () => { selected.clear(); finishText(); exitInteraction(); renderInspector(); updateSelectionFrame(); },
   });
@@ -3286,7 +3474,7 @@
     const iframe = nodeEls.get(node.id)?.querySelector("iframe") || null;
     return { boardId: boardFolderOf(node), boardPath: node.src || "", nodeId: node.id, iframe };
   }
-  window.protaCanvas = { runtimeVersion: 33, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
+  window.protaCanvas = { runtimeVersion: 37, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
     agentPending = Boolean(value);
     panelKey = "";
     renderInspector();

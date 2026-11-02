@@ -1,6 +1,15 @@
 /* Official lucide-static 0.544.0 SVGs. Source: https://registry.npmjs.org/lucide-static/-/lucide-static-0.544.0.tgz
  * ISC / MIT notices are included in LICENSE.lucide. No CDN or runtime dependency. */
 window.ProtaCanvasIcons = {
+  "pin": "<path d=\"M16 9V4l1-1H7l1 1v5l-3 3v3h6v6l1 1 1-1v-6h6v-3z\"/>",
+  "pin-off": "<path d=\"m3 3 18 18M16 9V4l1-1H7l1 1M8 9l-3 3v3h6v6l1 1 1-1v-6h2\"/>",
+  "flowchart": '<rect x="8" y="2" width="8" height="5" rx="1"/><path d="M12 7v4M5 11h14M5 11v5m14-5v5"/><rect x="1" y="16" width="8" height="5" rx="1"/><path d="m19 15 4 4-4 4-4-4z"/>',
+  "flow-terminator": '<rect x="2" y="6" width="20" height="12" rx="6"/>',
+  "flow-process": '<rect x="2" y="5" width="20" height="14" rx="1"/>',
+  "flow-decision": '<path d="m12 2 10 10-10 10L2 12Z"/>',
+  "flow-subprocess": '<rect x="2" y="5" width="20" height="14" rx="1"/><path d="M6 5v14M18 5v14"/>',
+  "flow-connector": '<circle cx="12" cy="12" r="8"/>',
+
   "heading-2": "<path d=\"M4 12h8\" />\n  <path d=\"M4 18V6\" />\n  <path d=\"M12 18V6\" />\n  <path d=\"M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1\" />",
   "bold": "<path d=\"M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8\" />",
   "italic": "<line x1=\"19\" x2=\"10\" y1=\"4\" y2=\"4\" />\n  <line x1=\"14\" x2=\"5\" y1=\"20\" y2=\"20\" />\n  <line x1=\"15\" x2=\"9\" y1=\"4\" y2=\"20\" />",

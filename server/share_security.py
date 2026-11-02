@@ -3,6 +3,8 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import secrets
 import threading
+import re
+import base64
 
 _policy_lock = threading.Lock()
 
@@ -12,7 +14,7 @@ except ImportError:
     import workspace
 
 
-def create_policy(options=None):
+def create_policy(options=None, mcp_token=None):
     if options is None:
         options = {}
     if not isinstance(options, dict):
@@ -31,12 +33,18 @@ def create_policy(options=None):
             raise ValueError('分享到期时间无效，请重新创建分享。')
         expires = datetime.fromtimestamp(requested_expiry / 1000, timezone.utc)
     salt = secrets.token_hex(16) if password else None
-    return {'id': secrets.token_hex(16), 'expiresAt': int(expires.timestamp() * 1000) if expires else None,
+    policy = {'id': secrets.token_hex(16), 'expiresAt': int(expires.timestamp() * 1000) if expires else None,
             'salt': salt, 'passwordHash': hashlib.scrypt(password.encode(), salt=bytes.fromhex(salt), n=16384, r=8, p=1, dklen=32).hex() if password else None,
             'sessionKey': secrets.token_hex(32)}
+    if mcp_token is not None:
+        if (not isinstance(mcp_token, str) or not re.fullmatch(r'[A-Za-z0-9_-]{43}', mcp_token)
+                or base64.urlsafe_b64encode(base64.urlsafe_b64decode(mcp_token + '=')).decode().rstrip('=') != mcp_token):
+            raise ValueError('MCP 凭证格式无效，须使用 32 字节随机凭证。')
+        policy['mcpTokenHash'] = hashlib.sha256(mcp_token.encode()).hexdigest()
+    return policy
 
 
-def save_policy(root, filename, policy, password=None):
+def save_policy(root, filename, policy, password=None, mcp_token=None):
     import json
     from pathlib import Path
     path = Path(root) / 'data/share-access.json'
@@ -52,6 +60,13 @@ def save_policy(root, filename, policy, password=None):
             if policy.get('passwordHash'):
                 passwords[policy['id']] = password
                 workspace.atomic_json(copy_path, passwords)
+                copy_path.chmod(0o600)
+        if mcp_token is not None:
+            copy_path = Path(root) / 'data/share-mcp-tokens.json'
+            tokens = json.loads(copy_path.read_text()) if copy_path.is_file() else {}
+            tokens[policy['id']] = mcp_token
+            workspace.atomic_json(copy_path, tokens)
+            copy_path.chmod(0o600)
 
 
 def public_policy(policy):

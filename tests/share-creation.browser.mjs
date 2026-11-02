@@ -43,7 +43,7 @@ try {
     await page.waitForFunction(()=>window.copyCount===1);
     // The server has not completed publishing: the real clipboard must already be ready.
     const message=await page.evaluate(()=>navigator.clipboard.readText());
-    assert.ok(message.startsWith('链接：https://share.example.com/shares/reader-v1-static.html\n有效期：截至 '));
+    assert.ok(message.startsWith(`链接：https://share.example.com/shares/reader-v1-static.html#pwd=${generated}\nMCP：https://share.example.com/mcp/`));
     assert.ok(message.endsWith(`\n密码：${generated}`));
     assert.equal(await page.evaluate(()=>window.opened),0);
     while (!pending.length) await new Promise(resolve=>setTimeout(resolve,10));
@@ -85,7 +85,7 @@ try {
     assert.ok(requests[0].access.expiresAt>Date.now());
     pending.shift()();await page.evaluate(()=>window.operation);
     assert.deepEqual(await page.evaluate(()=>window.openedShares),[
-        ['https://share.example.com/shares/reader-v1-static.html','_blank','noopener,noreferrer']
+        [`https://share.example.com/shares/reader-v1-static.html#pwd=${generated}`,'_blank','noopener,noreferrer']
     ],'a successful share must open the published URL once');
     assert.equal(await page.evaluate(()=>window.copyCount),1,'success must not overwrite the clipboard again');
     await progress.getByText('已复制',{exact:true}).first().waitFor();
@@ -103,7 +103,7 @@ try {
     await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
     await page.waitForFunction(()=>window.copyCount===3);
     const changed=await page.evaluate(()=>navigator.clipboard.readText());
-    assert.ok(changed.startsWith('链接：https://share.example.com/shares/reader-v1-static.html\n'));
+    assert.ok(changed.startsWith('链接：https://share.example.com/shares/reader-v1-static.html#pwd=new4\n'));
     assert.ok(changed.endsWith('\n密码：new4'));
     while (!pending.length) await new Promise(resolve=>setTimeout(resolve,10));
     pending.shift()();await page.evaluate(()=>window.operation);
@@ -111,14 +111,15 @@ try {
     await page.getByRole('radio',{name:'永久有效',exact:true}).check();
     await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
     await page.waitForFunction(()=>window.copyCount===4);
-    assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),'链接：https://share.example.com/shares/fixture-folder-folder-static.html');
+    assert.match(await page.evaluate(()=>navigator.clipboard.readText()),/^链接：https:\/\/share\.example\.com\/shares\/fixture-folder-folder-static\.html\nMCP：https:\/\/share\.example\.com\/mcp\/[A-Za-z0-9_-]{43}$/);
     while (!pending.length) await new Promise(resolve=>setTimeout(resolve,10));
     await page.locator('#parallel-work').fill('继续编辑文件夹分享');
     pending.shift()();await page.evaluate(()=>window.operation);
     assert.equal(await page.locator('#parallel-work').evaluate(node=>node===document.activeElement),true,'completion must preserve editing focus');
     // Failure remains visible and unlocks sharing for another attempt.
     await page.unroute('**/api/share-page');
-    await page.route('**/api/share-page', route=>route.fulfill({status:500,body:'测试发布失败'}));
+    let failedRequest;
+    await page.route('**/api/share-page', route=>{failedRequest=route.request().postDataJSON();return route.fulfill({status:500,body:'测试发布失败'});});
     page.on('dialog', dialog=>dialog.accept());
     await page.evaluate(()=>{window.operation=window.shell.createSharePage('static');});
     await page.getByRole('button',{name:'创建分享链接',exact:true}).click();
@@ -134,6 +135,8 @@ try {
     assert.equal(await page.evaluate(()=>window.openedShares[2][0]),'https://share.example.com/shares/fixture-folder-folder-static.html','folder shares must also open on success');
     // Retry stays in the same position and reuses the selected page/version/access settings.
     await page.unroute('**/api/share-page');
+    const failedText = await page.evaluate(()=>navigator.clipboard.readText());
+    const copiesBeforeRetry = await page.evaluate(()=>window.copyCount);
     let retryRequest;
     await page.route('**/api/share-page', route=>{
         retryRequest=route.request().postDataJSON();
@@ -145,6 +148,10 @@ try {
     assert.equal(retryRequest.pageId,'reader');assert.equal(retryRequest.version,'v1');
     assert.equal(await page.evaluate(()=>window.opened),4,'a successful retry must open its published result');
     assert.equal(retryRequest.access.expiresInDays,30);
+    assert.equal(retryRequest.mcpToken,failedRequest.mcpToken);
+    assert.deepEqual(retryRequest.access,failedRequest.access);
+    assert.equal(await page.evaluate(()=>window.copyCount),copiesBeforeRetry);
+    assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),failedText);
     assert.equal(await page.evaluate(()=>window.shell.activePageId),'library');
     assert.equal(await page.locator('.share-access-dialog form').count(),0);
     assert.equal(await page.evaluate(()=>window.shareToasts.length),0);

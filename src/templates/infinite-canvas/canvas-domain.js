@@ -5,6 +5,32 @@
   const full = (pattern, value) => typeof value === 'string' && pattern.exec(value)?.[0] === value;
   const identity = value => full(/^[a-zA-Z0-9_-]{1,80}$/, value);
   const number = (value, low, high) => Number.isFinite(value) && value >= low && value <= high;
+  function validatePinnedState(p) {
+    const fail = () => { throw Error('画板固定状态无效'); };
+    if (!p || p.version !== 1 || !Number.isSafeInteger(p.adapterVersion) || p.adapterVersion < 1 || typeof p.route !== 'string' || p.route.length > 2048 || !Object.hasOwn(p, 'data')) fail();
+    const path = p.route.split(/[?#]/)[0];
+    if (!path || !path.split('/').every(s => /^[a-zA-Z0-9_.-]+$/.test(s) && s !== '.' && s !== '..')) fail();
+    const ui = p.ui;
+    if (!ui || !Array.isArray(ui.controls) || !Array.isArray(ui.scroll) || !number(ui.x, -1e7, 1e7) || !number(ui.y, -1e7, 1e7)) fail();
+    const selector = s => typeof s === 'string' && s.length > 0 && s.length <= 4096;
+    for (const c of ui.controls) {
+      if (!c || !selector(c.selector) || typeof c.type !== 'string' || !['input','textarea','select','details'].includes(c.tag)) fail();
+      if (['password','file','hidden'].includes(c.type)) fail();
+      if (c.tag === 'details' ? typeof c.open !== 'boolean' : c.tag === 'select' ? !Array.isArray(c.selected) || c.selected.some(v => typeof v !== 'boolean') : typeof c.value !== 'string' || typeof c.checked !== 'boolean') fail();
+    }
+    for (const s of ui.scroll) if (!s || !selector(s.selector) || !number(s.x, -1e7, 1e7) || !number(s.y, -1e7, 1e7)) fail();
+    function data(v, depth = 0) {
+      if (depth > 40) fail();
+      if (v === null || typeof v === 'string' || typeof v === 'boolean' || typeof v === 'number' && Number.isFinite(v)) return;
+      if (!v || typeof v !== 'object') fail();
+      for (const [key, value] of Object.entries(v)) {
+        if (['__proto__','constructor','prototype'].includes(key)) fail();
+        data(value, depth + 1);
+      }
+    }
+    data(p);
+    if (JSON.stringify(p).length > 262144) fail();
+  }
   function createIndex(nodes) {
     const byId = new Map(), children = new Map(), boards = new Map();
     for (const node of nodes) {
@@ -31,6 +57,8 @@
       if (!number(n.x, -1e7, 1e7) || !number(n.y, -1e7, 1e7) || !number(n.width, 16, 1e7) || !number(n.height, 16, 1e7)) throw Error('画布坐标或尺寸无效');
       if (n.parentId != null && typeof n.parentId !== 'string') throw Error('画布容器无效');
       for (const key of ['name','text','src','color']) if (key in n && typeof n[key] !== 'string') throw Error('对象属性无效');
+      if ('flowShape' in n && (n.type !== 'rect' || !['terminator','process','decision','subprocess','connector'].includes(n.flowShape))) throw Error('流程图形状无效');
+      if ('pinnedState' in n) { if (n.type !== 'board') throw Error('仅画板支持固定状态'); validatePinnedState(n.pinnedState); }
       const src = n.src || '';
       if (n.type === 'board' && src && !full(/^boards\/[a-zA-Z0-9_-]+\/index\.html$/, src)) throw Error('画板只能引用本版本 boards 目录');
       if (n.type === 'image' && src && !(/^data:image\/(png|jpeg|webp|gif);base64,/.test(src) || full(/^assets\/[a-zA-Z0-9_.-]+$/, src))) throw Error('图片必须保存在当前版本');

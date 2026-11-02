@@ -22,6 +22,10 @@ data/agent-sessions/
 data/agent-uploads/
 data/share-archive/
 data/published-static*/
+data/share-access.json
+data/share-passwords.json
+data/share-mcp-tokens.json
+data/share-mcp-drafts/
 data/temp/
 data/template-states.json
 .vercel/

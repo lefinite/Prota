@@ -670,7 +670,7 @@ button:has(svg):not(:has(.button-label)) {
   outline: calc(1.5px / var(--zoom)) solid var(--accent);
 }
 .node.locked {
-  cursor: not-allowed;
+  cursor: default;
 }
 .node-title {
   position: absolute;
@@ -715,7 +715,8 @@ button:has(svg):not(:has(.button-label)) {
   outline-color: var(--accent);
 }
 .node.text .node-content,
-.node.note .node-content {
+.node.note .node-content,
+.node.rect .node-content {
   padding: 16px;
 }
 .node.group {
@@ -1359,6 +1360,18 @@ body.agent-working .board-agent {
 :is(.node.text:not(.editing) .node-content,.markdown-body)>:last-child{margin-bottom:0;}
 
 .node.board > .node-title { display: flex; align-items: center; gap: calc(7px / var(--zoom)); }
+.node-title .board-state-pin {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: calc(28px / var(--zoom)); height: calc(28px / var(--zoom));
+  padding: 0; border: 0; border-radius: calc(5px / var(--zoom));
+  background: transparent; color: #9a9fa8; cursor: pointer;
+}
+.node-title .board-state-pin .icon { width: calc(14px / var(--zoom)); height: calc(14px / var(--zoom)); stroke-width: 1.6; }
+.node-title .board-state-pin.is-pinned { color: #59616c; }
+.node-title .board-state-pin.is-pinned .icon { fill: #e5e7eb; }
+.node-title .board-state-pin:hover { color: #414953; background: #e8ebef; }
+.node-title .board-state-pin:focus-visible { outline: calc(2px / var(--zoom)) solid var(--accent); outline-offset: calc(2px / var(--zoom)); }
+.node.board.restoring-state .node-content { pointer-events: none; }
 .node.board .node-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .node-title .board-version {
   flex: none;
@@ -1401,3 +1414,31 @@ body.agent-working .board-agent {
 #context-menu[data-board-versions] .version-panel__action:hover { background: rgba(87,101,206,.08); }
 #context-menu[data-board-versions] .version-panel__action svg { color: inherit; width: 14px; height: 14px; }
 @media (hover: none) { #context-menu[data-board-versions] .version-row__actions { opacity: 1; } }
+
+/* Magnetic ports keep visual dots small while their hit areas remain usable at every zoom. */
+.connection-ports [data-connection-port]{pointer-events:all;cursor:crosshair;touch-action:none}
+.connection-ports .connection-port-hit{stroke:none;pointer-events:all}
+.connection-ports [data-connection-port]:hover circle:last-child{fill:#dce7ff;stroke:#425fc4}
+.connection-handles [data-connection-end]{stroke-width:16px;stroke-opacity:.12;pointer-events:all;touch-action:none}
+#world.adjusting-connection .connection-handles *{pointer-events:none}
+
+#world>.connection-handles{z-index:7}
+.connection-ports [data-connection-port] circle:last-child{pointer-events:none}
+
+/* Flowchart kit: shape geometry and centered editable text share one canvas object. */
+.node.flowchart{background:transparent!important;outline:none;box-shadow:none;pointer-events:none}
+.node.flowchart>.node-title{display:none}
+.flow-geometry{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.flow-geometry>*{stroke:#97a5b8;stroke-width:1.5;stroke-linejoin:round;pointer-events:visiblePainted}
+.node.flowchart.selected .flow-geometry>*,.node.flowchart.connection-source .flow-geometry>*{stroke:var(--accent);stroke-width:2}
+.node.flowchart.connection-target .flow-geometry>*{stroke:#2e8465;stroke-width:2.5}
+.node.flowchart .node-content{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;padding:14px 22px;line-height:1.45;pointer-events:auto}
+.node.flowchart[data-flow-shape=decision] .node-content{inset:25%;width:50%;height:50%;padding:0}
+.node.flowchart[data-flow-shape=subprocess] .node-content{padding-inline:30px}
+.node.flowchart[data-flow-shape=connector] .node-content{padding:8px}
+.node.flowchart.editing .node-content{outline:1px dashed var(--accent);outline-offset:-2px}
+#context-menu[data-flowchart]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:252px;gap:4px;padding:8px}
+#context-menu[data-flowchart] button{min-height:78px;flex-direction:column;justify-content:center;gap:9px;padding:12px 8px}
+#context-menu[data-flowchart] button svg{width:34px;height:28px;stroke-width:1.4}
+#context-menu[data-flowchart] .shortcut{display:none}
+#stage .node.flowchart,#stage.tool-connect .node.flowchart:hover{outline:none;box-shadow:none}

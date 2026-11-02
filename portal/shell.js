@@ -9,7 +9,7 @@ import { resumePreview } from './preview/resume.js';
 import { getReasoningCapability, getReasoningSelection } from './agent/reasoning.js';
 import { ShareManager } from './modules/sharing/manager.js';
 import { UnifiedSettings } from './modules/settings/index.js';
-import { formatShareText, prepareShareDraft } from './modules/sharing/copy.js';
+import { formatShareText, prepareShareDraft, passwordShareUrl } from './modules/sharing/copy.js';
 import { requestShareOptions } from './modules/sharing/dialog.js';
 import { showShareProgress } from './modules/sharing/progress.js';
 import { renderShareNavigation } from './modules/sharing/navigation.js';
@@ -229,6 +229,7 @@ class DemoShell {
         this.agentAvailableCommands = AGENT_COMMAND_FALLBACK;
         this.agentSdkInfo = null;
         this.agentSessionId = this.readAgentStorage('session-id', null);
+        if (!this.isShareMode) this.pruneAgentSessionHistoryCache();
         this.agentSessionProviderConfig = null;
         this.agentSessionScope = 'page';
         this.agentSessionsList = [];
@@ -2706,7 +2707,7 @@ class DemoShell {
             }
             if (e.data.type === 'prota:canvas-open-agent') {
                 if (e.source !== this.mainIframe?.contentWindow || e.origin !== location.origin || this.isShareMode) return;
-                this.focusExistingCanvasAgent(e.source);
+                this.focusExistingCanvasAgent(e.source, e.data.adaptBoardState === true);
                 return;
             }
             if (e.data.type === 'prota:canvas-rename') {
@@ -3688,7 +3689,8 @@ class DemoShell {
             this.showToast('没有可分享的页面', true);
             return;
         }
-        const shareTarget = { projectId, pageId, version, prdPath: target?.prdPath ?? prdPath };
+        const shareTarget = { projectId, pageId, version, prdPath: target?.prdPath ?? prdPath,
+            prdSelection: target?.prdSelection ?? (isCurrent ? 'explicit' : 'remembered') };
         if (shareType === 'static' && !await this.ensureShareSetup()) return;
         this.closeShareMenu();
         const shareName = page?.name || shareTarget.pageId;
@@ -3702,14 +3704,14 @@ class DemoShell {
             triggerButton.setAttribute('aria-busy', 'true');
         }
 
-        let draft = null;
-        let copiedBeforePublish = false;
+        let draft = target?.draft || null;
+        let copiedBeforePublish = target?.copiedBeforePublish || false;
         try {
             if (shareType === 'static') {
-                draft = prepareShareDraft({ domain: this.settings.staticDomain, projectId: shareTarget.projectId,
+                draft = draft || prepareShareDraft({ domain: this.settings.staticDomain, projectId: shareTarget.projectId,
                     pageId: shareTarget.pageId, version: shareTarget.version, access });
                 access = draft.access;
-                copiedBeforePublish = await this.copyTextToClipboard(draft.text);
+                if (!copiedBeforePublish) copiedBeforePublish = await this.copyTextToClipboard(draft.text);
                 if (!copiedBeforePublish) throw Error('无法复制分享信息，请允许剪贴板访问后重试。');
                 progress.update('分享信息已复制 · 发布完成后生效');
             }
@@ -3725,8 +3727,10 @@ class DemoShell {
                     shareType: normalizedShareType,
                     public: normalizedShareType === 'public',
                     ...(access ? { access } : {}),
+                    ...(draft ? { mcpToken: draft.mcpToken } : {}),
                     pageName: page?.name || shareTarget.pageId,
-                    prdPath: shareTarget.prdPath
+                    prdPath: shareTarget.prdPath,
+                    prdSelection: shareTarget.prdSelection
                 }),
                 signal: AbortSignal.timeout(normalizedShareType === 'static' ? 330000 : 8000)
             });
@@ -3744,7 +3748,7 @@ class DemoShell {
                 ? rawUrl
                 : new URL(rawUrl, window.location.href).href;
             const copied = draft ? copiedBeforePublish : await this.copyTextToClipboard(formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }));
-            progress.finish({ url: shareUrl, copied,
+            progress.finish({ url: passwordShareUrl(shareUrl, access?.password), copied,
                 text: draft?.text || formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }),
                 copy: text => this.copyTextToClipboard(text)
             });
@@ -3752,7 +3756,7 @@ class DemoShell {
             console.error('Share page generation failed:', error);
             const message = error instanceof Error ? error.message : String(error);
             progress.finish({ error: message,
-                retry: () => this.createSharePage(shareType, null, { ...shareTarget, access })
+                retry: () => this.createSharePage(shareType, null, { ...shareTarget, access, draft, copiedBeforePublish })
             });
         } finally {
             if (triggerButton) {
@@ -3826,14 +3830,14 @@ class DemoShell {
         if (shareType === 'static' && !access) return;
         const progress = showShareProgress(shareName, shareType === 'static');
         const normalizedShareType = ['public', 'static'].includes(shareType) ? shareType : 'local';
-        let draft = null;
-        let copiedBeforePublish = false;
+        let draft = target?.draft || null;
+        let copiedBeforePublish = target?.copiedBeforePublish || false;
         try {
             if (shareType === 'static') {
-                draft = prepareShareDraft({ domain: this.settings.staticDomain, projectId: shareTarget.projectId,
+                draft = draft || prepareShareDraft({ domain: this.settings.staticDomain, projectId: shareTarget.projectId,
                     pageId: shareTarget.pageId, version: shareTarget.version, folderId, access });
                 access = draft.access;
-                copiedBeforePublish = await this.copyTextToClipboard(draft.text);
+                if (!copiedBeforePublish) copiedBeforePublish = await this.copyTextToClipboard(draft.text);
                 if (!copiedBeforePublish) throw Error('无法复制分享信息，请允许剪贴板访问后重试。');
                 progress.update('分享信息已复制 · 发布完成后生效');
             }
@@ -3846,11 +3850,13 @@ class DemoShell {
                     folderId,
                     folderName: folder.name,
                     ...(access ? { access } : {}),
+                    ...(draft ? { mcpToken: draft.mcpToken } : {}),
                     shareType: normalizedShareType,
                     public: normalizedShareType === 'public',
                     prdPath: shareTarget.prdPath,
                     versionOverrides: overrides.versions,
-                    prdOverrides: overrides.prdPaths
+                    prdOverrides: overrides.prdPaths,
+                    prdExplicitPages: shareTarget.prdPath && overrides.prdPaths[shareTarget.pageId] === shareTarget.prdPath ? [shareTarget.pageId] : []
                 }),
                 signal: AbortSignal.timeout(normalizedShareType === 'static' ? 330000 : 30000)
             });
@@ -3866,7 +3872,7 @@ class DemoShell {
                 ? rawUrl
                 : new URL(rawUrl, window.location.href).href;
             const copied = draft ? copiedBeforePublish : await this.copyTextToClipboard(formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }));
-            progress.finish({ url: shareUrl, copied,
+            progress.finish({ url: passwordShareUrl(shareUrl, access?.password), copied,
                 text: draft?.text || formatShareText({ url: shareUrl, expiresAt: result.access?.expiresAt, password: access?.password }),
                 copy: text => this.copyTextToClipboard(text)
             });
@@ -3874,7 +3880,7 @@ class DemoShell {
             console.error('Share folder generation failed:', error);
             const message = error instanceof Error ? error.message : String(error);
             progress.finish({ error: message,
-                retry: () => this.createShareFolder(folderId, shareType, { ...shareTarget, access, overrides })
+                retry: () => this.createShareFolder(folderId, shareType, { ...shareTarget, access, overrides, draft, copiedBeforePublish })
             });
         }
     }
@@ -7535,7 +7541,7 @@ class DemoShell {
             } catch { return; }
             // A partial installation may fail before publishing protaCanvas. Do not require
             // the broken editor to initialize before allowing its resources to be repaired.
-            const healthy = editor?.runtimeVersion >= 33 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 6 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasCore && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
+            const healthy = editor?.runtimeVersion >= 37 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 7 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasBoardState && frame.CanvasCore && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
                 && doc.querySelector('link[href*="styles.css"]')?.sheet;
             if (healthy && !force) return;
             const key = `${context.projectId}/${context.pageId}/${context.version}`;
@@ -7548,7 +7554,7 @@ class DemoShell {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || '修复失败');
-            if (Number(result.runtimeVersion) < 33) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            if (Number(result.runtimeVersion) < 37) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
             if (context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion) {
                 this.mainIframe.contentWindow.location.reload();
             }
@@ -7573,7 +7579,7 @@ class DemoShell {
         } catch(error){source.postMessage({type:'prota:canvas-rename-result',name:data.previous,error:error.message},location.origin);}
     }
 
-    async focusExistingCanvasAgent(source) {
+    async focusExistingCanvasAgent(source, adaptBoardState = false) {
         try {
             const context = this.getAgentContext();
             const ids = new Set((context.canvasSelection || []).map(node => node.id));
@@ -7596,6 +7602,11 @@ class DemoShell {
             }
             this.openAgentWorkbench();
             this.updateAgentContextLabel();
+            if (adaptBoardState && this.agentInput && !this.agentRunState?.active) {
+                const request = '为选中画板适配固定状态。先读当前版本 README.md 的「画板固定状态」契约，实现 window.ProtaBoardState = { version: 1, capture(), restore(data) }。覆盖页面、弹窗、标签、表单和演示数据；恢复只还原状态，不重放点击、提交或请求。保留现有交互和其他画板，不自动固定状态。';
+                this.agentInput.value = this.agentInput.value.trim() ? this.agentInput.value + '\n\n' + request : request;
+                this.agentInput.dispatchEvent(new Event('input', {bubbles:true}));
+            }
             this.agentInput?.focus();
         } catch (error) {
             source.postMessage({ type: 'prota:canvas-agent-error', error: error.message || '无法打开当前 Agent' }, location.origin);
@@ -13132,32 +13143,44 @@ class DemoShell {
     }
 
     agentHistoryStoragePrefix() {
-        return this.getAgentStorageKey('session-history:');
+        return 'readify:agent:session-history:';
     }
 
-    pruneAgentSessionHistoryCache({ maxBytes = 2 * 1024 * 1024 } = {}) {
+    pruneAgentSessionHistoryCache({ maxBytes = 2 * 1024 * 1024, replacingKey = '', reserveBytes = 0 } = {}) {
         try {
             const prefix = this.agentHistoryStoragePrefix();
-            const currentKey = this.agentSessionId ? `${prefix}${this.agentSessionId}` : '';
+            const protectedKeys = new Set();
+            if (this.agentSessionId) protectedKeys.add(this.getAgentStorageKey(`session-history:${this.agentSessionId}`));
             const entries = [];
             for (let index = 0; index < window.localStorage.length; index++) {
                 const key = window.localStorage.key(index);
-                if (!key?.startsWith(prefix) || key === currentKey) continue;
+                if (/^readify:agent:session-id(?::|$)/.test(key || '')) {
+                    try {
+                        const id = JSON.parse(window.localStorage.getItem(key));
+                        if (typeof id === 'string' && id) protectedKeys.add(`${prefix}${id}${key.slice('readify:agent:session-id'.length)}`);
+                    } catch {}
+                }
+                if (!key?.startsWith(prefix) || key === replacingKey) continue;
                 const raw = window.localStorage.getItem(key) || '';
                 let savedAt = 0;
-                try { savedAt = Number(JSON.parse(raw)?.savedAt) || 0; } catch {}
-                entries.push({ key, raw, savedAt });
+                try {
+                    const data = JSON.parse(raw);
+                    savedAt = Number(data?.savedAt) || Date.parse(data?.updatedAt || data?.createdAt || '') || 0;
+                } catch {}
+                entries.push({ key, bytes: 2 * (key.length + raw.length), savedAt });
             }
-            let totalBytes = entries.reduce((sum, entry) => sum + entry.raw.length, 0)
-                + (currentKey ? (window.localStorage.getItem(currentKey) || '').length : 0);
+            let totalBytes = reserveBytes + entries.reduce((sum, entry) => sum + entry.bytes, 0);
             entries.sort((left, right) => left.savedAt - right.savedAt);
             for (const entry of entries) {
                 if (totalBytes <= maxBytes) break;
+                if (protectedKeys.has(entry.key)) continue;
                 window.localStorage.removeItem(entry.key);
-                totalBytes -= entry.raw.length;
+                totalBytes -= entry.bytes;
             }
+            return totalBytes <= maxBytes;
         } catch (error) {
             console.warn('Failed to prune Agent history cache:', error);
+            return false;
         }
     }
 
@@ -13166,16 +13189,29 @@ class DemoShell {
     }
 
     cacheAgentSessionHistory(sessionId, data) {
-        this.pruneAgentSessionHistoryCache({ maxBytes: 1.75 * 1024 * 1024 });
-        const key = this.getAgentStorageKey(`session-history:${sessionId}`);
-        const serialized = JSON.stringify({ ...data, savedAt: Date.now() });
         try {
-            window.localStorage.setItem(key, serialized);
+            const key = this.getAgentStorageKey(`session-history:${sessionId}`);
+            const serialized = JSON.stringify({ ...data, savedAt: Date.now() });
+            const bytes = 2 * (key.length + serialized.length);
+            const budget = 2 * 1024 * 1024;
+            // Large histories remain on the server and in the active timeline.
+            if (bytes > budget) return false;
+            if (!this.pruneAgentSessionHistoryCache({ replacingKey: key, reserveBytes: bytes })) return false;
+            try {
+                window.localStorage.setItem(key, serialized);
+                return true;
+            } catch {
+                if (this.pruneAgentSessionHistoryCache({ maxBytes: bytes, replacingKey: key, reserveBytes: bytes })) {
+                    try {
+                        window.localStorage.setItem(key, serialized);
+                        return true;
+                    } catch {}
+                }
+            }
+            return false;
         } catch (error) {
             console.warn('Failed to cache session history:', error);
-            try { window.localStorage.removeItem(key); } catch {}
-            this.pruneAgentSessionHistoryCache({ maxBytes: 1.5 * 1024 * 1024 });
-            try { window.localStorage.setItem(key, serialized); } catch {}
+            return false;
         }
     }
 

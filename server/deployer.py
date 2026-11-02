@@ -37,7 +37,7 @@ def share_payload(file):
 
 def share_zip_filenames(payload):
     pages = (payload.get('pages') or []) if payload.get('mode') == 'folder' else [payload]
-    return {page['zipFilename'] for page in pages if page.get('zipFilename')}
+    return {page['zipFilename'] for page in [payload, *pages] if page.get('zipFilename')}
 
 
 def withdraw_snapshot(static, filenames):
@@ -70,11 +70,14 @@ def withdraw_snapshot(static, filenames):
             raise ValueError('分享文件名无效。')
         for relative in [filename, 'shares/' + filename]:
             (static / relative).unlink(missing_ok=True)
+        shutil.rmtree(static / '.mcp' / filename, ignore_errors=True)
     for payload in removed:
         for zipped in share_zip_filenames(payload) - kept_zips:
             if Path(zipped).name == zipped:
                 for relative in [zipped, 'shares/' + zipped]:
                     (static / relative).unlink(missing_ok=True)
+    from server.mcp_context import prune_private
+    prune_private(static)
 
 
 def safe_relative(value):
@@ -201,7 +204,8 @@ class VercelDeployer:
                 return self._copy(archived, relative, static)
         if not source.exists():
             raise ValueError(f'发布资源缺失：{relative}')
-        if source.is_symlink() or source_root not in source.resolve().parents:
+        if source.is_symlink() or source_root not in source.resolve().parents or any(
+                parent.is_symlink() for parent in source.parents if parent != source_root and source_root in parent.parents):
             raise ValueError(f'发布资源不能包含符号链接：{relative}')
         destination = static / relative
         if source.is_dir():
@@ -216,23 +220,48 @@ class VercelDeployer:
 
     def prepare(self, directory, share_files):
         """Build Output API v3. Only explicitly shared pages enter this snapshot."""
-        directory = Path(directory)
+        directory = Path(directory).resolve()
         static = directory / '.vercel/output/static'
         static.mkdir(parents=True)
         previous = self.root / 'data/published-static'
         if previous.is_dir():
+            if previous.is_symlink() or any(path.is_symlink() for path in previous.rglob('*')):
+                raise ValueError('已发布快照不能包含符号链接。')
             shutil.copytree(previous, static, dirs_exist_ok=True)
         self._copy(self.app, 'portal', static)
         # Product frontend defaults must never disclose the local project index.
         shell = static / 'portal/shell.js'
         shell.write_text(re.sub(r'(?<=/\* __READIFY_DATA_START__ \*/).*?(?=/\* __READIFY_DATA_END__ \*/)',
                                json.dumps(EMPTY_DATA) + ' ', shell.read_text(), flags=re.S))
+        pending_file = self.root / 'data/share-access.json'
+        pending = json.loads(pending_file.read_text()) if pending_file.is_file() else {}
         shared = []
+        cached = set()
         for file in share_files:
             file = Path(file).resolve()
             relative = file.relative_to(self.root).as_posix()
             if not relative.startswith('shares/') or not file.name.endswith('-static.html'):
                 raise ValueError('只能部署明确生成的静态分享文件。')
+            policy = pending.get(file.name, {})
+            token_hash = policy.get('mcpTokenHash')
+            draft = self.root / 'data/share-mcp-drafts' / token_hash if token_hash else None
+            if draft and (draft / 'policy.json').is_file():
+                if draft.is_symlink() or any(path.is_symlink() for path in draft.rglob('*')):
+                    raise ValueError('MCP 草稿不能包含符号链接。')
+                saved_policy = json.loads((draft / 'policy.json').read_text())
+                if saved_policy.get('mcpTokenHash') != token_hash or not (draft / 'content/shares' / file.name).is_file():
+                    raise ValueError('MCP 重试草稿校验失败。')
+                if saved_policy.get('mcpDomain', self.settings.get('staticDomain')) != self.settings.get('staticDomain'):
+                    raise ValueError('分享域名已变化，请恢复原域名重试，或重新创建分享。')
+                frozen = share_payload(draft / 'content/shares' / file.name)
+                for page in frozen.get('pages', []) if frozen.get('mode') == 'folder' else [frozen]:
+                    page_id = page.get('pageId') or page.get('id')
+                    relative_page = safe_relative(f"src/pages/{frozen['projectId']}/{page_id}/{page['version']}")
+                    shutil.rmtree(static / relative_page, ignore_errors=True)
+                shutil.copytree(draft / 'content', static, dirs_exist_ok=True)
+                cached.add(file.name)
+                shared.append(relative)
+                continue
             payload = share_payload(file)
             self._copy(self.root, relative, static)
             # Support both historical URL layouts without changing filenames.
@@ -244,7 +273,9 @@ class VercelDeployer:
                 version = page.get('version')
                 if not all(isinstance(s, str) and re.fullmatch(r'[A-Za-z0-9_-]+', s) for s in [project, page_id]) or not re.fullmatch(r'v\d+', str(version)):
                     raise ValueError(f'分享页面标识无效：{file.name}')
-                self._copy(self.root, f'src/pages/{project}/{page_id}/{version}', static)
+                relative_page = f'src/pages/{project}/{page_id}/{version}'
+                shutil.rmtree(static / relative_page, ignore_errors=True)
+                self._copy(self.root, relative_page, static)
                 documents = page.get('documents') or []
                 for document in documents:
                     doc_path = safe_relative(document.get('path', ''))
@@ -267,7 +298,7 @@ class VercelDeployer:
         # Follow referenced local assets/templates instead of copying the workspace.
         scanned = set()
         while True:
-            pending = [p for p in static.rglob('*') if p.is_file() and p.suffix in {'.html', '.css', '.js', '.mjs', '.md'} and p not in scanned]
+            pending = [p for p in static.rglob('*') if p.is_file() and '.mcp' not in p.relative_to(static).parts and p.suffix in {'.html', '.css', '.js', '.mjs', '.md'} and p not in scanned]
             if not pending:
                 break
             for file in pending:
@@ -284,10 +315,50 @@ class VercelDeployer:
                         if (source / relative).is_file():
                             self._copy(source, relative, static)
         (static / 'index.html').write_text('<!doctype html><meta charset="utf-8"><title>Prota Share</title><p>请使用收到的分享链接访问。</p>')
+        from server.mcp_context import preserve_previous, build_context, prune_private
+        pending_file = self.root / 'data/share-access.json'
+        pending = json.loads(pending_file.read_text()) if pending_file.is_file() else {}
+        for file in share_files:
+            name = Path(file).name
+            policy = pending.get(name, {})
+            if policy.get('mcpTokenHash') and name not in cached:
+                payload = share_payload(file)
+                manifest = build_context(self.root, static, name, payload, self.app)
+                self.freeze_draft(static, name, payload, manifest, policy)
+            elif not policy.get('mcpTokenHash'):
+                shutil.rmtree(static / '.mcp' / name, ignore_errors=True)
+        preserve_previous(previous, static)
+        prune_private(static)
         workspace.atomic_json(directory / '.vercel/output/config.json', {'version': 3})
         # A private manifest remains outside the deployable output.
         workspace.atomic_json(directory / 'share-manifest.json', {'shares': shared})
         return static
+
+    def freeze_draft(self, static, name, payload, manifest, policy):
+        # Owner-local retry bytes; never deployed, and never re-read from working files.
+        destination = self.root / 'data/share-mcp-drafts' / policy['mcpTokenHash']
+        temporary = destination.with_name(destination.name + '-next')
+        shutil.rmtree(temporary, ignore_errors=True)
+        content = temporary / 'content'
+        content.mkdir(parents=True)
+        paths = {'shares/' + name, name}
+        for page in payload.get('pages', []) if payload.get('mode') == 'folder' else [payload]:
+            page_id = page.get('pageId') or page.get('id')
+            prefix = f"src/pages/{payload['projectId']}/{page_id}/"
+            paths.add(prefix + page['version'])
+            if (static / prefix / 'docs').is_dir():
+                paths.add(prefix + 'docs')
+            paths.update(d['path'].lstrip('/') for d in page.get('documents', []))
+        for zipped in share_zip_filenames(payload):
+            paths.update([zipped, 'shares/' + zipped])
+        paths.update(r['relativePath'] for r in manifest['resources'].values() if r['source'] == 'content')
+        for relative in sorted(paths):
+            if (static / relative).exists():
+                self._copy(static, relative, content)
+        shutil.copytree(static / '.mcp' / name, content / '.mcp' / name)
+        workspace.atomic_json(temporary / 'policy.json', {**policy, 'mcpDomain': self.settings.get('staticDomain')})
+        shutil.rmtree(destination, ignore_errors=True)
+        temporary.rename(destination)
 
     def prepare_gateway(self, directory, static, selected_files):
         """Keep all published bytes private; emit exact resource grants per link."""
@@ -303,7 +374,10 @@ class VercelDeployer:
         for file in selected_files:
             name = Path(file).name
             if name in pending:
-                policies[name] = pending[name]
+                policy = pending[name]
+                token_hash = policy.get('mcpTokenHash')
+                cached_policy = self.root / 'data/share-mcp-drafts' / str(token_hash) / 'policy.json'
+                policies[name] = json.loads(cached_policy.read_text()) if token_hash and cached_policy.is_file() else policy
         function = directory / '.vercel/output/functions/share.func'
         function.mkdir(parents=True)
         shutil.copy2(Path(__file__).with_name('share_gateway.mjs'), function / 'handler.mjs')
@@ -314,19 +388,35 @@ class VercelDeployer:
             destination = brand / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, destination)
-        shutil.copytree(static, function / 'content', ignore=shutil.ignore_patterns('.share-access.json'))
+        if (static / '.mcp').is_dir():
+            shutil.copytree(static / '.mcp', function / 'mcp-context')
+        shutil.copytree(static, function / 'content', ignore=shutil.ignore_patterns('.share-access.json', '.mcp'))
         grants = []
         # Rebuild each allowlist from the published snapshot, never unpublished edits.
         for file in sorted((static / 'shares').glob('*-static.html')):
             if file.name not in policies:
                 policies[file.name] = create_policy({'expiresInDays': 0})
             policy = policies[file.name]
+            if policy.get('mcpTokenHash'):
+                if not (function / 'mcp-context' / file.name / 'manifest.json').is_file():
+                    raise ValueError('MCP 已发布快照缺失，请重新分享。')
+                policy = {**policy, 'mcpSnapshot': file.name}
             with tempfile.TemporaryDirectory(prefix='share-grant-', dir=directory) as temporary:
                 isolated = VercelDeployer(static, self.app).prepare(temporary, [file])
                 files = sorted('/' + path.relative_to(isolated).as_posix()
                                for path in isolated.rglob('*') if path.is_file())
             grants.append({**policy, 'entries': ['/shares/' + file.name, '/' + file.name], 'files': files})
+        hashes = [grant['mcpTokenHash'] for grant in grants if grant.get('mcpTokenHash')]
+        if len(hashes) != len(set(hashes)):
+            raise ValueError('MCP 凭证不能用于多条分享，请重新创建分享。')
         workspace.atomic_json(function / 'access.json', {'shares': grants})
+        policies = {file.name: policies[file.name] for file in (static / 'shares').glob('*-static.html')}
+        if any(grant.get('mcpTokenHash') for grant in grants):
+            node = shutil.which('node')
+            result = subprocess.run([node or 'node', str(self.app / 'scripts/build-share-mcp.mjs'), str(function / 'share_mcp.bundle.mjs')],
+                                    capture_output=True, text=True, timeout=60)
+            if result.returncode:
+                raise ValueError('MCP 运行时构建失败，请运行 npm ci 后重试。')
         workspace.atomic_json(function / '.vc-config.json', {
             'runtime': 'nodejs22.x', 'handler': 'handler.mjs', 'launcherType': 'Nodejs',
             'supportsResponseStreaming': True, 'maxDuration': 60})
@@ -353,7 +443,21 @@ class VercelDeployer:
             root.mkdir(parents=True, exist_ok=True)
             # Previously shared static pages remain available on each deployment.
             previous = self.root / 'data/published-static'
-            share_files = [] if revoke_files else (([Path(file_path)] if file_path else []) if previous.is_dir() else sorted((self.root / 'shares').glob('*-static.html')))
+            share_files = [] if revoke_files else ([Path(file_path)] if file_path else ([] if previous.is_dir() else sorted((self.root / 'shares').glob('*-static.html'))))
+            if file_path and not revoke_files:
+                name = Path(file_path).name
+                pending_file = self.root / 'data/share-access.json'
+                pending = json.loads(pending_file.read_text()) if pending_file.is_file() else {}
+                published_file = previous / '.share-access.json'
+                published = json.loads(published_file.read_text()) if published_file.is_file() else {}
+                token_hash = pending.get(name, {}).get('mcpTokenHash')
+                if token_hash and token_hash == published.get(name, {}).get('mcpTokenHash') and (previous / '.mcp' / name / 'manifest.json').is_file():
+                    if published[name].get('mcpDomain', domain) != domain:
+                        raise ValueError('分享域名已变化，请重新创建分享。')
+                    # Response loss after a successful upload is an idempotent retry.
+                    pending[name] = published[name]
+                    workspace.atomic_json(pending_file, pending)
+                    return 'https://' + domain
             with tempfile.TemporaryDirectory(prefix='release-', dir=root) as temporary:
                 directory = Path(temporary)
                 static = self.prepare(directory, share_files)
@@ -385,6 +489,9 @@ class VercelDeployer:
                 if saved.exists():
                     shutil.rmtree(saved)
                 shutil.copytree(static, saved)
+                private = directory / '.vercel/output/functions/share.func/mcp-context'
+                if private.is_dir():
+                    shutil.copytree(private, saved / '.mcp')
                 shutil.copy2(directory / 'published-access.json', saved / '.share-access.json')
                 old = self.root / 'data/published-static-old'
                 if old.exists():
@@ -394,6 +501,11 @@ class VercelDeployer:
                 saved.rename(previous)
                 if old.exists():
                     shutil.rmtree(old)
+                for file in share_files:
+                    policy = json.loads((previous / '.share-access.json').read_text()).get(Path(file).name, {})
+                    token_hash = policy.get('mcpTokenHash')
+                    if token_hash:
+                        shutil.rmtree(self.root / 'data/share-mcp-drafts' / token_hash, ignore_errors=True)
                 url = result.stdout.strip().splitlines()[-1]
                 workspace.atomic_json(root / 'last-deployment.json', {'url': url, 'staticDomain': domain, 'shares': len(share_files)})
                 return url

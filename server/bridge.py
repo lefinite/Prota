@@ -1144,6 +1144,46 @@ def build_page_zip_bytes(root, project_id, page_id, version):
     return buffer.getvalue()
 
 
+def build_folder_zip_bytes(root, payload):
+    """Package the shared folder tree using exactly its selected page versions."""
+    import io
+    import zipfile
+
+    folders = {folder['id']: folder for folder in payload['folders']}
+    root_id = payload['folderId']
+
+    def segment(value):
+        name = re.sub(r'[\\/<>:"|?*\x00-\x1f]', '_', str(value)).strip(' .')
+        return name if name and name not in {'.', '..'} else 'folder'
+
+    def folder_path(folder_id):
+        parts, seen = [], set()
+        while folder_id:
+            if folder_id in seen or folder_id not in folders:
+                raise ValueError('Invalid shared folder tree')
+            seen.add(folder_id)
+            folder = folders[folder_id]
+            name = segment(folder.get('name') or folder_id)
+            # Stable IDs keep equally named sibling folders distinct.
+            parts.append(name if folder_id == root_id else f'{name}-{segment(folder_id)}')
+            if folder_id == root_id:
+                return '/'.join(reversed(parts))
+            folder_id = folder.get('parentId')
+        raise ValueError('Shared folder is outside the selected tree')
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+        for folder_id in folders:
+            archive.writestr(folder_path(folder_id) + '/', b'')
+        for page in payload['pages']:
+            page_bytes = build_page_zip_bytes(root, payload['projectId'], page['id'], page['version'])
+            prefix = folder_path(page['parentId']) + '/' + page['id']
+            with zipfile.ZipFile(io.BytesIO(page_bytes)) as page_archive:
+                for item in page_archive.infolist():
+                    archive.writestr(prefix + '/' + item.filename, page_archive.read(item))
+    return buffer.getvalue()
+
+
 def _safe_order(value):
     try:
         num = float(value)
@@ -1194,9 +1234,17 @@ def resolve_share_version_dir(root, project_id, page_id, version):
     return version_dir
 
 
-def read_share_prd(root, project_id, page_id, version, requested_path=''):
+def read_share_prd(root, project_id, page_id, version, requested_path='', strict_version=False, requested_explicit=True):
     documents = list_prd_documents(root, project_id, page_id, version)
     candidates = []
+    if strict_version:
+        allowed = [d for d in documents if d.get('prototypeVersion') == version or (requested_explicit and requested_path and d['path'].lstrip('/') == requested_path.lstrip('/'))]
+        allowed.sort(key=lambda d: d['path'].lstrip('/') != requested_path.lstrip('/'))
+        for document in allowed:
+            path, filename = resolve_prd_document_path(root, project_id, page_id, version, document['path'])
+            if os.path.isfile(path):
+                return {'content': Path(path).read_text(encoding='utf-8'), 'filename': filename, 'path': os.path.relpath(path, root).replace(os.sep, '/')}
+        return {'content': '', 'filename': '', 'path': ''}
     # Use this prototype's associations before unrelated reading history.
     # Template READMEs remain available but come last among associated files.
     associated = [doc['path'] for doc in sorted(documents, key=lambda doc: str(doc.get('filename') or '').lower() == 'readme.md')
@@ -4162,6 +4210,50 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 except Exception as e:
                     print(f"Failed to remove temporary capture html: {e}")
 
+    def resume_frozen_mcp_share(self, root, params, policy):
+        """Retry before inspecting mutable workspace records or working files."""
+        if not policy or not policy.get('mcpTokenHash'):
+            return False
+        from server.deployer import VercelDeployer, share_payload
+        from server.share_security import save_policy, public_policy
+        root = Path(root)
+        frozen = root / 'data/share-mcp-drafts' / policy['mcpTokenHash']
+        files = list((frozen / 'content/shares').glob('*-static.html'))
+        saved_policy = json.loads((frozen / 'policy.json').read_text()) if (frozen / 'policy.json').is_file() else None
+        if saved_policy is None:
+            published = root / 'data/published-static'
+            policies_file = published / '.share-access.json'
+            policies = json.loads(policies_file.read_text()) if policies_file.is_file() else {}
+            match = next(((name, p) for name, p in policies.items() if p.get('mcpTokenHash') == policy['mcpTokenHash']), None)
+            if match:
+                name, saved_policy = match
+                files = [published / 'shares' / name]
+        if saved_policy is None:
+            return False
+        if len(files) != 1 or not files[0].is_file():
+            raise ValueError('MCP 分享草稿不完整，请重新创建分享。')
+        payload = share_payload(files[0])
+        if payload.get('projectId') != params.get('projectId', 'readify') or (
+                payload.get('mode') == 'folder' and payload.get('folderId') != params.get('folderId')) or (
+                payload.get('mode') != 'folder' and (payload.get('pageId') != params.get('pageId') or payload.get('version') != params.get('version'))):
+            raise ValueError('MCP 凭证已绑定其他分享范围。')
+        save_policy(root, files[0].name, saved_policy)
+        warning = ''
+        try:
+            VercelDeployer(root).deploy(root / 'shares' / files[0].name)
+        except Exception as error:
+            warning = str(error)
+        domain = load_settings().get('staticDomain', '')
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'status': 'partial' if warning else 'success', 'shareType': 'static',
+                                    'path': 'shares/' + files[0].name,
+                                    'url': f'https://{domain}/shares/{files[0].name}',
+                                    'pageCount': len(payload.get('pages', [])) if payload.get('mode') == 'folder' else 1,
+                                    'access': public_policy(saved_policy), 'deployWarning': warning}).encode())
+        return True
+
     def handle_share_page(self):
         content_length = int(self.headers.get('Content-Length', '0'))
         post_data = self.rfile.read(content_length)
@@ -4191,14 +4283,17 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 from share_security import create_policy, save_policy, public_policy
             if share_type != 'static' and params.get('access') is not None:
                 raise ValueError('有效期和密码保护仅支持链接分享。')
-            access_policy = create_policy(params.get('access')) if share_type == 'static' else None
+            access_policy = create_policy(params.get('access'), params.get('mcpToken')) if share_type == 'static' else None
             root = get_project_root()
+            if self.resume_frozen_mcp_share(root, params, access_policy):
+                return
             sync_projects()
             version_dir = resolve_share_version_dir(root, project_id, page_id, version)
             page = read_project_page(root, project_id, page_id) or {}
             page_name = params.get('pageName') or page.get('name') or page_id
             annotations = read_share_annotations(version_dir)
-            prd = read_share_prd(root, project_id, page_id, version, params.get('prdPath') or '')
+            prd = read_share_prd(root, project_id, page_id, version, params.get('prdPath') or '', strict_version=bool(access_policy and access_policy.get('mcpTokenHash')),
+                                 requested_explicit=params.get('prdSelection') != 'remembered')
             diagram = read_share_drawio(root, project_id, page_id, version, params.get('diagramPath') or '')
             mindmap = read_share_mindmap(root, project_id, page_id, version, params.get('mindmapPath') or '')
 
@@ -4256,7 +4351,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'mindmapPath': mindmap.get('path') or '',
                 'mindmapFilename': mindmap.get('filename') or '',
                 'mindmaps': mindmap.get('mindmaps') or [],
-                'documents': list_prd_documents(root, project_id, page_id, version)
+                'documents': list_prd_documents(root, project_id, page_id, version),
+                'mcpSelectedPrdPath': (params.get('prdPath') or '') if params.get('prdSelection') != 'remembered' else ''
             }
 
             # Static shares: pre-build a downloadable zip (version dir + docs) and
@@ -4275,7 +4371,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 f.write(build_share_page_html(shell_share_data))
 
             if access_policy:
-                save_policy(root, filename, access_policy, (params.get('access') or {}).get('password', ''))
+                save_policy(root, filename, access_policy, (params.get('access') or {}).get('password', ''), params.get('mcpToken'))
             settings = load_settings()
             static_domain = settings.get("staticDomain", "")
             public_domain = settings.get("publicDomain", "prota.example.com")
@@ -4357,8 +4453,10 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 from share_security import create_policy, save_policy, public_policy
             if share_type != 'static' and params.get('access') is not None:
                 raise ValueError('有效期和密码保护仅支持链接分享。')
-            access_policy = create_policy(params.get('access')) if share_type == 'static' else None
+            access_policy = create_policy(params.get('access'), params.get('mcpToken')) if share_type == 'static' else None
             root = get_project_root()
+            if self.resume_frozen_mcp_share(root, params, access_policy):
+                return
             sync_projects()
             project = read_project_record(root, project_id) or {}
             project_name = project.get('name') or project_id
@@ -4429,7 +4527,9 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                     continue
                 annotations = read_share_annotations(version_dir)
                 prd = read_share_prd(root, project_id, page.get('id'), version,
-                                     prd_overrides.get(str(page.get('id'))) or params.get('prdPath') or '')
+                                     prd_overrides.get(str(page.get('id'))) or params.get('prdPath') or '',
+                                     strict_version=bool(access_policy and access_policy.get('mcpTokenHash')),
+                                     requested_explicit=str(page.get('id')) in (params.get('prdExplicitPages') or []))
                 diagram = read_share_drawio(root, project_id, page.get('id'), version, params.get('diagramPath') or '')
                 mindmap = read_share_mindmap(root, project_id, page.get('id'), version, params.get('mindmapPath') or '')
                 pages_payload.append({
@@ -4446,6 +4546,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                     'prdPath': f'/{prd.get("path")}' if prd.get('path') else '',
                     'prdFilename': prd.get('filename') or '',
                     'documents': list_prd_documents(root, project_id, page.get('id'), version),
+                    'mcpSelectedPrdPath': (prd_overrides.get(str(page.get('id'))) or '') if str(page.get('id')) in (params.get('prdExplicitPages') or []) else '',
                     'diagramContent': diagram.get('content') or '',
                     'diagramPath': diagram.get('path') or '',
                     'diagramFilename': diagram.get('filename') or '',
@@ -4478,18 +4579,15 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             share_dir = os.path.join(root, 'shares')
             os.makedirs(share_dir, exist_ok=True)
             share_path = os.path.join(share_dir, filename)
-            if share_type == 'static':
-                # Each navigation entry downloads its own selected page/version.
-                for page in pages_payload:
-                    zip_filename = f'{slugify_share_part(project_id)}-{slugify_share_part(folder_id)}-{page["id"]}-{page["version"]}-static.zip'
-                    zip_bytes = build_page_zip_bytes(root, project_id, page['id'], page['version'])
-                    (Path(share_dir) / zip_filename).write_bytes(zip_bytes)
-                    page['zipFilename'] = zip_filename
+            zip_filename = f'{slugify_share_part(project_id)}-{slugify_share_part(folder_id)}-folder-{share_type}.zip'
+            zip_bytes = build_folder_zip_bytes(root, share_payload)
+            (Path(share_dir) / zip_filename).write_bytes(zip_bytes)
+            share_payload['zipFilename'] = zip_filename
             with open(share_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(build_share_page_html(share_payload))
 
             if access_policy:
-                save_policy(root, filename, access_policy, (params.get('access') or {}).get('password', ''))
+                save_policy(root, filename, access_policy, (params.get('access') or {}).get('password', ''), params.get('mcpToken'))
             settings = load_settings()
             static_domain = settings.get("staticDomain", "")
             public_domain = settings.get("publicDomain", "prota.example.com")

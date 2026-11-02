@@ -1,6 +1,6 @@
 import { renderShareGate } from './share_gate_page.mjs';
 /** Private Vercel Function: every resource passes the same expiry/session check. */
-import { createHmac, scrypt, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { createReadStream, readFileSync, statSync } from 'node:fs';
 import { resolve, extname, dirname, sep } from 'node:path';
@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const derive = promisify(scrypt);
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.md':'text/plain; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.ico':'image/x-icon','.woff':'font/woff','.woff2':'font/woff2','.ttf':'font/ttf','.zip':'application/zip','.pdf':'application/pdf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wasm':'application/wasm','.xml':'application/xml; charset=utf-8'};
 const equal = (a, b) => typeof a === 'string' && typeof b === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
-export function createShareHandler(manifest, contentRoot, { now = Date.now, secureCookies = true } = {}) {
+export function createShareHandler(manifest, contentRoot, { now = Date.now, secureCookies = true, mcpHandler } = {}) {
     const policies = manifest.shares;
     const entries = new Map();
     const resources = new Map();
@@ -20,6 +20,8 @@ export function createShareHandler(manifest, contentRoot, { now = Date.now, secu
         }
     }
     const attempts = new Map(); // Bounded, per-instance backoff; platform firewall can add distributed limits.
+    const mcpRates = new Map();
+    let mcpConcurrent = 0;
     const cookieName = policy => `prota_share_${policy.id}`;
     const sign = (policy, value) => createHmac('sha256', policy.sessionKey).update(value).digest('hex');
     const session = (policy, cookies) => {
@@ -37,6 +39,42 @@ export function createShareHandler(manifest, contentRoot, { now = Date.now, secu
         res.setHeader('Vary', 'Cookie');
         const reply = (code, message, form = false) => { res.statusCode = code; res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(req.method === 'HEAD' ? undefined : renderShareGate(message, form, code)); };
         let path;
+        if (req.url.startsWith('/mcp')) {
+            res.setHeader('Referrer-Policy', 'no-referrer');
+            const fail = code => { res.statusCode = code; res.setHeader('Content-Type', 'application/json'); res.end('{"error":"MCP request rejected"}'); };
+            const match = /^\/mcp\/([A-Za-z0-9_-]{43})$/.exec(req.url);
+            if (!match || Buffer.from(match[1], 'base64url').toString('base64url') !== match[1]) return fail(404);
+            const hash = createHash('sha256').update(match[1]).digest('hex');
+            const policy = policies.find(p => p.mcpSnapshot && equal(p.mcpTokenHash, hash));
+            if (!policy || !active(policy)) return fail(404);
+            if (req.headers.origin && req.headers.origin !== `${secureCookies ? 'https' : 'http'}://${req.headers.host}`) return fail(403);
+            if (req.method !== 'POST') { res.setHeader('Allow','POST'); return fail(405); }
+            if (!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || '')) return fail(415);
+            const key = policy.id;
+            if (mcpRates.size >= 10000) mcpRates.clear();
+            const recent = mcpRates.get(key);
+            const rate = recent && recent.until > now() ? recent : {count:0,until:now()+60000};
+            mcpRates.set(key, rate);
+            if (++rate.count > 120 || mcpConcurrent >= 4) { res.setHeader('Retry-After','60'); return fail(429); }
+            if (Number(req.headers['content-length'] || 0) > 262144) return fail(413);
+            mcpConcurrent++;
+            try {
+                if (req.body === undefined) {
+                    const chunks = []; let size = 0;
+                    for await (const chunk of req) {
+                        size += Buffer.byteLength(chunk);
+                        if (size > 262144) return fail(413);
+                        chunks.push(Buffer.from(chunk));
+                    }
+                    try { req.body = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+                    catch { return fail(400); }
+                } else if (Buffer.byteLength(JSON.stringify(req.body)) > 262144) return fail(413);
+                if (!active(policy)) return fail(404);
+                const serve = mcpHandler || (await import('./share_mcp.bundle.mjs')).serveMcp;
+                return await serve(req, res, policy, contentRoot);
+            } catch { if (!res.headersSent) return fail(500); res.end(); }
+            finally { mcpConcurrent--; }
+        }
         try {
             path = decodeURIComponent(req.url.split('?')[0]);
             if (!path.startsWith('/') || path.includes('\\') || path.includes('\0') || path.split('/').some(part => part === '..' || part === '.' || part.startsWith('.'))) return reply(404, '分享不存在。');

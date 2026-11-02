@@ -152,13 +152,13 @@
     const equal = (a, b) => JSON.stringify(normalize(a)) === JSON.stringify(normalize(b));
     const duplicateValue = value => value === undefined ? undefined : copy(value);
     const own = (object, key) => object && Object.hasOwn(object, key) ? object[key] : undefined;
-    function mergeValue(before, ours, theirs, conflictId) {
+    function mergeValue(before, ours, theirs, conflictId, atomic = false) {
       if (equal(ours, before)) return duplicateValue(theirs);
       if (equal(theirs, before) || equal(ours, theirs)) return duplicateValue(ours);
-      if (ours && theirs && typeof ours === "object" && typeof theirs === "object" && !Array.isArray(ours) && !Array.isArray(theirs)) {
+      if (!atomic && ours && theirs && typeof ours === "object" && typeof theirs === "object" && !Array.isArray(ours) && !Array.isArray(theirs)) {
         const result = Object.create(null);
         for (const key of new Set([...Object.keys(before || {}), ...Object.keys(ours), ...Object.keys(theirs)])) {
-          const value = mergeValue(own(before, key), own(ours, key), own(theirs, key), conflictId);
+          const value = mergeValue(own(before, key), own(ours, key), own(theirs, key), conflictId, key === 'pinnedState');
           if (value !== undefined) result[key] = value;
         }
         return result;

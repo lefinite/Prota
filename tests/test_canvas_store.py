@@ -19,6 +19,21 @@ class CanvasStoreTests(unittest.TestCase):
     def params(self):
         return {'projectId':'demo','pageId':'design','version':'v1','revision':0,'baseline':copy.deepcopy(self.state),'state':copy.deepcopy(self.state)}
 
+    def test_flowchart_shapes_round_trip_and_validation(self):
+        from server.canvas_domain import validate_document
+        params = self.params()
+        kinds = ['terminator', 'process', 'decision', 'subprocess', 'connector']
+        params['state']['nodes'] = [dict(id=kind, type='rect', flowShape=kind, x=i*300, y=0, width=220, height=150, text='流程') for i, kind in enumerate(kinds)]
+        status, _ = save_canvas(self.root, params)
+        self.assertEqual(status, 200)
+        persisted = json.loads(self.file.read_text()[len(PREFIX):].strip().removesuffix(';'))
+        self.assertEqual([n['flowShape'] for n in persisted['nodes']], kinds)
+        for value in ['diamond', None, {}, ['decision']]:
+            invalid = copy.deepcopy(params['state'])
+            invalid['nodes'][0]['flowShape'] = value
+            with self.assertRaisesRegex(ValueError, '流程图'):
+                validate_document(invalid)
+
     def test_native_edges_round_trip_and_validation_on_v1(self):
         params = self.params()
         params['state']['nodes'] = [dict(id=id, type='board', x=x, y=0, width=200, height=300) for id, x in [('a', 0), ('b', 500)]]
@@ -121,7 +136,7 @@ class CanvasStoreTests(unittest.TestCase):
         files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png',self.directory/'annotations.json']
         original={file:file.read_bytes() for file in files}
         template=Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas'
-        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':33})
+        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':37})
         self.assertTrue(all(file.read_bytes()==data for file,data in original.items()))
         self.assertIn('runtimeVersion:4',(self.directory/'.canvas-runtime-backup/app.js').read_text())
 

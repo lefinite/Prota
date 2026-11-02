@@ -49,7 +49,7 @@ function openShareOptions(name) {
                             <button class="share-access-icon" type="button" data-visible aria-label="显示密码" aria-pressed="false">${eye}</button>
                         </div>
                         <p class="share-access-error" id="sharePasswordError" role="alert" hidden></p>
-                        <p class="share-access-hint">复制时会包含访问密码，可一次性发送给接收者。</p>
+                        <p class="share-access-hint">链接自带密码，接收者打开即可访问。</p>
                     </div>
                 </section>
             </div>

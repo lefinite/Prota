@@ -115,7 +115,7 @@ class ShareApiTests(unittest.TestCase):
                                 'resolve_share_version_dir': str(root), 'read_project_page': page,
                                 'read_project_record': project, 'read_share_prd': {}, 'read_share_drawio': {},
                                 'read_share_mindmap': {}, 'read_share_annotations': [], 'list_prd_documents': [],
-                                'build_page_zip_bytes': b'fixture zip', 'load_settings': {'staticDomain': 'share.example.com'}}.items():
+                                'build_page_zip_bytes': b'fixture zip', 'build_folder_zip_bytes': b'fixture folder zip', 'load_settings': {'staticDomain': 'share.example.com'}}.items():
                 stack.enter_context(patch.object(bridge, name, return_value=value))
             deploy = stack.enter_context(patch('server.deployer.VercelDeployer.deploy', return_value='https://share.example.com'))
             (handler.handle_share_folder if folder else handler.handle_share_page)()

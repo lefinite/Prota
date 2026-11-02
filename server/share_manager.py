@@ -3,6 +3,9 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import threading
+import hashlib
+import secrets
+import shutil
 from urllib.parse import quote
 
 from server import workspace
@@ -77,7 +80,16 @@ def manage(root, params, host='localhost:8080'):
                 password = read_json(root / 'data/share-passwords.json').get(policy.get('id'), '')
                 if not password:
                     raise ValueError('此旧分享未保存密码，请重新分享并设置密码后复制完整信息。')
-            return {'status': 'success', 'share': {'url': record['url'], 'expiresAt': record.get('expiresAt'), 'password': password}}
+            share = {'url': record['url'], 'expiresAt': record.get('expiresAt'), 'password': password}
+            # Only a successfully published policy may yield an MCP capability URL.
+            policy = read_json(root / 'data/published-static/.share-access.json').get(ids[0], {})
+            token = read_json(root / 'data/share-mcp-tokens.json').get(policy.get('id'), '')
+            if (root / 'data/published-static/.mcp' / ids[0] / 'manifest.json').is_file() and token and secrets.compare_digest(
+                    hashlib.sha256(token.encode()).hexdigest(), policy.get('mcpTokenHash', '')):
+                from urllib.parse import urlsplit
+                origin = urlsplit(record['url'])
+                share['mcpUrl'] = f'{origin.scheme}://{origin.netloc}/mcp/{token}'
+            return {'status': 'success', 'share': share}
         if action == 'annotate':
             if len(ids) != 1 or not isinstance(params.get('note', ''), str) or len(params.get('note', '')) > 2000:
                 raise ValueError('备注最多 2000 字，每次编辑一条记录。')
@@ -99,6 +111,20 @@ def manage(root, params, host='localhost:8080'):
                         pass
                     file.unlink()
                 records[key].update(status='revoked', revokedAt=datetime.now(timezone.utc).isoformat())
+            remaining = read_json(root / 'data/published-static/.share-access.json')
+            pending = read_json(root / 'data/share-access.json')
+            for key in active:
+                pending.pop(key, None)
+            workspace.atomic_json(root / 'data/share-access.json', pending)
+            valid_ids = {p.get('id') for source in [pending, remaining] for name, p in source.items() if name not in active}
+            for name in ['share-mcp-tokens.json', 'share-passwords.json']:
+                path = root / 'data' / name
+                if path.is_file():
+                    workspace.atomic_json(path, {key: value for key, value in read_json(path).items() if key in valid_ids})
+                    path.chmod(0o600)
+            for draft in (root / 'data/share-mcp-drafts').glob('*'):
+                if not draft.is_symlink() and any((draft / 'content/shares' / key).is_file() for key in active):
+                    shutil.rmtree(draft)
         else:
             raise ValueError('不支持的分享管理操作。')
         workspace.atomic_json(root / 'data/share-management.json', records)

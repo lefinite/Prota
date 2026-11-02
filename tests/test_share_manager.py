@@ -124,12 +124,13 @@ class ShareManagerTests(unittest.TestCase):
         try:
             with patch.object(bridge.workspace, 'bridge_locked', return_value=False), patch.object(bridge.workspace, 'workspace_root', return_value=self.root), patch.object(bridge, 'get_project_root', return_value=str(self.root)):
                 base = 'http://127.0.0.1:' + str(server.server_port)
-                with urllib.request.urlopen(base + '/api/shares') as response:
+                client = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+                with client.open(base + '/api/shares') as response:
                     self.assertEqual(json.load(response), {'items': []})
                 for headers in [{'Origin': 'https://external.example'}, {'Host': 'external.example'}]:
                     request = urllib.request.Request(base + '/api/shares/manage', data=b'{}', headers={'Content-Type':'application/json', **headers})
                     with self.assertRaises(urllib.error.HTTPError) as error:
-                        urllib.request.urlopen(request)
+                        client.open(request)
                     self.assertEqual(error.exception.code, 403)
                     error.exception.close()
         finally:

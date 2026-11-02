@@ -14,13 +14,15 @@ class ShareDownloadTests(unittest.TestCase):
     setUp = test_deployer.DirectPublishTests.setUp
     write = test_deployer.DirectPublishTests.write
 
-    def create_share(self, folder=False, expected_status=200):
+    def create_share(self, folder=False, expected_status=200, share_type='static'):
         project = {'id': 'company', 'name': 'Company', 'folders': [{'id': 'group'}], 'pages': [
             {'id': page, 'versions': ['v1'], 'activeVersion': 'v1', 'parentId': 'group'}
             for page in ['reader', 'other']]}
         self.write(self.root, 'data/projects.json', json.dumps({'projects': [project]}))
         self.write(self.root, 'src/pages/company/reader/docs/spec.md', '# Specification')
-        params = {'projectId': 'company', 'shareType': 'static', 'access': {'expiresInDays': 0}}
+        params = {'projectId': 'company', 'shareType': share_type}
+        if share_type == 'static':
+            params['access'] = {'expiresInDays': 0}
         params.update({'folderId': 'group'} if folder else {'pageId': 'reader', 'version': 'v1'})
         body = json.dumps(params).encode()
         handler = object.__new__(BridgeHandler)
@@ -48,21 +50,49 @@ class ShareDownloadTests(unittest.TestCase):
                 pages = payload['pages'] if folder else [payload]
                 release = self.base / ('folder' if folder else 'page')
                 snapshot = self.deployer.prepare(release, [share])
-                for page in pages:
-                    name = page['zipFilename']
-                    with zipfile.ZipFile(snapshot / 'shares' / name) as archive:
+                name = payload['zipFilename']
+                with zipfile.ZipFile(snapshot / 'shares' / name) as archive:
+                    if folder:
+                        self.assertIn('未命名文件夹/reader/v1/index.html', archive.namelist())
+                        self.assertIn('未命名文件夹/other/v1/index.html', archive.namelist())
+                        self.assertIn('未命名文件夹/reader/docs/spec.md', archive.namelist())
+                        self.assertTrue(all('zipFilename' not in page for page in pages))
+                    else:
                         self.assertIn('v1/index.html', archive.namelist())
-                        if (page.get('id') or page.get('pageId')) == 'reader':
-                            self.assertIn('docs/spec.md', archive.namelist())
+                        self.assertIn('docs/spec.md', archive.namelist())
                 content = self.deployer.prepare_gateway(release, snapshot, [share])
                 manifest = json.loads((content.parent / 'access.json').read_text())
                 grant = next(item for item in manifest['shares'] if '/shares/' + share.name in item['entries'])
-                for page in pages:
-                    self.assertIn('/shares/' + page['zipFilename'], grant['files'])
-                    self.assertTrue((content / 'shares' / page['zipFilename']).is_file())
+                self.assertIn('/shares/' + name, grant['files'])
+                self.assertTrue((content / 'shares' / name).is_file())
                 withdraw_snapshot(content, [share.name])
-                for page in pages:
-                    self.assertFalse((content / 'shares' / page['zipFilename']).exists())
+                self.assertFalse((content / 'shares' / name).exists())
+
+    def test_local_and_public_folder_shares_include_complete_archives(self):
+        for share_type in ['local', 'public']:
+            with self.subTest(share_type=share_type):
+                payload = share_payload(self.create_share(folder=True, share_type=share_type))
+                with zipfile.ZipFile(self.root / 'shares' / payload['zipFilename']) as archive:
+                    self.assertIn('未命名文件夹/reader/v1/index.html', archive.namelist())
+                    self.assertIn('未命名文件夹/other/v1/index.html', archive.namelist())
+
+    def test_folder_archive_preserves_nested_pages_and_selected_versions(self):
+        from server.bridge import build_folder_zip_bytes
+        self.write(self.root, 'src/pages/company/other/v2/index.html', 'selected v2')
+        self.write(self.root, 'src/pages/company/reader/docs/spec.md', '# Spec')
+        self.write(self.root, 'src/pages/company/reader/v1/boards/board/index.html', 'board')
+        payload = {'projectId': 'company', 'folderId': 'group', 'folders': [
+            {'id': 'group', 'name': '设计'},
+            {'id': 'nested', 'name': '子目录', 'parentId': 'group'},
+            {'id': 'empty', 'name': '空目录', 'parentId': 'group'}], 'pages': [
+            {'id': 'reader', 'version': 'v1', 'parentId': 'group'},
+            {'id': 'other', 'version': 'v2', 'parentId': 'nested'}]}
+        with zipfile.ZipFile(io.BytesIO(build_folder_zip_bytes(self.root, payload))) as archive:
+            self.assertIn('设计/reader/docs/spec.md', archive.namelist())
+            self.assertIn('设计/reader/v1/boards/board/index.html', archive.namelist())
+            self.assertIn('设计/空目录-empty/', archive.namelist())
+            self.assertEqual(archive.read('设计/子目录-nested/other/v2/index.html'), b'selected v2')
+            self.assertFalse(any('/other/v1/' in path for path in archive.namelist()))
 
     def test_zip_failure_does_not_publish_an_unusable_share(self):
         with patch('server.bridge.build_page_zip_bytes', side_effect=OSError('disk full')):

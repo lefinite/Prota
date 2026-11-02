@@ -72,8 +72,11 @@ try{
  assert.equal((await state()).edges[0].toPort,'auto');assert.equal((await state()).edges[0].toInstanceId,'obstacle');assert.equal((await state()).edges[0].id,originalId);
  await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges[0].toInstanceId,'b');
  // Drag near a dot to pin a side; reversing and resetting remain undoable.
+ await page.waitForFunction(()=>Number(document.querySelector('[data-connection-end=to]')?.getAttribute('cx'))===1100);
  const destination=await page.locator('.node[data-id=b]').boundingBox();
- await page.locator('[data-connection-end=to]').dragTo(page.locator('.node[data-id=b]'),{targetPosition:{x:destination.width/2,y:10}});
+ const endpoint=await page.locator('[data-connection-end=to]').boundingBox();
+ // Use real pointer coordinates: the magnetic port intentionally overlays this drop location.
+ await page.mouse.move(endpoint.x+endpoint.width/2,endpoint.y+endpoint.height/2);await page.mouse.down();await page.mouse.move(destination.x+destination.width/2,destination.y+10,{steps:6});await page.mouse.up();
  assert.equal((await state()).edges[0].toPort,'top');assert.equal((await state()).edges[0].toInstanceId,'b');
  await page.getByRole('button',{name:'反向',exact:true}).click();assert.equal((await state()).edges[0].fromInstanceId,'b');assert.equal((await state()).edges[0].fromPort,'top');
  await page.getByRole('button',{name:'撤销',exact:true}).click();assert.equal((await state()).edges[0].toPort,'top');

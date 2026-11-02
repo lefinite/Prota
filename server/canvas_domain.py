@@ -16,6 +16,47 @@ def number(value, low, high):
     return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value) and low <= value <= high
 
 
+def validate_pinned_state(p):
+    def fail():
+        raise ValueError('画板固定状态无效')
+    if not isinstance(p, dict) or p.get('version') != 1 or isinstance(p.get('version'), bool) or not number(p.get('adapterVersion'), 1, 2**53 - 1) or int(p['adapterVersion']) != p['adapterVersion'] or not isinstance(p.get('route'), str) or len(p['route']) > 2048 or 'data' not in p:
+        fail()
+    path = re.split(r'[?#]', p['route'])[0]
+    if not path or any(not re.fullmatch(r'[a-zA-Z0-9_.-]+', s) or s in ('.', '..') for s in path.split('/')):
+        fail()
+    ui = p.get('ui')
+    if not isinstance(ui, dict) or not isinstance(ui.get('controls'), list) or not isinstance(ui.get('scroll'), list) or not number(ui.get('x'), -1e7, 1e7) or not number(ui.get('y'), -1e7, 1e7):
+        fail()
+    def selector(s):
+        return isinstance(s, str) and 0 < len(s) <= 4096
+    for c in ui['controls']:
+        if not isinstance(c, dict) or not selector(c.get('selector')) or not isinstance(c.get('type'), str) or c.get('tag') not in ('input', 'textarea', 'select', 'details') or c['type'] in ('password', 'file', 'hidden'):
+            fail()
+        if c['tag'] == 'details':
+            if not isinstance(c.get('open'), bool): fail()
+        elif c['tag'] == 'select':
+            if not isinstance(c.get('selected'), list) or any(not isinstance(v, bool) for v in c['selected']): fail()
+        elif not isinstance(c.get('value'), str) or not isinstance(c.get('checked'), bool): fail()
+    for s in ui['scroll']:
+        if not isinstance(s, dict) or not selector(s.get('selector')) or not number(s.get('x'), -1e7, 1e7) or not number(s.get('y'), -1e7, 1e7): fail()
+    def data(v, depth=0):
+        if depth > 40: fail()
+        if v is None or isinstance(v, (str, bool)): return
+        if isinstance(v, (int, float)):
+            if not math.isfinite(v): fail()
+            return
+        if isinstance(v, list):
+            for item in v: data(item, depth + 1)
+        elif isinstance(v, dict):
+            for key, value in v.items():
+                if key in ('__proto__', 'constructor', 'prototype'): fail()
+                data(value, depth + 1)
+        else: fail()
+    data(p)
+    # Match JS's UTF-16 length, including non-BMP text.
+    if len(json.dumps(p, ensure_ascii=False, separators=(',', ':')).encode('utf-16-le')) // 2 > 262144: fail()
+
+
 def validate_document(state):
     if not isinstance(state, dict) or isinstance(state.get('schemaVersion'), bool) or state.get('schemaVersion') not in (1, 2):
         raise ValueError('不支持的画布格式')
@@ -40,6 +81,12 @@ def validate_document(state):
         for key in ('text', 'name', 'src', 'color'):
             if key in node and not isinstance(node[key], str):
                 raise ValueError('对象属性无效')
+        if 'flowShape' in node and (node['type'] != 'rect' or node['flowShape'] not in ('terminator', 'process', 'decision', 'subprocess', 'connector')):
+            raise ValueError('流程图形状无效')
+        if 'pinnedState' in node:
+            if node['type'] != 'board':
+                raise ValueError('仅画板支持固定状态')
+            validate_pinned_state(node['pinnedState'])
         src = node.get('src', '')
         if node['type'] == 'board' and src and not re.fullmatch(r'boards/[a-zA-Z0-9_-]+/index\.html', src):
             raise ValueError('画板只能引用本版本 boards 目录')
