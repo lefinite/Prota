@@ -151,7 +151,7 @@ def journal_target(page, operation):
     parts = relative(value).parts
     valid = (len(parts) == 2 and parts[0] == 'board-history' and parts[1] == 'index.json') or (len(parts) == 3 and parts[0] == 'board-history')
     import re
-    valid = valid or (len(parts) >= 2 and re.fullmatch(r'v\d+', parts[0]) and (parts[1] == 'canvas-data.js' or parts[1] not in {'index.html', 'app.js', 'styles.css', 'canvas-core.js', 'canvas-domain.js', 'canvas-connections.js', 'board-state.js', 'README.md', 'icons.js', 'marked.js', 'markdown.js'}))
+    valid = valid or (len(parts) >= 2 and re.fullmatch(r'v\d+', parts[0]) and (parts[1] == 'canvas-data.js' or parts[1] not in {'index.html', 'app.js', 'styles.css', 'canvas-core.js', 'canvas-domain.js', 'canvas-connections.js', 'flow-shapes.js', 'flow-quick-create.js', 'board-state.js', 'README.md', 'icons.js', 'marked.js', 'markdown.js'}))
     if not valid:
         raise ValueError('事务目标不在允许范围内')
     return safe_path(page, value)

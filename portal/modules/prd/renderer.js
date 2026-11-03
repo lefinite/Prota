@@ -717,6 +717,20 @@ export class PRDRenderer {
             ['table', '▦', '表格'],
             ['hr', '—', '分割线']
         ];
+        const toolPaths = {
+            quote: '<path d="M10 7H5v6h5V7Zm9 0h-5v6h5V7ZM5 13c0 3 1 4 3 4m6-4c0 3 1 4 3 4"/>',
+            unordered: '<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',
+            ordered: '<path d="M10 6h10M10 12h10M10 18h10M4 4h1v5M4 9h3M3 15c0-3 4-3 4 0 0 1-4 3-4 5h4"/>',
+            task: '<rect x="3" y="4" width="16" height="16" rx="2"/><path d="m7 11 3 3 7-7"/>',
+            'inline-code': '<path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 16"/>',
+            'code-block': '<rect x="2" y="3" width="20" height="18" rx="2"/><path d="m6 9 3 3-3 3m6 1h5"/>',
+            link: '<path d="m10 13 4-4m-6 6-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 2 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/>',
+            table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/>',
+            hr: '<path d="M4 12h16"/>'
+        };
+        const formatIcon = (format, label) => toolPaths[format]
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${toolPaths[format]}</svg>`
+            : this.escapeHtml(label);
         const layoutButtons = [
             ['source', '源码'],
             ['split', '双栏'],
@@ -727,20 +741,24 @@ export class PRDRenderer {
             <section class="prd-editor-shell prd-editor-shell--${this.escapeHtml(currentLayout)}" data-prd-editor-shell>
                 <div class="prd-slash-menu" data-prd-slash-menu hidden></div>
                 <div class="prd-editor-toolbar prd-editor-global-toolbar">
-                    <div class="prd-editor-toolbar__group" aria-label="Markdown 格式">
-                        ${formatButtons.map(([format, label, title]) => `
-                            <button class="prd-editor-tool" type="button" data-prd-format="${this.escapeHtml(format)}" title="${this.escapeHtml(title)}">
+                    <div class="prd-editor-layout" data-layout="${this.escapeHtml(currentLayout)}" role="group" aria-label="编辑视图">
+                        ${layoutButtons.map(([lyt, label]) => `
+                            <button class="prd-editor-layout__btn${lyt === currentLayout ? ' is-active' : ''}" type="button" data-prd-layout="${this.escapeHtml(lyt)}" aria-pressed="${lyt === currentLayout}">
                                 ${this.escapeHtml(label)}
                             </button>
                         `).join('')}
                     </div>
-                    <div class="prd-editor-toolbar__spacer"></div>
-                    <div class="prd-editor-layout">
-                        ${layoutButtons.map(([lyt, label]) => `
-                            <button class="prd-editor-layout__btn${lyt === currentLayout ? ' is-active' : ''}" type="button" data-prd-layout="${this.escapeHtml(lyt)}">
-                                ${this.escapeHtml(label)}
+                    <div class="prd-editor-toolbar__group" aria-label="Markdown 格式">
+                        ${formatButtons.map(([format, label, title]) => `
+                            <button class="prd-editor-tool" type="button" data-prd-format="${this.escapeHtml(format)}" title="${this.escapeHtml(title)}" aria-label="${this.escapeHtml(title)}" ${currentLayout === 'preview' ? 'disabled' : ''}>
+                                ${formatIcon(format, label)}
                             </button>
                         `).join('')}
+                    </div>
+                    <div class="prd-editor-toolbar__spacer"></div>
+                    <div class="prd-editor-commit" role="group" aria-label="编辑操作">
+                        <button class="prd-editor-commit__cancel" type="button" data-prd-cancel title="退出编辑" aria-label="退出编辑" ${state.saving ? 'disabled' : ''}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+                        <button class="prd-editor-commit__save" type="button" data-prd-save title="保存" aria-label="保存" ${!state.dirty || state.saving ? 'disabled' : ''}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></button>
                     </div>
                 </div>
                 <div class="prd-editor-grid prd-editor-grid--${this.escapeHtml(currentLayout)}${hasDiagram ? ' has-diagram-preview' : ''}">

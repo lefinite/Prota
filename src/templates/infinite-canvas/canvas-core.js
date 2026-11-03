@@ -80,6 +80,10 @@
       map.set(n.id, n);
       for (const key of ["x", "y", "width", "height"]) if (!Number.isFinite(n[key]) || Math.abs(n[key]) > 1e7) throw Error("画布坐标无效");
       if (n.width < 16 || n.height < 16) throw Error("画布尺寸无效");
+      // Same flowchart contract as CanvasDomain, for runtimes that start without it.
+      if ("flowShape" in n && (n.type !== "rect" || !(root.CanvasFlowShapes?.KINDS || []).includes(n.flowShape))) throw Error("流程图形状无效");
+      if ("strokeColor" in n && !(typeof n.strokeColor === "string" && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(n.strokeColor))) throw Error("描边颜色无效");
+      if ("strokeWidth" in n && !(Number.isFinite(n.strokeWidth) && n.strokeWidth >= 0.5 && n.strokeWidth <= 10)) throw Error("描边宽度无效");
     }
     for (const n of state.nodes) {
       let p = n;

@@ -147,3 +147,7 @@ Many of the design templates are sourced or adapted from [OpenDesign](https://gi
 <p align="center">
   <img src="./assets/readme/sponsor.jpg" width="320" alt="Sponsor Prota via WeChat">
 </p>
+
+## Magpie local models
+
+Install the standalone [Prota Agent plugin](https://github.com/lefinite/magpie-agent-prota), choose Prota's default in Magpie, then select **Magpie → Use Magpie** in Prota model settings. The composer can follow Magpie or pin a model for the current session. Running tasks keep their model until completion. See [setup, behavior and validation](docs/magpie-integration.md).

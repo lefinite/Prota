@@ -24,14 +24,16 @@ try{
  const handle=async end=>{const p=await page.locator(`[data-connection-end=${end}]`).boundingBox();return{x:p.x+p.width/2,y:p.y+p.height/2};};
  const gesture=async(a,b,{cancel=false}={})=>{await move(a);await page.mouse.down();await move(b);if(cancel)await page.keyboard.press('Escape');await page.mouse.up();};
  const select=async()=>{await page.locator('.connection').first().focus();await page.keyboard.press('Space');};
- // In selection mode, hover dots can initiate a connection without moving the object.
- const source=await position('a','right');await move(source);await page.locator('[data-node-id=a][data-connection-port=right]').waitFor();
- await gesture(await position('a','right',11),await position('b','left',18));
+ // In selection mode the quick-create dots start a connection without moving the object; drops near a side are magnetic.
+ await move(await position('a','right'));await page.locator('.flow-quick-dot[data-node-id=a][data-side=right]').waitFor();
+ assert.equal(await page.locator('[data-connection-port]').count(),0,'select mode shows no connection ports');
+ const quick=await page.locator('.flow-quick-dot[data-node-id=a][data-side=right] .dot-hit').boundingBox();
+ await gesture({x:quick.x+quick.width/2,y:quick.y+quick.height/2},await position('b','left',18));
  await page.waitForFunction(()=>protaCanvas.getState().edges.length===1);
  let current=(await state()).edges[0],id=current.id;
  assert.equal(current.fromPort,'right');assert.equal(current.toPort,'left');
  assert.equal((await state()).nodes.find(n=>n.id==='a').x,0,'port drag never moves the node');
- console.log('PASS selection-mode ports and magnetic drop outside target bounds');
+ console.log('PASS selection-mode quick dots and magnetic drop outside target bounds');
  // Clicking or moving fewer than four screen pixels must not rewrite an automatic side/manual path.
  await select();await page.mouse.click((await handle('to')).x,(await handle('to')).y);
  assert.deepEqual((await state()).edges[0],current);
@@ -72,8 +74,13 @@ try{
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  assert.equal((await state()).edges[0].toInstanceId,'b');assert.equal((await state()).edges[0].toPort,'left');
  console.log('PASS real touch endpoint drag with expanded magnetic radius');
- // Selection-mode click/click follows the same path as dragging from a port.
- await page.keyboard.press('Escape');await move(await position('a','bottom'));await page.locator('[data-node-id=a][data-connection-port=bottom]').click();
+ // Clicking a board's dot asks which shape to add and writes nothing until a choice.
+ await page.keyboard.press('Escape');await move(await position('a','bottom'));
+ const below=await page.locator('.flow-quick-dot[data-node-id=a][data-side=bottom] .dot-hit').boundingBox();await page.mouse.click(below.x+below.width/2,below.y+below.height/2);
+ await page.locator('#flow-shape-picker').waitFor({state:'visible'});assert.equal((await state()).edges.length,1);
+ await page.keyboard.press('Escape');await page.locator('#flow-shape-picker').waitFor({state:'hidden'});assert.equal((await state()).edges.length,1);
+ // The connect tool keeps click/click: a side port, then the target body.
+ await page.getByRole('button',{name:'连线工具',exact:true}).click();await move(await position('a','bottom'));await page.locator('[data-node-id=a][data-connection-port=bottom]').click();
  const body=(await state()).nodes.find(n=>n.id==='c'),bodyPoint=await screen({x:body.x+80,y:body.y+80});await page.mouse.click(bodyPoint.x,bodyPoint.y);
  assert.equal((await state()).edges.length,2);assert.equal((await state()).edges[1].toInstanceId,'c');
  await page.keyboard.press('ControlOrMeta+z');await select();

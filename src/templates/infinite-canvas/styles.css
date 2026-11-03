@@ -931,6 +931,34 @@ body.board-annotating .node.interacting iframe {
 .interaction-hint:empty {
   display: none;
 }
+.share-tip {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  background: rgba(38, 41, 52, .88);
+  color: #f2f3f7;
+  font-size: 12px;
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(20, 24, 38, .18);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  z-index: 6;
+  animation: float-in .2s cubic-bezier(.2, .8, .3, 1);
+  transition: opacity .35s;
+}
+.share-tip svg.icon {
+  width: 13px;
+  height: 13px;
+  color: #a9b1ff;
+}
+.share-tip.hide {
+  opacity: 0;
+}
 #notice {
   position: absolute;
   z-index: 15;
@@ -1250,6 +1278,28 @@ body.agent-working .board-agent {
 #connection-tools button svg{flex:none;pointer-events:none}
 #connection-tools .connection-styles{display:flex;gap:2px;padding:0 5px;margin:0 3px;border-inline:1px solid var(--line)}
 #connection-tools [data-kind][aria-pressed="true"]{background:color-mix(in srgb,var(--stroke-color) 12%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--stroke-color) 25%,white)}
+/* Line color: a button that opens a click-to-apply palette, so a chosen color never depends on
+   how the system color dialog happens to be dismissed. */
+#connection-tools .connection-color{position:relative;flex:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border-radius:7px}
+#connection-tools .connection-color:hover{background:#f0f2f8}
+#connection-tools .connection-color:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#connection-tools .connection-color-swatch{width:16px;height:16px;border-radius:50%;pointer-events:none;background:var(--line-color,var(--line));box-shadow:inset 0 0 0 2px #fff,0 0 0 1px var(--line)}
+#connection-tools .connection-color.active{background:color-mix(in srgb,var(--line-color) 12%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line-color) 25%,white)}
+#connection-colors{position:fixed;z-index:40;display:grid;gap:9px;padding:10px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 10px 36px rgba(30,40,75,.1),0 2px 6px rgba(30,40,75,.05)}
+#connection-colors[hidden]{display:none}
+#connection-colors .color-grid{display:grid;grid-template-columns:repeat(4,22px);gap:9px}
+/* Buttons default to 34px tall; a swatch must stay a circle. */
+#connection-colors .color-swatch{width:22px;height:22px;min-height:0;padding:0;border-radius:50%;background:var(--swatch);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #e3e6ed;transition:transform .12s ease}
+#connection-colors .color-swatch:hover{transform:scale(1.12)}
+#connection-colors .color-swatch[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--accent)}
+/* The custom cell: one rainbow circle with the same white rim and outline as the presets -
+   no center dot; the current custom color lives on the toolbar button. */
+#connection-colors .color-custom{position:relative;display:grid;place-items:center;min-height:0;padding:0;cursor:pointer;border-radius:50%;background:conic-gradient(from 0deg,#e5484d,#bd7327,#f5a524,#46a758,#12a594,#0ea5e9,#3e63dd,#8e4ec6,#d6409f,#e5484d);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #e3e6ed}
+#connection-colors .color-custom:hover{transform:scale(1.12)}
+#connection-colors .color-custom input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
+/* Same selected ring as the presets: white rim, accent tight to the edge (no gray line between). */
+#connection-colors .color-custom.is-active{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--accent)}
+#connection-colors .color-custom:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 #connection-tools .danger{color:var(--muted)}
 #connection-tools .danger:hover{color:#b24a50;background:#fff0f0}
 #stage.tool-connect .node{cursor:crosshair}#stage .node.connection-source{outline:2px solid #6678d0}#stage.tool-connect .node:hover:not(.connection-container){outline:2px solid #98a6df}
@@ -1429,16 +1479,50 @@ body.agent-working .board-agent {
 .node.flowchart{background:transparent!important;outline:none;box-shadow:none;pointer-events:none}
 .node.flowchart>.node-title{display:none}
 .flow-geometry{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.flow-geometry>*{stroke:#97a5b8;stroke-width:1.5;stroke-linejoin:round;pointer-events:visiblePainted}
-.node.flowchart.selected .flow-geometry>*,.node.flowchart.connection-source .flow-geometry>*{stroke:var(--accent);stroke-width:2}
+.flow-geometry>*{stroke:var(--flow-stroke,#97a5b8);stroke-width:var(--flow-stroke-width,1.5);stroke-linejoin:round;pointer-events:visiblePainted}
+/* Selection keeps a user-chosen stroke visible while it is being edited; plain shapes use the accent. */
+.node.flowchart.selected .flow-geometry>*{stroke:var(--flow-stroke,var(--accent));stroke-width:var(--flow-stroke-width,2)}
+.node.flowchart.connection-source .flow-geometry>*{stroke:var(--accent);stroke-width:2}
 .node.flowchart.connection-target .flow-geometry>*{stroke:#2e8465;stroke-width:2.5}
 .node.flowchart .node-content{position:absolute;inset:0;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;padding:14px 22px;line-height:1.45;pointer-events:auto}
 .node.flowchart[data-flow-shape=decision] .node-content{inset:25%;width:50%;height:50%;padding:0}
 .node.flowchart[data-flow-shape=subprocess] .node-content{padding-inline:30px}
 .node.flowchart[data-flow-shape=connector] .node-content{padding:8px}
 .node.flowchart.editing .node-content{outline:1px dashed var(--accent);outline-offset:-2px}
-#context-menu[data-flowchart]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:252px;gap:4px;padding:8px}
-#context-menu[data-flowchart] button{min-height:78px;flex-direction:column;justify-content:center;gap:9px;padding:12px 8px}
-#context-menu[data-flowchart] button svg{width:34px;height:28px;stroke-width:1.4}
-#context-menu[data-flowchart] .shortcut{display:none}
+/* Registry text safe areas: horizontal inset from flow-shapes.js, vertical tweaks per outline. */
+.node.flowchart .node-content{padding-inline:max(22px,var(--flow-inset,0px))}
+.node.flowchart[data-flow-shape=triangle] .node-content{padding:38% 26% 6%}
+.node.flowchart[data-flow-shape=triangle-right] .node-content{padding:42% 44% 6% 8%}
+.node.flowchart[data-flow-shape=star] .node-content,.node.flowchart[data-flow-shape=pentagon] .node-content{padding:24% 26% 16%}
+.node.flowchart[data-flow-shape=cross] .node-content{padding:0 26%}
+.node.flowchart[data-flow-shape=speech-bubble] .node-content,.node.flowchart[data-flow-shape=callout] .node-content{bottom:32%}
+.node.flowchart[data-flow-shape=document] .node-content{bottom:14%}
+.node.flowchart[data-flow-shape=database] .node-content{top:28%;bottom:10%}
+.node.flowchart[data-flow-shape=brace] .node-content{padding:8px 4px 8px 46%}
+.node.flowchart:not(.editing) .node-content:empty::before{content:"输入文本";color:#a6adba}
+/* Text never crosses the outline: an overflowing label starts at the top of its safe area and
+   fades out at the bottom; the full text shows while editing. */
+.node.flowchart[data-text-overflow]:not(.editing) .node-content{justify-content:flex-start;overflow:hidden;-webkit-mask-image:linear-gradient(#000 calc(100% - 20px),transparent);mask-image:linear-gradient(#000 calc(100% - 20px),transparent)}
+/* Quick-create dots: world-space overlay, constant screen size, above node chrome. */
+#world>.flow-quick-dots,#world>.flow-quick-preview{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+#world>.flow-quick-dots{z-index:8}#world>.flow-quick-preview{z-index:5}
+.flow-quick-dot{pointer-events:all;cursor:pointer;touch-action:none}
+.flow-quick-dot .dot-hit{fill:transparent;stroke:none}
+.flow-quick-dot .dot-core{fill:#fff;stroke:#7184cf;stroke-width:1.5;vector-effect:non-scaling-stroke;transform-box:fill-box;transform-origin:center;transition:transform .12s ease,fill .12s ease}
+.flow-quick-dot .dot-arrow{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:0;pointer-events:none;transition:opacity .12s ease}
+.flow-quick-dot:hover .dot-core{transform:scale(2.6);fill:var(--accent);stroke:var(--accent)}
+.flow-quick-dot:hover .dot-arrow{opacity:1}
+.flow-ghost{fill:none;stroke:#7184cf;stroke-width:2.5;stroke-dasharray:5 5;stroke-linejoin:round;stroke-linecap:round}
+.flow-ghost.valid{stroke:#71829b;stroke-dasharray:none}
+.flow-ghost.blocked{stroke:#bd7327}
+.flow-shape-preview path{fill:rgba(87,101,206,.05);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6 4;stroke-linejoin:round}
+.flow-shape-preview path+path{fill:none}
+#stage[data-flow-quick-drag]{cursor:crosshair}
+/* Shape picker shares the context menu surface; icons stay muted until hovered. */
+#flow-shape-picker{position:fixed;z-index:30;display:grid;grid-template-columns:repeat(5,40px);gap:2px;padding:6px;border-radius:12px;background:#fff;box-shadow:0 10px 36px rgba(30,40,75,.1),0 2px 6px rgba(30,40,75,.05)}
+#flow-shape-picker[hidden]{display:none}
+#flow-shape-picker button{width:40px;height:40px;padding:0;border-radius:8px;display:grid;place-items:center;color:#7d8798}
+#flow-shape-picker button:hover,#flow-shape-picker button:focus-visible{color:inherit}
+#flow-shape-picker svg{width:22px;height:22px;overflow:visible}
+#flow-shape-picker svg path{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 #stage .node.flowchart,#stage.tool-connect .node.flowchart:hover{outline:none;box-shadow:none}

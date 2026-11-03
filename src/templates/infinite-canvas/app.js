@@ -6,7 +6,7 @@
   const identityScope = route ? { projectId: route[1], pageId: route[2] } : { projectId: "", pageId: location.pathname.replace(/\/v\d+\/.*$/, "") };
   let schemaEnabled = false, boardVersionsEnabled = false, boardVersionBusy = false;
   const boardTitleVersions = new Map();
-  let connections = null;
+  let connections = null, flowQuick = null;
   let boardStateBusy = false;
   const restoringBoardStates = new WeakSet();
   const materialize = (document, force = schemaEnabled) => D.load(document, identityScope, { migrate: force || document.schemaVersion === 2 });
@@ -179,10 +179,11 @@
     clearTimeout(autoTimer);
     if (local && !conflict) autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
   }
-  function mutate(fn) {
+  // `coalesce` is for live drags: the caller checkpoints once at the start, then streams updates.
+  function mutate(fn, { coalesce = false } = {}) {
     if (!canEdit()) return;
     exitInteraction();
-    checkpoint();
+    if (!coalesce) checkpoint();
     fn();
     changed();
   }
@@ -584,6 +585,8 @@
     stage.style.backgroundPosition = `${v.x}px ${v.y}px`;
     $("#zoom-reset").textContent = `${Math.round(v.zoom * 100)}%`;
     updateSelectionFrame();
+    // Dots first: the selection toolbar is placed around the current dots.
+    flowQuick?.sync();
     positionSelectionTools();
     connections?.schedule();
     positionTextTools();
@@ -596,7 +599,7 @@
     }
   }
   function notify() {
-    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { flowShape: n.flowShape || null, prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 37 }, location.origin === "null" ? "*" : location.origin);
+    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { flowShape: n.flowShape || null, prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 49 }, location.origin === "null" ? "*" : location.origin);
   }
   function exitInteraction() {
     const previous = state.nodes.find(n => n.id === interacting);
@@ -879,6 +882,8 @@
     }, options);
     doc.addEventListener("pointermove", (e) => {
       if (e.buttons) resetBoardRightGesture();
+      // Frame events never reach the canvas document; report the hovered board for its quick dots.
+      else flowQuick?.hover(nodeId);
     }, options);
     // Keep native board scrolling, but route pinch / modified-wheel zoom to
     // the canvas camera. Frame events do not bubble into the canvas document.
@@ -933,17 +938,22 @@
       postAnnotationState(true, { rebind: true });
     }
   }
-  const flowShapes = {
-    terminator: { label: "开始 / 结束", text: "开始", width: 180, height: 64, icon: "flow-terminator" },
-    process: { label: "流程矩形", text: "处理步骤", width: 220, height: 88, icon: "flow-process" },
-    decision: { label: "判断", text: "是否满足条件？", width: 220, height: 152, icon: "flow-decision" },
-    subprocess: { label: "子流程", text: "子流程", width: 220, height: 88, icon: "flow-subprocess" },
-    connector: { label: "连接圆点", text: "A", width: 64, height: 64, icon: "flow-connector" }
-  };
+  // Insertable flowchart presets come from the shared registry; legacy kinds keep their icons.
+  const flowRegistry = window.CanvasFlowShapes, legacyFlowIcons = { terminator: "flow-terminator", process: "flow-process", decision: "flow-decision", subprocess: "flow-subprocess", connector: "flow-connector" };
+  const flowShapes = Object.fromEntries((flowRegistry?.MENU || []).map(id => [id, { ...flowRegistry.defaults(id), icon: legacyFlowIcons[id] || "flowchart" }]));
   function renderFlowGeometry(el, node) {
     el.classList.toggle("flowchart", Boolean(node.flowShape));
-    if (!node.flowShape) { delete el.dataset.flowShape; return; }
+    if (!node.flowShape) {
+      delete el.dataset.flowShape;
+      for (const name of ["--flow-stroke", "--flow-stroke-width", "--flow-inset"]) el.style.removeProperty(name);
+      return;
+    }
     el.dataset.flowShape = node.flowShape;
+    // Stroke and text inset are CSS variables so selection/target outlines can still override them.
+    if (node.strokeColor) el.style.setProperty("--flow-stroke", node.strokeColor); else el.style.removeProperty("--flow-stroke");
+    if (node.strokeWidth) el.style.setProperty("--flow-stroke-width", node.strokeWidth); else el.style.removeProperty("--flow-stroke-width");
+    const inset = flowRegistry?.inset(node.flowShape) || 0;
+    if (inset) el.style.setProperty("--flow-inset", `${inset * 100}%`); else el.style.removeProperty("--flow-inset");
     let svg = el.querySelector(":scope > .flow-geometry");
     if (!svg) {
       svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -954,18 +964,14 @@
     svg.dataset.geometry = signature;
     const w = node.width, h = node.height;
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`); svg.setAttribute("preserveAspectRatio", "none"); svg.replaceChildren();
-    const shape = (tag, attrs) => {
-      const child = document.createElementNS(svg.namespaceURI, tag);
-      for (const [key, value] of Object.entries(attrs)) child.setAttribute(key, value);
-      child.setAttribute("vector-effect", "non-scaling-stroke"); svg.append(child); return child;
-    };
-    const fill = node.color || "#ffffff";
-    if (node.flowShape === "decision") shape("path", {d: `M${w/2} 0L${w} ${h/2}L${w/2} ${h}L0 ${h/2}Z`, fill});
-    else if (node.flowShape === "connector") shape("ellipse", {cx:w/2, cy:h/2, rx:w/2, ry:h/2, fill});
-    else {
-      shape("rect", {x:0, y:0, width:w, height:h, rx:node.flowShape === "terminator" ? Math.min(w,h)/2 : 3, fill});
-      if (node.flowShape === "subprocess") { const inset = Math.min(16,w/8); shape("path", {d:`M${inset} 0V${h}M${w-inset} 0V${h}`, fill:"none", "pointer-events":"none"}); }
-    }
+    // The first path is the fillable outline; later paths are decorative strokes only.
+    (flowRegistry?.paths(node.flowShape, w, h) || []).forEach((d, index) => {
+      const path = document.createElementNS(svg.namespaceURI, "path");
+      path.setAttribute("d", d); path.setAttribute("fill", index ? "none" : node.color || "#ffffff");
+      path.setAttribute("vector-effect", "non-scaling-stroke");
+      if (index) path.setAttribute("pointer-events", "none");
+      svg.append(path);
+    });
   }
   function nodeContentSignature(n) {
     return JSON.stringify([n.type, n.flowShape, n.type === "board" ? "" : displayText(n), n.prdPath, n.markdownSource, n.src, n.pinnedState, n.cloneFrom ? baseline.nodes.some(saved => saved.id === n.id) : null, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
@@ -1078,6 +1084,7 @@
     });
     // Text renders Markdown, so its intrinsic height is only known once the DOM is in place.
     if (state.nodes.some(textAutoHeight)) scheduleFit();
+    scheduleFlowText();
     world.append($("#selection-frame"));
     $("#empty").hidden = state.nodes.length > 0;
     $("#undo").disabled = !history.length;
@@ -1085,6 +1092,26 @@
     if (panels) renderInspector();
     view();
     notify();
+  }
+  // Flow labels never cross their outline. After layout, mark nodes whose text exceeds the safe
+  // area: CSS fades the overflow and the tooltip suggests enlarging the shape with its handles.
+  let flowTextFrame = 0;
+  function scheduleFlowText() {
+    if (flowTextFrame || !state.nodes.some(n => n.flowShape)) return;
+    flowTextFrame = requestAnimationFrame(() => {
+      flowTextFrame = 0;
+      const marks = [];
+      for (const n of state.nodes) {
+        const el = n.flowShape ? nodeEls.get(n.id) : null, inner = el?.querySelector(".node-content");
+        if (!inner || el.classList.contains("editing")) continue;
+        marks.push([el, inner.scrollHeight > inner.clientHeight + 1 || inner.scrollWidth > inner.clientWidth + 1]);
+      }
+      // Reads first, then writes: one layout pass however many flow shapes there are.
+      for (const [el, over] of marks) {
+        el.toggleAttribute("data-text-overflow", over);
+        if (over) el.title = "文字超出图形，拖动手柄可扩大"; else el.removeAttribute("title");
+      }
+    });
   }
   function updatePositions(ids) {
     for (const id of ids) {
@@ -1095,6 +1122,8 @@
     }
     updateSelectionFrame();
     connections?.schedule();
+    flowQuick?.sync();
+    scheduleFlowText();
   }
   function updateSelectionFrame() {
     const frame = $("#selection-frame"), roots = selectedRoots().filter((n) => !effectiveLocked(n)), bounds = C.bounds(roots);
@@ -1176,6 +1205,7 @@
     let fields = [["name", "名称", "text"], ["color", "填充", "color"], ["opacity", "不透明度", "number"], ["radius", "圆角", "number"]];
     if (n.type === "group") fields = fields.filter(([key]) => key === "name");
     if (n.type === "ellipse" || n.flowShape) fields = fields.filter(([key]) => key !== "radius");
+    if (n.flowShape) fields.splice(fields.findIndex(([key]) => key === "color") + 1, 0, ["strokeColor", "描边", "color"], ["strokeWidth", "描边宽度", "number"]);
     if (n.type === "text") fields = fields.filter(([key]) => !["color", "radius"].includes(key));
     if (n.type === "image" || n.type === "board") fields = fields.filter(([key]) => key !== "color" && key !== "radius");
     if (["text", "note", "rect", "ellipse"].includes(n.type)) fields.push(["text", "内容", "textarea"], ["fontSize", "字号", "number"], ["textColor", "文字颜色", "color"]);
@@ -1205,18 +1235,43 @@
       row.append(select);
       properties.append(row);
     }
+    // Switching a flow shape keeps its geometry, text and connections; ports follow the new outline.
+    if (!renameOnly && n.flowShape && flowRegistry) {
+      const row = document.createElement("label");
+      row.textContent = "形状";
+      const select = document.createElement("select");
+      select.setAttribute("aria-label", "形状");
+      for (const id of flowRegistry.MENU.filter(id => flowRegistry.has(id))) {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = flowShapes[id].label;
+        select.append(option);
+      }
+      select.value = n.flowShape;
+      select.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
+      select.onchange = () => mutate(() => {
+        n.flowShape = select.value;
+      });
+      row.append(select);
+      properties.append(row);
+    }
     for (const [key, label, type] of fields) {
       const row = document.createElement("label");
       row.textContent = label;
       const input = document.createElement(type === "textarea" ? "textarea" : "input");
       if (type !== "textarea") input.type = type;
-      input.value = n[key] ?? (key === "color" ? "#ffffff" : key === "textColor" ? "#424650" : key === "opacity" ? 1 : key === "radius" ? 0 : "");
+      input.value = n[key] ?? (key === "color" ? "#ffffff" : key === "textColor" ? "#424650" : key === "strokeColor" ? "#97a5b8" : key === "strokeWidth" ? 1.5 : key === "opacity" ? 1 : key === "radius" ? 0 : "");
       input.setAttribute("aria-label", label);
       input.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
       if (key === "opacity") {
         input.min = 0;
         input.max = 1;
         input.step = 0.1;
+      }
+      if (key === "strokeWidth") {
+        input.min = 0.5;
+        input.max = 10;
+        input.step = 0.5;
       }
       row.append(input);
       properties.append(row);
@@ -1229,6 +1284,8 @@
           if (key === "fontSize") value = Math.max(8, Math.min(400, value));
           if (key === "opacity") value = Math.max(0, Math.min(1, value));
           if (key === "radius") value = Math.max(0, Math.min(1e3, value));
+          // Matches the document contract (0.5–10) so an out-of-range entry never blocks saving.
+          if (key === "strokeWidth") value = Math.max(0.5, Math.min(10, value));
         }
         if (!canEdit() || effectiveLocked(n) || agentHeld(n) || n[key] === value) return;
         if (!propertyEdit || propertyEdit.node !== n.id || propertyEdit.key !== key) {
@@ -1324,10 +1381,13 @@
     finishText(); exitInteraction(); setTool("select");
     const previous = current().length === 1 ? current()[0] : null;
     const center = at || point(stage.clientWidth / 2, stage.clientHeight / 2);
-    const n = { id: uid(), type: "rect", flowShape: shape, name: preset.label,
+    const type = preset.kind === "text" ? "text" : preset.kind === "ellipse" ? "ellipse" : "rect";
+    const n = { id: uid(), type, ...(preset.kind === "flow" ? { flowShape: shape } : {}), name: preset.label,
       x: Math.round(!at && previous ? previous.x + previous.width + 80 : center.x - preset.width / 2),
       y: Math.round(!at && previous ? previous.y + (previous.height - preset.height) / 2 : center.y - preset.height / 2),
-      width: preset.width, height: preset.height, text: preset.text, color: "#ffffff", fontSize: 16, textAlign: "center", textColor: "#344155" };
+      width: preset.width, height: preset.height, text: type === "text" ? "双击编辑文本" : preset.text,
+      color: type === "text" ? "" : type === "ellipse" ? "#dfe9ff" : "#ffffff", fontSize: type === "text" ? 20 : 16,
+      ...(type === "text" ? {} : { textAlign: "center", textColor: "#344155" }) };
     if (!at) for (let attempt = 0; attempt <= state.nodes.length; attempt++) {
       const collision = state.nodes.find(item => !item.hidden && item.type !== "group" && n.x < item.x+item.width+24 && n.x+n.width+24 > item.x && n.y < item.y+item.height+24 && n.y+n.height+24 > item.y);
       if (!collision) break;
@@ -1482,6 +1542,7 @@
     const activeFrame = nodeEls.get(n.id)?.querySelector('iframe');
     if (restoringBoardStates.has(activeFrame) || activeFrame?.dataset.statePending) { notice('画板正在恢复状态，请稍后重试'); return; }
     if (interacting === n.id) return;
+    hideShareTip();
     exitInteraction();
     const el = nodeEls.get(n.id);
     if (!el) return;
@@ -1491,6 +1552,23 @@
     el.querySelector("iframe")?.focus();
     updateSelectionFrame();
     positionSelectionTools();
+  }
+  // Share visitors land in read-only mode and cannot discover the double-click
+  // entry on their own; the tip stays until they first enter a board.
+  function showShareTip() {
+    if (!state.nodes.some((n) => n.type === "board" && n.src)) return;
+    const tip = $("#share-tip");
+    tip.classList.remove("hide");
+    tip.hidden = false;
+  }
+  function hideShareTip() {
+    const tip = $("#share-tip");
+    if (tip.hidden || tip.classList.contains("hide")) return;
+    tip.classList.add("hide");
+    setTimeout(() => {
+      tip.hidden = true;
+      tip.classList.remove("hide");
+    }, 350);
   }
   function stopViewAnimation() {
     if (viewAnim) {
@@ -1836,12 +1914,13 @@
     if (gesture?.pointerId === e.pointerId) cancelGesture();
   });
   stage.addEventListener("dblclick", (e) => {
-    if (e.target.closest("#canvas-connections,.connection-handles,.connection-preview")) return;
+    if (e.target.closest("#canvas-connections,.connection-handles,.connection-preview,.flow-quick-dots,.flow-quick-preview")) return;
     const el = e.target.closest(".node"), n = state.nodes.find((n2) => n2.id === el?.dataset.id);
     if (e.target.closest("button,.floating,#selection-tools,[contenteditable=true]") || e.target.isContentEditable || space || tool !== "select" || e.button !== 0) return;
     if (annotationBoardId) return;
     if (!n) {
-      if (!canEdit()) return;
+      // Rapid clicks on quick-create dots move the dots away; the second click must not add text.
+      if (!canEdit() || flowQuick?.recentlyUsed()) return;
       e.preventDefault();
       const p = point(e.clientX, e.clientY);
       selected.clear();
@@ -2251,6 +2330,8 @@
     el.spellcheck = false;
     el.setAttribute("aria-label", n.type === "text" ? "编辑 Markdown 文本" : n.flowShape ? "编辑流程图文字" : n.type === "rect" ? "编辑矩形文字" : "编辑便签");
     el.parentElement.classList.add("editing");
+    // render() ran before `editing` was set; drop the quick-create dots now that the label is being edited.
+    flowQuick?.sync();
     el.focus();
     const range = document.createRange();
     range.selectNodeContents(el);
@@ -2292,6 +2373,15 @@
         }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {event.preventDefault();event.stopPropagation();finishText();}
         if (event.key === "Tab") {event.preventDefault();document.execCommand("insertText",false,"  ");}
+      };
+    } else if (n.flowShape) {
+      // Flow labels are short: Enter commits, Shift+Enter breaks the line, IME composition never commits.
+      el.onkeydown = event => {
+        if (event.isComposing || event.keyCode === 229 || editing?.composing) return;
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault(); event.stopPropagation();
+          finishText(); stage.focus({ preventScroll: true });
+        }
       };
     }
     positionSelectionTools();
@@ -2844,7 +2934,8 @@
   }
   function creationActions(at = null, category = "all") {
     const defs = [["mobile", "手机画板", "frame", "boards"], ["web", "Web 画板", "frame", "boards"], ["board", "自由画板", "frame", "boards"], ["text", "文本", "type", "content"], ["note", "便签", "sticky-note", "content"], ["rect", "矩形", "shapes", "shapes"], ["ellipse", "圆形", "shapes", "shapes"], ["image", "图片", "image-plus", "content"]];
-    defs.push(...Object.entries(flowShapes).map(([shape, preset]) => ["flow-"+shape, preset.label, preset.icon, "flowchart"]));
+    // Picker-only presets (text, circle) already exist as base kinds; keep only real flow shapes here.
+    defs.push(...Object.entries(flowShapes).filter(([, preset]) => preset.kind === "flow").map(([shape, preset]) => ["flow-"+shape, preset.label, preset.icon, "flowchart"]));
     return defs.filter(([, , , group]) => category === "all" || category === group).map(([kind, label, icon]) => ({ id: "add-" + kind, label, icon, disabled: !canEdit(), run: () => {
       if (kind === "image") {
         imageReplaceTarget = null;
@@ -2859,12 +2950,14 @@
   }
   $("#add-board").onclick = (e) => openCreateMenu(e.currentTarget, "boards");
   $("#add-shape").onclick = (e) => openCreateMenu(e.currentTarget, "shapes");
+  // The flowchart toolbar and context menu share the quick-create shape grid.
   function openFlowchartMenu(button, at = null) {
+    if (!flowQuick || !canEdit()) return;
+    setFloatingPanel("#context-menu", false);
     const r = button.getBoundingClientRect();
-    showMenu(creationActions(at, "flowchart"), r.left, r.top-300, button);
-    const menu = $("#context-menu"); menu.dataset.flowchart = "true";
-    menu.style.left = Math.max(10, Math.min(innerWidth-menu.offsetWidth-10, r.left)) + "px";
-    menu.style.top = Math.max(10, r.top-menu.offsetHeight-10) + "px";
+    flowQuick.openPicker(r.left, r.top - 12, at, button);
+    const panel = $("#flow-shape-picker");
+    panel.style.top = Math.max(8, r.top - panel.offsetHeight - 10) + "px";
   }
   $("#add-flowchart").onclick = e => openFlowchartMenu(e.currentTarget);
   $("#more-tools").onclick = (e) => {
@@ -2935,7 +3028,7 @@
         { heading: "添加到这里" },
         { id: "add-board", label: "画板", icon: "frame", disabled: !canEdit(), run: () => showMenu(creationActions(at, "boards"), e.clientX, e.clientY) },
         ...creationActions(at).filter((a) => !["add-mobile", "add-web", "add-board"].includes(a.id) && !a.id.startsWith("add-component") && !a.id.startsWith("add-flow-")),
-        { id: "flowchart", label: "流程图", icon: "flowchart", disabled: !canEdit(), run: () => showMenu(creationActions(at, "flowchart"), e.clientX, e.clientY) },
+        { id: "flowchart", label: "流程图", icon: "flowchart", disabled: !canEdit(), run: () => { setFloatingPanel("#context-menu", false); flowQuick?.openPicker(e.clientX, e.clientY, at, stage); } },
         { divider: true },
         { id: "paste", label: "粘贴", icon: "clipboard-paste", shortcut: "⌘ V", disabled: !loadClipboard() || !canEdit(), run: () => pasteSelection(at) },
         { divider: true },
@@ -3072,7 +3165,7 @@
       return;
     }
     box.hidden = false;
-    const pos = C.placeOverlay({ anchor, width: box.offsetWidth, height: box.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: overlayObstacles() });
+    const pos = C.placeOverlay({ anchor, width: box.offsetWidth, height: box.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: [...overlayObstacles(), ...(flowQuick?.dotRects() || [])] });
     box.style.left = pos.x + "px";
     box.style.top = pos.y + "px";
     box.dataset.placement = pos.placement;
@@ -3134,6 +3227,7 @@
   function setTool(value) {
     tool = value;
     connections?.setTool(value);
+    flowQuick?.sync();
     stage.classList.remove("tool-select", "tool-hand", "tool-text", "tool-rect", "tool-ellipse", "tool-board", "tool-connect");
     stage.classList.add("tool-" + value);
     document.querySelectorAll("[data-tool]").forEach((b) => {
@@ -3349,6 +3443,7 @@
         document.body.classList.add("readonly");
         render();
         status("只读分享");
+        showShareTip();
       }
       if (data.pageName && !$("#document-name").contains(document.activeElement)) $("#document-name").textContent = data.pageName;
     }
@@ -3459,9 +3554,21 @@
   }
   connections = window.CanvasConnections.install({
     state: () => state, canEdit, blocked: n => effectiveLocked(n) || agentHeld(n), panBy: (dx, dy) => { state.viewport.x += dx; state.viewport.y += dy; persistView(); }, focus: ids => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), tool: () => tool, panning: () => space || tool === "hand",
-    mutate: fn => mutate(() => fn(state)), setTool,
+    mutate: (fn, options) => mutate(() => fn(state), options), setTool,
     clearSelection: () => { selected.clear(); finishText(); exitInteraction(); renderInspector(); updateSelectionFrame(); },
   });
+  flowQuick = window.CanvasFlowQuickCreate?.install({
+    state: () => state, canEdit, blocked: n => effectiveLocked(n) || agentHeld(n), tool: () => tool, panning: () => space || tool === "hand",
+    editing: () => Boolean(editing), annotating: () => Boolean(annotationBoardId), interacting: () => Boolean(interacting),
+    selection: () => selected.size === 1 ? state.nodes.find(n => selected.has(n.id)) || null : null,
+    multiSelected: id => selected.size > 1 && selected.has(id),
+    select: id => { finishText(); groupContext = null; selected = new Set([id]); render(); },
+    // One mutate per quick action keeps node and edge in a single undo record.
+    mutate: fn => mutate(() => fn(state)),
+    insert: (id, at) => at ? insertAt("flow-" + id, at) : insertFlowShape(id),
+    worldPoint: point, notice: text => notice(text),
+    nudgeViewport: (dx, dy) => { state.viewport.x += dx; state.viewport.y += dy; persistView(); },
+  }) || null;
   render();
   if (!restoredView && !readOnly && state.nodes.length) {
     const initial = state.nodes.filter(n => (state.initialFocusNodeIds || []).includes(n.id));
@@ -3474,7 +3581,7 @@
     const iframe = nodeEls.get(node.id)?.querySelector("iframe") || null;
     return { boardId: boardFolderOf(node), boardPath: node.src || "", nodeId: node.id, iframe };
   }
-  window.protaCanvas = { runtimeVersion: 37, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
+  window.protaCanvas = { runtimeVersion: 49, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
     agentPending = Boolean(value);
     panelKey = "";
     renderInspector();

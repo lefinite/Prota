@@ -24,7 +24,7 @@ html.is-infinite-canvas body {
     --annotation-drawer-width: 360px;
     --viewport-min-width: 440px;
     --resize-breakpoint-width: 860px;
-    --header-height: 70px;
+    --header-height: 56px;
     --status-height: 30px;
 }
 
@@ -377,7 +377,7 @@ body.is-share-mode #prdCancelEditBtn {
 body.is-share-mode--folder .share-navigation {
     display: block;
     position: fixed;
-    top: 17px;
+    top: calc((var(--header-height) - 36px) / 2);
     left: 12px;
     z-index: 110;
     font-size: 13px;
@@ -399,7 +399,8 @@ body.is-share-mode--folder .share-navigation {
 }
 .share-navigation__panel {
     position: absolute;
-    top: 59px;
+    /* Toggle top + 36px height + 6px gap, so it follows the button, not the header edge. */
+    top: calc((var(--header-height) - 36px) / 2 + 42px);
     left: 0;
     width: 196px;
     max-width: calc(100vw - 24px);
@@ -485,7 +486,7 @@ body.is-share-mode--folder .page-selector-trigger { pointer-events: none; cursor
 body.is-share-mode--folder .page-selector-arrow,
 body.is-share-mode--folder .page-selector-panel { display: none; }
 @media (max-width: 700px) {
-    body.is-share-mode--folder .share-navigation { top: 15px; }
+    body.is-share-mode--folder .share-navigation { top: calc((var(--header-height) - 40px) / 2); }
     .share-navigation__page { min-height: 40px; }
     .share-navigation__group summary { min-height: 40px; }
     .share-navigation__toggle { height: 40px; }
@@ -506,6 +507,7 @@ body.is-share-mode--folder .page-selector-panel { display: none; }
 
 .sidebar-header {
     height: var(--header-height);
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1966,6 +1968,7 @@ body.is-resizing-agent .agent-resize-handle::after {
 
 .content-header {
     height: var(--header-height);
+    flex-shrink: 0;
     background-color: var(--bg-header);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -11814,7 +11817,7 @@ body[data-top-view="projects"] .sidebar:not(.is-agent-open),
 body[data-top-view="templates"] .sidebar:not(.is-agent-open),
 body[data-top-view="skills"] .sidebar:not(.is-agent-open) {
     position: fixed;
-    top: 11px;
+    top: calc((var(--header-height) - 48px) / 2);
     left: 24px;            /* 24 + 按钮 left padding 8 = 32px，与项目卡片左边对齐 */
     width: 188px;          /* 固定字标尺寸，并给右侧宠物保留展开空间 */
     height: 48px;
@@ -11912,3 +11915,104 @@ body[data-top-view="page"] .top-tabs {
 body.canvas-focused #pageViewportContainer { position: fixed; inset: 0; z-index: 4000; width: 100vw; height: 100dvh; }
 body.canvas-focused #pageViewportContainer .viewport-stage { flex: 1; width: 100%; opacity: 1; pointer-events: auto; }
 body.canvas-focused #pageViewportContainer #annotationDrawer { display: none !important; }
+
+/* Magpie shares the existing provider panel and composer menu. */
+.magpie-details h3 { display:flex; align-items:baseline; gap:12px; }
+.magpie-details small, .magpie-menu-status { color:var(--text-secondary, #777); font-size:12px; }
+.magpie-details p { overflow-wrap:anywhere; margin:16px 0; }
+.magpie-details .agent-config-panel__actions { flex-wrap:wrap; }
+.magpie-menu-status { padding:8px 12px; }
+.magpie-model-search { box-sizing:border-box; width:calc(100% - 16px); margin:6px 8px; padding:8px; border:1px solid var(--border-color,#ddd); border-radius:6px; background:transparent; color:inherit; }
+.magpie-model-results { max-height:240px; overflow-y:auto; }
+.agent-model-dropdown__item:disabled { opacity:.5; cursor:default; }
+
+.agent-model-dropdown { width:min(340px, calc(100vw - 32px)); max-height:min(540px, 70vh); overflow-y:auto; }
+
+.unified-settings .magpie-details { gap:12px; }
+.magpie-details p, .magpie-details h3 { margin:0; }
+.magpie-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.unified-settings:has(.magpie-details:not([hidden])) #usModelActions { display:none; }
+
+/* Preview and documents share a single toolbar row. */
+.main-content {
+    container: workspace / inline-size;
+    min-height: 0;
+}
+.main-content:has(> .annotation-drawer.is-visible) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: var(--header-height) minmax(0, 1fr);
+}
+.main-content > .annotation-drawer:not(.is-visible) { display: none; }
+.main-content:has(> .annotation-drawer.is-visible) > .content-header {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    padding-inline: 12px;
+    gap: 8px;
+}
+.main-content:has(> .annotation-drawer.is-visible) > .viewport-container {
+    grid-column: 1;
+    grid-row: 2;
+}
+.main-content > .annotation-drawer.is-visible {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    min-height: 0;
+    height: 100%;
+    max-width: calc(100cqw - 380px);
+    transition: opacity .18s ease;
+}
+.main-content > .annotation-drawer.is-visible.is-expanded {
+    width: min(760px, 58cqw);
+    min-width: min(560px, calc(100cqw - 380px));
+}
+.main-content > .annotation-drawer.is-visible.is-user-sized {
+    width: var(--prd-drawer-width);
+    min-width: min(var(--prd-drawer-width), calc(100cqw - 380px));
+}
+.main-content:has(> .annotation-drawer.is-visible) .header-left { min-width: 0; gap: 6px; }
+.main-content:has(> .annotation-drawer.is-visible) .page-selector-wrapper { min-width: 0; }
+.main-content:has(> .annotation-drawer.is-visible) .page-selector-trigger { min-width: 0; max-width: 150px; }
+.main-content:has(> .annotation-drawer.is-visible) #currentPageName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.main-content:has(> .annotation-drawer.is-visible) .header-right { flex-shrink: 0; gap: 2px; }
+/* Keep the document toggle beside the split boundary. */
+#docVisibilityBtn { order: 3; }
+#docVisibilityBtn.is-active { background: var(--accent-glow); color: var(--accent); }
+.main-content:has(> .annotation-drawer.is-fullscreen.is-visible) > .content-header,
+.main-content:has(> .annotation-drawer.is-fullscreen.is-visible) > .viewport-container { display: none; }
+.main-content > .annotation-drawer.is-fullscreen.is-visible {
+    grid-column: 1 / -1;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none;
+    border-left: 0;
+}
+.main-content > .annotation-drawer.is-fullscreen .prd-drawer-resize-handle { display: none; }
+@container workspace (max-width: 900px) {
+    .main-content > .content-header:has(~ .annotation-drawer.is-visible),
+    .main-content > .viewport-container:has(~ .annotation-drawer.is-visible) { display: none; }
+    .main-content > .annotation-drawer.is-visible {
+        grid-column: 1 / -1;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none;
+        border-left: 0;
+    }
+    .main-content > .annotation-drawer .prd-drawer-resize-handle { display: none !important; }
+}
+body.canvas-focused .main-content > .annotation-drawer { display: none !important; }
+/* Grid owns pane sizes so toolbars and content move together. */
+.main-content > .viewport-container > .viewport-stage { transition: opacity .18s ease; }
+/* The hidden TOC card must stay inside the pane's right edge. */
+.main-content .prd-toc-floating:not(.prd-toc-floating--hovered):not(.prd-toc-floating--expanded) .prd-toc-card {
+    transform: translate(0, -50%) scale(.94);
+}
+
+/* The same document toggle stays at the far right in both pane states. */
+.main-content > .content-header:has(#docVisibilityBtn) { padding-right: 12px; }
+.annotation-drawer__header > #docVisibilityBtn { width: 36px; height: 36px; }
+@container workspace (max-width: 440px) {
+    .main-content > .content-header:has(#docVisibilityBtn) { padding-right: 8px; }
+}
+#docVisibilityBtn > svg { stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

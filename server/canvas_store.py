@@ -219,7 +219,7 @@ def upgrade_runtime(root, params, template):
         if backup.is_symlink():
             raise ValueError('备份目录无效')
         backup.mkdir(exist_ok=True)
-        filenames = ['icons.js', 'LICENSE.lucide', 'marked.js', 'LICENSE.marked', 'markdown.js', 'canvas-domain.js', 'canvas-core.js', 'canvas-connections.js', 'board-state.js', 'styles.css', 'app.js', 'README.md', 'index.html']
+        filenames = ['icons.js', 'LICENSE.lucide', 'marked.js', 'LICENSE.marked', 'markdown.js', 'canvas-domain.js', 'canvas-core.js', 'flow-shapes.js', 'canvas-connections.js', 'flow-quick-create.js', 'board-state.js', 'styles.css', 'app.js', 'README.md', 'index.html']
         template = Path(template)
         # Validate the whole editor bundle before changing any installed resource.
         for filename in filenames:

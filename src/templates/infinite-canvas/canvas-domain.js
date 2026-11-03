@@ -5,6 +5,8 @@
   const full = (pattern, value) => typeof value === 'string' && pattern.exec(value)?.[0] === value;
   const identity = value => full(/^[a-zA-Z0-9_-]{1,80}$/, value);
   const number = (value, low, high) => Number.isFinite(value) && value >= low && value <= high;
+  // Keep verbatim with flow-shapes.js KINDS and server/canvas_domain.py FLOW_SHAPES.
+  const FLOW_SHAPES = ['terminator','process','decision','subprocess','connector','document','rounded-rect','database','hexagon-notched','hexagon-arrow','parallelogram','speech-bubble','triangle-right','triangle','trapezoid','star','hexagon','pentagon','octagon','arrow-right','arrow-both','cloud','callout','brace','cross'];
   function validatePinnedState(p) {
     const fail = () => { throw Error('画板固定状态无效'); };
     if (!p || p.version !== 1 || !Number.isSafeInteger(p.adapterVersion) || p.adapterVersion < 1 || typeof p.route !== 'string' || p.route.length > 2048 || !Object.hasOwn(p, 'data')) fail();
@@ -57,7 +59,9 @@
       if (!number(n.x, -1e7, 1e7) || !number(n.y, -1e7, 1e7) || !number(n.width, 16, 1e7) || !number(n.height, 16, 1e7)) throw Error('画布坐标或尺寸无效');
       if (n.parentId != null && typeof n.parentId !== 'string') throw Error('画布容器无效');
       for (const key of ['name','text','src','color']) if (key in n && typeof n[key] !== 'string') throw Error('对象属性无效');
-      if ('flowShape' in n && (n.type !== 'rect' || !['terminator','process','decision','subprocess','connector'].includes(n.flowShape))) throw Error('流程图形状无效');
+      if ('flowShape' in n && (n.type !== 'rect' || !FLOW_SHAPES.includes(n.flowShape))) throw Error('流程图形状无效');
+      if ('strokeColor' in n && !full(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, n.strokeColor)) throw Error('描边颜色无效');
+      if ('strokeWidth' in n && !number(n.strokeWidth, .5, 10)) throw Error('描边宽度无效');
       if ('pinnedState' in n) { if (n.type !== 'board') throw Error('仅画板支持固定状态'); validatePinnedState(n.pinnedState); }
       const src = n.src || '';
       if (n.type === 'board' && src && !full(/^boards\/[a-zA-Z0-9_-]+\/index\.html$/, src)) throw Error('画板只能引用本版本 boards 目录');
@@ -88,6 +92,7 @@
         if (!edge || !identity(edge.id) || edges.has(edge.id) || !identity(edge.fromInstanceId) || !identity(edge.toInstanceId)) throw Error('画布连线身份无效');
         if ('label' in edge && (typeof edge.label !== 'string' || edge.label.length > 200)) throw Error('连线文案最多 200 字');
         if ('kind' in edge && !['main','secondary','exception'].includes(edge.kind)) throw Error('连线类型无效');
+        if ('color' in edge && !full(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, edge.color)) throw Error('连线颜色无效');
         for (const key of ['fromPort','toPort']) if (key in edge && !['auto','left','right','top','bottom'].includes(edge[key])) throw Error('连线连接位置无效');
         for (const key of ['fromAnchor','toAnchor']) if (edge[key] != null) {
           const a=edge[key];
@@ -180,5 +185,5 @@
     }
     return { ...value, revisions, versions, manageSupported };
   }
-  root.CanvasDomain = Object.freeze({ schemaVersion: 2, validate, load, createIndex, normalizeBoardVersions });
+  root.CanvasDomain = Object.freeze({ schemaVersion: 2, validate, load, createIndex, normalizeBoardVersions, flowShapes: Object.freeze([...FLOW_SHAPES]) });
 })(globalThis);

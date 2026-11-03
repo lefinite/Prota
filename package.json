@@ -20,7 +20,8 @@
     "postinstall": "node scripts/install-vercel-cli.mjs",
     "vercel:update": "node scripts/install-vercel-cli.mjs",
     "preview:test": "node --test tests/preview-*.test.mjs",
-    "preview:browser": "node tests/progressive-preview.browser.mjs"
+    "preview:browser": "node tests/progressive-preview.browser.mjs",
+    "magpie:test": "node --test tests/magpie-*.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/node": "2.1.2",

@@ -1,3 +1,4 @@
+import { MagpieController, MAGPIE_ID, isMagpie, statusText, applyBindingView, effectiveReasoningConfig } from './agent/magpie.js';
 import { requestPiChoice, flattenPiTree } from './agent/pi-session-dialog.js';
 import { PreviewController } from './preview/controller.js';
 import { resumePreview } from './preview/resume.js';
@@ -15,7 +16,7 @@ import { showShareProgress } from './modules/sharing/progress.js';
 import { renderShareNavigation } from './modules/sharing/navigation.js';
 import { downloadPageArchive } from './modules/sharing/download.js';
 import { VercelConnection } from './modules/settings/vercel.js';
-import { PRDModule } from './modules/prd/index.js?v=20261028-markdown-editor-v15';
+import { PRDModule } from './modules/prd/index.js?v=20261102-persistent-doc-toggle';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
 import { MindmapModule } from './modules/mindmap/index.js?v=20260701-xmind-v12';
 
@@ -358,6 +359,7 @@ class DemoShell {
         this.prdExpandBtn = document.getElementById('prdExpandBtn');
         this.prdDrawerResizeHandle = document.getElementById('prdDrawerResizeHandle');
         this.docVisibilityBtn = document.getElementById('docVisibilityBtn');
+        this.docToggleHome = this.docVisibilityBtn?.parentElement;
         this.shareMenuWrapper = document.getElementById('shareMenuWrapper');
         this.shareMenuTrigger = document.getElementById('shareMenuTrigger');
         this.shareMenu = document.getElementById('shareMenu');
@@ -2438,6 +2440,7 @@ class DemoShell {
             }
         });
         this.bindPreviewFrameEvents(this.mainIframe);
+        this.startShortcutBridgeWatchdog();
 
         this.viewportStage?.addEventListener('contextmenu', (event) => {
             this.handleAnnotationContextMenu(event);
@@ -2453,6 +2456,38 @@ class DemoShell {
 
         this.docVisibilityBtn.addEventListener('click', () => {
             this.toggleAnnotationDrawer();
+        });
+        const docTools = document.getElementById('docToolsMenu');
+        if (docTools && this.annotationDrawer) {
+            const fitDocumentActions = () => {
+                const header = this.annotationDrawer.querySelector('.annotation-drawer__header');
+                const tabs = header.querySelector('.doc-tabs');
+                const buttons = [...header.querySelectorAll('.doc-drawer-actions button')]
+                    .filter(button => !button.hidden && button.style.display !== 'none');
+                // Reserve readable title space, the close button and toolbar gaps.
+                const requiredWidth = tabs.scrollWidth + buttons.length * 30 + 140 + 28 + 54;
+                const inline = this.annotationDrawer.clientWidth >= requiredWidth;
+                if (inline !== docTools.classList.contains('is-inline')) {
+                    docTools.classList.toggle('is-inline', inline);
+                    docTools.open = inline;
+                }
+            };
+            this._documentToolbarObserver = new ResizeObserver(fitDocumentActions);
+            this._documentToolbarObserver.observe(this.annotationDrawer);
+            this._documentActionObserver = new MutationObserver(fitDocumentActions);
+            this._documentActionObserver.observe(docTools.closest('.doc-drawer-actions'), {
+                subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'style']
+            });
+        }
+        document.addEventListener('click', event => {
+            if (docTools?.open && !docTools.classList.contains('is-inline') && (!docTools.contains(event.target) || event.target.closest('button'))) docTools.open = false;
+        });
+        docTools?.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !docTools.classList.contains('is-inline')) {
+                docTools.open = false;
+                docTools.querySelector('summary')?.focus();
+                event.stopPropagation();
+            }
         });
 
         this.annotationMarkerLayer?.addEventListener('click', (event) => {
@@ -2819,6 +2854,10 @@ class DemoShell {
         });
 
         this.agentModelDropdown?.addEventListener('click', (e) => {
+            if (e.target.closest('[data-magpie-refresh]')) { this.magpieClient?.refresh(true).then(() => this.renderModelDropdown()); return; }
+            const follow = e.target.closest('[data-magpie-policy]'), pinned = e.target.closest('[data-magpie-model]');
+            if (follow || pinned) { this.magpieClient?.choose(follow ? 'follow' : 'pinned', pinned?.dataset.magpieModel); return; }
+
             const item = e.target.closest('[data-provider-id]');
             const settingsBtn = e.target.closest('[data-action="settings"]');
             if (settingsBtn) {
@@ -2833,6 +2872,26 @@ class DemoShell {
             }
         });
 
+        this.agentModelToggle?.addEventListener('keydown', event => {
+            if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+            event.preventDefault(); this.closeAgentInlineDropdowns({ except: 'model' }); this.agentModelDropdownOpen = true; this.renderModelDropdown();
+            const items = this.agentModelDropdown.querySelectorAll('button:not(:disabled)');
+            (event.key === 'ArrowUp' ? items[items.length - 1] : items[0])?.focus();
+        });
+        this.agentModelDropdown?.addEventListener('input', event => {
+            if (!event.target.matches('.magpie-model-search')) return;
+            const query = event.target.value.trim().toLowerCase();
+            this.agentModelDropdown.querySelectorAll('[data-magpie-model]').forEach(item => { item.hidden = !item.textContent.toLowerCase().includes(query); });
+        });
+        this.agentModelDropdown?.addEventListener('keydown', event => {
+            if (event.key === 'Escape') { this.closeAgentInlineDropdowns(); this.agentModelToggle.focus(); return; }
+            if (event.key === 'Tab') { this.closeAgentInlineDropdowns(); return; }
+            if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+            const items = [...this.agentModelDropdown.querySelectorAll('button:not(:disabled), input')].filter(item => !item.hidden && item.getClientRects().length);
+            if (!items.length) return; event.preventDefault();
+            const i = items.indexOf(document.activeElement), next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (i + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length;
+            items[next].focus();
+        });
         window.addEventListener('resize', () => { if (this.agentReasoningDropdownOpen) this.positionAgentReasoningMenu(); });
         this.agentReasoningToggle?.addEventListener('click', () => this.toggleAgentReasoningMenu());
         this.agentReasoningToggle?.addEventListener('keydown', event => {
@@ -7351,6 +7410,10 @@ class DemoShell {
             try { installProtaMobileFrameFit(this.mainIframe.contentWindow); }
             catch (error) { console.warn('Mobile preview fitting unavailable:', error); }
         }
+        // Arm the gesture shortcuts before any async work: right-click entry
+        // must work the moment the document is interactive, not only after
+        // every subresource finishes loading.
+        this.injectIframeShortcutBridge();
         await this.loadAnnotations();
         this.injectIframeShortcutBridge();
         this.syncAnnotationButtonState(this.annotationMode);
@@ -7364,17 +7427,42 @@ class DemoShell {
         this.refreshAnnotationUI();
     }
 
+    // The load-event path only arms the demo document after every subresource
+    // finishes, leaving a dead window where double right-click does nothing
+    // (the first click opens the native menu, the second just closes it). This
+    // watchdog arms each new document as soon as parsing completes, well before
+    // `load`. `interactive` also guarantees the page's own scripts have run, so
+    // legacy canvas pages are reliably detected and left alone.
+    startShortcutBridgeWatchdog() {
+        if (this._shortcutBridgeWatchdog) return;
+        this._shortcutBridgeWatchdog = setInterval(() => {
+            if (this.isShareMode || !this.mainIframe?.contentDocument) return;
+            try {
+                const doc = this.mainIframe.contentDocument;
+                const state = doc?.readyState;
+                if (!doc || !doc.body || (state !== 'interactive' && state !== 'complete')) return;
+                if (doc.getElementById('__readify_shortcut_bridge')) return;
+                // Infinite canvas owns its own entry gestures.
+                if (this.isInfiniteCanvasPage()) return;
+                this.injectIframeShortcutBridge();
+            } catch {}
+        }, 150);
+    }
+
     injectIframeShortcutBridge(context = null) {
         const iframeDoc = context?.document || this.mainIframe.contentDocument;
         if (!iframeDoc || !iframeDoc.body) return;
 
-        const existing = iframeDoc.getElementById('__readify_shortcut_bridge');
-        if (existing) existing.remove();
+        // The early-injection poll may have already armed this document; keep its
+        // listeners instead of stacking a second copy of the bridge.
+        if (iframeDoc.getElementById('__readify_shortcut_bridge')) return;
 
         const script = iframeDoc.createElement('script');
         script.id = '__readify_shortcut_bridge';
         const enableAnnotationShortcuts = !this.isShareMode && !this.isInfiniteCanvasPage();
         script.textContent = `(function() {
+            if (window.__readifyAnnotationBridgeArmed) return;
+            window.__readifyAnnotationBridgeArmed = true;
             var enableAnnotationShortcuts = ${enableAnnotationShortcuts ? 'true' : 'false'};
             window.__readifyAnnotationRightClick = null;
             
@@ -7541,7 +7629,7 @@ class DemoShell {
             } catch { return; }
             // A partial installation may fail before publishing protaCanvas. Do not require
             // the broken editor to initialize before allowing its resources to be repaired.
-            const healthy = editor?.runtimeVersion >= 37 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 7 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasBoardState && frame.CanvasCore && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
+            const healthy = editor?.runtimeVersion >= 49 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 19 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasBoardState && frame.CanvasCore && frame.CanvasFlowShapes && frame.CanvasFlowQuickCreate && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
                 && doc.querySelector('link[href*="styles.css"]')?.sheet;
             if (healthy && !force) return;
             const key = `${context.projectId}/${context.pageId}/${context.version}`;
@@ -7554,7 +7642,14 @@ class DemoShell {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || '修复失败');
-            if (Number(result.runtimeVersion) < 37) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            if (Number(result.runtimeVersion) < 49) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            // A service started before an editor update reports the template's version yet copies
+            // from its stale file list. Reload only if every script of the installed entry exists.
+            const base = `/src/pages/${context.projectId}/${context.pageId}/${context.version}/`;
+            const entry = await (await fetch(base + 'index.html', { cache: 'no-store' })).text();
+            const scripts = [...entry.matchAll(/<script src="\.\/([\w.-]+\.js)"/g)].map(match => match[1]);
+            const installed = await Promise.all(scripts.map(name => fetch(base + name, { method: 'HEAD', cache: 'no-store' }).then(r => r.ok, () => false)));
+            if (installed.includes(false)) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
             if (context.projectId === this.activeProjectId && context.pageId === this.activePageId && context.version === this.activeVersion) {
                 this.mainIframe.contentWindow.location.reload();
             }
@@ -8241,8 +8336,12 @@ class DemoShell {
     }
 
     setDocDrawerMode(mode, { open = false, forceReload = false } = {}) {
+        const preserveWidth = this.annotationDrawer?.classList.contains('is-visible');
+        if (preserveWidth && !this.prdDrawerFullscreen && this.annotationDrawer.parentElement.clientWidth > 900) {
+            this.applyPrdDrawerWidth(this.annotationDrawer.getBoundingClientRect().width);
+        }
         this.docDrawerMode = ['prd', 'diagram', 'mindmap', 'annotations'].includes(mode) ? mode : 'annotations';
-        if (['prd', 'diagram', 'mindmap'].includes(this.docDrawerMode)) {
+        if (!preserveWidth && ['prd', 'diagram', 'mindmap'].includes(this.docDrawerMode)) {
             const savedWidth = this.readPrdDrawerWidth();
             if (savedWidth !== null) {
                 this.applyPrdDrawerWidth(savedWidth);
@@ -8399,7 +8498,16 @@ class DemoShell {
     updateDrawerToggleButton() {
         if (!this.docVisibilityBtn) return;
         const visible = this.shouldShowDocumentDrawer();
+        const target = visible
+            ? this.annotationDrawer?.querySelector('.annotation-drawer__header')
+            : this.docToggleHome;
+        if (target && this.docVisibilityBtn.parentElement !== target) {
+            const focused = document.activeElement === this.docVisibilityBtn;
+            target.append(this.docVisibilityBtn);
+            if (focused) this.docVisibilityBtn.focus({ preventScroll: true });
+        }
         this.docVisibilityBtn.classList.toggle('is-active', visible);
+        this.docVisibilityBtn.setAttribute('aria-expanded', String(visible));
         this.docVisibilityBtn.title = visible
             ? '隐藏文档面板'
             : '显示文档面板';
@@ -9454,15 +9562,8 @@ class DemoShell {
 
     canAgentAndDrawerCoexist() {
         const agentMinWidth = this.getCssVariable('--agent-panel-min-width', 360);
-        const viewportMinWidth = this.getCssVariable('--viewport-min-width', 440);
-
-        let docMinWidth = this.getCssVariable('--prd-drawer-min-width', 320);
-        if (this.docDrawerMode === 'annotations') {
-            docMinWidth = this.getCssVariable('--annotation-drawer-width', 360);
-        }
-
-        const minRequiredWidth = agentMinWidth + docMinWidth + viewportMinWidth;
-        return window.innerWidth >= minRequiredWidth;
+        const docMinWidth = this.getCssVariable('--prd-drawer-min-width', 320);
+        return window.innerWidth >= agentMinWidth + docMinWidth;
     }
 
     shouldShowInteractionDocs() {
@@ -10014,13 +10115,13 @@ class DemoShell {
         }
 
         this.annotationDrawer.classList.add('is-visible');
-        const isWideDocument = ['prd', 'diagram', 'mindmap'].includes(this.docDrawerMode);
+        this.updateDrawerToggleButton();
         this.annotationDrawer.classList.toggle('is-prd-mode', this.docDrawerMode === 'prd');
         this.annotationDrawer.classList.toggle('is-drawio-mode', this.docDrawerMode === 'diagram');
         this.annotationDrawer.classList.toggle('is-mindmap-mode', this.docDrawerMode === 'mindmap');
-        this.annotationDrawer.classList.toggle('is-expanded', isWideDocument && this.docDrawerExpanded);
-        this.annotationDrawer.classList.toggle('is-fullscreen', isWideDocument && this.prdDrawerFullscreen);
-        this.annotationDrawer.classList.toggle('is-user-sized', isWideDocument && Number.isFinite(this.prdDrawerWidth));
+        this.annotationDrawer.classList.toggle('is-expanded', this.docDrawerExpanded);
+        this.annotationDrawer.classList.toggle('is-fullscreen', this.prdDrawerFullscreen);
+        this.annotationDrawer.classList.toggle('is-user-sized', Number.isFinite(this.prdDrawerWidth));
 
         if (this.docDrawerMode !== 'prd') {
             this.annotationDrawer.classList.remove('has-pinned-toc');
@@ -11055,7 +11156,7 @@ class DemoShell {
     }
 
     startPrdDrawerResize(event) {
-        if (!['prd', 'diagram', 'mindmap'].includes(this.docDrawerMode) || !this.annotationDrawer?.classList.contains('is-visible')) return;
+        if (!this.annotationDrawer?.classList.contains('is-visible')) return;
         const resizeBreakpoint = this.getCssVariable('--resize-breakpoint-width', 860);
         if ((window.innerWidth || 0) <= resizeBreakpoint) return;
 
@@ -11089,6 +11190,7 @@ class DemoShell {
     hideAnnotationDrawer() {
         if (!this.annotationDrawer) return;
         this.annotationDrawer.classList.remove('is-visible');
+        this.updateDrawerToggleButton();
         this.annotationDrawer.classList.remove('is-prd-mode', 'is-drawio-mode', 'is-mindmap-mode', 'is-expanded', 'is-user-sized', 'is-fullscreen', 'has-pinned-toc');
         this.viewportContainer.classList.remove('has-drawer');
         if (this.prdEditBtn) this.prdEditBtn.hidden = true;
@@ -12413,7 +12515,7 @@ class DemoShell {
                         <span class="provider-list-item__indicator"></span>
                         <span class="provider-list-item__main">
                             <span class="provider-list-item__label">${this.escapeHtml(provider.label)}</span>
-                            <span class="provider-list-item__meta">${this.escapeHtml(provider.model || '未指定模型')}</span>
+                            <span class="provider-list-item__meta">${this.escapeHtml(isMagpie(provider) ? (this.magpieClient?.state.defaultModel || statusText(this.magpieClient?.state)) : provider.model || '未指定模型')}</span>
                         </span>
                         <span class="provider-list-item__state">${provider.id === active?.id ? '当前' : ''}</span>
                         ${provider.id === active?.id ? '' : `<span class="provider-list-item__switch" data-switch-provider-id="${this.escapeHtml(provider.id)}">使用</span>`}
@@ -12544,26 +12646,31 @@ class DemoShell {
     }
 
     async activateProvider(id = this.selectedProviderId, { silent = false, confirmed = false } = {}) {
-        if (this._agentReasoningSaving) return;
+        if (this._agentReasoningSaving || this._agentModelSwitching || this.agentRunState.active) return;
         if (!confirmed && this.unifiedSettings?.guardModels(() => this.activateProvider(id, { silent, confirmed: true }))) return;
-        this.newProviderDraft = null;
-        this.editProviderDraft = null;
-        this.unifiedSettings?.userTouched.delete('models');
-        this.clearAgentStatusResults();
-        const provider = this.agentProviderStore?.activateProvider(id);
-        if (!provider) return;
-        this.syncAgentProviderStoreState();
-        this.agentConfig = this.buildAgentConfigFromActiveProvider();
-        this.syncAgentConfigForm();
-        this.renderAgentWorkbench();
-        this.unifiedSettings?.markSaved('models');
-        if (this.agentSessionId) {
-            await this.updateSdkAgentProvider(this.buildAgentConfigFromActiveProvider());
-        }
-        if (!silent) this.showToast(`当前供应商已切换为 ${provider.label}`);
+        if (id === MAGPIE_ID) return this.magpieClient?.choose();
+        const provider = this.agentProviderStore?.providers.find(p => p.id === id);
+        if (!provider) return false;
+        this._agentModelSwitching = true; this.renderModelLabel();
+        try {
+            if (this.agentSessionId) {
+                const result = await this.agentApi.setProvider(this.agentSessionId, this.agentProviderStore.buildConfig(provider));
+                applyBindingView(this, result);
+                this.agentSessionProviderConfig = result.providerConfig;
+            }
+            this.agentProviderStore.activateProvider(id);
+            this.newProviderDraft = null; this.editProviderDraft = null;
+            this.unifiedSettings?.userTouched.delete('models'); this.clearAgentStatusResults();
+            this.syncAgentProviderStoreState(); this.agentConfig = this.buildAgentConfigFromActiveProvider();
+            this.syncAgentConfigForm(); this.renderAgentWorkbench(); this.unifiedSettings?.markSaved('models');
+            if (!silent) this.showToast(`当前供应商已切换为 ${provider.label}`);
+            return true;
+        } catch (error) { this.showToast(error.message || '模型切换失败，保留原选择。', true); return false; }
+        finally { this._agentModelSwitching = false; this.renderModelLabel(); }
     }
 
     async saveActiveProvider() {
+        if (isMagpie(this.getSelectedProvider())) return false;
         if (this._agentProviderSaving || !this.agentProviderPersistenceReady) return false;
         const selected = this.getSelectedProvider();
         if (!selected) return false;
@@ -12648,6 +12755,7 @@ class DemoShell {
     }
 
     async deleteProvider(id = this.selectedProviderId, confirmed = false) {
+        if (id === MAGPIE_ID) return;
         if (!confirmed && this.unifiedSettings?.guardModels(() => this.deleteProvider(id, true))) return;
         if (!confirmed) {
             const label = this.getSelectedProvider()?.label || '这项';
@@ -13295,6 +13403,7 @@ class DemoShell {
     }
 
     getAgentConfigDraft({ source = 'active' } = {}) {
+        if (source === 'active' && isMagpie(this.getActiveProvider())) return this.agentProviderStore.buildConfig();
         const provider = source === 'selected'
             ? this.getSelectedProvider()
             : this.getActiveProvider();
@@ -13307,11 +13416,13 @@ class DemoShell {
         const sdkOptions = useFormValues ? this.parseAgentSdkOptions({ showError: false }) : null;
         return {
             provider: provider.presetId || provider.id,
+            providerId: provider.id,
             apiType: (useFormValues ? this.agentApiTypeInput?.value : '') || provider.apiType || 'anthropic-messages',
             model: useFormValues ? (this.getAgentModelFormValue() || '') : (provider.model || ''),
             baseURL: useFormValues ? (this.agentBaseUrlInput?.value.trim() || '') : (provider.baseURL || ''),
             apiKey: useFormValues ? (this.agentApiKeyInput?.value.trim() || '') : (provider.apiKey || ''),
             sdkOptions: (useFormValues ? sdkOptions : null) || provider.sdkOptions || {},
+            modelCapabilities: provider.modelCapabilities || {},
             endpointCandidates: this.getMergedAgentEndpointCandidates(provider)
         };
     }
@@ -13373,6 +13484,7 @@ class DemoShell {
         if (this.unifiedSettings && !this.unifiedSettings.userTouched.has('models') && !this.newProviderDraft) this.editProviderDraft = structuredClone(this.agentProviderStore?.getSelectedProvider() || null);
         this.renderProviderList();
         const selected = this.getSelectedProvider();
+        if (this.magpieClient?.renderDetails()) return;
         if (this.providerFormContent) this.providerFormContent.hidden = !selected;
         if (this.providerFormEmpty) this.providerFormEmpty.hidden = Boolean(selected);
         if (this.agentBalanceResultEl) {
@@ -13614,6 +13726,7 @@ class DemoShell {
             this.renderAgentWorkbench({ deferHeavy: true });
         }
         await this.restoreAgentSession();
+        if (!this.isShareMode) { this.magpieClient = new MagpieController(this); this.magpieClient.start().catch(() => {}); }
         this.finishAgentPetHydration();
     }
 
@@ -14478,8 +14591,12 @@ class DemoShell {
     }
 
     async setAgentReasoning(value) {
-        const active = this.getActiveProvider();
+        const active = effectiveReasoningConfig(this);
         if (!active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving) return;
+        if (this.agentModelView?.providerBinding?.kind === 'magpie') {
+            const binding = this.agentModelView.providerBinding;
+            await this.magpieClient.choose(binding.policy, binding.pinnedModelId, value); return;
+        }
         if (!getReasoningCapability(active).options.some(option => option.value === value)) return;
         this.closeAgentInlineDropdowns();
         this.agentReasoningToggle.focus();
@@ -14515,11 +14632,11 @@ class DemoShell {
 
     renderAgentReasoning() {
         if (!this.agentReasoningToggle) return;
-        const active = this.getActiveProvider();
+        const active = effectiveReasoningConfig(this);
         const capability = getReasoningCapability(active || {});
         const selection = getReasoningSelection(active || {});
-        const locked = !active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving;
-        if (this.agentModelToggle) this.agentModelToggle.disabled = Boolean(this._agentReasoningSaving);
+        const locked = !active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving || this._agentModelSwitching;
+        if (this.agentModelToggle) this.agentModelToggle.disabled = Boolean(this._agentReasoningSaving || this._agentModelSwitching);
         this.agentReasoningToggle.disabled = Boolean(locked);
         const effectiveValue = selection.value === 'default' ? capability.defaultValue || 'default' : selection.value;
         const effectiveSelection = capability.options.find(option => option.value === effectiveValue) || selection;
@@ -14578,11 +14695,14 @@ class DemoShell {
 
     renderModelLabel() {
         if (!this.agentModelLabel) return;
-        const active = this.getActiveProvider();
-        if (active) {
-            this.agentModelLabel.textContent = active.model || active.label || '--';
-        } else {
-            this.agentModelLabel.textContent = '--';
+        const view = this.agentModelView, active = this.getActiveProvider(), effective = view?.effectiveModel;
+        this.agentModelLabel.textContent = this._agentModelSwitching ? '切换中…' : effective?.name || effective?.modelId || (isMagpie(active) ? this.magpieClient?.state.defaultModel || 'Magpie' : active?.model || active?.label || '--');
+        if (this.agentModelToggle) {
+            const policy = view?.providerBinding?.policy;
+            this.agentModelToggle.title = [effective?.modelId, effective?.source === 'magpie' ? `Magpie（${policy === 'pinned' ? '本会话固定' : '跟随'}）` : active?.label,
+                view?.pendingModelChange ? `Magpie 已改为 ${view.pendingModelChange.modelId} · 下轮生效` : '',
+                view?.modelBindingError ? 'Magpie 不可用，请重新连接或选择其他服务商' : ''].filter(Boolean).join(' · ');
+            this.agentModelToggle.disabled = Boolean(this._agentModelSwitching || this._agentReasoningSaving);
         }
     }
 
@@ -14591,6 +14711,11 @@ class DemoShell {
         if (!this.agentModelDropdownOpen) {
             this.agentModelDropdown.hidden = true;
             return;
+        }
+        if (this.magpieClient) {
+            this.agentModelDropdown.innerHTML = this.magpieClient.menu();
+            this.agentModelDropdown.setAttribute('role', 'menu');
+            this.agentModelDropdown.hidden = false; return;
         }
         const active = this.getActiveProvider();
         const allProviders = this.agentProviderStore?.providers || [];
@@ -15787,6 +15912,8 @@ class DemoShell {
         const countText = processEvents.length ? `${processEvents.length} 步` : '启动中';
         const showStatus = active || pending;
         const headline = active ? '进行中' : (pending ? '等待处理' : this.getAgentProcessHeadline(processEvents));
+        const historicalModel = (group.events || []).find(event => event.type === 'run_started')?.payload?.runModelSnapshot;
+        const modelDetails = historicalModel ? `<p class="magpie-menu-status" title="${this.escapeHtml(historicalModel.resolvedProtocol || '')}">${this.escapeHtml(historicalModel.requestedModel)} · ${this.escapeHtml(historicalModel.source)}</p>` : '';
         const items = processEvents.length
             ? processEvents.map((event) => this.renderAgentProcessEvent(event)).join('')
             : `
@@ -15809,6 +15936,7 @@ class DemoShell {
                     ${showStatus ? `<span class="agent-process__status">${this.escapeHtml(summary)}</span>` : ''}
                 </summary>
                 <div class="agent-process__items">
+                    ${modelDetails}
                     ${items}
                 </div>
             </details>
@@ -17449,6 +17577,7 @@ class DemoShell {
     }
 
     hydrateAgentHistory(data) {
+        applyBindingView(this, data, { reset: true });
         const nextTimeline = Array.isArray(data.timeline) ? data.timeline : [];
         const previousSignature = this.getAgentTimelineSignature();
         this.agentTimelineEvents = nextTimeline;
@@ -17636,6 +17765,7 @@ class DemoShell {
 
         // ── Always process (can transition to any state) ──
 
+        if (eventName === 'agent_model_binding_changed' || eventName === 'session_ready' || eventName === 'run_started') applyBindingView(this, payload);
         if (eventName === 'session_ready') {
             this.agentSessionScope = payload.sessionScope || (payload.context?.globalContext || payload.context?.pageId === '__global__' ? 'global' : this.agentSessionScope || 'page');
             if (this.agentSessionScope === 'global') {
@@ -18019,6 +18149,7 @@ class DemoShell {
             this.agentEventStreamAbortController = null;
         }
         this.agentSessionId = sessionId;
+        this.agentModelView = null;
         this.agentAutoScroll = true; // Reset auto-scroll to true when switching sessions
         this.writeAgentStorage('session-id', sessionId);
         const listSession = (this.agentSessionsList || []).find((session) => session.id === sessionId);
@@ -18393,6 +18524,7 @@ class DemoShell {
     }
 
     getActivePermissionMode() {
+        if (this.agentModelView?.runtimePreferences?.permissionMode) return this.agentModelView.runtimePreferences.permissionMode;
         const active = this.getActiveProvider();
         return active?.sdkOptions?.permissionMode || this.agentConfig?.sdkOptions?.permissionMode || 'default';
     }
@@ -18402,6 +18534,15 @@ class DemoShell {
         const allowed = new Set(['default', 'acceptEdits', 'dontAsk', 'bypassPermissions', 'plan']);
         if (!allowed.has(mode)) {
             this.showToast('权限模式可选：default / acceptEdits / dontAsk / bypassPermissions / plan', true);
+            return;
+        }
+        if (this.agentModelView?.providerBinding?.kind === 'magpie') {
+            try {
+                const sessionId = await this.ensureCurrentAgentSession();
+                await this.agentApi.setPermissionMode(sessionId, mode);
+                await this.magpieClient.refresh(); this.renderPermissionLabel();
+                this.showToast(`Agent 权限模式已切换为 ${mode}`);
+            } catch (error) { this.showToast(error.message || '权限模式切换失败', true); }
             return;
         }
         const active = this.getActiveProvider();
@@ -18605,7 +18746,7 @@ class DemoShell {
         if (command.id === 'model') {
             this.agentInput.value = '';
             if (!args) {
-                const currentModel = this.getAgentConfigDraft().model || '未指定';
+                const currentModel = this.agentModelView?.effectiveModel?.modelId || this.getAgentConfigDraft().model || '未指定';
                 const active = this.getActiveProvider();
                 const models = Array.from(new Set((active?.models || []).concat(this.getAgentPreset(active?.presetId)?.models || []))).filter(Boolean);
                 this.showAgentChoicePrompt({

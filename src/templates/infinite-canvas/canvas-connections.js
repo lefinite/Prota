@@ -40,10 +40,16 @@
       return {id:n.id,x:n.x-pad,y:n.y-top-pad,width:n.width+2*pad,height:n.height+top+2*pad};
     });
   }
+  // Flowchart ports sit on the real outline (shared with the quick-create dots); others use box midpoints.
+  function outlinePoint(n,s){
+    const shapes=root.CanvasFlowShapes;
+    if(n.flowShape&&shapes?.has(n.flowShape)){const p=shapes.endpoint(n.flowShape,s,n.width,n.height);return {x:n.x+p.x,y:n.y+p.y};}
+    return s==='left'?{x:n.x,y:n.y+n.height/2}:s==='right'?{x:n.x+n.width,y:n.y+n.height/2}:s==='bottom'?{x:n.x+n.width/2,y:n.y+n.height}:{x:n.x+n.width/2,y:n.y};
+  }
   function ports(n,box,side){
     return (side&&sides.includes(side)?[side]:sides).map((s,index)=>{
       const horizontal=s==='left'||s==='right';
-      const p=s==='left'?{x:n.x,y:n.y+n.height/2}:s==='right'?{x:n.x+n.width,y:n.y+n.height/2}:s==='bottom'?{x:n.x+n.width/2,y:n.y+n.height}:{x:n.x+n.width/2,y:n.y};
+      const p=outlinePoint(n,s);
       const q=s==='left'?{x:box.x,y:p.y}:s==='right'?{x:box.x+box.width,y:p.y}:s==='bottom'?{x:p.x,y:box.y+box.height}:{x:p.x,y:box.y};
       return {p,q,side:s,dir:horizontal?1:2,cost:distance(p,q)+(s==='top'?32:0)+index*.01};
     });
@@ -115,11 +121,11 @@
     }
     return result;
   }
-  root.CanvasConnections={routeEdges,obstacles,intersects,overlap,moveSegment,attachManual};
+  root.CanvasConnections={routeEdges,obstacles,intersects,overlap,moveSegment,attachManual,outlinePoint};
 })(globalThis);
 (function(root){
   'use strict';
-  root.CanvasConnections.editorVersion=7;
+  root.CanvasConnections.editorVersion=19;
   root.CanvasConnections.install=function(host){
     const NS='http://www.w3.org/2000/svg',stage=document.querySelector('#stage'),world=document.querySelector('#world');
     const make=(tag,attrs={})=>{const el=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);return el;};
@@ -130,7 +136,12 @@
     const portLayer=make('svg',{class:'connection-ports',width:1,height:1});world.append(portLayer);
     const toolbar=document.createElement('section');toolbar.id='connection-tools';toolbar.className='floating';toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','连线操作');toolbar.hidden=true;stage.append(toolbar);
     const hint=document.createElement('div');hint.className='connection-hint';hint.hidden=true;hint.setAttribute('role','status');document.body.append(hint);
-    const colors={main:'#2e8465',secondary:'#71829b',exception:'#bd7327'},names={main:'绿色实线',secondary:'灰色实线',exception:'橙色虚线'};
+    // Lines default to gray solid; `secondary` from older documents draws the same. A custom
+    // `color` on the edge overrides the kind color while the kind keeps its dash pattern.
+    const colors={main:'#71829b',secondary:'#71829b',exception:'#bd7327'},names={main:'灰色实线',secondary:'灰色实线',exception:'橙色虚线'};
+    const strokeOf=e=>e.color||colors[e.kind]||colors.main;
+    // One arrowhead per line color, keyed by the validated hex so ids stay safe.
+    const markerId=color=>'canvas-arrow-c'+color.slice(1).toLowerCase();
     const sideNames={left:'左',right:'右',top:'上',bottom:'下'},sides=['left','right','top','bottom'];
     let selected=null,source=null,sourceSide='auto',sourceAnchor=null,displayedAnchor=null,displayedNode=null,drag=null,signature='',routes=[],queued=0,currentTool='select',sectionSignature='',obstacleIds=new Set(),inline=null,target=null,lastPointer=null,previewFrame=0,deleteKeyBlocked=false;
     let pointerId=null,pointerStart=null,pointerMoved=false,panFrame=0,panTime=0,portsSignature='',handlesSignature='';
@@ -156,7 +167,7 @@
       return nearest||visible||null;
     };
     const worldPoint=e=>{const r=stage.getBoundingClientRect(),v=host.state().viewport;return {x:(e.clientX-r.left-v.x)/v.zoom,y:(e.clientY-r.top-v.y)/v.zoom};};
-    const midpoint=(n,side)=>side==='left'?{x:n.x,y:n.y+n.height/2}:side==='right'?{x:n.x+n.width,y:n.y+n.height/2}:side==='top'?{x:n.x+n.width/2,y:n.y}:{x:n.x+n.width/2,y:n.y+n.height};
+    const midpoint=(n,side)=>root.CanvasConnections.outlinePoint(n,side);
     function nearestSide(n,p){return sides.reduce((best,s)=>{const a=midpoint(n,s),b=midpoint(n,best);return Math.hypot(a.x-p.x,a.y-p.y)<Math.hypot(b.x-p.x,b.y-p.y)?s:best;},'left');}
     // Snap near a connection dot; the rest of the object leaves routing automatic.
     function dropPort(e,node){
@@ -202,7 +213,7 @@
       const next={...changes,id:'e_'+crypto.randomUUID().replaceAll('-',''),fromInstanceId:from,toInstanceId:to,label:String(changes.label||'').slice(0,200),kind:['main','secondary','exception'].includes(changes.kind)?changes.kind:'main'};
       host.mutate(doc=>(doc.edges||=[]).push(next));choose(next.id);clearPreview();host.setTool('select');return next.id;
     }
-    function update(id,changes){if(!host.canEdit()||!host.state().edges?.some(e=>e.id===id))return;const allowed={};for(const k of ['label','kind','fromPort','toPort','fromInstanceId','toInstanceId','fromAnchor','toAnchor','manualRoute'])if(k in changes)allowed[k]=changes[k];host.mutate(doc=>Object.assign(doc.edges.find(e=>e.id===id),allowed));}
+    function update(id,changes){if(!host.canEdit()||!host.state().edges?.some(e=>e.id===id))return;const allowed={};for(const k of ['label','kind','color','fromPort','toPort','fromInstanceId','toInstanceId','fromAnchor','toAnchor','manualRoute'])if(k in changes)allowed[k]=changes[k];host.mutate(doc=>{const target=doc.edges.find(e=>e.id===id);Object.assign(target,allowed);if('color' in allowed&&!allowed.color)delete target.color;});}
     function remove(){if(!selected||!host.canEdit())return;finishInline(false);const id=selected;selected=null;host.mutate(doc=>doc.edges=(doc.edges||[]).filter(e=>e.id!==id));toolbar.hidden=true;}
     const isDeleteKey=event=>event.key==='Delete'||event.key==='Backspace'||event.code==='Backspace'||event.keyCode===8||event.keyCode===46;
     const isEditableTarget=event=>event.target instanceof Element&&Boolean(event.target.closest('input,select,textarea,[contenteditable]:not([contenteditable="false"])'));
@@ -236,7 +247,7 @@
       updateSelection();positionInline();textarea.focus({preventScroll:true});textarea.select();
     }
     function editor(){
-      const e=edge();toolbar.hidden=!e||!!inline||!!drag||!host.canEdit();if(toolbar.hidden)return;
+      const e=edge();toolbar.hidden=!e||!!inline||!!drag||!host.canEdit();if(toolbar.hidden){closeColorPopover();return;}
       if(toolbar.dataset.edge!==e.id){
         toolbar.replaceChildren();toolbar.dataset.edge=e.id;
         function button(label,icon,run){
@@ -247,10 +258,19 @@
         const edit=button('编辑文字','type',()=>startInline(e.id));edit.title='编辑文字 · 双击连线 / Enter';
         const caption=document.createElement('span');caption.textContent='文字';edit.append(caption);
         const styles=document.createElement('div');styles.className='connection-styles';styles.setAttribute('role','group');styles.setAttribute('aria-label','线条样式');toolbar.append(styles);
-        for(const [kind,color]of Object.entries(colors)){
-          const b=button(names[kind],'minus',()=>update(e.id,{kind}));b.dataset.kind=kind;b.style.setProperty('--stroke-color',color);
+        // Presets reset to their own color; the custom color keeps the current dash pattern.
+        for(const kind of ['main','exception']){
+          const color=colors[kind],b=button(names[kind],'minus',()=>update(e.id,{kind,color:null}));b.dataset.kind=kind;b.style.setProperty('--stroke-color',color);
           const line=b.querySelector('svg');line.setAttribute('viewBox','0 0 24 24');line.replaceChildren(make('path',{d:'M3 12h18',stroke:color,'stroke-width':2.5,...(kind==='exception'?{'stroke-dasharray':'4 4'}:{})}));styles.append(b);
         }
+        // A click-to-apply palette: the system color dialog used to drop a chosen color when
+        // the user clicked outside it. Swatches commit on click; the hex field and the native
+        // picker are for anything else, and the picker streams live while it is dragged.
+        const custom=document.createElement('button');custom.type='button';custom.className='connection-color';
+        custom.setAttribute('aria-label','线条颜色');custom.setAttribute('aria-haspopup','dialog');custom.title='线条颜色';
+        const swatch=document.createElement('span');swatch.className='connection-color-swatch';swatch.setAttribute('aria-hidden','true');
+        custom.append(swatch);styles.append(custom);
+        custom.onclick=event=>{event.stopPropagation();toggleColorPopover(custom);};
         const auto=button('恢复自动连接','sparkles',()=>update(e.id,{fromPort:'auto',toPort:'auto',manualRoute:null}));auto.dataset.action='auto';
         const autoLabel=document.createElement('span');autoLabel.textContent='自动';auto.append(autoLabel);
         const reverse=button('反向','waypoints',()=>{const now=edge();if(now)update(now.id,{fromInstanceId:now.toInstanceId,toInstanceId:now.fromInstanceId,fromPort:now.toPort||'auto',toPort:now.fromPort||'auto',fromAnchor:now.toAnchor||null,toAnchor:now.fromAnchor||null,manualRoute:now.manualRoute?[...now.manualRoute].reverse():null});});
@@ -258,7 +278,11 @@
         reverse.querySelector('svg').innerHTML='<path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/>';
         button('删除','trash-2',remove).className='danger';
       }
-      for(const b of toolbar.querySelectorAll('[data-kind]'))b.setAttribute('aria-pressed',String(b.dataset.kind===(e.kind||'main')));
+      const look=e.kind==='exception'?'exception':'main';
+      for(const b of toolbar.querySelectorAll('[data-kind]'))b.setAttribute('aria-pressed',String(!e.color&&b.dataset.kind===look));
+      const custom=toolbar.querySelector('.connection-color'),color=strokeOf(e);
+      custom.classList.toggle('active',Boolean(e.color));custom.style.setProperty('--line-color',color);
+      if(colorPopover&&!colorPopover.hidden)syncColorPopover(e,color);
       toolbar.querySelector('[data-action="auto"]').hidden=!e.manualRoute?.length&&![e.fromPort,e.toPort].some(port=>port&&port!=='auto');
       const r=routes.find(r=>r.id===e.id),p=r?.label||r?.points?.[Math.floor(r.points.length/2)]||(r?.unroutable?{x:stateNode(e.fromInstanceId).x,y:stateNode(e.fromInstanceId).y-80}:null);if(!p){toolbar.hidden=true;return;}
       const v=host.state().viewport,anchor={x:p.x*v.zoom+v.x,y:p.y*v.zoom+v.y,width:(p.width||0)*v.zoom,height:(p.height||0)*v.zoom};
@@ -320,8 +344,8 @@
       if(!routed)return;d.next=routed.points;
       preview.replaceChildren();
       if(guide!=null){const v=doc.viewport,min={x:-v.x/zoom,y:-v.y/zoom},max={x:(stage.clientWidth-v.x)/zoom,y:(stage.clientHeight-v.y)/zoom};preview.append(make('path',{class:'connection-snap-guide',d:d.horizontal?`M${min.x} ${value}H${max.x}`:`M${value} ${min.y}V${max.y}`,fill:'none',stroke:'#8b98d9','stroke-width':1,'stroke-dasharray':'3 4','vector-effect':'non-scaling-stroke'}));}
-      preview.append(make('path',{class:'connection-drag-preview',d:d.next.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' '),fill:'none',stroke:colors[original.kind]||colors.main,'stroke-dasharray':original.kind==='exception'?'8 6':'','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round','vector-effect':'non-scaling-stroke','marker-end':'url(#canvas-arrow-'+(original.kind||'main')+')'}));
-      if(routed.label){const l=routed.label,color=colors[original.kind]||colors.main;
+      preview.append(make('path',{class:'connection-drag-preview',d:d.next.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' '),fill:'none',stroke:strokeOf(original),'stroke-dasharray':original.kind==='exception'?'8 6':'','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round','vector-effect':'non-scaling-stroke','marker-end':'url(#'+(original.color?markerId(original.color):'canvas-arrow-'+(colors[original.kind]?original.kind:'main'))+')'}));
+      if(routed.label){const l=routed.label,color=strokeOf(original);
         preview.append(make('rect',{x:l.x,y:l.y,width:l.width,height:l.height,rx:7,fill:'#fff',stroke:'#c4cee9','stroke-width':1}));
         const text=make('text',{'text-anchor':'middle',fill:color,'font-size':l.font,'font-family':'-apple-system, PingFang SC, sans-serif'});
         l.lines.forEach((line,i)=>{const span=make('tspan',{x:l.x+l.width/2,y:l.y+10+l.font+i*(l.font+5)});span.textContent=line;text.append(span);});preview.append(text);
@@ -353,19 +377,23 @@
       if(!host.canEdit()){if(inline)finishInline(false);if(drag||source||displayedNode)clearPreview();}
       if(drag?.id&&!doc.edges?.some(e=>e.id===drag.id))clearPreview();
       const navSig=JSON.stringify(doc.sections||[]);if(navSig!==sectionSignature){sectionSignature=navSig;navigation.replaceChildren();navigation.hidden=!doc.sections?.length;for(const section of doc.sections||[]){const button=document.createElement('button');button.type='button';button.textContent=section.label;button.classList.toggle('active',(doc.initialFocusNodeIds||[]).length>0&&(doc.initialFocusNodeIds||[]).every(id=>(section.nodeIds||[]).includes(id)));button.onclick=()=>{finishInline(true);selected=null;toolbar.hidden=true;clearNodes();host.focus(section.nodeIds||[]);for(const b of navigation.children)b.classList.toggle('active',b===button);};navigation.append(button);}}
-      const sig=JSON.stringify([doc.nodes.map(n=>[n.id,n.x,n.y,n.width,n.height,n.hidden]),doc.edges,(doc.edges||[]).map(e=>[e.fromAnchor?resolveAnchor(stateNode(e.fromInstanceId),e.fromAnchor):null,e.toAnchor?resolveAnchor(stateNode(e.toInstanceId),e.toAnchor):null]),Math.round(doc.viewport.zoom*100)/100,Math.ceil(28/doc.viewport.zoom/10)]);
+      const sig=JSON.stringify([doc.nodes.map(n=>[n.id,n.x,n.y,n.width,n.height,n.hidden,n.flowShape]),doc.edges,(doc.edges||[]).map(e=>[e.fromAnchor?resolveAnchor(stateNode(e.fromInstanceId),e.fromAnchor):null,e.toAnchor?resolveAnchor(stateNode(e.toInstanceId),e.toAnchor):null]),Math.round(doc.viewport.zoom*100)/100,Math.ceil(28/doc.viewport.zoom/10)]);
       if(sig!==signature){
+        // Rebuilding replaces the line elements; keep keyboard focus on the same line so
+        // Delete / Space / Enter keep working instead of silently falling back to the page.
+        const focusedEdge=document.activeElement?.closest?.('[data-edge-id]')?.dataset.edgeId||null;
         signature=sig;obstacleIds=new Set(doc.edges?.length?root.CanvasConnections.obstacles(doc.nodes,doc.viewport.zoom).map(r=>r.id):[]);routes=root.CanvasConnections.routeEdges(doc.nodes,doc.edges,routeOptions());svg.replaceChildren();const defs=make('defs');svg.append(defs);
         for(const[k,color]of Object.entries(colors)){const marker=make('marker',{id:'canvas-arrow-'+k,viewBox:'0 0 12 12',refX:10,refY:6,markerWidth:7,markerHeight:7,orient:'auto',markerUnits:'strokeWidth'});marker.append(make('path',{d:'M1 1L11 6L1 11Z',fill:color}));defs.append(marker);}
+        for(const color of new Set((doc.edges||[]).map(e=>e.color).filter(Boolean))){const marker=make('marker',{id:markerId(color),viewBox:'0 0 12 12',refX:10,refY:6,markerWidth:7,markerHeight:7,orient:'auto',markerUnits:'strokeWidth'});marker.append(make('path',{d:'M1 1L11 6L1 11Z',fill:color}));defs.append(marker);}
         for(const r of routes){
           const group=make('g',{'data-edge-id':r.id,'data-kind':r.edge.kind||'main',class:'connection',role:'button',tabindex:0,'aria-keyshortcuts':'Delete Backspace','aria-label':(r.edge.label||'未命名连线')+' · '+(names[r.edge.kind]||names.main)});
           const title=make('title');title.textContent=(r.edge.label||'未命名连线')+' · 双击直接编辑文字';group.append(title);
           if(r.unroutable){const n=stateNode(r.edge.fromInstanceId);const t=make('text',{x:n.x,y:n.y-80,fill:'#ad6333','font-size':20});t.textContent='连接被遮挡 · 拉开重叠对象';group.append(t);}
           else{
-            const d=r.points.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' '),kind=colors[r.edge.kind]?r.edge.kind:'main';
+            const d=r.points.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' '),kind=colors[r.edge.kind]?r.edge.kind:'main',stroke=strokeOf(r.edge),marker=r.edge.color?markerId(r.edge.color):'canvas-arrow-'+kind;
             group.append(make('path',{d,class:'connection-hit',fill:'none',stroke:'transparent','stroke-width':20,'vector-effect':'non-scaling-stroke'}));
-            const path=make('path',{d,class:'connection-line',fill:'none',stroke:colors[kind],'stroke-width':2,'vector-effect':'non-scaling-stroke','marker-end':'url(#canvas-arrow-'+kind+')','stroke-linejoin':'round','stroke-linecap':'round'});if(kind==='exception')path.setAttribute('stroke-dasharray','8 6');group.append(path);
-            if(r.label){const l=r.label;group.append(make('rect',{class:'connection-label',x:l.x,y:l.y,width:l.width,height:l.height,rx:7,fill:'#fff',stroke:'#dce5e4','stroke-width':1}));const text=make('text',{'text-anchor':'middle',fill:colors[kind],'font-size':l.font,'font-family':'-apple-system, PingFang SC, sans-serif'});l.lines.forEach((line,i)=>{const span=make('tspan',{x:l.x+l.width/2,y:l.y+10+l.font+i*(l.font+5)});span.textContent=line;text.append(span);});group.append(text);}
+            const path=make('path',{d,class:'connection-line',fill:'none',stroke,'stroke-width':2,'vector-effect':'non-scaling-stroke','marker-end':'url(#'+marker+')','stroke-linejoin':'round','stroke-linecap':'round'});if(kind==='exception')path.setAttribute('stroke-dasharray','8 6');group.append(path);
+            if(r.label){const l=r.label;group.append(make('rect',{class:'connection-label',x:l.x,y:l.y,width:l.width,height:l.height,rx:7,fill:'#fff',stroke:'#dce5e4','stroke-width':1}));const text=make('text',{'text-anchor':'middle',fill:stroke,'font-size':l.font,'font-family':'-apple-system, PingFang SC, sans-serif'});l.lines.forEach((line,i)=>{const span=make('tspan',{x:l.x+l.width/2,y:l.y+10+l.font+i*(l.font+5)});span.textContent=line;text.append(span);});group.append(text);}
           }
           group.addEventListener('pointerdown',event=>{if(event.button!==0||host.panning())return;event.stopPropagation();event.preventDefault();choose(r.id);stage.focus();if(host.canEdit()&&event.target.classList.contains('connection-hit')){
             const p=worldPoint(event);let index=0,best=Infinity;
@@ -376,6 +404,7 @@
           group.addEventListener('contextmenu',event=>{event.preventDefault();event.stopPropagation();choose(r.id);});
           group.addEventListener('keydown',event=>{if(isDeleteKey(event)){selected=r.id;deleteSelected(event);}else if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();choose(r.id);if(event.key==='Enter')startInline(r.id);}});svg.append(group);
         }
+        if(focusedEdge){const keep=svg.querySelector(`[data-edge-id="${focusedEdge}"]`);if(keep&&document.activeElement!==keep)keep.focus({preventScroll:true});}
       }
       syncLayers();updateSelection();editor();positionInline();updateHint();
       if(displayedNode&&!drag&&!source)drawPorts(stateNode(displayedNode),displayedAnchor);
@@ -418,8 +447,8 @@
         points=[p,{x:(p.x+q.x)/2,y:p.y},{x:(p.x+q.x)/2,y:q.y},q];if(drag?.end==='from')points.reverse();
       }
       world.classList.toggle('adjusting-connection',!!drag&&!drag.creating);
-      preview.replaceChildren(make('path',{d:points.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' '),fill:'none',stroke:valid?'#2e8465':candidate?'#bd7327':'#6475ce','stroke-width':2.5,'stroke-dasharray':valid?'':'5 5','vector-effect':'non-scaling-stroke','marker-end':'url(#canvas-arrow-main)'}));
-      if(valid){const p=drag?.end==='from'?points[0]:points.at(-1);preview.append(make('circle',{cx:p.x,cy:p.y,r:9/host.state().viewport.zoom,fill:'#2e84651a',stroke:'#2e8465','stroke-width':1.5,'vector-effect':'non-scaling-stroke'}));}
+      preview.replaceChildren(make('path',{d:points.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' '),fill:'none',stroke:valid?colors.main:candidate?'#bd7327':'#6475ce','stroke-width':2.5,'stroke-dasharray':valid?'':'5 5','vector-effect':'non-scaling-stroke','marker-end':'url(#canvas-arrow-main)'}));
+      if(valid){const p=drag?.end==='from'?points[0]:points.at(-1);preview.append(make('circle',{cx:p.x,cy:p.y,r:9/host.state().viewport.zoom,fill:colors.main+'1a',stroke:colors.main,'stroke-width':1.5,'vector-effect':'non-scaling-stroke'}));}
       hint.textContent=candidate&&!valid?'此处被遮挡，换一个连接点或拉开对象':valid?'松开连接 · Esc 取消':drag&&!drag.creating?'拖到对象或连接点 · 松开空白处保留原连接':'选择终点 · 拖到连接点可固定方向';
     }
     function capturePointer(e){
@@ -440,7 +469,7 @@
       if(drag)panFrame=requestAnimationFrame(autoPan);
     }
     stage.addEventListener('pointerdown',e=>{
-      if(e.button!==0||host.panning()||e.target.closest('.floating'))return;
+      if(e.button!==0||host.panning()||e.target.closest('.floating,.flow-quick-dot'))return;
       if(pointerId!=null){if(e.pointerId!==pointerId){clearPreview();schedule();}return;}
       const segment=e.target.closest('[data-connection-segment]');
       if(segment&&selected&&host.canEdit()){const route=routes.find(r=>r.id===selected);if(route){e.preventDefault();e.stopImmediatePropagation();beginSegment(e,route,Number(segment.dataset.connectionSegment));}return;}
@@ -466,8 +495,9 @@
         if(pointerMoved&&drag&&!panFrame)panFrame=requestAnimationFrame(autoPan);
         if(!previewFrame)previewFrame=requestAnimationFrame(()=>{previewFrame=0;if(drag?.segment!=null)segmentPreview(lastPointer);else if(source||drag)ghost(lastPointer);});return;
       }
-      if(host.canEdit()&&!host.panning()&&['connect','select'].includes(host.tool())){
-        const n=nodeAt(e),anchor=host.tool()==='connect'?controlAt(e,n):null;
+      // Hover ports belong to the connect tool; in select mode the quick-create dots take over.
+      if(host.canEdit()&&!host.panning()&&host.tool()==='connect'){
+        const n=nodeAt(e),anchor=controlAt(e,n);
         drawPorts(!blocked(n)?n:null,anchor);
       }
     });
@@ -494,6 +524,70 @@
       clearPreview();schedule();
     });
     const cancel=()=>{clearPreview();schedule();};document.addEventListener('pointercancel',cancel);stage.addEventListener('lostpointercapture',e=>{if(pointerId===e.pointerId)cancel();});window.addEventListener('blur',cancel);window.addEventListener('beforeunload',()=>finishInline(true));
+    // Palette state. `colorDrag` marks one continuous native-picker drag so it lands as one undo step.
+    let colorPopover=null,colorFor=null,colorDrag=false;
+    // Eleven presets fill three rows of four, with the custom cell as the twelfth.
+    const palette=['#71829b','#3b4a63','#1f2937','#3e63dd','#0ea5e9','#12a594','#bd7327','#f5a524','#e5484d','#d6409f','#8e4ec6'];
+    const normalizeColor=value=>{const v=String(value||'').trim().toLowerCase();return /^#[0-9a-f]{6}$/.test(v)?v:/^#[0-9a-f]{3}$/.test(v)?'#'+[...v.slice(1)].map(c=>c+c).join(''):null;};
+    function applyColor(id,value,{coalesce=false}={}){
+      const color=normalizeColor(value);if(!color||!host.canEdit())return false;
+      const current=host.state().edges?.find(e=>e.id===id);if(!current||current.color===color)return true;
+      host.mutate(doc=>{const target=doc.edges.find(e=>e.id===id);if(target)target.color=color;},{coalesce});
+      return true;
+    }
+    // Hiding first makes this re-entrant-safe: removing the focused field fires blur -> change,
+    // which would otherwise try to clear children that are already gone.
+    function closeColorPopover(){
+      if(!colorPopover||colorPopover.hidden){colorDrag=false;colorFor=null;return;}
+      colorPopover.hidden=true;colorDrag=false;colorFor=null;
+      colorPopover.replaceChildren();
+    }
+    function toggleColorPopover(anchor){
+      if(colorPopover&&!colorPopover.hidden&&colorFor===selected){closeColorPopover();return;}
+      closeColorPopover();
+      const current=edge();if(!current)return;
+      colorFor=current.id;colorDrag=false;
+      if(!colorPopover){
+        colorPopover=document.createElement('div');colorPopover.id='connection-colors';colorPopover.className='floating';
+        colorPopover.setAttribute('role','dialog');colorPopover.setAttribute('aria-label','线条颜色');
+        colorPopover.addEventListener('pointerdown',event=>event.stopPropagation());
+        document.body.append(colorPopover);
+      }
+      colorPopover.replaceChildren();
+      const grid=document.createElement('div');grid.className='color-grid';
+      for(const value of palette){
+        const item=document.createElement('button');item.type='button';item.className='color-swatch';
+        item.style.setProperty('--swatch',value);item.dataset.color=value;item.setAttribute('aria-label','线条颜色 '+value);
+        item.onclick=()=>{applyColor(colorFor||current.id,value);closeColorPopover();stage.focus({preventScroll:true});};
+        grid.append(item);
+      }
+      // The last cell is "any color": one plain rainbow circle opens the system picker.
+      const customCell=document.createElement('label');customCell.className='color-swatch color-custom';
+      customCell.setAttribute('aria-label','自定义颜色');customCell.title='自定义颜色';
+      const native=document.createElement('input');native.type='color';native.setAttribute('aria-label','自定义线条颜色');
+      native.addEventListener('input',()=>{if(colorPopover.hidden||!colorFor)return;if(applyColor(colorFor,native.value,{coalesce:colorDrag}))colorDrag=true;});
+      native.addEventListener('change',()=>{if(colorPopover.hidden||!colorFor)return;applyColor(colorFor,native.value,{coalesce:colorDrag});colorDrag=false;closeColorPopover();});
+      customCell.append(native);grid.append(customCell);
+      colorPopover.append(grid);
+      syncColorPopover(current,strokeOf(current));
+      colorPopover.hidden=false;
+      const box=anchor.getBoundingClientRect(),width=colorPopover.offsetWidth,height=colorPopover.offsetHeight;
+      // Left edge tracks the button; clamp only when that would leave the viewport.
+      colorPopover.style.left=Math.max(8,Math.min(innerWidth-width-8,box.left))+'px';
+      colorPopover.style.top=(box.top-height-8<8?box.bottom+8:box.top-height-8)+'px';
+      colorPopover.querySelector('button')?.focus({preventScroll:true});
+    }
+    function syncColorPopover(target,color){
+      if(!colorPopover)return;
+      for(const item of colorPopover.querySelectorAll('.color-swatch[data-color]'))item.setAttribute('aria-pressed',String(item.dataset.color===color));
+      const full=color.length===4?'#'+[...color.slice(1)].map(c=>c+c).join(''):color;
+      const customCell=colorPopover.querySelector('.color-custom'),custom=Boolean(target.color)&&!palette.includes(full);
+      customCell.classList.toggle('is-active',custom);
+      const native=colorPopover.querySelector('.color-custom input');
+      if(native&&document.activeElement!==native)native.value=full;
+    }
+    document.addEventListener('pointerdown',event=>{if(colorPopover&&!colorPopover.hidden&&!event.target.closest('#connection-colors,.connection-color'))closeColorPopover();},true);
+    window.addEventListener('blur',()=>closeColorPopover());
     document.addEventListener('keydown',e=>{
       // Handle deletion before the composition guard: some IMEs keep isComposing set
       // even when focus has returned from the inline editor to the canvas.

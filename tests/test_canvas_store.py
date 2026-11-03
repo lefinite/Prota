@@ -136,9 +136,13 @@ class CanvasStoreTests(unittest.TestCase):
         files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png',self.directory/'annotations.json']
         original={file:file.read_bytes() for file in files}
         template=Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas'
-        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':37})
+        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':49})
         self.assertTrue(all(file.read_bytes()==data for file,data in original.items()))
         self.assertIn('runtimeVersion:4',(self.directory/'.canvas-runtime-backup/app.js').read_text())
+        # Flowchart quick create ships as two classic scripts; both are installed and loaded.
+        for filename in ['flow-shapes.js', 'flow-quick-create.js']:
+            self.assertEqual((self.directory/filename).read_bytes(), (template/filename).read_bytes())
+            self.assertIn(f'src="./{filename}"', (self.directory/'index.html').read_text())
 
     def test_agent_write_during_save_is_not_replaced(self):
         from unittest.mock import patch

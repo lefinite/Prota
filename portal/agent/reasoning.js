@@ -1,6 +1,8 @@
 // Shared by the composer and gateway. Match a verified endpoint AND model;
 // an OpenAI-compatible protocol alone is not a capability declaration.
 const descriptions = {
+    off: ['关闭', '关闭模型思考'],
+    minimal: ['最少', '最少推理投入'],
     default: ['默认', '沿用模型自身的推理策略'],
     low: ['低', '简单修改、快速问答，优先响应速度'],
     medium: ['中', '日常分析与实现，兼顾深度和速度'],
@@ -18,7 +20,10 @@ export function getReasoningCapability(config = {}) {
     const anthropic = api === 'anthropic-messages';
     let defaultDescription = descriptions.default[1], defaultValue = null;
     let values = [], kind = '', hint = '当前模型或接口的可调参数尚未确认，沿用模型默认。';
-    if (['open.bigmodel.cn', 'api.z.ai'].includes(host) && /^glm-5\.3(?:-flash)?$/.test(model)) {
+    if (config.adapter === 'magpie' || config.provider === 'integration:magpie') {
+        values = config.modelCapabilities?.reasoning === true ? (config.modelCapabilities.efforts || []).filter(v => ['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'].includes(v)) : [];
+        kind = 'effort'; hint = '能力由 Magpie 模型目录提供。';
+    } else if (['open.bigmodel.cn', 'api.z.ai'].includes(host) && /^glm-5\.3(?:-flash)?$/.test(model)) {
         values = ['low', 'high', 'max']; kind = 'glm';
         defaultDescription = '当前模型默认使用 max（最高）';
         defaultValue = 'max';
@@ -45,7 +50,7 @@ export function getReasoningCapability(config = {}) {
         if (/^gpt-5\.[2-5]/.test(model)) values.push('xhigh');
         hint = '调整模型推理投入；更高强度通常需要更多时间和 Token。';
     }
-    if (!['anthropic-messages', 'openai-completions'].includes(api)) { values = []; kind = ''; defaultValue = null; }
+    if (!['anthropic-messages', 'openai-completions', 'openai-responses'].includes(api)) { values = []; kind = ''; defaultValue = null; }
     return { kind, hint, defaultValue, options: ['default', ...values].map(value => ({ value, label: descriptions[value][0], description: value === 'default' ? defaultDescription : descriptions[value][1] })) };
 }
 export function getReasoningSelection(config = {}) {
@@ -61,6 +66,6 @@ export function buildReasoningBody(config = {}) {
     if (capability.kind === 'glm') return { thinking: { type: 'enabled' }, reasoning_effort: value };
     if (capability.kind === 'effort') return config.apiType === 'anthropic-messages'
         ? { output_config: { effort: value } }
-        : { reasoning_effort: value };
+        : config.apiType === 'openai-responses' ? { reasoning: { effort: value } } : { reasoning_effort: value };
     return {};
 }

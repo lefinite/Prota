@@ -80,7 +80,7 @@ try {
     const wideHeader = await page.locator('.annotation-drawer__header').boundingBox();
     const wideTabs = await page.locator('.doc-tabs').boundingBox();
     const wideMeta = await page.locator('.annotation-drawer__meta-row').boundingBox();
-    assert.ok(wideHeader.height <= 52, JSON.stringify(wideHeader));
+    assert.ok(wideHeader.height === 56, JSON.stringify(wideHeader));
     assert.ok(Math.abs(wideTabs.y - wideMeta.y) <= 3, 'wide toolbar is one row');
     assert.equal(await page.locator('.prd-meta__breadcrumb, .prd-meta__association').count(),0);
     await page.locator('[data-prd-manage-trigger]').click();
@@ -146,8 +146,8 @@ try {
     const narrowHeader = await page.locator('.annotation-drawer__header').boundingBox();
     const narrowTabs = await page.locator('.doc-tabs').boundingBox();
     const narrowMeta = await page.locator('.annotation-drawer__meta-row').boundingBox();
-    assert.ok(narrowHeader.height <= 78, JSON.stringify(narrowHeader));
-    assert.ok(narrowMeta.y >= narrowTabs.y + narrowTabs.height - 1, 'narrow toolbar uses two rows');
+    assert.ok(narrowHeader.height === 56, JSON.stringify(narrowHeader));
+    assert.ok(Math.abs(narrowMeta.y - narrowTabs.y) <= 3, 'narrow toolbar stays on one row');
     const bounds = await page.locator('[data-prd-dropdown]').boundingBox();
     assert.ok(bounds.width <= 321, 'document menu stays compact');
     assert.ok(bounds.x>=0 && bounds.x+bounds.width<=390,JSON.stringify(bounds));

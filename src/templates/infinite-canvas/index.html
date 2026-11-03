@@ -28,6 +28,7 @@
 <nav class="zoom-tools floating" aria-label="画布缩放"><button id="zoom-out" data-icon="zoom-out" data-tip="缩小" aria-label="缩小"></button><button id="zoom-reset" data-tip="缩放比例" title="缩放比例">100%</button><button id="zoom-in" data-icon="zoom-in" data-tip="放大" aria-label="放大"></button><span class="divider"></span><button id="fit" data-icon="scan" data-tip="查看全部" aria-label="查看全部"></button><button id="focus-selection" data-icon="focus" data-tip="聚焦选中" aria-label="聚焦选中"></button></nav>
 <div id="command-palette" class="floating" role="dialog" aria-label="命令面板" hidden><div class="command-input-row"><span data-icon="command"></span><input id="command-input" type="text" placeholder="搜索命令：添加画板、对齐、缩放、Agent…" autocomplete="off" spellcheck="false"></div><div id="command-list" role="listbox"></div><div class="command-hint"><span>↑↓ 选择</span><span>↵ 执行</span><span>esc 关闭</span></div></div>
 <div id="interaction-hint" class="interaction-hint" role="status"></div>
+<div id="share-tip" class="share-tip" data-icon="play" hidden>双击画板 · 进入交互预览</div>
 <div id="notice" role="status" hidden><span id="notice-text"></span><span id="notice-actions"></span><button id="notice-dismiss" data-icon="x" aria-label="关闭提示"></button></div>
 <div id="context-menu" class="floating" role="menu" hidden></div>
 <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
@@ -50,7 +51,7 @@
     }
   });
   window.__protaCanvasStartupComplete = () => {
-    const missing = !window.CanvasBoardState ? 'board-state.js' : !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasMarkdownEditor ? 'markdown.js' : !window.CanvasCore ? 'canvas-core.js' : !window.CanvasConnections ? 'canvas-connections.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.marked ? 'marked.js' : !window.CanvasMarkdown ? 'markdown.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
+    const missing = !window.CanvasBoardState ? 'board-state.js' : !window.CanvasDomain ? 'canvas-domain.js' : !window.CanvasMarkdownEditor ? 'markdown.js' : !window.CanvasCore ? 'canvas-core.js' : !window.CanvasFlowShapes ? 'flow-shapes.js' : !window.CanvasConnections ? 'canvas-connections.js' : !window.CanvasFlowQuickCreate ? 'flow-quick-create.js' : !window.ProtaCanvasIcons ? 'icons.js' : !window.marked ? 'marked.js' : !window.CanvasMarkdown ? 'markdown.js' : !window.protaCanvas ? 'app.js 初始化' : !document.querySelector('link[href*="styles.css"]')?.sheet ? 'styles.css' : '';
     if (!missing) { document.documentElement.dataset.protaCanvasReady = 'true'; return; }
     panel.hidden = false; panel.style.display = 'grid';
     detail.textContent = '未能加载 ' + missing + '。布局和业务画板未被修改，可重新加载或在 Prota 内修复编辑器。';
@@ -59,6 +60,6 @@
   };
 })();
 </script>
-<script src="./canvas-data.js"></script><script src="./canvas-domain.js"></script><script src="./canvas-core.js"></script><script src="./canvas-connections.js"></script><script src="./icons.js"></script><script src="./marked.js"></script><script src="./markdown.js"></script><script src="./board-state.js"></script><script src="./app.js"></script>
+<script src="./canvas-data.js"></script><script src="./canvas-domain.js"></script><script src="./canvas-core.js"></script><script src="./flow-shapes.js"></script><script src="./canvas-connections.js"></script><script src="./flow-quick-create.js"></script><script src="./icons.js"></script><script src="./marked.js"></script><script src="./markdown.js"></script><script src="./board-state.js"></script><script src="./app.js"></script>
 <script>window.__protaCanvasStartupComplete();</script>
 </body></html>

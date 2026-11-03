@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="modules/settings/settings.css?v=20261027">
-    <link rel="stylesheet" href="shell.css?v=20261028-agent-scroll-width-v10">
-    <link rel="stylesheet" href="modules/prd/prd.css?v=20261028-doc-bindings-v8">
+    <link rel="stylesheet" href="shell.css?v=20261102-persistent-doc-toggle">
+    <link rel="stylesheet" href="modules/prd/prd.css?v=20261102-persistent-doc-toggle">
     <link rel="stylesheet" href="modules/sharing/dialog.css">
 </head>
 <body data-top-view="page">
@@ -216,8 +216,8 @@
                             <circle cx="12" cy="12" r="3.2"></circle>
                         </svg>
                     </button>
-                    <button id="docVisibilityBtn" class="btn btn-ghost header-icon-action" type="button" title="显示或隐藏文档" aria-label="显示或隐藏文档">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <button id="docVisibilityBtn" aria-controls="annotationDrawer" aria-expanded="false" class="btn btn-ghost header-icon-action" type="button" title="显示或隐藏文档" aria-label="显示或隐藏文档">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16"/></svg>
                     </button>
                     <div id="shareMenuWrapper" class="share-menu-wrapper">
                         <button id="shareMenuTrigger" class="btn btn-ghost share-trigger header-icon-action" type="button" title="分享当前页面" aria-label="分享当前页面" aria-haspopup="menu" aria-expanded="false">
@@ -389,6 +389,7 @@
                     <iframe id="mainIframe" frameborder="0" allowfullscreen></iframe>
                     <div id="annotationMarkerLayer" class="annotation-marker-layer" aria-hidden="true"></div>
                 </div>
+            </div>
                 <aside id="annotationDrawer" class="annotation-drawer" aria-label="文档标注抽屉">
                     <div id="prdDrawerResizeHandle" class="prd-drawer-resize-handle" role="separator" aria-orientation="vertical" title="拖动调整 PRD 宽度" aria-hidden="true"></div>
                     <div class="annotation-drawer__header">
@@ -405,33 +406,26 @@
                         <div class="annotation-drawer__meta-row">
                             <div id="annotationDrawerMeta" class="annotation-drawer__meta"></div>
                             <div class="doc-drawer-actions">
-                                <button id="prdAiBtn" class="doc-drawer-icon-btn" type="button" title="AI 助手问答 (整个文档)" hidden>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                                        <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5z"/>
-                                        <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/>
-                                    </svg>
-                                </button>
                                 <button id="prdEditBtn" class="doc-drawer-icon-btn" type="button" title="编辑 PRD" hidden>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M12 20h9"></path>
                                         <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
                                     </svg>
                                 </button>
-                                <button id="prdSaveBtn" class="doc-drawer-icon-btn doc-drawer-icon-btn--primary" type="button" title="保存 PRD" hidden>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path>
-                                        <path d="M17 21v-8H7v8"></path>
-                                        <path d="M7 3v5h8"></path>
+                                <button id="prdAiBtn" class="doc-drawer-icon-btn" type="button" title="询问 Prota" aria-label="询问 Prota" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                                        <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5z"/>
+                                        <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/>
                                     </svg>
                                 </button>
-                                <button id="prdCancelEditBtn" class="doc-drawer-icon-btn" type="button" title="取消编辑" hidden>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M18 6 6 18"></path>
-                                        <path d="m6 6 12 12"></path>
-                                    </svg>
+                                <details class="doc-tools-menu" id="docToolsMenu">
+                                    <summary class="doc-drawer-icon-btn" title="更多文档操作" aria-label="更多文档操作"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary>
+                                    <div class="doc-tools-menu__panel">
+                                    <button id="prdDownloadBtn" class="doc-drawer-icon-btn" type="button" title="下载 PRD 及版本内容" hidden>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4M12 4v10m-5-5 5 5 5-5"/></svg>
                                 </button>
-                                <button id="prdExpandBtn" class="doc-drawer-icon-btn" type="button" title="放大 PRD 阅读区" hidden>
+                                    <button id="prdExpandBtn" class="doc-drawer-icon-btn" type="button" title="放大 PRD 阅读区" hidden>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M15 3h6v6"></path>
                                         <path d="M9 21H3v-6"></path>
@@ -439,26 +433,13 @@
                                         <path d="M3 21l7-7"></path>
                                     </svg>
                                 </button>
-                                <button id="prdOpenNewTabBtn" class="doc-drawer-icon-btn" type="button" title="新窗口打开 PRD" hidden>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                        <path d="M15 3h6v6"></path>
-                                        <path d="M10 14 21 3"></path>
-                                    </svg>
-                                </button>
-                                <button id="prdDownloadBtn" class="doc-drawer-icon-btn" type="button" title="下载 PRD 及版本内容" hidden>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                </button>
+                                </div>
+                                </details>
                             </div>
                         </div>
                     </div>
                     <div id="annotationDrawerBody" class="annotation-drawer__body"></div>
                 </aside>
-            </div>
         </main>
     </div>
 
@@ -956,6 +937,6 @@
     <script src="agent/state.js"></script>
     <script src="agent/provider-config.js?v=20260828-provider-instance-v2"></script>
     <script src="agent/index.js"></script>
-    <script type="module" src="shell.js?v=20261028-markdown-editor-v15"></script>
+    <script type="module" src="shell.js?v=20261102-persistent-doc-toggle"></script>
 </body>
 </html>

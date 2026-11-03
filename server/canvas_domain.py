@@ -6,6 +6,11 @@ import math
 import re
 
 TYPES = {'group', 'board', 'text', 'note', 'rect', 'ellipse', 'image'}
+# Keep verbatim with canvas-domain.js FLOW_SHAPES and flow-shapes.js KINDS.
+FLOW_SHAPES = ('terminator', 'process', 'decision', 'subprocess', 'connector', 'document', 'rounded-rect', 'database',
+               'hexagon-notched', 'hexagon-arrow', 'parallelogram', 'speech-bubble', 'triangle-right', 'triangle',
+               'trapezoid', 'star', 'hexagon', 'pentagon', 'octagon', 'arrow-right', 'arrow-both', 'cloud', 'callout',
+               'brace', 'cross')
 
 
 def identity(value):
@@ -81,8 +86,12 @@ def validate_document(state):
         for key in ('text', 'name', 'src', 'color'):
             if key in node and not isinstance(node[key], str):
                 raise ValueError('对象属性无效')
-        if 'flowShape' in node and (node['type'] != 'rect' or node['flowShape'] not in ('terminator', 'process', 'decision', 'subprocess', 'connector')):
+        if 'flowShape' in node and (node['type'] != 'rect' or not isinstance(node['flowShape'], str) or node['flowShape'] not in FLOW_SHAPES):
             raise ValueError('流程图形状无效')
+        if 'strokeColor' in node and (not isinstance(node['strokeColor'], str) or not re.fullmatch(r'#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})', node['strokeColor'])):
+            raise ValueError('描边颜色无效')
+        if 'strokeWidth' in node and not number(node['strokeWidth'], .5, 10):
+            raise ValueError('描边宽度无效')
         if 'pinnedState' in node:
             if node['type'] != 'board':
                 raise ValueError('仅画板支持固定状态')
@@ -129,6 +138,8 @@ def validate_document(state):
                 raise ValueError('连线文案最多 200 字')
             if 'kind' in edge and edge['kind'] not in ('main', 'secondary', 'exception'):
                 raise ValueError('连线类型无效')
+            if 'color' in edge and (not isinstance(edge['color'], str) or not re.fullmatch(r'#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})', edge['color'])):
+                raise ValueError('连线颜色无效')
             for key in ('fromPort', 'toPort'):
                 if key in edge and edge[key] not in ('auto', 'left', 'right', 'top', 'bottom'):
                     raise ValueError('连线连接位置无效')

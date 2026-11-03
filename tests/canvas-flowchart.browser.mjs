@@ -23,11 +23,11 @@ try{
  const state=()=>page.evaluate(()=>protaCanvas.getState());
  const screen=p=>page.evaluate(p=>{const v=protaCanvas.getState().viewport;return{x:p.x*v.zoom+v.x,y:p.y*v.zoom+v.y}},p);
  const drag=async(a,b)=>{await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:8});await page.mouse.up();};
- const menu=page.locator('#context-menu');
- // Five shapes are inserted through the visible toolkit, never by editing the document.
+ const menu=page.locator('#flow-shape-picker');
+ // The five legacy shapes are inserted through the visible shape grid, never by editing the document.
  for(const label of ['开始 / 结束','流程矩形','判断','子流程','连接圆点']){
   await page.getByRole('button',{name:'流程图',exact:true}).click();
-  assert.equal(await menu.getByRole('menuitem').count(),5);
+  assert.equal(await menu.getByRole('menuitem').count(),27);
   await menu.getByRole('menuitem',{name:label,exact:true}).click();
  }
  let doc=await state();const shapes=doc.nodes.filter(n=>n.flowShape);

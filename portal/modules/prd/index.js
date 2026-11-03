@@ -4,7 +4,7 @@
  */
 
 import { PRDManager } from './manager.js?v=20261028-prd-live-v13';
-import { PRDRenderer } from './renderer.js?v=20261028-prd-live-v13';
+import { PRDRenderer } from './renderer.js?v=20261102-persistent-doc-toggle';
 import { PRDScrollSync } from './scroll-sync.js?v=20261013-stable-edit-scroll-v1';
 
 export class PRDModule {
@@ -106,7 +106,7 @@ export class PRDModule {
      */
     ensureStylesheet() {
         const isShare = window.__READIFY_SHARE__ || window.location.pathname.includes('/shares/');
-        const href = isShare ? '/portal/modules/prd/prd.css?v=20261028-prd-live-v13' : 'modules/prd/prd.css?v=20261028-prd-live-v13';
+        const href = isShare ? '/portal/modules/prd/prd.css?v=20261102-persistent-doc-toggle' : 'modules/prd/prd.css?v=20261102-persistent-doc-toggle';
 
         const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
             .find((link) => (link.getAttribute('href') || '').includes('prd.css'));
@@ -310,7 +310,7 @@ export class PRDModule {
         // Toggle host action buttons
         this.syncPrdActionButtons(state);
         if (this.host.prdOpenNewTabBtn) {
-            this.host.prdOpenNewTabBtn.hidden = state.status !== 'ready';
+            this.host.prdOpenNewTabBtn.hidden = true;
         }
         if (this.host.prdDownloadBtn) {
             this.host.prdDownloadBtn.hidden = state.status !== 'ready';
@@ -324,18 +324,12 @@ export class PRDModule {
             this.host.prdExpandBtn.innerHTML = isFullscreen
                 ? `
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M4 14h6v6"></path>
-                        <path d="M20 10h-6V4"></path>
-                        <path d="m14 10 7-7"></path>
-                        <path d="m3 21 7-7"></path>
+                        <path d="M9 4v5H4M15 4v5h5M20 15h-5v5M4 15h5v5"></path>
                     </svg>
                 `
                 : `
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M15 3h6v6"></path>
-                        <path d="M9 21H3v-6"></path>
-                        <path d="m21 3-7 7"></path>
-                        <path d="m3 21 7-7"></path>
+                        <path d="M9 4H4v5M15 4h5v5M20 15v5h-5M9 20H4v-5"></path>
                     </svg>
                 `;
         }
@@ -747,10 +741,12 @@ export class PRDModule {
             }
         };
 
+        let renderedPreviewContent = textarea.value;
         const renderEditorPreview = () => {
             if ((this.host.prdEditorLayout || 'source') === 'source') return;
             const preview = body.querySelector('.prd-editor-preview');
-            if (preview) {
+            if (preview && renderedPreviewContent !== textarea.value) {
+                renderedPreviewContent = textarea.value;
                 this.scrollSync.refreshPreview(textarea, preview, () => {
                     // Capture existing rendered visual cards (diagrams + mindmaps)
                     // before rebuilding innerHTML, so we don't destroy and reload
@@ -861,6 +857,13 @@ export class PRDModule {
         textarea.addEventListener('paste', handlePaste);
 
         // 3. Toolbar format click actions
+        let layoutSelection = null;
+        const captureLayoutSelection = event => {
+            if (event.target.closest('[data-prd-layout]')) {
+                layoutSelection = [textarea.selectionStart, textarea.selectionEnd, textarea.selectionDirection];
+            }
+        };
+        toolbar?.addEventListener('pointerdown', captureLayoutSelection);
         const handleToolbarClick = (e) => {
             const targetBtn = e.target.closest('[data-prd-format]');
             if (targetBtn) {
@@ -874,6 +877,11 @@ export class PRDModule {
             if (layoutBtn) {
                 e.stopPropagation();
                 const lyt = layoutBtn.dataset.prdLayout;
+                const previousLayout = this.host.prdEditorLayout || 'source';
+                if (!['source', 'split', 'preview'].includes(lyt) || lyt === previousLayout) return;
+                let switchLine = null;
+                const selection = layoutSelection || [textarea.selectionStart, textarea.selectionEnd, textarea.selectionDirection];
+                layoutSelection = null;
                 
                 // Failsafe: record current progress before changing layout
                 const pageId = this.host.activePageId || '';
@@ -901,17 +909,53 @@ export class PRDModule {
                         this.setLocalStorageItem(`readify:prd-scroll-percent:${pageId}:${prdPath}`, percent);
                     }
                     if (Number.isFinite(line) && line >= 0) {
+                        switchLine = line;
                         this.setLocalStorageItem(`readify:prd-scroll-line:${pageId}:${prdPath}`, String(line));
                     }
                 }
 
                 this.host.prdEditorLayout = lyt;
                 this.host.persistPrdEditorLayout?.();
-                this.render();
+                const shell = body.querySelector('[data-prd-editor-shell]');
+                const grid = body.querySelector('.prd-editor-grid');
+                shell.classList.replace(`prd-editor-shell--${previousLayout}`, `prd-editor-shell--${lyt}`);
+                grid.classList.replace(`prd-editor-grid--${previousLayout}`, `prd-editor-grid--${lyt}`);
+                const layout = toolbar.querySelector('.prd-editor-layout');
+                layout.dataset.layout = lyt;
+                layout.querySelectorAll('[data-prd-layout]').forEach(button => {
+                    const active = button.dataset.prdLayout === lyt;
+                    button.classList.toggle('is-active', active);
+                    button.setAttribute('aria-pressed', String(active));
+                });
+                toolbar.querySelectorAll('[data-prd-format]').forEach(button => { button.disabled = lyt === 'preview'; });
+                this.closeSlashCommand(slashMenu);
+                window.clearTimeout(this._previewRenderTimer);
+                renderEditorPreview();
+                if (Number.isFinite(switchLine)) {
+                    if (lyt !== 'preview') this.scrollSync.scrollSourceToLine(textarea, switchLine, { behavior: 'auto', block: 'start' });
+                    if (lyt !== 'source') this.scrollSync.scrollPreviewToLine(body, switchLine, { behavior: 'auto', block: 'start' });
+                }
+                textarea.setSelectionRange(...selection);
+                // Chromium may reset a textarea selection when its hidden pane reappears.
+                requestAnimationFrame(() => {
+                    if (textarea.isConnected && this.host.prdEditorLayout === lyt && document.activeElement === layoutBtn) {
+                        textarea.setSelectionRange(...selection);
+                    }
+                });
             }
         };
 
         toolbar?.addEventListener('click', handleToolbarClick);
+        const formatGroup = toolbar?.querySelector('.prd-editor-toolbar__group');
+        const formatTools = [...(formatGroup?.querySelectorAll('[data-prd-format]') || [])];
+        const formatObserver = new ResizeObserver(([entry]) => {
+            const gap = parseFloat(getComputedStyle(formatGroup).columnGap) || 0;
+            const width = parseFloat(getComputedStyle(formatTools[0]).minWidth) || 32;
+            const count = Math.max(0, Math.floor((entry.contentRect.width + gap) / (width + gap)));
+            formatTools.forEach((button, index) => { button.hidden = index >= count; });
+        });
+        if (formatGroup && formatTools.length) formatObserver.observe(formatGroup);
+
 
         // 4. Slash suggest popup click events
         const handleSlashMenuClick = (e) => {
@@ -976,6 +1020,8 @@ export class PRDModule {
             textarea.removeEventListener('scroll', handleTextareaScrollRecord);
             preview?.removeEventListener('scroll', handlePreviewScrollRecord);
             toolbar?.removeEventListener('click', handleToolbarClick);
+            toolbar?.removeEventListener('pointerdown', captureLayoutSelection);
+            formatObserver.disconnect();
             slashMenu?.removeEventListener('click', handleSlashMenuClick);
             body.removeEventListener('click', handleDiagramClick);
             body.removeEventListener('change', handleTaskChange);
@@ -1496,7 +1542,10 @@ export class PRDModule {
         const body = this.host.annotationDrawerBody;
         body?.querySelectorAll('[data-prd-save]').forEach((button) => {
             button.disabled = !isDirty || isSaving;
-            button.textContent = isSaving ? '保存中' : (isDirty ? '保存' : '已保存');
+            const label = isSaving ? '保存中' : (isDirty ? '保存' : '已保存');
+            button.title = label;
+            button.setAttribute('aria-label', label);
+            if (!button.querySelector('svg')) button.textContent = label;
         });
         body?.querySelectorAll('[data-prd-cancel]').forEach((button) => {
             button.disabled = isSaving;

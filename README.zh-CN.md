@@ -147,3 +147,7 @@ Prota 采用 [MIT 协议](./LICENSE)，允许自由使用、修改、分发、�
 <p align="center">
   <img src="./assets/readme/sponsor.jpg" width="320" alt="微信赞赏码：赞助 Token">
 </p>
+
+## Magpie 本地模型网关
+
+安装独立的 [Prota Agent 插件](https://github.com/lefinite/magpie-agent-prota)，在 Magpie 的 Agents → Prota 中选择默认模型，再到 Prota 的模型配置中选择「Magpie → 使用 Magpie」。输入框旁的模型菜单支持跟随 Magpie 或固定本会话模型；运行中的任务结束后再应用变更。更新代码后需要重启本地服务和页面。详见 [配置、行为与验证说明](docs/magpie-integration.md)。

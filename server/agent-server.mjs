@@ -1,3 +1,5 @@
+import { MagpieBridge, MAGPIE_ID, magpieError } from './magpie/bridge.mjs';
+import { ModelBindings, bindingView } from './magpie/bindings.mjs';
 import { canvasPersistence } from './canvas-autosave.mjs';
 import { mergePiCommands } from './pi/command-registry.mjs';
 import { buildConnectionProbe } from './pi/connection-probe.mjs';
@@ -224,6 +226,13 @@ const sessions = new Map();
 const scheduledSessionPersists = new Map();
 const pendingWorkspaceWrites = new Set();
 const piGateway = new ProtaPiGateway({ workspaceRoot: getWorkspaceRoot, configDirectory });
+const magpie = new MagpieBridge().start();
+const modelBindings = new ModelBindings({ bridge: magpie, gateway: piGateway, persist: persistSession,
+    emit: (session, type, payload) => emitEvent(session, type, payload, { persist: false }), resolveDirect: resolveProviderConfig });
+magpie.on('change', () => {
+    for (const session of sessions.values()) modelBindings.reconcile(session).catch(() => {});
+});
+
 try { await hydratePersistedSessions(); await pruneCheckpoints(); }
 catch (error) { console.warn('[agent-gateway] 工作区暂不可用，可在设置中重新定位。', error.message); }
 
@@ -1173,6 +1182,7 @@ function createSessionSnapshot(session) {
         archivedAt: session.archivedAt || null,
         context: session.context,
         providerSummary: sanitizeProviderConfig(session.providerConfig),
+        ...bindingView(session),
         timeline: session.timeline,
         runState: session.runState,
         pendingApproval: session.pendingApproval
@@ -1224,7 +1234,7 @@ function createSessionListItem(session) {
             || session.runState?.stageMessage
             || session.runState?.lastError
             || '',
-        hasHistory
+        hasHistory, ...bindingView(session)
     }, sessionSecrets(session));
 }
 
@@ -1498,7 +1508,9 @@ async function getHydratedSession(sessionId) {
             updatedAt: snapshot.updatedAt || snapshot.createdAt || new Date().toISOString(),
             archivedAt: snapshot.archivedAt || null,
             context: normalizedContext,
-            providerConfig: resolveProviderConfig(snapshot.providerSummary || {}),
+            providerConfig: snapshot.providerBinding?.kind === 'magpie' ? { ...snapshot.providerSummary, apiKey: '', sdkOptions: snapshot.providerSummary?.sdkOptions || {} } : resolveProviderConfig(snapshot.providerSummary || {}),
+            providerBinding: snapshot.providerBinding || { kind: 'direct-legacy' },
+            effectiveModel: snapshot.effectiveModel || null, bindingRevision: snapshot.bindingRevision || 0,
             agent: null,
             timeline: Array.isArray(snapshot.timeline) ? snapshot.timeline : [],
             runState: {
@@ -1516,6 +1528,7 @@ async function getHydratedSession(sessionId) {
         normalizeHydratedRunState(session);
         ensureEngineInfo(session, { legacy: !snapshot.engineInfo });
         sessions.set(session.id, session);
+        await modelBindings.reconcile(session);
         if (JSON.stringify(snapshot.context || {}) !== JSON.stringify(normalizedContext)) {
             await persistSession(session);
         }
@@ -1563,7 +1576,7 @@ function normalizeHydratedRunState(session) {
     };
 }
 
-function createSession({ context, providerConfig, sessionScope = 'page' }) {
+function createSession({ context, providerConfig, providerBinding = null, sessionScope = 'page' }) {
     const id = randomUUID();
     const normalizedContext = normalizeContext({
         ...context,
@@ -1579,7 +1592,9 @@ function createSession({ context, providerConfig, sessionScope = 'page' }) {
         updatedAt: createdAt,
         archivedAt: null,
         context: normalizedContext,
-        providerConfig: resolveProviderConfig(providerConfig),
+        providerConfig: providerConfig?.adapter === 'magpie' || providerConfig?.provider === MAGPIE_ID ? { provider: MAGPIE_ID, model: '', apiKey: '', sdkOptions: providerConfig?.sdkOptions || {} } : resolveProviderConfig(providerConfig),
+        providerBinding: providerBinding || (providerConfig?.adapter === 'magpie' || providerConfig?.provider === MAGPIE_ID ? { kind: 'magpie', policy: 'follow' } : { kind: 'direct', providerId: providerConfig?.providerId || providerConfig?.provider }),
+        bindingRevision: 0,
         agent: null,
         timeline: [],
         runState: {
@@ -1601,9 +1616,10 @@ function createSession({ context, providerConfig, sessionScope = 'page' }) {
         sessionScope: inferSessionScope(session),
         context: session.context,
         providerConfig: sanitizeProviderConfig(session.providerConfig),
+        ...bindingView(session),
         runState: session.runState
     });
-    queueMicrotask(() => persistSession(session).catch((error) => {
+    if (session.providerBinding?.kind !== 'magpie') queueMicrotask(() => persistSession(session).catch((error) => {
         console.warn('[agent-gateway] Failed to persist new session:', error);
     }));
     return session;
@@ -1863,6 +1879,7 @@ function resolveProviderConfig(input = {}) {
 function sanitizeProviderConfig(config) {
     return {
         provider: config.provider,
+        ...(config.adapter === 'magpie' || config.provider === MAGPIE_ID ? { kind: 'integration', adapter: 'magpie' } : {}),
         label: config.label,
         apiType: config.apiType,
         model: config.model,
@@ -2280,6 +2297,10 @@ function composeQueryOptions(session, descriptor) {
         descriptorSdkOptions
     );
     stripReadifyRuntimeOptions(queryOptions);
+    if (session.providerBinding?.kind === 'magpie') {
+        for (const key of ['apiType', 'apiKey', 'baseURL', 'model', 'fallbackModel', 'effort', 'thinking', 'maxThinkingTokens', 'reasoningEffort']) delete queryOptions[key];
+        if (session.providerConfig.sdkOptions?.reasoningEffort) queryOptions.reasoningEffort = session.providerConfig.sdkOptions.reasoningEffort;
+    }
 
     queryOptions.cwd = getWorkspaceRoot();
     queryOptions.includePartialMessages = queryOptions.includePartialMessages ?? true;
@@ -3374,7 +3395,7 @@ function buildSessionTitlePrompt(session, descriptor) {
 }
 
 async function generateAiSessionTitle(session, descriptor, fallbackTitle) {
-    if (!session?.providerConfig?.apiKey) return '';
+    if (!session?.providerConfig?.apiKey || session.providerBinding?.kind === 'magpie') return '';
     const titleSession = {
         id: `title-${randomUUID()}`, _transient: true, context: session.context,
         providerConfig: { ...session.providerConfig, model: SESSION_TITLE_MODEL,
@@ -3495,10 +3516,9 @@ function getAllowedToolsForRun(descriptor) {
 
 async function ensureSessionAgent(session, nextProviderConfig = null) {
     if (nextProviderConfig) {
-        if (session.activeRun || session._piOperation) throw new Error('当前任务执行中，不能切换 Provider。');
-        if (piGateway.manager.get(session.id)?.busy) throw new Error('当前任务执行中，不能切换 Provider。');
-        session.providerConfig = resolveProviderConfig(nextProviderConfig);
+        await modelBindings.apply(session, { kind: 'direct', providerId: nextProviderConfig.provider }, { providerConfig: nextProviderConfig });
     }
+    if (session._modelOperation) throw magpieError('busy', '模型正在切换。', 409);
     return (await piGateway.ensure(session)).runtime;
 }
 
@@ -3858,7 +3878,7 @@ async function inspectBusinessPrdArtifact(session) {
 }
 
 async function runSessionTask(session, descriptor, { internalInstructions = '' } = {}) {
-    if (session.activeRun || session._piOperation) {
+    if (session.activeRun || session._piOperation || session._modelOperation) {
         throw new Error('当前会话已有任务在执行，请先等待完成或手动中断。');
     }
 
@@ -3875,6 +3895,14 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
         throw createClassifiedError('指定的命令不存在或暂不可用。', 'config_error');
     }
 
+    session._runStarting = true;
+    try {
+        if (session.providerBinding?.kind === 'magpie') await modelBindings.apply(session, session.providerBinding, { prepareRun: true });
+    } finally { session._runStarting = false; }
+    const runModelSnapshot = { source: session.providerBinding?.kind === 'magpie' ? 'magpie' : 'direct',
+        requestedModel: session.providerConfig.model, resolvedProtocol: session.providerConfig.apiType,
+        appliedAt: new Date().toISOString(), reasoningEffort: session.providerConfig.sdkOptions?.reasoningEffort || 'default',
+        bindingRevision: session.bindingRevision || 0 };
     const runId = randomUUID();
     const startedAt = new Date().toISOString();
     const previousTaskDescriptor = getSessionTaskDescriptor(session);
@@ -3929,14 +3957,15 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
     };
 
     emitEvent(session, 'run_started', {
-        runId,
+        runId, runModelSnapshot,
         checkpointId: runId,
         checkpointStatus: activeRun.checkpointStatus,
         checkpointError: activeRun.checkpointError || null,
         descriptor,
         sessionScope: inferSessionScope(session),
         context: session.context,
-        providerConfig: sanitizeProviderConfig(session.providerConfig)
+        providerConfig: sanitizeProviderConfig(session.providerConfig),
+        ...bindingView(session)
     });
 
     session._skillPromptText = '';
@@ -4124,6 +4153,7 @@ async function runSessionTask(session, descriptor, { internalInstructions = '' }
             session.activeRun = null;
         }
         session.interruptedRunIds?.delete(runId);
+        queueMicrotask(() => modelBindings.reconcile(session).catch(() => {}));
         queueMicrotask(() => finalizeRunCheckpoint(session, runId).catch((error) => {
             console.warn('[agent-gateway] Failed to finalize checkpoint retention:', error);
         }));
@@ -5323,6 +5353,8 @@ async function readJsonBody(req) {
     const chunks = [];
     for await (const chunk of req) {
         chunks.push(Buffer.from(chunk));
+        const limit = req.url?.includes('model-binding') || req.url?.includes('/magpie/') ? 32768 : 48 * 1024 * 1024;
+        if (chunks.reduce((n, b) => n + b.length, 0) > limit) throw magpieError('body_too_large', '请求内容过大。', 413);
     }
     if (!chunks.length) return {};
     const raw = Buffer.concat(chunks).toString('utf8');
@@ -5352,6 +5384,10 @@ async function handleCreateSession(req, res) {
         providerConfig: body.providerConfig || {},
         sessionScope: body.sessionScope === 'global' ? 'global' : 'page'
     });
+    if (session.providerBinding?.kind === 'magpie') {
+        try { await modelBindings.apply(session, session.providerBinding); }
+        catch (error) { sessions.delete(session.id); await removePersistedSession(session.id); throw error; }
+    }
     if (body.title) {
         session.title = normalizeSessionTitle(body.title);
         await persistSession(session);
@@ -5362,6 +5398,7 @@ async function handleCreateSession(req, res) {
         sessionScope: inferSessionScope(session),
         context: session.context,
         providerConfig: sanitizeProviderConfig(session.providerConfig),
+        ...bindingView(session),
         runState: session.runState
     });
 
@@ -5544,6 +5581,7 @@ async function handleHistory(res, session) {
         sessionScope: inferSessionScope(session),
         context: session.context,
         providerConfig: sanitizeProviderConfig(session.providerConfig),
+        ...bindingView(session),
         timeline,
         engineInfo: session.engineInfo,
         runState: session.runState,
@@ -5579,7 +5617,7 @@ async function handleSdkMessages(res, session) {
 }
 
 async function handleSdkClear(res, session) {
-    if (session.activeRun || session._piOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    if (session.activeRun || session._piOperation || session._modelOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
     await piGateway.clear(session);
     session.timeline = [];
     session.runState = {
@@ -5600,26 +5638,12 @@ async function handleSdkClear(res, session) {
 
 async function handleSdkSetModel(req, res, session) {
     const body = await readJsonBody(req);
+    if (session.providerBinding?.kind === 'magpie') throw magpieError('binding_required', 'Magpie 模型请通过会话模型绑定接口切换。', 409);
     const model = String(body.model || '').trim();
-    if (!model) {
-        sendJson(res, 400, { ok: false, message: 'model is required' });
-        return;
-    }
-    if (session.activeRun || session._piOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
-    session.providerConfig.model = model;
-    await ensureSessionAgent(session);
-    await persistSession(session);
-    emitEvent(session, 'session_ready', {
-        sessionId: session.id,
-        sessionScope: inferSessionScope(session),
-        context: session.context,
-        providerConfig: sanitizeProviderConfig(session.providerConfig),
-        runState: session.runState
-    });
-    sendJson(res, 200, {
-        ok: true,
-        model
-    });
+    if (!model || model.length > 500) throw magpieError('invalid_model', 'model is required', 422);
+    const view = await modelBindings.apply(session, { kind: 'direct', providerId: session.providerBinding?.providerId },
+        { providerConfig: { ...session.providerConfig, model } });
+    sendJson(res, 200, { ok: true, model, ...view });
 }
 
 async function handleSdkSetContext(req, res, session) {
@@ -5637,6 +5661,7 @@ async function handleSdkSetContext(req, res, session) {
         sessionScope: inferSessionScope(session),
         context: session.context,
         providerConfig: sanitizeProviderConfig(session.providerConfig),
+        ...bindingView(session),
         runState: session.runState
     });
     sendJson(res, 200, {
@@ -5650,16 +5675,10 @@ async function handleSdkSetContext(req, res, session) {
 async function handleSdkSetProvider(req, res, session) {
     const body = await readJsonBody(req);
     const incoming = isPlainObject(body.providerConfig) ? body.providerConfig : body;
-    const providerConfig = resolveProviderConfig({
-        ...incoming,
-        provider: incoming.provider || body.provider || body.providerId || body.id
-    });
-    await ensureSessionAgent(session, providerConfig);
-    await persistSession(session);
-    sendJson(res, 200, {
-        ok: true,
-        providerConfig: sanitizeProviderConfig(session.providerConfig)
-    });
+    if (incoming.adapter === 'magpie' || incoming.provider === MAGPIE_ID) throw magpieError('binding_required', '请通过会话绑定接口选择 Magpie。', 409);
+    const providerConfig = resolveProviderConfig({ ...incoming, provider: incoming.provider || body.provider || body.providerId || body.id });
+    const view = await modelBindings.apply(session, { kind: 'direct', providerId: incoming.providerId || incoming.provider }, { providerConfig });
+    sendJson(res, 200, { ok: true, providerConfig: sanitizeProviderConfig(session.providerConfig), ...view });
 }
 
 async function handleSdkSetPermissionMode(req, res, session) {
@@ -5709,8 +5728,8 @@ async function handleSdkPrompt(req, res, session) {
         sendJson(res, 400, { ok: false, message: 'prompt is required' });
         return;
     }
-    if (session.activeRun || session._piOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
-    session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
+    if (session.activeRun || session._piOperation || session._modelOperation) { sendJson(res, 409, { ok: false, message: 'Session is busy' }); return; }
+    if (session.providerBinding?.kind !== 'magpie' && !session.providerConfig?.apiKey) session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     const descriptor = createRunDescriptor('message', session.context, {
         message: prompt, sdkOptions: resolveSdkOptions(body, SDK_QUERY_OPTION_KEYS)
     });
@@ -5746,7 +5765,8 @@ async function handleSdkFork(req, res) {
 }
 
 async function branchPiSession(source, entryId = null) {
-    const target = createSession({ context: structuredClone(source.context), providerConfig: structuredClone(source.providerConfig), sessionScope: source.sessionScope });
+    const target = createSession({ context: structuredClone(source.context), providerConfig: structuredClone(source.providerConfig), providerBinding: structuredClone(source.providerBinding), sessionScope: source.sessionScope });
+    if (source.providerBinding?.kind === 'magpie') { target.providerConfig = structuredClone(source.providerConfig); target.effectiveModel = structuredClone(source.effectiveModel); target.bindingRevision = source.bindingRevision; }
     try {
         await piGateway.clone(source, target, entryId);
         target.title = `${source.title} · ${entryId ? '分支' : '副本'}`;
@@ -5801,13 +5821,14 @@ async function handleSteer(req, res, session) {
 }
 
 async function handlePiSessionCommand(req, res, session) {
-    if (session.activeRun || session._runStarting || session._piOperation) {
+    if (session.activeRun || session._runStarting || session._piOperation || session._modelOperation) {
         sendJson(res, 409, { ok: false, message: '当前会话正在运行，请完成或中断后再操作。' }); return;
     }
     session._piOperation = true;
     try {
         const body = await readJsonBody(req);
         const operation = body.operation;
+        if (operation === 'thinking' && session.providerBinding?.kind === 'magpie') throw magpieError('binding_required', 'Magpie 思考强度请通过会话模型绑定接口修改。', 409);
         let result;
         if (operation === 'rewind-preview') {
             const entryId = String(body.entryId || '');
@@ -5891,7 +5912,7 @@ async function handleRunChanges(res, session, runId) {
 }
 
 async function handleRunRollback(req, res, session, runId) {
-    if (session.activeRun || session._piOperation) {
+    if (session.activeRun || session._piOperation || session._modelOperation) {
         sendJson(res, 409, {
             ok: false,
             status: 'busy',
@@ -6015,7 +6036,7 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
     const body = normalized.body;
     const normalizedKind = normalized.kind;
 
-    if (session.activeRun || session._runStarting || session._piOperation) {
+    if (session.activeRun || session._runStarting || session._piOperation || session._modelOperation) {
         res.writeHead(200, createSseHeaders());
         const subscriber = attachSubscriber(session, res, 'run', session.runState.runId);
         // Use run_busy instead of run_failed: busy is a transient rejection, not a terminal
@@ -6067,9 +6088,9 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
     const shouldUpdateTitle = shouldRefreshSessionTitle(session, descriptor);
 
     if (runNeedsAgent(normalizedKind, body.commandId)) {
-        session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
+        if (session.providerBinding?.kind !== 'magpie' && !session.providerConfig?.apiKey) session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     } else {
-        session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
+        if (session.providerBinding?.kind !== 'magpie' && !session.providerConfig?.apiKey) session.providerConfig = resolveProviderConfig(body.providerConfig || session.providerConfig);
     }
 
     res.writeHead(200, createSseHeaders());
@@ -6224,6 +6245,11 @@ let workspaceRequests = 0;
 const server = http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
 
+    if (url.pathname.startsWith('/api/agent/') && req.headers.origin) {
+        let trusted = false;
+        try { const origin = new URL(req.headers.origin); trusted = ['http:', 'https:'].includes(origin.protocol) && ['127.0.0.1', 'localhost', '[::1]'].includes(origin.hostname); } catch {}
+        if (!trusted) { sendJson(res, 403, { ok: false, message: 'Untrusted Portal origin' }); return; }
+    }
     if (req.method === 'OPTIONS') {
         res.writeHead(204, SESSION_STREAM_HEADERS);
         res.end();
@@ -6231,6 +6257,33 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
+        const bindingRoute = matchPath(url.pathname, '/api/agent/session/:sessionId/model-binding');
+        if (url.pathname.startsWith('/api/agent/magpie/') || bindingRoute) {
+            if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress)) throw magpieError('forbidden', 'Local Portal requests only', 403);
+            if (bindingRoute) {
+                const session = await getHydratedSession(bindingRoute.sessionId);
+                if (!session) { sendJson(res, 404, { message: 'Session not found' }); return; }
+                if (req.method === 'GET') { sendJson(res, 200, bindingView(session)); return; }
+                if (req.method === 'POST') {
+                    const body = await readJsonBody(req);
+                    if (!Number.isSafeInteger(body.expectedRevision) || body.expectedRevision < 0) throw magpieError('revision_conflict', '缺少有效会话修订号。', 409);
+                    const view = await modelBindings.apply(session, body, { expectedRevision: body.expectedRevision, providerConfig: body.providerConfig });
+                    sendJson(res, 200, { ok: true, ...view }); return;
+                }
+            }
+            if (req.method === 'GET' && url.pathname.endsWith('/events')) {
+                res.writeHead(200, createSseHeaders());
+                const send = () => { res.write(`event: magpie_status_changed\ndata: ${JSON.stringify(magpie.status())}\n\n`); };
+                send(); magpie.on('change', send);
+                const timer = setInterval(() => res.write(': heartbeat\n\n'), 15000);
+                res.once('close', () => { clearInterval(timer); magpie.off('change', send); }); return;
+            }
+            if (req.method === 'GET' && url.pathname.endsWith('/status')) { await magpie.refresh(); sendJson(res, 200, magpie.status()); return; }
+            if (req.method === 'GET' && url.pathname.endsWith('/models')) { await magpie.refresh(); sendJson(res, 200, magpie.catalog()); return; }
+            if (req.method === 'POST' && url.pathname.endsWith('/refresh')) { await readJsonBody(req); sendJson(res, 200, await magpie.refresh({ force: true })); return; }
+            if (req.method === 'GET' && url.pathname.endsWith('/quotas')) { sendJson(res, 200, await magpie.quotas()); return; }
+            sendJson(res, 405, { message: 'Unsupported Magpie operation' }); return;
+        }
         if (req.method === 'POST' && url.pathname.startsWith('/api/agent/workspace/')) {
             if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress) || req.headers.origin) {
                 sendJson(res, 403, { error: 'Local service requests only' }); return;
@@ -6730,8 +6783,8 @@ const server = http.createServer(async (req, res) => {
         sendText(res, 404, 'Not found');
     } catch (error) {
         console.error('[agent-gateway] Request failed:', error);
-        sendJson(res, 500, {
-            ok: false,
+        sendJson(res, error?.status || 500, {
+            ok: false, code: error?.classification,
             message: summarizeText(error?.message || String(error), 500)
         });
     } finally {
@@ -6747,6 +6800,7 @@ let shuttingDown = false;
 async function shutdownGateway() {
     if (shuttingDown) return;
     shuttingDown = true;
+    magpie.stop();
     for (const session of sessions.values()) {
         session.activeRun?.abortController?.abort(new Error('Gateway is shutting down'));
         resetTransientWaiters(session);

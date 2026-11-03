@@ -1897,7 +1897,7 @@ body.is-resizing-prd-drawer .prd-drawer-resize-handle::after {
     align-items: center;
     gap: 3px;
     padding-left: 10px;
-    border-left: 1px solid rgba(15, 23, 42, .07);
+    border-left: 0;
 }
 .annotation-drawer .doc-drawer-icon-btn {
     width: 28px;
@@ -1933,4 +1933,272 @@ body.is-resizing-prd-drawer .prd-drawer-resize-handle::after {
     .annotation-drawer .annotation-drawer__header .doc-tabs { align-self: flex-start; }
     .annotation-drawer .annotation-drawer__meta-row { gap: 8px; }
     .annotation-drawer .doc-drawer-actions { gap: 1px; padding-left: 6px; }
+}
+
+/* One fixed-height document toolbar, aligned with preview and Agent headers. */
+.main-content > .annotation-drawer .annotation-drawer__header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    height: var(--header-height);
+    min-height: var(--header-height);
+    flex: 0 0 var(--header-height);
+    gap: 10px;
+    padding: 0 12px;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 30;
+}
+.main-content > .annotation-drawer { overflow: visible; }
+.main-content > .annotation-drawer .annotation-drawer__body { min-height: 0; }
+.main-content > .annotation-drawer .doc-tabs {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto;
+    min-width: 0;
+    align-self: center;
+    overflow: visible;
+}
+.main-content > .annotation-drawer .doc-tab { padding-inline: 8px; }
+.main-content > .annotation-drawer .annotation-drawer__meta-row {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    gap: 6px;
+}
+.main-content > .annotation-drawer .annotation-drawer__meta { min-width: 0; }
+.main-content > .annotation-drawer .doc-drawer-actions { display: inline-flex; gap: 2px; padding-left: 0; border-left: 0; }
+.main-content > .annotation-drawer #docVisibilityBtn { grid-column: 3; grid-row: 1; }
+.main-content > .annotation-drawer .prd-meta__manage-btn { min-width: 0; }
+.main-content > .annotation-drawer .prd-meta__manage-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-tools-menu { position: relative; flex-shrink: 0; }
+.doc-tools-menu:not(:has(.doc-tools-menu__panel > button:not([hidden]))) { display: none; }
+.doc-tools-menu > summary { display: flex; align-items: center; justify-content: center; cursor: pointer; list-style: none; }
+.doc-tools-menu > summary::-webkit-details-marker { display: none; }
+.doc-tools-menu[open] > summary { background: var(--accent-glow); color: var(--accent); }
+.doc-tools-menu__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 164px;
+    padding: 5px;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .1);
+}
+.annotation-drawer .doc-tools-menu__panel > .doc-drawer-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    height: 34px;
+    padding: 0 9px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+.annotation-drawer .doc-tools-menu__panel > [hidden] { display: none; }
+@container (max-width: 440px) {
+    .main-content > .annotation-drawer .annotation-drawer__header { gap: 5px; padding-inline: 8px; }
+    .main-content > .annotation-drawer .doc-tab { padding-inline: 6px; }
+    .main-content > .annotation-drawer .prd-meta__breadcrumb,
+    .main-content > .annotation-drawer .prd-meta__divider { display: none; }
+}
+/* Keep actions exposed whenever the toolbar has enough width. */
+.doc-tools-menu.is-inline { display: contents; }
+.doc-tools-menu.is-inline > summary { display: none; }
+.doc-tools-menu.is-inline > .doc-tools-menu__panel {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    width: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+.annotation-drawer .doc-tools-menu.is-inline .doc-drawer-icon-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    justify-content: center;
+}
+.doc-tools-menu.is-inline .doc-drawer-icon-btn > span { display: none; }
+/* Markdown formatting stays on one compact row, including in narrow panes. */
+.annotation-drawer.is-prd-mode.is-prd-editing .annotation-drawer__body { padding: 0; }
+.annotation-drawer .prd-editor-shell { gap: 0; }
+.annotation-drawer .prd-editor-global-toolbar {
+    height: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+    gap: 6px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--bg-sidebar);
+}
+.annotation-drawer .prd-editor-toolbar__group {
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    gap: 2px;
+    overflow: hidden;
+}
+.annotation-drawer .prd-editor-toolbar__spacer { display: none; }
+.annotation-drawer .prd-editor-tool { flex: 0 0 32px; min-width: 32px; height: 32px; font-size: 13px; font-weight: 600; border-color: transparent; background: transparent; border-radius: 5px; }
+.annotation-drawer .prd-editor-layout { flex: 0 0 auto; gap: 1px; padding: 1px; border-radius: 6px; }
+.annotation-drawer .prd-editor-layout__btn { min-width: 40px; height: 30px; font-size: 12px; font-weight: 500; border-radius: 5px; }
+.annotation-drawer .prd-editor-layout__btn.is-active { box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+/* Labels follow the current action title, including expand/collapse changes. */
+.doc-tools-menu .doc-drawer-icon-btn > span { display: none; }
+.doc-tools-menu:not(.is-inline) .doc-tools-menu__panel > button::after { content: attr(title); overflow: hidden; text-overflow: ellipsis; }
+
+/* The editor is a continuous surface with one divider between source and preview. */
+.annotation-drawer .prd-editor-grid { gap: 0; }
+.annotation-drawer .prd-editor-grid--split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.annotation-drawer .prd-editor-pane { border: 0; border-radius: 0; background: var(--bg-sidebar); }
+.annotation-drawer .prd-editor-grid--split > .prd-editor-pane--preview { border-left: 1px solid var(--border); }
+.annotation-drawer .prd-editor-textarea { resize: none; border-radius: 0; padding: 20px; }
+.annotation-drawer .prd-editor-preview { padding: 20px; border-radius: 0; }
+.annotation-drawer .prd-editor-tool { display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+.annotation-drawer .prd-editor-tool:hover { background: var(--accent-glow); color: var(--text-primary); transform: none; }
+.annotation-drawer .prd-editor-tool:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.annotation-drawer .prd-editor-tool svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.annotation-drawer .prd-editor-tool[data-prd-format="bold"] { font-weight: 750; }
+.annotation-drawer .prd-editor-tool[data-prd-format="italic"] { font-family: Georgia, serif; font-style: italic; font-size: 16px; }
+/* Keep the toolbar stable while switching editor views. */
+.annotation-drawer .prd-editor-shell--preview .prd-editor-toolbar__group { display: flex; }
+.annotation-drawer .prd-editor-tool:disabled { opacity: .35; cursor: default; background: transparent; transform: none; }
+.annotation-drawer .prd-editor-layout {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 42px);
+    gap: 0;
+    padding: 2px;
+    isolation: isolate;
+}
+.annotation-drawer .prd-editor-layout::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: 2px;
+    left: 2px;
+    width: 42px;
+    height: 30px;
+    border-radius: 5px;
+    background: var(--bg-sidebar);
+    box-shadow: 0 1px 3px rgba(15,23,42,.1);
+    transition: transform .16s ease;
+}
+.annotation-drawer .prd-editor-layout[data-layout="split"]::before { transform: translateX(42px); }
+.annotation-drawer .prd-editor-layout[data-layout="preview"]::before { transform: translateX(84px); }
+.annotation-drawer .prd-editor-layout__btn,
+.annotation-drawer .prd-editor-layout__btn.is-active { background: transparent; box-shadow: none; transform: none; }
+.annotation-drawer .prd-editor-layout__btn:hover { border-color: transparent; transform: none; }
+.annotation-drawer .prd-editor-layout__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.main-content > .annotation-drawer.is-visible .prd-drawer-resize-handle { display: block; }
+.main-content > .annotation-drawer.is-fullscreen .prd-drawer-resize-handle { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .annotation-drawer .prd-editor-layout::before { transition: none; }
+}
+/* Editing commits belong beside the editor's view controls. */
+.prd-editor-commit { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; margin-left: 4px; }
+.prd-editor-commit > button {
+    height: 30px;
+    width: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 5px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.prd-editor-commit__cancel { color: var(--text-secondary); background: transparent; }
+.prd-editor-commit__cancel:hover { color: var(--text-primary); background: rgba(15,23,42,.045); }
+.prd-editor-commit__save { color: var(--accent); background: var(--accent-glow); }
+.prd-editor-commit > button:disabled { cursor: default; opacity: .45; }
+.prd-editor-commit > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.annotation-drawer .prd-editor-tool[hidden] { display: none; }
+
+/* View tabs share the left edge of the document-type tabs above. */
+.annotation-drawer .prd-editor-global-toolbar { padding-inline: 12px; }
+@container (max-width: 440px) {
+    .annotation-drawer .prd-editor-global-toolbar { padding-inline: 8px; }
+}
+/* Both tab groups use the same segmented-control geometry and finish. */
+.main-content > .annotation-drawer .annotation-drawer__header .doc-tabs,
+.main-content > .annotation-drawer .prd-editor-layout {
+    display: grid;
+    width: 144px;
+    min-width: 144px;
+    height: 30px;
+    min-height: 30px;
+    flex: 0 0 144px;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid rgba(15, 23, 42, .035);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, .035);
+    box-shadow: none;
+    align-items: center;
+}
+.main-content > .annotation-drawer .annotation-drawer__header .doc-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.main-content > .annotation-drawer .prd-editor-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.main-content > .annotation-drawer .doc-tabs .doc-tab,
+.main-content > .annotation-drawer .prd-editor-layout__btn {
+    width: 100%;
+    min-width: 0;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    transform: none;
+}
+.main-content > .annotation-drawer .doc-tabs .doc-tab.is-active,
+.main-content > .annotation-drawer .prd-editor-layout__btn.is-active { color: var(--text-primary); font-weight: 600; }
+.main-content > .annotation-drawer .doc-tabs .doc-tab.is-active { background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.07); }
+.main-content > .annotation-drawer .prd-editor-layout::before {
+    top: 2px;
+    left: 2px;
+    width: calc((100% - 8px) / 3);
+    height: 24px;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15,23,42,.07);
+}
+.main-content > .annotation-drawer .prd-editor-layout[data-layout="split"]::before { transform: translateX(calc(100% + 2px)); }
+.main-content > .annotation-drawer .prd-editor-layout[data-layout="preview"]::before { transform: translateX(calc(200% + 4px)); }
+
+/* A single outline weight and optical size across document header actions. */
+.annotation-drawer__header button.doc-drawer-icon-btn > svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }

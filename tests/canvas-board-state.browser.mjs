@@ -33,7 +33,7 @@ try {
   let ready=false;for(let i=0;i<80;i++){try{if((await fetch(base+'/api/workspace')).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}assert.ok(ready,logs);
   browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1500,height:1000}});page.setDefaultTimeout(8000);
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(base+'/src/pages/demo/flow/v1/index.html');await page.waitForFunction(()=>window.protaCanvas?.runtimeVersion===37);await page.evaluate(()=>window.protaCanvasSchemaReady);
+  await page.goto(base+'/src/pages/demo/flow/v1/index.html');await page.waitForFunction(()=>window.protaCanvas?.runtimeVersion===49);await page.evaluate(()=>window.protaCanvasSchemaReady);
   const node=id=>page.locator(`.node[data-id="${id}"]`), frame=id=>page.frameLocator(`.node[data-id="${id}"] iframe`), pin=id=>node(id).locator('.board-state-pin');
   const waitRestore=id=>page.waitForFunction(id=>{const el=document.querySelector(`.node[data-id="${id}"]`);return el?.querySelector('iframe')?.contentDocument?.readyState==='complete' && !el.classList.contains('restoring-state')},id);
   const preview=async id=>{await page.evaluate(id=>protaCanvas.focus([id]),id);await page.waitForTimeout(250);await waitRestore(id);await node(id).locator('.node-content').dblclick({position:{x:10,y:10}});};

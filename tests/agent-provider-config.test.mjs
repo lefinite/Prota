@@ -133,3 +133,18 @@ test('旧 Plan 设置迁移为执行模式，思考强度保持独立持久化',
     reloaded.replaceState(JSON.parse(JSON.stringify(store.exportState())));
     assert.equal(reloaded.buildConfig().sdkOptions.reasoningEffort, 'high');
 });
+
+test('Magpie is a protected singleton with no persisted model, endpoint or key', () => {
+    const { store } = createStore();
+    store.replaceState({ providers: [
+        { id: 'integration:magpie', adapter: 'magpie', model: 'untrusted/model', apiKey: 'must-disappear', baseURL: 'https://untrusted.example' },
+        { id: 'duplicate', adapter: 'magpie', apiKey: 'must-disappear' }
+    ], activeProviderId: 'integration:magpie' });
+    assert.equal(store.providers.length, 1);
+    assert.equal(store.getActiveProvider().apiKey, '');
+    assert.equal(store.getActiveProvider().model, '');
+    assert.equal(store.buildConfig().adapter, 'magpie');
+    assert.equal(store.buildConfig().apiKey, undefined);
+    assert.equal(store.deleteProvider('integration:magpie'), null);
+    assert.equal(store.updateSelectedProvider({ apiKey: 'no' }), null);
+});

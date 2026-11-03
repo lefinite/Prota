@@ -26,3 +26,11 @@ test('protocol-specific effort body and default omission', () => {
     assert.deepEqual(buildReasoningBody({ ...config, apiType: 'openai-completions' }), { reasoning_effort: 'high' });
     assert.deepEqual(buildReasoningBody({ ...glm, sdkOptions: {} }), {});
 });
+
+test('Magpie uses declared metadata and the Responses reasoning shape', () => {
+    const config = { provider: 'integration:magpie', adapter: 'magpie', apiType: 'openai-responses', model: 'provider/exact-id',
+        baseURL: 'http://127.0.0.1:3425/v1', modelCapabilities: { reasoning: true, efforts: ['low', 'high', 'ultra'] }, sdkOptions: { reasoningEffort: 'high' } };
+    assert.deepEqual(getReasoningCapability(config).options.map(o => o.value), ['default', 'low', 'high']);
+    assert.deepEqual(buildReasoningBody(config), { reasoning: { effort: 'high' } });
+    assert.deepEqual(buildReasoningBody({ ...config, modelCapabilities: {} }), {});
+});
