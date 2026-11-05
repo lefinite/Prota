@@ -388,6 +388,7 @@
                 <div class="viewport-stage">
                     <iframe id="mainIframe" frameborder="0" allowfullscreen></iframe>
                     <div id="annotationMarkerLayer" class="annotation-marker-layer" aria-hidden="true"></div>
+                    <div id="trackingMarkerLayer" class="tracking-marker-layer" aria-label="埋点控件标记"></div>
                 </div>
                 <aside id="annotationDrawer" class="annotation-drawer" aria-label="文档标注抽屉">
                     <div id="prdDrawerResizeHandle" class="prd-drawer-resize-handle" role="separator" aria-orientation="vertical" title="拖动调整 PRD 宽度" aria-hidden="true"></div>
@@ -401,6 +402,7 @@
                         <div class="doc-tabs" role="tablist" aria-label="文档类型">
                             <button class="doc-tab is-active" type="button" role="tab" aria-selected="true" data-doc-tab="prd">需求文档</button>
                             <button class="doc-tab" type="button" role="tab" aria-selected="false" data-doc-tab="annotations">交互标注</button>
+                            <button class="doc-tab" type="button" role="tab" aria-selected="false" data-doc-tab="tracking">埋点</button>
                         </div>
                         <div class="annotation-drawer__meta-row">
                             <div id="annotationDrawerMeta" class="annotation-drawer__meta"></div>
