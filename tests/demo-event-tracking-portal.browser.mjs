@@ -12,7 +12,7 @@ const root=path.join(temp,'workspace'),config=path.join(temp,'config');
 const children=[];
 let browser,logs='';
 const write=async(file,content)=>{const abs=path.join(root,file);await fs.mkdir(path.dirname(abs),{recursive:true});await fs.writeFile(abs,content);};
-const port=()=>new Promise(resolve=>{const sock=net.createServer().listen(0,'127.0.0.1',()=>sock.close(()=>resolve(sock.address()?.port)));});
+const port=()=>new Promise(resolve=>{const sock=net.createServer().listen(0,'127.0.0.1',()=>{const value=sock.address().port;sock.close(()=>resolve(value));});});
 const wait=async(fn,label)=>{for(let i=0;i<150;i++){try{if(await fn())return;}catch{}await new Promise(r=>setTimeout(r,100));}throw Error('Timeout: '+label+'\n'+logs.slice(-1000));};
 const manifest=(page,version,canvas=false)=>({
   schemaVersion:1,scope:{projectId:'demo',pageId:page,version,pageMode:canvas?'infinite-canvas':'standard'},
@@ -93,7 +93,7 @@ try{
   assert.equal(await page.locator('.tracking-card.is-active').count(),1);
   const before=await fs.readFile(path.join(canvasDir,'boards/board_a/index.html'),'utf8');
   const resp=await fetch(base+'/api/agent/page/download-zip?projectId=demo&pageId=canvas&version=v1');
-  assert.equal(resp.status,200,await resp.text().catch(()=>'')); // inspect archive
+  assert.equal(resp.status,200,'download ZIP response'); // inspect archive
   const zipped=Buffer.from(await resp.arrayBuffer());
   const archivePath=path.join(temp,'review.zip');await fs.writeFile(archivePath,zipped);
   const entries=execFileSync('python3',['-c','import sys,zipfile;z=zipfile.ZipFile(sys.argv[1]);print("\\n".join(z.namelist()))',archivePath],{encoding:'utf8'});
