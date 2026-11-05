@@ -118,7 +118,7 @@ class CanvasStoreTests(unittest.TestCase):
         self.assertEqual((self.directory/'.canvas-runtime-backup/app.js').read_text(), '// old editor')
         self.assertTrue((self.directory/'canvas-core.js').is_file())
         self.assertTrue((self.directory/'icons.js').is_file())
-        for filename in ['marked.js', 'markdown.js', 'LICENSE.marked']:
+        for filename in ['marked.js', 'markdown.js', 'canvas-mermaid.js', 'LICENSE.marked']:
             self.assertEqual((self.directory/filename).read_bytes(), (template/filename).read_bytes())
         self.assertIn('Lucide', (self.directory/'LICENSE.lucide').read_text())
 
@@ -136,7 +136,7 @@ class CanvasStoreTests(unittest.TestCase):
         files=[self.file,metadata,self.directory/'boards/reader/index.html',self.directory/'assets/reference.png',self.directory/'annotations.json']
         original={file:file.read_bytes() for file in files}
         template=Path(__file__).resolve().parents[1]/'src/templates/infinite-canvas'
-        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':49})
+        self.assertEqual(upgrade_runtime(self.root,self.params(),template),{'runtimeVersion':63})
         self.assertTrue(all(file.read_bytes()==data for file,data in original.items()))
         self.assertIn('runtimeVersion:4',(self.directory/'.canvas-runtime-backup/app.js').read_text())
         # Flowchart quick create ships as two classic scripts; both are installed and loaded.

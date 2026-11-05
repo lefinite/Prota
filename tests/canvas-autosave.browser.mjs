@@ -67,6 +67,9 @@ try {
  await page.waitForFunction(()=>!window.protaCanvas.isDirty());
  assert.equal((await disk()).description,'external addition');
  assert.equal((await disk()).nodes[0].text,'保留本机输入');
+ assert.equal(await page.evaluate(k=>localStorage.getItem(k+':conflict-backup'),key),null,'independent recovery creates no conflict backup');
+ await page.reload();
+ assert.equal(await page.locator('#notice-text').textContent(),'','independent recovery does not show an old conflict notice');
  // A full localStorage must not turn a successful disk save into a UI failure.
  // Older servers can acknowledge an autosave with revision only.
  await page.route('**/api/canvas/save',async route=>{
@@ -127,6 +130,36 @@ try {
  await page.getByRole('button',{name:'应用本机修改',exact:true}).waitFor();
  assert.equal((await disk()).nodes[0].text,'外部冲突内容');
  assert.equal(await page.evaluate(k=>JSON.parse(localStorage.getItem(k)).state.nodes[0].text,key),'本机冲突内容');
+ const oldBackup=await page.evaluate(k=>localStorage.getItem(k+':conflict-backup'),key);
+ await page.getByRole('button',{name:'应用本机修改',exact:true}).click();
+ await page.waitForFunction(()=>!window.protaCanvas.isDirty());
+ assert.equal((await disk()).nodes[0].text,'本机冲突内容');
+ assert.equal(await page.evaluate(k=>localStorage.getItem(k+':conflict-backup'),key),null,'successfully restored conflict backup is consumed');
+ await page.evaluate(({key,oldBackup})=>localStorage.setItem(key+':conflict-backup',oldBackup),{key,oldBackup});
+ await page.reload();
+ assert.equal(await page.evaluate(k=>localStorage.getItem(k+':conflict-backup'),key),null,'already applied backups from older runtimes are retired');
+ assert.equal(await page.getByRole('button',{name:'恢复备份',exact:true}).count(),0,'restored conflict does not return on reopening');
+ // Closing an unresolved historical-backup notice is persistent and never restores it.
+ const correct=await disk(), unwanted=structuredClone(correct);
+ unwanted.nodes[0].text='不要恢复的旧备份';
+ const staleBackup={state:unwanted,baseline:correct,savedAt:1000};
+ await page.evaluate(({key,backup})=>localStorage.setItem(key+':conflict-backup',JSON.stringify(backup)),{key,backup:staleBackup});
+ await page.reload();
+ await page.getByRole('button',{name:'保留当前状态',exact:true}).waitFor();
+ await page.getByRole('button',{name:'关闭提示',exact:true}).click();
+ await page.reload();
+ assert.equal(await page.getByRole('button',{name:'恢复备份',exact:true}).count(),0,'closed backup notice stays closed across refresh');
+ assert.deepEqual(await disk(),correct,'dismissing a backup does not write the document');
+ assert.ok(await page.evaluate(k=>localStorage.getItem(k+':conflict-backup'),key),'dismissal retains backup for deliberate command-menu recovery');
+ staleBackup.savedAt=2000;
+ await page.evaluate(({key,backup})=>localStorage.setItem(key+':conflict-backup',JSON.stringify(backup)),{key,backup:staleBackup});
+ await page.reload();
+ await page.getByRole('button',{name:'保留当前状态',exact:true}).click();
+ assert.equal(await page.evaluate(k=>localStorage.getItem(k+':conflict-backup'),key),null,'keep current explicitly discards only the old backup');
+ assert.equal(await page.evaluate(()=>window.protaCanvas.getState().nodes[0].text),correct.nodes[0].text);
+ await page.reload();
+ assert.equal(await page.getByRole('button',{name:'恢复备份',exact:true}).count(),0);
+ assert.deepEqual(await disk(),correct,'keeping current never restores or writes backup content');
  assert.equal(dialogs,0);assert.deepEqual(errors,[]);assert.ok(failures>0);
  console.log('PASS: navigation flush, silent draft recovery, automatic retry, full document recovery and external merge');
 }finally{await browser?.close();child?.kill();}

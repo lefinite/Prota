@@ -167,7 +167,12 @@ try {
  assert.deepEqual(await frame.evaluate(()=>protaCanvas.getState().nodes.slice(0,4).map(n=>n.id)),ids);
  assert.equal(await frame.locator('.node.text').last().locator('h1').innerText(),'原文已恢复');
  // Local text uses the identical editor, toolbar transforms and renderer.
- await frame.locator('#stage').dispatchEvent('dblclick',{clientX:400,clientY:800});
+ await frame.locator('#stage').evaluate(el=>{
+  const dataTransfer=new DataTransfer();dataTransfer.items.add(new File(['开始'],'document.md',{type:'text/markdown'}));
+  el.dispatchEvent(new DragEvent('drop',{bubbles:true,dataTransfer,clientX:400,clientY:800}));
+ });
+ await frame.waitForFunction(()=>protaCanvas.getState().nodes.at(-1).name==='document.md');
+ await frame.locator('.node.text').last().dispatchEvent('dblclick');
  const localInline=frame.locator('.node.text.editing .node-content');
  await localInline.fill('# 普通文本\n\n与关联文档使用同一套编辑器。');
  await frame.getByRole('button',{name:'展开 Markdown 编辑器'}).click();
@@ -180,7 +185,7 @@ try {
  assert.equal(await sourceInput.inputValue(),'格式文本','format commands retain native undo');
  await sourceInput.fill('- 列表');await sourceInput.press('End');await sourceInput.press('Enter');await sourceInput.pressSequentially('next');
  assert.equal(await sourceInput.inputValue(),'- 列表\n- next');
- await sourceInput.press('Tab');assert.ok((await sourceInput.inputValue()).endsWith('next  '));
+ await sourceInput.press('Tab');assert.equal(await sourceInput.inputValue(),'- 列表\n    - next');
  const localSource='# 普通文本\n\n**统一排版**与 *斜体*\n\n> 同一个 Markdown 组件\n\n- [x] 编辑完成\n\n```js\nconst shared = true;\n```\n\n| 功能 | 状态 |\n| :--- | ---: |\n| 编辑 | 完成 |';
  await sourceInput.fill(localSource);
  await localDialog.locator('.markdown-editor-preview table').waitFor();

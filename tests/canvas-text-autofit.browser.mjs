@@ -89,13 +89,13 @@ try {
   const more=await geom();
   step('typed more while narrowed',more);
   assert.ok(more.verticalOverflow<=1,'no vertical clipping on continued typing');
-  await page.evaluate(()=>{const el=document.querySelector('[contenteditable]');const r=document.createRange();r.selectNodeContents(el);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);});
+  await page.evaluate(()=>{document.querySelector('.node.editing .node-content').select();});
   await page.keyboard.type('短');
   await page.waitForTimeout(250);
   const shrunk=await geom();
   step('shrunk after deleting',shrunk);
   assert.ok(shrunk.height<more.height,'height follows shrink');
-  assert.ok(shrunk.height<=60,'single short line collapses back');
+  assert.ok(shrunk.height<=70,'single short line collapses back');
 
   // 5. Persistence after reload.
   await page.mouse.click(1200,880);

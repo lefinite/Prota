@@ -104,7 +104,7 @@ def validate_document(state):
         clone_from = node.get('cloneFrom')
         if 'cloneFrom' in node and (node['type'] != 'board' or not isinstance(clone_from, str) or not re.fullmatch(r'boards/[a-zA-Z0-9_-]+/index\.html', clone_from)):
             raise ValueError('复制画板来源无效')
-        for key, low, high in [('opacity', 0, 1), ('radius', 0, 1000), ('fontSize', 8, 400), ('fontWeight', 100, 900), ('padding', 0, 10000)]:
+        for key, low, high in [('fillOpacity', 0, 1), ('strokeOpacity', 0, 1), ('textOpacity', 0, 1), ('opacity', 0, 1), ('radius', 0, 1000), ('fontSize', 8, 400), ('fontWeight', 100, 900), ('padding', 0, 10000)]:
             if key in node and not number(node[key], low, high):
                 raise ValueError('样式属性无效')
         if 'textAlign' in node and node['textAlign'] not in ('left', 'center', 'right', 'justify'):

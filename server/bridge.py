@@ -98,13 +98,14 @@ def normalize_agent_provider_config(data):
         provider_id = str(raw.get('id', '')).strip()[:200]
         if not provider_id:
             continue
+        enabled_models = {'enabledModels': list(dict.fromkeys(v.strip()[:300] for v in raw['enabledModels'][:500] if isinstance(v, str) and v.strip()))} if isinstance(raw.get('enabledModels'), list) else {}
         if provider_id == 'integration:magpie' or raw.get('adapter') == 'magpie':
             if magpie_seen:
                 continue
             magpie_seen = True
             providers.append({'id': 'integration:magpie', 'kind': 'integration', 'adapter': 'magpie',
                               'label': 'Magpie', 'presetId': None, 'apiType': 'openai-responses',
-                              'model': '', 'baseURL': '', 'apiKey': '', 'sdkOptions': {}, 'models': [], 'endpointCandidates': []})
+                              'model': '', 'baseURL': '', 'apiKey': '', 'sdkOptions': {}, 'models': [], 'endpointCandidates': [], **enabled_models})
             continue
         if raw.get('kind') not in (None, 'provider') or raw.get('adapter') not in (None, ''):
             raise ValueError('Invalid provider kind or adapter')
@@ -118,6 +119,7 @@ def normalize_agent_provider_config(data):
         raw_models = raw.get('models', [])
         raw_endpoints = raw.get('endpointCandidates', [])
         providers.append({
+            **enabled_models,
             'id': provider_id,
             'label': str(raw.get('label', '')).strip()[:200],
             'presetId': str(raw.get('presetId', '')).strip()[:200] or None,
@@ -151,6 +153,7 @@ def normalize_agent_provider_config(data):
 
     return {
         'schemaVersion': 2,
+        'defaultPermissionMode': data.get('defaultPermissionMode') if data.get('defaultPermissionMode') in ('default', 'acceptEdits', 'dontAsk', 'bypassPermissions') else None,
         'providers': providers,
         'activeProviderId': active_provider_id,
         'selectedProviderId': selected_provider_id
@@ -1147,7 +1150,7 @@ def slugify_share_part(value):
     return text or 'page'
 
 
-def build_page_zip_bytes(root, project_id, page_id, version):
+def build_page_zip_bytes(root, project_id, page_id, version, canvas_runtime_hash=None, canvas_entry_path=None):
     """Zip a page version dir (plus its docs dir) and return the bytes.
 
     Mirrors what /api/agent/page/download-zip serves, so a static share can ship
@@ -1160,11 +1163,22 @@ def build_page_zip_bytes(root, project_id, page_id, version):
     if not all(isinstance(value, str) and re.fullmatch(r'[a-zA-Z0-9_-]+', value) for value in segments):
         raise ValueError('Invalid projectId/pageId/version format')
     page_dir = Path(root) / 'src/pages' / project_id / page_id
-    if not (page_dir / version).is_dir():
+    base_root = Path(root).resolve()
+    for folder in [page_dir / version, page_dir / 'docs']:
+        if folder.is_symlink() or base_root not in folder.resolve().parents or any(parent.is_symlink() for parent in folder.parents if base_root in parent.parents):
+            raise ValueError('下载资源路径无效。')
+    if not (page_dir / version).is_dir() and not canvas_entry_path:
         raise FileNotFoundError('Version directory not found')
+    from server.canvas_runtime_package import zip_runtime_files, EDITOR_FILES
+    version_dir = page_dir / version
+    if canvas_entry_path:
+        from server.canvas_runtime_package import snapshot_directory
+        version_dir = snapshot_directory(root, canvas_entry_path, segments)
+        page_dir = version_dir.parent
+    extra_runtime = zip_runtime_files(root, version_dir, canvas_runtime_hash)
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
-        for folder in [page_dir / version, page_dir / 'docs']:
+        for folder in [version_dir, page_dir / 'docs']:
             if not folder.is_dir():
                 continue
             for file in folder.rglob('*'):
@@ -1172,7 +1186,11 @@ def build_page_zip_bytes(root, project_id, page_id, version):
                 if file.is_symlink():
                     raise ValueError('下载资源不能包含符号链接。')
                 if file.is_file() and not any(part.startswith('.') or part in {'node_modules', '__pycache__'} for part in relative.parts):
+                    if extra_runtime and (relative.as_posix().startswith(version + '/__prota_runtime/') or len(relative.parts) == 2 and relative.name in EDITOR_FILES):
+                        continue
                     archive.write(file, relative.as_posix())
+        for name, content in extra_runtime.items():
+            archive.writestr(version + '/' + name, content)
     return buffer.getvalue()
 
 
@@ -1208,7 +1226,7 @@ def build_folder_zip_bytes(root, payload):
         for folder_id in folders:
             archive.writestr(folder_path(folder_id) + '/', b'')
         for page in payload['pages']:
-            page_bytes = build_page_zip_bytes(root, payload['projectId'], page['id'], page['version'])
+            page_bytes = build_page_zip_bytes(root, payload['projectId'], page['id'], page['version'], page.get('canvasRuntimeHash'), page.get('canvasEntryPath'))
             prefix = folder_path(page['parentId']) + '/' + page['id']
             with zipfile.ZipFile(io.BytesIO(page_bytes)) as page_archive:
                 for item in page_archive.infolist():
@@ -2468,12 +2486,18 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
         return str(resolved) if resolved == workspace.APP_ROOT or workspace.APP_ROOT in resolved.parents else str(workspace.CONFIG_DIR / '__denied__')
 
     def do_HEAD(self):
+        from server.canvas_runtime_http import serve as serve_canvas_runtime
+        if serve_canvas_runtime(self, workspace):
+            return
         if urllib.parse.urlsplit(self.path).path.startswith('/__prota_preview/'):
             from server.preview_http import serve
             return serve(self, workspace)
         return super().do_HEAD()
 
     def do_GET(self):
+        from server.canvas_runtime_http import serve as serve_canvas_runtime
+        if serve_canvas_runtime(self, workspace):
+            return
         clean_path = self.path.split('?')[0]
         if clean_path == '/api/preview/config':
             from server.preview_http import configuration
@@ -2605,7 +2629,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                     return self.workspace_reply(413, {'error': '画布数据过大，请减少图片或使用本版本 assets 文件。'})
                 from server.canvas_store import save_canvas, upgrade_runtime
                 if clean_path == '/api/canvas/upgrade':
-                    return self.workspace_reply(200, upgrade_runtime(workspace.workspace_root(), json.loads(self.rfile.read(length)), Path(get_application_root()) / 'src/templates/infinite-canvas'))
+                    from server.canvas_runtime_package import migrate_entry
+                    return self.workspace_reply(200, migrate_entry(workspace.workspace_root(), json.loads(self.rfile.read(length)), get_application_root()))
                 code, result = save_canvas(workspace.workspace_root(), json.loads(self.rfile.read(length)))
                 return self.workspace_reply(code, result)
             except (ValueError, OSError, TypeError) as error:
@@ -2821,7 +2846,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 return self.workspace_reply(400, {'error': '暂不支持该模板的快捷创建。'})
 
             root = get_project_root()
-            template_dir = os.path.join(get_application_root(), 'src', 'templates', template)
+            from server.canvas_runtime_package import feature_flags
+            template_dir = os.path.join(get_application_root(), 'src', 'templates', 'infinite-canvas-document' if feature_flags()['sharedCanvasRuntime'] else 'infinite-canvas')
             if not os.path.isdir(template_dir):
                 return self.workspace_reply(500, {'error': '产品模板缺失，请重新安装后重试。'})
 
@@ -4392,7 +4418,9 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             # without the backend tunnel (prota.*) being up.
             extra_deploy_files = []
             if share_type == 'static':
-                zip_bytes = build_page_zip_bytes(root, project_id, page_id, version)
+                from server.canvas_runtime_package import pin_share_pages
+                pin_share_pages(root, shell_share_data)
+                zip_bytes = build_page_zip_bytes(root, project_id, page_id, version, shell_share_data.get('canvasRuntimeHash'), shell_share_data.get('canvasEntryPath'))
                 zip_filename = f'{slugify_share_part(page_id)}-{version}-static.zip'
                 with open(os.path.join(share_dir, zip_filename), 'wb') as zf:
                     zf.write(zip_bytes)
@@ -4612,6 +4640,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             os.makedirs(share_dir, exist_ok=True)
             share_path = os.path.join(share_dir, filename)
             zip_filename = f'{slugify_share_part(project_id)}-{slugify_share_part(folder_id)}-folder-{share_type}.zip'
+            from server.canvas_runtime_package import pin_share_pages
+            pin_share_pages(root, share_payload)
             zip_bytes = build_folder_zip_bytes(root, share_payload)
             (Path(share_dir) / zip_filename).write_bytes(zip_bytes)
             share_payload['zipFilename'] = zip_filename

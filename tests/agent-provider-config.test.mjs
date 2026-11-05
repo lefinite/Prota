@@ -148,3 +148,38 @@ test('Magpie is a protected singleton with no persisted model, endpoint or key',
     assert.equal(store.deleteProvider('integration:magpie'), null);
     assert.equal(store.updateSelectedProvider({ apiKey: 'no' }), null);
 });
+
+test('常用模型独立于服务商目录，拉取和升级模板不会自动启用全部模型', () => {
+    const { store } = createStore();
+    const provider = store.createFromPreset('zhipu-anthropic');
+    assert.deepEqual([...store.getEnabledModels(provider)], [provider.model]);
+    store.updateSelectedProvider({ enabledModels: ['glm-5.3', 'glm-5.3-flash'] });
+    store.mergeModels(['new-discovered-model']);
+    assert.deepEqual([...store.getEnabledModels(provider)], ['glm-5.3', 'glm-5.3-flash']);
+    assert.ok(store.getModelOptions(provider).includes('new-discovered-model'));
+    const { store: restored } = createStore();
+    restored.replaceState(JSON.parse(JSON.stringify(store.exportState())));
+    assert.deepEqual([...restored.getEnabledModels()], ['glm-5.3', 'glm-5.3-flash']);
+    restored.updateSelectedProvider({ enabledModels: [], model: '' });
+    assert.deepEqual([...restored.getEnabledModels()], []);
+});
+
+test('Magpie 仅保存常用模型 ID，仍不保存网关凭证或模型配置', () => {
+    const { store } = createStore();
+    store.replaceState({ providers: [{ id: 'integration:magpie', enabledModels: ['group/a', 'provider/b'], apiKey: 'secret' }] });
+    assert.deepEqual([...store.getEnabledModels()], ['group/a', 'provider/b']);
+    assert.equal(store.getActiveProvider().apiKey, '');
+    assert.equal(store.getActiveProvider().model, '');
+});
+
+test('new-session permission preference survives reload without changing provider defaults', () => {
+    const { store } = createStore();
+    const provider = store.createFromPreset('zhipu-anthropic');
+    store.defaultPermissionMode = 'acceptEdits';
+    const { store: restored } = createStore();
+    restored.replaceState(JSON.parse(JSON.stringify(store.exportState())));
+    assert.equal(restored.defaultPermissionMode, 'acceptEdits');
+    assert.equal(restored.getActiveProvider().sdkOptions.permissionMode, provider.sdkOptions.permissionMode);
+    restored.replaceState({ providers: [provider], defaultPermissionMode: 'invalid' });
+    assert.equal(restored.defaultPermissionMode, null);
+});

@@ -11,7 +11,7 @@ export const CANVAS_FEATURE_DEFAULTS = Object.freeze({
   canvasComponents: false,
   canvasAnnotations: false,
   canvasPortableCopy: false,
-  canvasSharedRuntime: false,
+  canvasSharedRuntime: true,
 });
 
 // Explicit workspace allowlist; never infer rollout from browser query parameters.

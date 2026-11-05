@@ -321,6 +321,12 @@ button:has(svg):not(:has(.button-label)) {
   width: 16px;
   height: 16px;
 }
+#selection-tools .action-chevron {
+  width: 10px;
+  height: 10px;
+  margin-left: -3px;
+  opacity: .55;
+}
 #selection-tools .divider {
   height: 18px;
   margin: 0 4px;
@@ -364,6 +370,11 @@ button:has(svg):not(:has(.button-label)) {
   flex-direction: column;
   gap: 1px;
   padding: 5px;
+}
+/* The menu shell takes focus for pointer-opened menus; it must never paint a ring. */
+#context-menu:focus,
+#context-menu:focus-visible {
+  outline: 0;
 }
 #context-menu button {
   width: 100%;
@@ -1280,26 +1291,26 @@ body.agent-working .board-agent {
 #connection-tools [data-kind][aria-pressed="true"]{background:color-mix(in srgb,var(--stroke-color) 12%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--stroke-color) 25%,white)}
 /* Line color: a button that opens a click-to-apply palette, so a chosen color never depends on
    how the system color dialog happens to be dismissed. */
-#connection-tools .connection-color{position:relative;flex:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border-radius:7px}
-#connection-tools .connection-color:hover{background:#f0f2f8}
-#connection-tools .connection-color:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-#connection-tools .connection-color-swatch{width:16px;height:16px;border-radius:50%;pointer-events:none;background:var(--line-color,var(--line));box-shadow:inset 0 0 0 2px #fff,0 0 0 1px var(--line)}
-#connection-tools .connection-color.active{background:color-mix(in srgb,var(--line-color) 12%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line-color) 25%,white)}
-#connection-colors{position:fixed;z-index:40;display:grid;gap:9px;padding:10px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 10px 36px rgba(30,40,75,.1),0 2px 6px rgba(30,40,75,.05)}
-#connection-colors[hidden]{display:none}
-#connection-colors .color-grid{display:grid;grid-template-columns:repeat(4,22px);gap:9px}
+:is(#connection-tools,#selection-tools,#properties,#context-menu) .canvas-color-button{position:relative;flex:none;display:grid;place-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:7px}
+:is(#connection-tools,#selection-tools,#properties,#context-menu) .canvas-color-button:hover{background:#f0f2f8}
+:is(#connection-tools,#selection-tools,#properties,#context-menu) .canvas-color-button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+:is(#connection-tools,#selection-tools,#properties,#context-menu) .canvas-color-swatch{width:16px;height:16px;border-radius:50%;pointer-events:none;background:var(--line-color,var(--line));box-shadow:inset 0 0 0 2px #fff,0 0 0 1px var(--line)}
+:is(#connection-tools,#selection-tools,#properties,#context-menu) .canvas-color-button.active{background:color-mix(in srgb,var(--line-color) 12%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line-color) 25%,white)}
+.canvas-color-palette{position:fixed;z-index:40;display:grid;gap:9px;padding:10px;border-radius:12px;background:#fff;border:1px solid var(--line);box-shadow:0 10px 36px rgba(30,40,75,.1),0 2px 6px rgba(30,40,75,.05)}
+.canvas-color-palette[hidden]{display:none}
+.canvas-color-palette .color-grid{display:grid;grid-template-columns:repeat(4,22px);gap:9px}
 /* Buttons default to 34px tall; a swatch must stay a circle. */
-#connection-colors .color-swatch{width:22px;height:22px;min-height:0;padding:0;border-radius:50%;background:var(--swatch);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #e3e6ed;transition:transform .12s ease}
-#connection-colors .color-swatch:hover{transform:scale(1.12)}
-#connection-colors .color-swatch[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--accent)}
+.canvas-color-palette .color-swatch{width:22px;height:22px;min-height:0;padding:0;border-radius:50%;background:var(--swatch);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #e3e6ed;transition:transform .12s ease}
+.canvas-color-palette .color-swatch:hover{transform:scale(1.12)}
+.canvas-color-palette .color-swatch[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--accent)}
 /* The custom cell: one rainbow circle with the same white rim and outline as the presets -
    no center dot; the current custom color lives on the toolbar button. */
-#connection-colors .color-custom{position:relative;display:grid;place-items:center;min-height:0;padding:0;cursor:pointer;border-radius:50%;background:conic-gradient(from 0deg,#e5484d,#bd7327,#f5a524,#46a758,#12a594,#0ea5e9,#3e63dd,#8e4ec6,#d6409f,#e5484d);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #e3e6ed}
-#connection-colors .color-custom:hover{transform:scale(1.12)}
-#connection-colors .color-custom input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
+.canvas-color-palette .color-custom{position:relative;display:grid;place-items:center;min-height:0;padding:0;cursor:pointer;border-radius:50%;background:conic-gradient(from 0deg,#e5484d,#bd7327,#f5a524,#46a758,#12a594,#0ea5e9,#3e63dd,#8e4ec6,#d6409f,#e5484d);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #e3e6ed}
+.canvas-color-palette .color-custom:hover{transform:scale(1.12)}
+.canvas-color-palette .color-custom input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
 /* Same selected ring as the presets: white rim, accent tight to the edge (no gray line between). */
-#connection-colors .color-custom.is-active{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--accent)}
-#connection-colors .color-custom:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.canvas-color-palette .color-custom.is-active{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--accent)}
+.canvas-color-palette .color-custom:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 #connection-tools .danger{color:var(--muted)}
 #connection-tools .danger:hover{color:#b24a50;background:#fff0f0}
 #stage.tool-connect .node{cursor:crosshair}#stage .node.connection-source{outline:2px solid #6678d0}#stage.tool-connect .node:hover:not(.connection-container){outline:2px solid #98a6df}
@@ -1409,13 +1420,18 @@ body.agent-working .board-agent {
 :is(.node.text:not(.editing) .node-content,.markdown-body)>:first-child{margin-top:0;}
 :is(.node.text:not(.editing) .node-content,.markdown-body)>:last-child{margin-bottom:0;}
 
-.node.board > .node-title { display: flex; align-items: center; gap: calc(7px / var(--zoom)); }
+.node.board > .node-title { display: flex; align-items: center; gap: calc(7px / var(--zoom)); width: 100%; }
+/* 固定状态图钉：保持在标题行内、样式不变，整体向右平移到行尾（画板右上角）；只有激活画板（预览/试用）时出现。 */
 .node-title .board-state-pin {
-  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  order: 1;
+  margin-left: auto;
+  display: none;
+  align-items: center; justify-content: center; flex: none;
   width: calc(28px / var(--zoom)); height: calc(28px / var(--zoom));
   padding: 0; border: 0; border-radius: calc(5px / var(--zoom));
   background: transparent; color: #9a9fa8; cursor: pointer;
 }
+.node.board.interacting .board-state-pin { display: inline-flex; }
 .node-title .board-state-pin .icon { width: calc(14px / var(--zoom)); height: calc(14px / var(--zoom)); stroke-width: 1.6; }
 .node-title .board-state-pin.is-pinned { color: #59616c; }
 .node-title .board-state-pin.is-pinned .icon { fill: #e5e7eb; }
@@ -1526,3 +1542,227 @@ body.agent-working .board-agent {
 #flow-shape-picker svg{width:22px;height:22px;overflow:visible}
 #flow-shape-picker svg path{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 #stage .node.flowchart,#stage.tool-connect .node.flowchart:hover{outline:none;box-shadow:none}
+
+/* Compact canvas chrome and a precision inspector. */
+.canvas-identity .identity-icon, .canvas-identity #document-name { display: none; }
+.canvas-identity { top: auto; bottom: 35px; max-width: none; height: 20px; pointer-events: none; }
+.canvas-identity .save-status { display: inline-flex; }
+#context-menu .menu-section { text-align: left; align-self: stretch; }
+#context-menu .menu-divider { align-self: stretch; flex: 0 0 1px; min-height: 1px; background: #e1e4ea; margin: 5px 7px; }
+#property-popover { width: 288px; max-height: calc(100dvh - 32px); border-radius: 12px; }
+.popover-heading { padding: 10px 12px; position: sticky; top: 0; background: #fff; z-index: 1; }
+.popover-heading strong { color: #343946; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#properties { padding: 0; text-align: left; }
+.inspector-section { padding: 12px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; border-bottom: 1px solid #eceef2; }
+.inspector-section h3 { grid-column: 1/-1; margin: 0 0 4px; font-size: 11px; font-weight: 600; color: #414753; }
+#properties .inspector-field { margin: 0; display: flex; flex-direction: column; align-items: stretch; gap: 5px; font-size: 11px; color: #777f8c; min-width: 0; }
+#properties .field-name, #properties .field-text { grid-column: 1/-1; }
+.inspector-control { display: flex; align-items: center; min-width: 0; height: 32px; background: #f5f6f8; border: 1px solid transparent; border-radius: 6px; }
+.inspector-control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(87,101,206,.09); background: #fff; }
+#properties .inspector-control input, #properties .inspector-control textarea { width: 100%; min-width: 0; border: 0; outline: none; background: transparent; padding: 7px 8px; color: #343946; font-size: 12px; box-shadow: none; font-variant-numeric: tabular-nums; }
+#properties .field-text .inspector-control { height: auto; }
+#properties .inspector-control textarea { min-height: 72px; }
+.field-unit { font-size: 10px; color: #969daa; padding-right: 8px; flex: none; }
+#properties .property-section { margin: 0; border: 0; padding: 12px; }
+#properties .property-section summary { font-size: 11px; color: #414753; font-weight: 600; margin-bottom: 10px; text-align: left; }
+#properties .property-section label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: #777f8c; }
+#properties .property-section select { width: 178px; height: 32px; padding: 6px 8px; color: #343946; appearance: auto; }
+.alignment-segments { display: flex; width: 178px; background: #f5f6f8; padding: 3px; border-radius: 6px; gap: 3px; }
+.alignment-segments button { flex: 1; min-height: 26px; padding: 3px; color: #818996; border-radius: 4px; }
+.alignment-segments svg { width: 16px; height: 16px; }
+.alignment-segments button[aria-pressed=true] { color: var(--accent); background: white; box-shadow: 0 1px 3px #25304a18; }
+#properties input:disabled { opacity: .5; cursor: not-allowed; }
+@media(max-width:440px) { .creation-tools { max-width: calc(100vw - 16px); flex-wrap: wrap; justify-content: center; } }
+
+.creation-tools { width: max-content; }
+
+/* Keep frequent numeric adjustments in compact paired rows. */
+.inspector-section { padding: 10px 12px; }
+#properties .inspector-section:first-of-type h3 { display: none; }
+#properties .field-name { flex-direction: row; align-items: center; }
+#properties .field-name .inspector-control { flex: 1; margin-left: 12px; }
+#properties .inspector-field:has(input[type=number]) { flex-direction: row; align-items: center; gap: 6px; }
+#properties .inspector-field:has(input[type=number]) .inspector-control { flex: 1; }
+#properties .inspector-field:has(input[type=number]) { white-space: nowrap; }
+#properties .inspector-control input[type=number] { appearance: textfield; }
+#properties .inspector-control input[type=number]::-webkit-inner-spin-button { appearance: none; }
+#properties .property-section { padding: 10px 12px; }
+/* Color fields follow the same inline pattern: label left, swatch right, no stacked row. */
+#properties .field-color, #properties .field-textColor, #properties .field-strokeColor { flex-direction: row; align-items: center; gap: 6px; white-space: nowrap; }
+#properties :is(.field-color, .field-textColor, .field-strokeColor) .inspector-control { flex: 1; justify-content: flex-end; height: auto; background: transparent; border: 0; }
+#properties :is(.field-color, .field-textColor, .field-strokeColor) .inspector-control:focus-within { border: 0; box-shadow: none; background: transparent; }
+#properties .canvas-color-button { width: 28px; height: 28px; }
+
+/* Inspector choices share one surface; shape selection uses the actual outlines. */
+#properties .inspector-special-row { grid-column: 1/-1; display: flex; align-items: center; gap: 12px; font-size: 11px; color: #777f8c; min-width: 0; }
+.inspector-choice { flex: 1; min-width: 0; width: 178px; border: 1px solid #eceef2; border-radius: 6px; background: #f5f6f8; }
+#properties .inspector-choice summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; padding: 5px 8px; margin: 0; color: #343946; font-weight: 400; font-size: 12px; list-style: none; cursor: pointer; }
+.inspector-choice summary::-webkit-details-marker { display: none; }
+.inspector-choice summary[aria-disabled=true] { opacity: .45; cursor: not-allowed; }
+.inspector-choice summary>span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inspector-choice svg { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; }
+.inspector-choice svg.choice-chevron { width: 14px; height: 14px; color: #89919e; }
+.inspector-choice[open] { background: #fff; }
+.inspector-options { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #e7e9ee; padding: 4px; max-height: 228px; overflow: auto; }
+#properties .inspector-options button { width: 100%; min-height: 30px; padding: 6px 8px; justify-content: flex-start; border-radius: 4px; font-size: 12px; }
+#properties .inspector-options button[aria-selected=true] { background: #edf0ff; color: var(--accent); }
+.inspector-options.shape-options { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 3px; }
+#properties .shape-options button { padding: 6px; min-height: 36px; justify-content: center; }
+#properties .property-section .inspector-choice { flex: none; }
+.scrub-handle { cursor: ew-resize; touch-action: none; user-select: none; }
+.field-label.scrub-handle { padding-block: 8px; }
+.field-unit.scrub-handle { display: flex; align-items: center; align-self: stretch; padding-left: 4px; }
+.inspector-scrubbing, .inspector-scrubbing * { cursor: ew-resize !important; user-select: none !important; }
+
+.inspector-special-row > span { align-self: flex-start; padding-top: 8px; flex: none; }
+
+/* Native top-layer popovers escape the inspector's scrolling/clipping without taking layout space. */
+.inspector-options[popover] { position: fixed; inset: auto; margin: 0; border: 1px solid #e3e6ed; border-radius: 8px; background: #fff; color: #343946; box-shadow: 0 8px 28px #25304a1a, 0 2px 6px #25304a0a; z-index: 40; box-sizing: border-box; }
+.inspector-options[popover]:not(:popover-open) { display: none; }
+.inspector-options[popover]::backdrop { background: transparent; pointer-events: none; }
+
+@media (max-width: 760px) {
+  .canvas-identity { bottom: calc(var(--zoom-toolbar-bottom, 86px) + 10px); max-width: calc(100vw - 240px); }
+  .canvas-identity .save-status { display: block; overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* Native source fields preserve newlines, selection, IME and undo without DOM normalization. */
+.node.text.editing textarea.node-content{display:block;box-sizing:border-box;resize:none;border:0;border-radius:0;outline:none;min-height:1.5em;margin:0;color:inherit;font-weight:inherit;text-align:inherit;letter-spacing:inherit;tab-size:4;user-select:text;cursor:text;overflow:hidden;}
+.markdown-editor-panes textarea{tab-size:4;}
+
+.canvas-mermaid{margin:1em 0;min-width:0;}
+.canvas-mermaid-diagram{width:100%;overflow:auto;}
+:is(.node.text .node-content,.markdown-body) .canvas-mermaid-diagram>img{display:block;width:100%;height:auto;max-width:100%;border-radius:0;}
+.canvas-mermaid [role=status]{font:13px/1.6 -apple-system,'PingFang SC',sans-serif;color:#7b8390;}
+.canvas-mermaid[data-state=error] [role=status]{color:#b24a50;}
+
+/* Canvas text is a plain, in-place writing surface. Imported documents own Markdown UI. */
+.node.text.plain-text:not(.editing) .node-content{white-space:normal;line-height:1.55;}
+.node.text.plain-text.editing textarea.node-content{font-family:inherit;font-size:inherit;line-height:1.55;background:transparent;}
+
+
+.inspector-control input[hidden]{display:none}
+
+/* Side rails keep the full height of an activated board free of bottom docks. */
+.creation-tools, .view-tools, .zoom-tools {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+.creation-tools {
+  left: 16px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  padding: 6px;
+  gap: 3px;
+  max-height: calc(100dvh - 96px);
+  border-radius: 14px;
+  animation: none;
+}
+.creation-tools button {
+  width: 36px;
+  height: clamp(26px, calc((100dvh - 162px) / 11), 36px);
+  flex: none;
+}
+.view-tools { top: 16px; right: 16px; }
+.view-tools button { width: 46px; padding: 5px; }
+.view-tools #fullscreen { font-size: 0; gap: 0; }
+.zoom-tools { right: 16px; bottom: 48px; }
+.zoom-tools button { width: 46px; flex: none; }
+.creation-tools .divider, .view-tools .divider, .zoom-tools .divider {
+  width: 22px;
+  height: 1px;
+  min-height: 1px;
+  margin: 4px 0;
+  flex: none;
+}
+#selection-tools { width: max-content; flex-direction: row; flex-wrap: wrap; align-items: center; overflow: visible; }
+#selection-tools button { justify-content: flex-start; flex: none; }
+#selection-tools .divider { align-self: center; width: 1px; height: 20px; margin: 0 5px; }
+.creation-tools [data-tip]::after {
+  left: calc(100% + 14px); right: auto; top: 50%; bottom: auto;
+  transform: translateY(-50%);
+}
+.view-tools [data-tip]::after, .zoom-tools [data-tip]::after {
+  left: auto; right: calc(100% + 14px); top: 50%; bottom: auto;
+  transform: translateY(-50%);
+}
+.creation-tools [data-tip]:hover::after, .view-tools [data-tip]:hover::after, .zoom-tools [data-tip]:hover::after {
+  transform: translateY(-50%);
+}
+.canvas-identity { left: 16px; top: auto; bottom: 16px; max-width: calc(100vw - 96px); }
+@media (max-height: 520px) {
+  .creation-tools { gap: 1px; max-height: calc(100dvh - 64px); overflow-y: auto; }
+  .view-tools { top: 8px; }
+  .zoom-tools { bottom: 32px; }
+  .view-tools button, .zoom-tools button { min-height: 26px; height: 26px; }
+}
+
+.interaction-hint { bottom: 20px; max-width: calc(100vw - 180px); text-align: center; animation: none; }
+
+/* One narrow view rail, matching the creation rail. */
+.right-tools {
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  padding: 6px;
+  gap: 3px;
+  border-radius: 14px;
+  max-height: calc(100dvh - 64px);
+  animation: none;
+}
+.right-tools .view-tools, .right-tools .zoom-tools {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.right-tools button, .right-tools #zoom-reset {
+  width: 36px;
+  min-width: 0;
+  height: 36px;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+.right-tools #zoom-reset { font-size: 11px; letter-spacing: -.3px; }
+.right-tools > .divider { width: 22px; height: 1px; margin: 4px 0; }
+@media (max-height: 520px) {
+  .right-tools { gap: 1px; overflow-y: auto; }
+  .right-tools .view-tools, .right-tools .zoom-tools { gap: 1px; }
+  .right-tools button, .right-tools #zoom-reset { height: 26px; }
+}
+
+/* Color values share a single surface with their swatch and object opacity. */
+#properties :is(.field-color, .field-textColor, .field-strokeColor) { grid-column: 1/-1; }
+#properties :is(.field-color, .field-textColor, .field-strokeColor) > .field-label { flex: 0 0 48px; }
+#properties :is(.field-color, .field-textColor, .field-strokeColor) .inspector-color-control { flex: 1; justify-content: flex-start; height: 34px; padding: 0 5px; gap: 2px; background: #f5f6f8; border: 1px solid transparent; border-radius: 6px; }
+#properties .inspector-color-control:focus-within { background: #f5f6f8; border: 1px solid var(--accent); box-shadow: 0 0 0 2px rgba(87,101,206,.09); }
+#properties .inspector-color-control .canvas-color-button { width: 24px; height: 28px; border-radius: 4px; }
+#properties .inspector-color-control .color-hex-input { flex: 1; width: 0; padding: 7px 3px; font-size: 12px; letter-spacing: .2px; }
+#properties .inspector-color-control > .inspector-opacity-control { flex: 0 0 65px; height: 24px; margin-left: 3px; border: 0; border-left: 1px solid #fff; border-radius: 0; background: transparent; box-shadow: none; }
+#properties .inspector-opacity-control input { padding: 4px 3px 4px 9px; text-align: center; }
+#properties .inspector-opacity-control .field-unit { padding: 0 3px; color: #8b9099; }
+#properties .inspector-color-control:has(input:disabled) { opacity: .5; }
+
+/* Shared label column: full-width fields line up across inspector sections. */
+#properties { --inspector-label-width: 48px; }
+#properties :is(.field-name,.inspector-special-row) { gap: 6px; }
+#properties :is(.field-name > .field-label,.inspector-special-row > span) { flex: 0 0 var(--inspector-label-width); }
+#properties .field-name .inspector-control { margin-left: 0; }
+#properties .property-section label { gap: 6px; }
+#properties .property-section :is(.inspector-choice,.alignment-segments) { flex: 1; width: auto; }
+#properties .property-section label { display: grid; grid-template-columns: var(--inspector-label-width) minmax(0,1fr); }
+#properties :is(.field-color,.field-textColor,.field-strokeColor) .inspector-color-control:focus-within { background: #f5f6f8; border: 1px solid var(--accent); box-shadow: 0 0 0 2px rgba(87,101,206,.09); }
+#properties :is(.field-color,.field-textColor,.field-strokeColor) .inspector-color-control > .inspector-opacity-control { flex: 0 0 65px; height: 24px; border: 0; border-left: 1px solid #fff; border-radius: 0; background: transparent; box-shadow: none; }
+#selection-tools button { justify-content: center; width: 34px; height: 34px; padding: 0; }
+
+#properties :is(.field-opacity,.field-strokeWidth) { grid-column: 1/-1; }
+#properties :is(.field-opacity,.field-strokeWidth) > .field-label { flex: 0 0 var(--inspector-label-width); }
+#properties :is(.field-x,.field-y,.field-width,.field-height,.field-fontSize,.field-lineHeight,.field-letterSpacing,.field-radius) > .field-label { flex: 0 0 22px; }

@@ -83,16 +83,24 @@
   }
   function restoreUI(frame, ui) {
     const doc = frame.contentDocument;
+    let skippedControls = 0;
     for (const item of ui.controls) {
-      const el = doc.querySelector(item.selector);
-      if (!el || el.localName !== item.tag || (el.type || '') !== item.type) throw Error('页面控件已变化，请重新固定状态');
+      let el;
+      try { el = doc.querySelector(item.selector); } catch { /* An old selector may no longer be supported. */ }
+      if (!el || el.localName !== item.tag || (el.type || '') !== item.type || item.tag === 'select' && el.options.length !== item.selected.length) {
+        skippedControls++;
+        continue;
+      }
       // Set native properties only: dispatching change/input can submit requests.
       if (item.tag === 'details') el.open = item.open;
       else if (item.tag === 'select') [...el.options].forEach((o,i) => o.selected = Boolean(item.selected[i]));
       else { el.value = item.value; el.checked = item.checked; }
     }
-    for (const item of ui.scroll) doc.querySelector(item.selector)?.scrollTo(item.x, item.y);
+    for (const item of ui.scroll) {
+      try { doc.querySelector(item.selector)?.scrollTo(item.x, item.y); } catch { /* Ignore obsolete scroll targets. */ }
+    }
     frame.contentWindow.scrollTo(ui.x, ui.y);
+    return { skippedControls };
   }
   async function restore(frame, pin, src) {
     const api = adapter(frame);
@@ -100,7 +108,7 @@
     const url = urlFor(pin, src);
     frame.contentWindow.history.replaceState(null, '', url);
     await deadline(api.restore(copy(pin.data)));
-    restoreUI(frame, pin.ui);
+    return restoreUI(frame, pin.ui);
   }
   async function capture(frame, src) {
     const api = adapter(frame);
@@ -117,7 +125,8 @@
         trial.src = urlFor(pin, src); root.document.body.append(trial);
       }));
       if (Boolean(trial.contentWindow.ProtaBoardState) !== Boolean(frame.contentWindow.ProtaBoardState)) throw Error('画板状态接口已变化，请保存代码后重新固定');
-      await restore(trial, pin, src);
+      const restored = await restore(trial, pin, src);
+      if (restored.skippedControls) throw Error('页面控件已变化，请重新固定状态');
       if (JSON.stringify(copy(await deadline(adapter(trial).capture()))) !== JSON.stringify(pin.data)) throw Error('画板未能完整恢复，请先适配状态保存');
     } finally { trial.remove(); }
     return pin;

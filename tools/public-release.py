@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from server import workspace
 
 ROOT = Path(__file__).resolve().parents[1]
-DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'integrations/pi', 'src/templates', 'tools', '.claude/skills', 'assets']
+DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'integrations/pi', 'src/templates', 'src/canvas-runtime', 'tools', '.claude/skills', 'assets']
 FILES = ['Prota.exe', 'package.json', 'package-lock.json', 'LICENSE', 'README.md', 'README.zh-CN.md', 'AGENTS.md', '.gitignore', 'start-portal.command',
          'data/agent-provider-presets.json', 'data/agent-sdk-extension.mjs', 'data/templates.json',
          'docs/workspace-and-publishing.md', 'docs/share-setup-guide.md', 'docs/sharing-flow.mmd', 'docs/sharing-flow.svg',

@@ -4,8 +4,9 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { previewConfig, digest, safeId } from './config.mjs';
 import { validateFiles } from './validator.mjs';
+import { sharedCanvasRuntime } from './canvas-runtime.mjs';
 const allowed = /\.(?:html?|css|[cm]?js|json|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|mp[34]|webm|ogg|wav|pdf|txt|wasm)$/i;
-export async function readPage(root, config = previewConfig) {
+export async function readPage(root, config = previewConfig, runtimeOrigin) {
     const files = new Map(), stats = new Map(); let bytes = 0;
     // Reject symlinks on every path component, including project/page/version.
     for (let part = path.resolve(root); part !== path.dirname(part); part = path.dirname(part)) {
@@ -35,15 +36,34 @@ export async function readPage(root, config = previewConfig) {
         }
     }
     await visit(root);
+    const html = files.get('index.html')?.toString('utf8') || '';
+    const shared = /data-prota-canvas-shell=["']shared-v1["']/.test(html);
+    const legacy = html.includes('id="stage"') && html.includes('canvas-data.js') && html.includes('canvas-core.js');
+    if (shared || legacy && runtimeOrigin) {
+        const runtime = await sharedCanvasRuntime(root, runtimeOrigin);
+        if (runtime) {
+            if (legacy) for (const name of runtime.keys()) {
+                if (!name.startsWith('__prota_runtime/')) continue;
+                const retired = name.slice('__prota_runtime/'.length);
+                if (files.has(retired)) { bytes -= files.get(retired).length; files.delete(retired); }
+            }
+            for (const [name, data] of runtime) {
+                if (files.has(name)) bytes -= files.get(name).length;
+                bytes += data.length;
+                files.set(name, data);
+            }
+            if (bytes > config.maxBytes || files.size > config.maxFiles) throw new Error('Preview capacity exceeded');
+        }
+    }
     const hash = digest([...files].sort(([a], [b]) => a.localeCompare(b)).map(([name, data]) => `${name}:${digest(data)}`).join('\n'));
     return { files, stats, hash, bytes };
 }
-export async function createSnapshot({ pageRoot, cacheRoot, runId, revision, previous, config = previewConfig }) {
+export async function createSnapshot({ pageRoot, cacheRoot, runId, revision, previous, config = previewConfig, runtimeOrigin }) {
     if (!safeId(runId) || !Number.isSafeInteger(revision) || revision < 1) throw new Error('Invalid snapshot identity');
-    const first = await readPage(pageRoot, config);
+    const first = await readPage(pageRoot, config, runtimeOrigin);
     if (first.hash === previous?.hash) return null;
     await validateFiles(first.files);
-    const second = await readPage(pageRoot, config);
+    const second = await readPage(pageRoot, config, runtimeOrigin);
     if (first.hash !== second.hash || JSON.stringify([...first.stats]) !== JSON.stringify([...second.stats])) throw new Error('Files still changing');
     const runRoot = path.join(cacheRoot, runId), candidate = path.join(runRoot, `.candidate-${randomUUID()}`);
     await fs.mkdir(candidate, { recursive: true, mode: 0o700 });

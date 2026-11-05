@@ -44,8 +44,8 @@
     text: { label: '文本', kind: 'text', width: 240, height: 80 },
     circle: { label: '圆形', kind: 'ellipse', width: 140, height: 140 }
   };
-  // Picker order mirrors the 5×5 reference grid; the two legacy shapes close the list.
-  const MENU = ['text', 'document', 'rounded-rect', 'terminator', 'decision', 'process', 'circle', 'database', 'hexagon-notched', 'hexagon-arrow', 'parallelogram', 'speech-bubble', 'triangle-right', 'triangle', 'trapezoid', 'star', 'hexagon', 'pentagon', 'octagon', 'arrow-right', 'arrow-both', 'cloud', 'callout', 'brace', 'cross', 'subprocess', 'connector'];
+  // 开始/结束 leads the picker; the three core flow shapes follow; the two legacy shapes close the list.
+  const MENU = ['terminator', 'rounded-rect', 'decision', 'process', 'text', 'document', 'circle', 'database', 'hexagon-notched', 'hexagon-arrow', 'parallelogram', 'speech-bubble', 'triangle-right', 'triangle', 'trapezoid', 'star', 'hexagon', 'pentagon', 'octagon', 'arrow-right', 'arrow-both', 'cloud', 'callout', 'brace', 'cross', 'subprocess', 'connector'];
   const round = value => Math.round(value * 100) / 100;
   const polygonPath = (outline, w, h) => outline.map(([x, y], i) => (i ? 'L' : 'M') + round(x * w) + ' ' + round(y * h)).join('') + 'Z';
   function shapePaths(id, w, h) {
@@ -125,5 +125,12 @@
   const defaults = id => { const preset = PRESETS[id] || {}; return { label: preset.label || id, text: preset.text ?? '', width: preset.width || 220, height: preset.height || 100, kind: preset.kind || 'flow' }; };
   const inset = id => (PRESETS[id] || {}).inset || 0;
   const kindSet = new Set(KINDS);
-  root.CanvasFlowShapes = Object.freeze({ KINDS: Object.freeze([...KINDS]), MENU: Object.freeze([...MENU]), PRESETS, has: id => kindSet.has(id), paths: shapePaths, endpoint, defaults, inset });
+  // Icon boxes keep the preset's real proportions: drawn square, the terminator capsule collapses into a circle.
+  const iconBox = id => {
+    const box = { width: 24, height: 24 };
+    if (!kindSet.has(id)) return box;
+    const preset = PRESETS[id], scale = 24 / Math.max(preset.width, preset.height);
+    return { width: Math.round(preset.width * scale * 100) / 100, height: Math.round(preset.height * scale * 100) / 100 };
+  };
+  root.CanvasFlowShapes = Object.freeze({ KINDS: Object.freeze([...KINDS]), MENU: Object.freeze([...MENU]), PRESETS, has: id => kindSet.has(id), paths: shapePaths, endpoint, defaults, inset, iconBox });
 })(globalThis);

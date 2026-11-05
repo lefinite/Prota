@@ -126,8 +126,9 @@ def build_context(root, static, filename, payload, application_root=None):
         page_id, version = selected.get('pageId') or selected.get('id'), selected['version']
         if not re.fullmatch(r'[A-Za-z0-9_-]+', str(page_id)) or not re.fullmatch(r'v\d+', version):
             raise ValueError('MCP 页面版本无效。')
-        prefix = f'src/pages/{project}/{page_id}/{version}/'
-        page_prefix = f'src/pages/{project}/{page_id}/'
+        prefix = str(Path(selected['canvasEntryPath']).parent).replace('\\', '/') + '/' if selected.get('canvasEntryPath') else f'src/pages/{project}/{page_id}/{version}/'
+        page_prefix = str(Path(selected['canvasEntryPath']).parents[1]).replace('\\', '/') + '/' if selected.get('canvasEntryPath') else f'src/pages/{project}/{page_id}/'
+        runtime_prefix = '__prota_runtime/' + selected['canvasRuntimeHash'] + '/' if re.fullmatch(r'[a-f0-9]{64}', str(selected.get('canvasRuntimeHash', ''))) else None
         base = safe_file(static, prefix)
         if not (base / 'index.html').is_file():
             raise ValueError('MCP 页面入口缺失。')
@@ -181,6 +182,7 @@ def build_context(root, static, filename, payload, application_root=None):
                 continue
             seen.add(path)
             if not (path.startswith(prefix) or path in allowed_docs or path.startswith(page_prefix + 'docs/')
+                    or runtime_prefix and path.startswith(runtime_prefix)
                     or path.startswith(('assets/', 'src/templates/'))):
                 raise ValueError('MCP 依赖超出分享版本。')
             if path in excluded or path.endswith('prd-index.json'):

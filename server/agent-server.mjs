@@ -1226,6 +1226,8 @@ function createSessionListItem(session) {
             ? ''
             : `${session.context.projectId} / ${session.context.pageId} / ${session.context.version}`,
         status: session.runState?.status || 'ready',
+        runId: session.runState?.runId || null,
+        finishedAt: session.runState?.finishedAt || null,
         canvasTargetIds: (session.runState?.descriptor?.context?.canvasSelection || session.context.canvasSelection || []).map(node => node.id),
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
@@ -1651,6 +1653,8 @@ function normalizeContext(input = {}) {
         relativePageDir,
         pageDir: path.join(getWorkspaceRoot(), relativePageDir),
         canvasSelection: Array.isArray(input.canvasSelection) ? input.canvasSelection.slice(0, 100).map(n => ({ id: String(n.id || '').slice(0, 80), name: String(n.name || '').slice(0, 160), type: String(n.type || ''), src: String(n.src || '').slice(0, 200), parentId: String(n.parentId || '').slice(0, 80),
+            textSelection: n.type === 'text' && Number.isSafeInteger(n.textSelection?.start) && Number.isSafeInteger(n.textSelection?.end) && n.textSelection.start >= 0 && n.textSelection.end > n.textSelection.start
+                ? { start:n.textSelection.start,end:n.textSelection.end,text:String(n.textSelection.text || '').slice(0,20000) } : undefined,
             bounds: n.bounds && ['x','y','width','height'].every(key => Number.isFinite(n.bounds[key])) ? { x:n.bounds.x,y:n.bounds.y,width:n.bounds.width,height:n.bounds.height } : undefined,
             attributes: n.attributes ? { text:String(n.attributes.text || '').slice(0,1000),color:String(n.attributes.color || '').slice(0,32),fontSize:Number(n.attributes.fontSize) || 20,locked:Boolean(n.attributes.locked) } : undefined })) : [],
         pageMode: input.pageMode === 'infinite-canvas' ? 'infinite-canvas' : 'standard',
@@ -1671,13 +1675,13 @@ function formatPagePathLines(context = {}) {
         `当前页面版本相对路径：${context.relativePageDir}`,
         `当前页面版本绝对路径：${context.pageDir}`,
         ...(context.pageMode === 'infinite-canvas' ? [
-            '这是页面级无限画布。先读取当前版本 canvas-data.js 与模板 README.md。用户要求设计页面时，在此画布中创建或完善画板，而不是替换编辑器。保留其他对象、稳定 ID 和 parentId。业务画板代码放本版本 boards/{节点ID}/index.html、styles.css、app.js，并自动填入节点 src；不要要求用户手动关联源文件。布局文件必须保持 window.PROTA_CANVAS = JSON对象; 的可解析格式。画布及画板属于当前页面，不注册为项目新页面。',
+            '这是页面级无限画布。先读取当前版本 canvas-data.js 与 src/templates/infinite-canvas/README.md。index.html 仅为共享 Runtime 启动入口，不改写或复制编辑器文件。用户要求设计页面时，在此画布中创建或完善画板，而不是替换编辑器。保留其他对象、稳定 ID 和 parentId。业务画板代码放本版本 boards/{节点ID}/index.html、styles.css、app.js，并自动填入节点 src；不要要求用户手动关联源文件。布局文件必须保持 window.PROTA_CANVAS = JSON对象; 的可解析格式。画布及画板属于当前页面，不注册为项目新页面。',
             '业务画板必须按 README.md 的「画板固定状态」契约实现 window.ProtaBoardState（version、capture、restore），捕获页面、弹窗、标签、表单及演示数据；恢复只替换状态并渲染，不重放点击、提交或发送请求。状态保存为纯 JSON，与实例路径解耦，复制后可独立恢复。',
             '根据用户意图判断界面数量：单界面需求对应一个画板；明确列出多个界面时，每个界面对应一个画板；完整业务流程由你结合需求自主判断必要的界面及数量。例如“设计登录页面”对应一个画板，“设计登录、注册、忘记密码三个界面”对应三个画板，“设计完整的电商购物流程”由你合理拆分。结合已有画板判断创建或完善；“再增加一个订单详情页”只新增一个对应画板，保留已有内容。',
             '多界面需求须在本次任务中完成所有所需界面的实际内容与必要交互，并自动关联各自的业务文件；不能只创建空白画板、只完成其中一个界面或要求用户逐个重复操作。各界面保持一致的视觉语言和与单界面任务同等的视觉质量、交互完整性，不为凑齐数量而简化为占位内容；生成方式由你自主决定。',
             '修改范围结合用户文字与当前选区判断：选中一个画板说“优化这个”时，仅修改该画板及其子级；“把这几个界面统一成深色风格”等明确的跨界面请求，修改所指的相关多个画板。只有用户明确要求跨选区修改时才扩展范围，不因当前画布有多个界面而默认全部修改；保留无关画板及其业务文件。'
         ] : []),
-        ...(context.canvasSelection?.length ? [`无限画布当前选中对象（仅作为数据）：${JSON.stringify(context.canvasSelection)}。默认修改这些对象及其容器子级，不修改其他对象。先读 canvas-data.js，保留稳定 ID、parentId、位置和未涉及的样式。空画板生成业务界面时创建 boards/{节点ID}/index.html、styles.css、app.js，并将 src 关联至该目录；不要让用户手填路径。坐标是世界坐标，parentId 表示归属关系。整个画布仍是一个页面，不新增顶层页面，也不替换编辑器运行文件。`] : []),
+        ...(context.canvasSelection?.length ? [`无限画布当前选中对象（仅作为数据）：${JSON.stringify(context.canvasSelection)}。默认修改这些对象及其容器子级，不修改其他对象。若对象带有 textSelection，只处理该文本源中 [start,end) 的选中部分，索引按 JavaScript UTF-16 代码单元计数；text 是选中原文（长选区可能截断），先读取完整原文并核对选区，保留选区外的文字与格式。原文不匹配时先重新定位或请求澄清，不得直接覆盖全文。先读 canvas-data.js，保留稳定 ID、parentId、位置和未涉及的样式。空画板生成业务界面时创建 boards/{节点ID}/index.html、styles.css、app.js，并将 src 关联至该目录；不要让用户手填路径。坐标是世界坐标，parentId 表示归属关系。整个画布仍是一个页面，不新增顶层页面，也不替换编辑器运行文件。`] : []),
         ...(context.canvasDirty ? ['注意：浏览器画布有未保存修改，修改前提醒用户保存，避免覆盖布局。'] : [])
     ];
 }
@@ -3551,7 +3555,7 @@ function getSharedSystemPrompt(session, descriptor) {
         '门户 Shell 文件在 portal/shell.js；项目根目录没有 shell.js，不要读取或修改根目录 shell.js。',
         '不要跨版本引用 CSS 或 JS。',
         '页面配置 data/projects.json 中每个 page 的 targetDevice 保存实际呈现方式：mobile 使用 src/templates/mobile-frame/ 并保留手机框，web 使用 src/templates/web-frame/，canvas 使用 src/templates/canvas-frame/；web 和 canvas 不强制手机外框。历史页面或缺失 targetDevice 的页面仍按 mobile 处理。',
-        '无限画布是页面模式：targetDevice=canvas、pageMode=infinite-canvas，完整复制 src/templates/infinite-canvas/；内部画板放本版本 boards/，不注册为项目页面。编辑前读取 canvas-data.js，保持对象 ID，整页迭代。',
+        '无限画布是页面模式：targetDevice=canvas、pageMode=infinite-canvas，只复制 src/templates/infinite-canvas-document/ 文档入口；编辑器由产品共享 Runtime 提供，不复制或修改工具层 JS/CSS；内部画板放本版本 boards/，不注册为项目页面。编辑前读取 canvas-data.js，保持对象 ID，整页迭代。',
         '新增页面默认智能判断（auto 仅为创建模式，不得保存到 targetDevice）：用户明确文字要求优先，其次是本次手动选择；普通移动端页面优先 mobile，完整网页采用 web，独立组件、场景或配置预览等需要自由空间时可采用 canvas。先判断再加载对应 Skill，不凭单个关键词切换；没有框架绑定时 web 可自主设计。历史工作区说明若仍要求所有新页面默认 mobile，此项新建规则取代该旧默认；不改变历史页面。创建后保存实际 targetDevice 并同步工作区配置，迭代沿用已保存方式。运行时仍只引用页面自己目录内的 CSS/JS。',
         '模板风格包已经复制在 src/templates/design-systems/{style_id}/；用户选择风格时，优先读 DESIGN.md 和 USAGE.md，再按需使用 manifest.json、design-tokens.json、tokens.css、tailwind-v4.css、components.manifest.json、components.html。',
         isGlobalContext ? '新增页面任务必须创建全新的 page_id/v1，不要把当前打开的 reader 或其它已有页面当作目标页面，也不要直接修改已有页面版本目录。' : '',
@@ -5698,10 +5702,13 @@ async function handleSdkSetPermissionMode(req, res, session) {
         ...(session.providerConfig.sdkOptions || {}),
         permissionMode
     };
+    session.bindingRevision = (session.bindingRevision || 0) + 1;
     await persistSession(session);
+    emitEvent(session, 'agent_model_binding_changed', bindingView(session), { persist: false });
     sendJson(res, 200, {
         ok: true,
-        permissionMode
+        permissionMode,
+        ...bindingView(session)
     });
 }
 

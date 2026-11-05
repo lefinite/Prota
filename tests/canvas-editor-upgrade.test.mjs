@@ -8,7 +8,7 @@ const method = source.slice(source.indexOf('    async upgradeCanvasEditorIfNeede
 // After an upgrade the shell probes the scripts the installed entry loads; use the real template entry.
 const installedEntry = readFileSync(new URL('../src/templates/infinite-canvas/index.html', import.meta.url), 'utf8');
 
-async function checkUpgrade({ canvasScript = false, state, editor, force = false, draft = null, healthy = false, connectionVersion = 19, missing = [], notInstalled = [] } = {}) {
+async function checkUpgrade({ canvasScript = false, state, editor, force = false, draft = null, healthy = false, connectionVersion = 20, missing = [], notInstalled = [], legacyEntry = false, agentActive = false, previewBusy = false, upgradeResponse = { runtimeVersion: 63 } } = {}) {
     const requests = [];
     const probes = [];
     const errors = [];
@@ -20,6 +20,7 @@ async function checkUpgrade({ canvasScript = false, state, editor, force = false
         localStorage: { getItem() { return JSON.stringify(draft); } },
         PROTA_CANVAS: state,
         protaCanvas: editor,
+        __protaCanvasLegacyEntry: legacyEntry,
         postMessage() {},
     };
     if (healthy) {
@@ -33,7 +34,7 @@ async function checkUpgrade({ canvasScript = false, state, editor, force = false
         fetch: async (url, options = {}) => {
             if (options.method === 'POST') {
                 requests.push({ url, body: JSON.parse(options.body) });
-                return { ok: true, json: async () => ({ runtimeVersion: 49 }) };
+                return { ok: true, json: async () => upgradeResponse };
             }
             if (url.endsWith('/index.html')) return { ok: true, text: async () => installedEntry };
             probes.push(url);
@@ -42,6 +43,7 @@ async function checkUpgrade({ canvasScript = false, state, editor, force = false
     });
     const shell = {
         activeProjectId: context.projectId, activePageId: context.pageId, activeVersion: context.version,
+        agentRunState: { active: agentActive }, previewController: { busy: previewBusy },
         mainIframe: { contentWindow: frame }, getPageRecord: () => ({ pageMode: 'infinite-canvas' }),
         isInfiniteCanvasPage: () => true, getAgentContext: () => context, showToast: message => errors.push(message),
     };
@@ -72,24 +74,24 @@ test('canvas repairs preserve dirty editor state and pending recovery drafts', a
     }
 });
 
-test('existing healthy canvases upgrade to the pinned board state runtime, while current editors stay loaded', async () => {
-    for (const runtimeVersion of [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]) {
-        const result = await checkUpgrade({ healthy: true, state: { nodes: [] }, editor: { runtimeVersion, previewSyncVersion: 2, isDirty: () => false } });
-        assert.equal(result.requests.length, runtimeVersion < 49 ? 1 : 0);
-        assert.equal(result.reloads, runtimeVersion < 49 ? 1 : 0);
+test('existing healthy canvases upgrade to the shared inspector runtime, while current editors stay loaded', async () => {
+    for (const runtimeVersion of [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]) {
+        const result = await checkUpgrade({ healthy: true, state: { nodes: [] }, editor: { runtimeVersion, colorControlVersion: 2, previewSyncVersion: 2, isDirty: () => false } });
+        assert.equal(result.requests.length, runtimeVersion < 63 ? 1 : 0);
+        assert.equal(result.reloads, runtimeVersion < 63 ? 1 : 0);
         assert.deepEqual(result.errors, []);
     }
 });
 
 test('a current runtime with the previous connection editor receives the interaction upgrade', async () => {
-    const result = await checkUpgrade({ healthy: true, connectionVersion: 18, state: { nodes: [] }, editor: { runtimeVersion: 49, previewSyncVersion: 2, isDirty: () => false } });
+    const result = await checkUpgrade({ healthy: true, connectionVersion: 19, state: { nodes: [] }, editor: { runtimeVersion: 63, colorControlVersion: 2, previewSyncVersion: 2, isDirty: () => false } });
     assert.equal(result.requests.length, 1);
     assert.equal(result.reloads, 1);
 });
 
 test('a canvas missing the flowchart quick-create resources is repaired even at the current version', async () => {
     for (const missing of [['CanvasFlowShapes'], ['CanvasFlowQuickCreate']]) {
-        const result = await checkUpgrade({ healthy: true, missing, state: { nodes: [] }, editor: { runtimeVersion: 49, previewSyncVersion: 2, isDirty: () => false } });
+        const result = await checkUpgrade({ healthy: true, missing, state: { nodes: [] }, editor: { runtimeVersion: 63, colorControlVersion: 2, previewSyncVersion: 2, isDirty: () => false } });
         assert.equal(result.requests.length, 1, missing[0]);
         assert.equal(result.reloads, 1, missing[0]);
     }
@@ -111,4 +113,31 @@ test('a stale local service that skips new runtime files asks for a restart inst
         assert.equal(result.reloads, 0, notInstalled[0]);
         assert.deepEqual(result.errors, ['画布编辑器修复失败：本地服务尚未更新，请重启 Prota 后点击修复重试。']);
     }
+});
+
+test('a mislabeled runtime without round color controls still upgrades', async () => {
+ const result=await checkUpgrade({healthy:true,state:{nodes:[]},editor:{runtimeVersion:63,previewSyncVersion:2,isDirty:()=>false}});
+ assert.equal(result.requests.length,1);assert.equal(result.reloads,1);
+});
+
+test('old color controls upgrade even when the runtime version is current', async () => {
+ const result=await checkUpgrade({healthy:true,state:{nodes:[]},editor:{runtimeVersion:63,colorControlVersion:1,previewSyncVersion:2,isDirty:()=>false}});
+ assert.equal(result.requests.length,1);assert.equal(result.reloads,1);
+});
+
+test('shared editors use current resources without per-page version checks or file copies', async () => {
+ const editor={shellFormat:'shared-v1',runtimeVersion:1,isDirty:()=>false};
+ assert.deepEqual(await checkUpgrade({editor,state:{nodes:[]}}),{requests:[],probes:[],errors:[],reloads:0});
+ const forced=await checkUpgrade({editor,state:{nodes:[]},force:true});
+ assert.equal(forced.requests.length,0);assert.equal(forced.reloads,1);
+ const dirty=await checkUpgrade({editor:{...editor,isDirty:()=>true},state:{nodes:[]},force:true});
+ assert.equal(dirty.requests.length,0);assert.equal(dirty.reloads,0);
+});
+
+test('a virtual legacy entry migrates once when safe and defers during Agent/preview work', async () => {
+ const options={healthy:true,legacyEntry:true,state:{nodes:[]},editor:{shellFormat:'shared-v1',runtimeVersion:63,colorControlVersion:2,previewSyncVersion:2,isDirty:()=>false},upgradeResponse:{runtimeVersion:63,shellFormat:'shared-v1'}};
+ const result=await checkUpgrade(options);assert.equal(result.requests.length,1);assert.equal(result.reloads,1);
+ for(const busy of [{agentActive:true},{previewBusy:true},{draft:{state:{nodes:[{id:'unsaved'}]}}}]){
+  const blocked=await checkUpgrade({...options,...busy});assert.equal(blocked.requests.length,0);assert.equal(blocked.reloads,0);
+ }
 });

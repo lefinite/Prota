@@ -76,6 +76,25 @@ def withdraw_snapshot(static, filenames):
             if Path(zipped).name == zipped:
                 for relative in [zipped, 'shares/' + zipped]:
                     (static / relative).unlink(missing_ok=True)
+    from server.canvas_runtime_package import HASH, SNAPSHOT_PATH
+    def canvas_refs(payloads):
+        runtimes, snapshots = set(), set()
+        for payload in payloads:
+            for page in payload.get('pages', []) if payload.get('mode') == 'folder' else [payload]:
+                runtime_hash = page.get('canvasRuntimeHash', '')
+                entry = page.get('canvasEntryPath', '')
+                if HASH.fullmatch(str(runtime_hash)):
+                    runtimes.add(runtime_hash)
+                match = SNAPSHOT_PATH.fullmatch(str(entry))
+                if match:
+                    snapshots.add(match[1])
+        return runtimes, snapshots
+    old_runtimes, old_snapshots = canvas_refs(removed)
+    kept_runtimes, kept_snapshots = canvas_refs(remaining)
+    for runtime_hash in old_runtimes - kept_runtimes:
+        shutil.rmtree(static / '__prota_runtime' / runtime_hash, ignore_errors=True)
+    for snapshot_hash in old_snapshots - kept_snapshots:
+        shutil.rmtree(static / '__prota_canvas' / snapshot_hash, ignore_errors=True)
     from server.mcp_context import prune_private
     prune_private(static)
 
@@ -257,12 +276,15 @@ class VercelDeployer:
                 for page in frozen.get('pages', []) if frozen.get('mode') == 'folder' else [frozen]:
                     page_id = page.get('pageId') or page.get('id')
                     relative_page = safe_relative(f"src/pages/{frozen['projectId']}/{page_id}/{page['version']}")
-                    shutil.rmtree(static / relative_page, ignore_errors=True)
+                    if not page.get('canvasEntryPath'):
+                        shutil.rmtree(static / relative_page, ignore_errors=True)
                 shutil.copytree(draft / 'content', static, dirs_exist_ok=True)
                 cached.add(file.name)
                 shared.append(relative)
                 continue
             payload = share_payload(file)
+            from server.canvas_runtime_package import pin_share_pages
+            pin_share_pages(self.root, payload, self.app)
             self._copy(self.root, relative, static)
             # Support both historical URL layouts without changing filenames.
             shutil.copy2(static / relative, static / file.name)
@@ -274,21 +296,34 @@ class VercelDeployer:
                 if not all(isinstance(s, str) and re.fullmatch(r'[A-Za-z0-9_-]+', s) for s in [project, page_id]) or not re.fullmatch(r'v\d+', str(version)):
                     raise ValueError(f'分享页面标识无效：{file.name}')
                 relative_page = f'src/pages/{project}/{page_id}/{version}'
-                shutil.rmtree(static / relative_page, ignore_errors=True)
-                self._copy(self.root, relative_page, static)
+                if page.get('canvasEntryPath'):
+                    frozen_page = str(Path(page['canvasEntryPath']).parent).replace('\\', '/')
+                    self._copy(self.root, frozen_page, static)
+                    from server.canvas_runtime_package import stage_web_runtime
+                    stage_web_runtime(self.root, static, static / frozen_page, page, self.app)
+                else:
+                    shutil.rmtree(static / relative_page, ignore_errors=True)
+                    self._copy(self.root, relative_page, static)
+                page_prefix = str(Path(page['canvasEntryPath']).parents[1]).replace('\\', '/') if page.get('canvasEntryPath') else f'src/pages/{project}/{page_id}'
                 documents = page.get('documents') or []
                 for document in documents:
                     doc_path = safe_relative(document.get('path', ''))
-                    if not doc_path.startswith(f'src/pages/{project}/{page_id}/'):
+                    if not doc_path.startswith(page_prefix + '/'):
                         raise ValueError('分享文档不属于选定页面。')
                     if (self.root / doc_path).is_file() or (self.root / 'data/share-archive' / doc_path).is_file():
                         self._copy(self.root, doc_path, static)
                     else:
                         logger.warning('历史分享引用了已缺失的文档：%s', doc_path)
                 # PRD images and diagrams are page-scoped, never project-wide.
-                docs = self.root / f'src/pages/{project}/{page_id}/docs'
+                docs = self.root / page_prefix / 'docs'
+                if not docs.is_dir() and (self.root / 'data/share-archive' / page_prefix / 'docs').is_dir():
+                    docs = self.root / 'data/share-archive' / page_prefix / 'docs'
                 if docs.is_dir() and (documents or page.get('prdContent') or page.get('diagrams') or page.get('mindmaps')):
-                    self._copy(self.root, docs.relative_to(self.root).as_posix(), static)
+                    self._copy(self.root, page_prefix + '/docs', static)
+            if any(page.get('canvasRuntimeHash') for page in pages or []):
+                from server.bridge import build_share_page_html
+                for target in [static / relative, static / file.name]:
+                    target.write_text(build_share_page_html(payload), encoding='utf-8')
             for zip_name in share_zip_filenames(payload):
                 if Path(zip_name).name != zip_name or not zip_name.endswith('.zip'):
                     raise ValueError('下载包路径无效。')
@@ -322,7 +357,7 @@ class VercelDeployer:
             name = Path(file).name
             policy = pending.get(name, {})
             if policy.get('mcpTokenHash') and name not in cached:
-                payload = share_payload(file)
+                payload = share_payload(static / 'shares' / name)
                 manifest = build_context(self.root, static, name, payload, self.app)
                 self.freeze_draft(static, name, payload, manifest, policy)
             elif not policy.get('mcpTokenHash'):
@@ -344,8 +379,11 @@ class VercelDeployer:
         paths = {'shares/' + name, name}
         for page in payload.get('pages', []) if payload.get('mode') == 'folder' else [payload]:
             page_id = page.get('pageId') or page.get('id')
-            prefix = f"src/pages/{payload['projectId']}/{page_id}/"
+            prefix = str(Path(page['canvasEntryPath']).parents[1]).replace('\\', '/') + '/' if page.get('canvasEntryPath') else f"src/pages/{payload['projectId']}/{page_id}/"
             paths.add(prefix + page['version'])
+            if page.get('canvasRuntimeHash'):
+                paths.add('__prota_runtime/' + page['canvasRuntimeHash'])
+                paths.add(str(Path(page['canvasEntryPath']).parent).replace('\\', '/'))
             if (static / prefix / 'docs').is_dir():
                 paths.add(prefix + 'docs')
             paths.update(d['path'].lstrip('/') for d in page.get('documents', []))

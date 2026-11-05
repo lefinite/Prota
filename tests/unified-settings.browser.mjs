@@ -189,6 +189,7 @@ try {
     await page.locator('#globalSettingsBtn').click();
     await page.locator('[data-us-tab=storage]').click();
     await page.locator('[data-us-tab=models]').click();
+    if (!await page.locator('#providerConnectionSettings').evaluate(node => node.open)) await page.locator('#providerConnectionSettings > summary').click();
     await page.locator('.provider-advanced summary').click();
     await page.locator('#agentProviderNameInput').fill('已修改的测试模型');
     assert.match(await page.locator('#usEditStatus').innerText(), /未保存/);
@@ -197,8 +198,8 @@ try {
     assert.equal(JSON.parse(await fs.readFile(path.join(config, 'agent-provider-config.json'), 'utf8')).providers[0].label, '已修改的测试模型');
     // Discovery changes only the draft, and model-list-only edits are guarded.
     await page.route('**/api/agent/fetch-models', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, models: ['fixture-new-model', 'fixture-second-model'] }) }));
-    await page.locator('#agentFetchModelsBtn').click();
-    await page.locator('#agentModelInput option[value="fixture-new-model"]').waitFor({state:'attached'});
+    await page.locator('#agentModelLibrary [data-model-fetch]').click();
+    await page.locator('#agentModelLibrary [data-model-id="fixture-new-model"]').waitFor({state:'attached'});
     assert.equal(await page.locator('#agentModelInput').inputValue(), 'fixture-model');
     assert.equal(await page.evaluate(() => window.shell.agentProviderStore.getSelectedProvider().models.includes('fixture-new-model')), false);
     assert.equal(JSON.parse(await fs.readFile(path.join(config, 'agent-provider-config.json'), 'utf8')).providers[0].models.includes('fixture-new-model'), false);

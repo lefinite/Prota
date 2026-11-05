@@ -7,7 +7,7 @@
   - `project_id`：当前活动项目的唯一标识；Portal 发起任务时，以运行上下文中的 `projectId` 为准
   - `page_id`：唯一标识（如 `reader`, `library`）
   - `version`：小写 `v` + 数字（如 `v1`, `v2`）
-- 每个版本目录**完全自包含**：必须有自己的 `index.html`, `styles.css`, `app.js`
+- 普通 Demo 每个版本目录**完全自包含**：必须有自己的 `index.html`, `styles.css`, `app.js`；无限画布采用第 2 节的共享编辑器与独立业务文档规则
 - **严禁**跨版本引用 CSS/JS 文件
 
 ## 2. 页面端类型
@@ -23,7 +23,7 @@
 
 ### 页面级无限画布
 
-- 无限画布是独立的页面模式：保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`，完整复制 `src/templates/infinite-canvas/`。既有 `canvas` 页面继续使用中性 canvas-frame，不自动升级。
+- 无限画布是独立的页面模式：保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`，只复制 `src/templates/infinite-canvas-document/` 的轻量文档入口。编辑器由产品共享 Runtime 提供，不复制或修改页面内的编辑器 JS/CSS；编辑器唯一源码为 `src/templates/infinite-canvas/`，启动器为 `src/canvas-runtime/boot.js`。分享和 ZIP 由统一打包器固定并内置 Runtime。既有 `canvas` 页面继续使用中性 canvas-frame，不自动升级。
 - 内部画板和素材属于当前页面版本；画板代码放 `boards/{board_id}/`，图片放 `assets/`，布局保存为 `canvas-data.js`。不将内部画板注册为顶层页面。
 - 迭代、下载和分享包含完整版本目录。修改前读取最新布局，保留无关对象与稳定 ID；不覆盖浏览器未保存的布局。
 

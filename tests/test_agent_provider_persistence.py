@@ -16,6 +16,27 @@ class AgentProviderPersistenceTest(unittest.TestCase):
         source['providers'][0]['sdkOptions']['permissionMode'] = 'acceptEdits'
         self.assertEqual(bridge.normalize_agent_provider_config(source)['providers'][0]['sdkOptions']['permissionMode'], 'acceptEdits')
 
+    def test_enabled_models_preserve_subset_empty_and_legacy(self):
+        result = bridge.normalize_agent_provider_config({'providers': [
+            {'id': 'direct', 'model': 'one', 'models': ['one', 'two', 'three'], 'enabledModels': ['one', 'two', 'two']},
+            {'id': 'empty', 'enabledModels': []},
+            {'id': 'legacy', 'model': 'one'},
+            {'id': 'integration:magpie', 'enabledModels': ['group/a'], 'apiKey': 'discard'}
+        ]})['providers']
+        self.assertEqual(result[0]['enabledModels'], ['one', 'two'])
+        self.assertEqual(result[1]['enabledModels'], [])
+        self.assertNotIn('enabledModels', result[2])
+        self.assertEqual(result[3]['enabledModels'], ['group/a'])
+        self.assertEqual(result[3]['apiKey'], '')
+
+    def test_default_permission_mode_is_independent_and_validated(self):
+        payload = {'providers': [{'id': 'direct', 'sdkOptions': {'permissionMode': 'default'}}], 'defaultPermissionMode': 'acceptEdits'}
+        result = bridge.normalize_agent_provider_config(payload)
+        self.assertEqual(result['defaultPermissionMode'], 'acceptEdits')
+        self.assertEqual(result['providers'][0]['sdkOptions']['permissionMode'], 'default')
+        payload['defaultPermissionMode'] = 'invalid'
+        self.assertIsNone(bridge.normalize_agent_provider_config(payload)['defaultPermissionMode'])
+
     def test_round_trip_preserves_provider_and_active_selection(self):
         payload = {
             'providers': [{

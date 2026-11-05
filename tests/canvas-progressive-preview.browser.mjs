@@ -40,7 +40,7 @@ try{
  const send=(type,payload,id=runId)=>page.evaluate(({type,payload,id})=>window.shell.handleAgentSseChunk(`event: ${type}\ndata: ${JSON.stringify({type,runId:id,createdAt:new Date().toISOString(),payload})}\n\n`),{type,payload,id});
  await send('run_started',{progressivePreview:true,context,descriptor:{kind:'message'}});
  await wait(()=>canvas.locator('body').evaluate(el=>el.classList.contains('agent-working')),'Agent edit lock');
- const events=[];observer=new PreviewObserver({workspaceRoot:root,configDirectory:config,runId,scope:context,publish:e=>events.push(e),config:{...previewConfig,stableMs:40,scanMs:80,refreshMs:80}}).start();
+ const events=[];observer=new PreviewObserver({workspaceRoot:root,configDirectory:config,runId,scope:context,publish:e=>events.push(e),runtimeOrigin:base,log:error=>logs+='\n[preview] '+error.message,config:{...previewConfig,stableMs:40,scanMs:80,refreshMs:80}}).start();
  const deliver=async count=>{await wait(()=>events.length>count,'snapshot');const e=events.at(-1);await send('preview_revision',e);await wait(()=>page.evaluate(revision=>window.shell.previewController?.state.revision===revision,e.revision),'canvas applies revision');return e;};
  await deliver(0);await canvas.locator('.node[data-id="existing"] iframe').contentFrame().locator('input').fill('Retain me');
  const addBoard=async(id,rev)=>{doc.revision=rev;doc.nodes.push({id,type:'board',name:id,src:`boards/${id}/index.html`,x:600+rev*40,y:150,width:350,height:300});await write(relative+`/boards/${id}/index.html`,`<h1>${id}</h1>`);await write(relative+'/canvas-data.js','window.PROTA_CANVAS = '+JSON.stringify(doc)+';');};
@@ -71,7 +71,7 @@ try{
  await page.evaluate(()=>{window.shell.agentRunState.active=false;window.shell.syncCanvasAgentStatus();});
  await wait(()=>canvas.locator('body').evaluate(el=>!el.classList.contains('agent-working')),'unlocked draft setup');
  await page.route('**/api/canvas/save',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"offline"}'}));
- await canvas.locator('.node[data-id="draft"] .node-content').click();await canvas.locator('#selection-tools [data-action=edit-text]').click();await canvas.locator('[contenteditable="plaintext-only"]').fill('Unsaved local draft');await canvas.locator('[contenteditable="plaintext-only"]').press('Tab');
+ await canvas.locator('.node[data-id="draft"] .node-content').dblclick();await canvas.locator('.node.editing .node-content').fill('Unsaved local draft');await canvas.locator('.node.editing .node-content').press('Tab');
  await wait(()=>page.evaluate(()=>window.shell.mainIframe.contentWindow.protaCanvas.isDirty()),'draft');
  await page.evaluate(()=>{window.shell.agentRunState.active=true;window.shell.syncCanvasAgentStatus();});
  await addBoard('draft-protected',5);await send('run_live_changes',{files:[{path:relative+'/canvas-data.js'}]});await new Promise(r=>setTimeout(r,1600));

@@ -10,8 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="modules/settings/settings.css?v=20261027">
-    <link rel="stylesheet" href="shell.css?v=20261102-persistent-doc-toggle">
-    <link rel="stylesheet" href="modules/prd/prd.css?v=20261102-persistent-doc-toggle">
+    <link rel="stylesheet" href="shell.css?v=20261105-session-folders">
+    <link rel="stylesheet" href="agent/model-library.css?v=20261103-redesign">
+    <link rel="stylesheet" href="modules/prd/prd.css?v=20261104-page-search">
     <link rel="stylesheet" href="modules/sharing/dialog.css">
 </head>
 <body data-top-view="page">
@@ -105,8 +106,12 @@
 
                 <!-- Pages Section (hidden by default) -->
                 <div id="pageNavSection" class="nav-section" hidden>
-                    <div class="nav-title-row">
-                        <h3 class="nav-title">页面列表</h3>
+                    <div class="nav-title-row page-search-row">
+                        <div class="page-search">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+                            <input id="pageSearchInput" type="search" placeholder="搜索页面" aria-label="搜索页面" aria-controls="pageList" autocomplete="off" spellcheck="false">
+                            <button id="pageSearchClear" class="page-search__clear" type="button" aria-label="清空页面搜索" title="清空搜索" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"></path></svg></button>
+                        </div>
                         <div class="nav-title-actions">
                             <button id="addFolderBtn" class="nav-action-btn" type="button" title="新建文件夹">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -449,7 +454,10 @@
                 <aside class="agent-session-sidebar">
                     <div class="agent-session-sidebar__header" id="agentSessionSidebarHeader">
                         <div class="agent-session-sidebar__title-wrap">
-                            <div class="agent-session-sidebar__title">历史对话</div>
+                            <div class="agent-session-group-mode" role="group" aria-label="会话排列方式">
+                                <button type="button" data-agent-session-group-mode="time" aria-pressed="true">按时间</button>
+                                <button type="button" data-agent-session-group-mode="page" aria-pressed="false">按页面</button>
+                            </div>
                         </div>
                         <div class="agent-session-sidebar__search" id="agentSessionSearchWrap">
                             <button id="agentSessionSearchToggle" class="agent-session-sidebar__search-toggle" type="button" title="搜索历史对话" aria-label="搜索历史对话" aria-expanded="false">
@@ -488,6 +496,7 @@
                         <div id="agentFeedbackBar" class="agent-composer__feedbackbar" hidden></div>
                         <div id="agentAttachmentBar" class="agent-attachment-bar" hidden></div>
                         <div id="agentPrdContextBar" class="agent-composer__prd-context-bar" hidden></div>
+                        <div id="agentCanvasContextBar" class="agent-composer__prd-context-bar" hidden></div>
                         <div class="agent-composer__input-shell">
                             <div class="agent-command-menu-anchor">
                                 <textarea id="agentInput" class="agent-composer__input" rows="4" placeholder="和 Prota 对话，输入 / 唤起命令。"></textarea>
@@ -506,18 +515,10 @@
                                             </svg>
                                         </button>
                                         <div class="agent-model-selector-anchor">
-                                            <button id="agentModelToggle" class="agent-model-toggle" type="button" title="切换模型">
-                                                <span id="agentModelLabel" class="agent-model-toggle__label">--</span>
+                                            <button id="agentModelToggle" class="agent-model-toggle" type="button" title="切换模型" aria-haspopup="dialog" aria-controls="agentModelDropdown" aria-expanded="false">
+                                                <span id="agentModelLabel" class="agent-model-toggle__label">--</span><span id="agentModelEffort" class="agent-model-effort"></span><svg class="agent-model-toggle__chevron" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
                                             </button>
                                             <div id="agentModelDropdown" class="agent-model-dropdown" hidden></div>
-                                        </div>
-                                        <div class="agent-reasoning-anchor">
-                                            <button id="agentReasoningToggle" class="agent-reasoning-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="agentReasoningDropdown" aria-label="思考强度：模型默认">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M9 21h6M8.5 14.5a6 6 0 1 1 7 0c-.8.6-1 1.5-1 2.5h-5c0-1-.2-1.9-1-2.5Z"/></svg>
-                                                <span id="agentReasoningLabel">默认</span>
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                                            </button>
-                                            <div id="agentReasoningDropdown" class="agent-reasoning-dropdown" role="menu" aria-label="思考强度" hidden></div>
                                         </div>
                                         <div class="agent-permission-selector-anchor">
                                             <button id="agentPermissionToggle" class="agent-permission-toggle" type="button" title="切换权限模式">
@@ -636,21 +637,10 @@
                     <div id="providerFormEmpty" class="provider-detail-panel__empty" hidden>选择左侧模板即可开始配置</div>
                     <div id="providerFormContent" class="provider-detail-panel__content" hidden>
 
-                        <div class="provider-steps" aria-label="模型配置步骤">
-                            <div class="provider-step">
-                                <span>1</span>
-                                <strong>选服务商</strong>
-                            </div>
-                            <div class="provider-step">
-                                <span>2</span>
-                                <strong>填 API Key</strong>
-                            </div>
-                            <div class="provider-step">
-                                <span>3</span>
-                                <strong>选模型</strong>
-                            </div>
-                        </div>
-
+                        <div class="provider-editor-heading"><h3 id="providerEditorName"></h3><span id="providerEditorType"></span></div>
+                        <div id="agentModelLibrary"></div>
+                        <details id="providerConnectionSettings" class="provider-connection-settings">
+                            <summary><span>连接设置</span><span id="providerConnectionSummary"></span><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg></summary>
                         <div class="provider-config-grid">
                             <div class="agent-field provider-field--preset">
                                 <span>服务商模板</span>
@@ -682,15 +672,9 @@
                                     <button id="agentCheckBalanceBtn" class="agent-secondary-btn" type="button">查询余额</button>
                                 </div>
                             </div>
-                            <div class="agent-field provider-model-field">
-                                <span>模型</span>
-                                <div class="provider-model-select-row">
-                                    <select id="agentModelInput" aria-label="选择模型"></select>
-                                    <button id="agentFetchModelsBtn" class="agent-secondary-btn" type="button">拉取模型</button>
-                                </div>
-                                <input id="agentCustomModelInput" class="provider-custom-model-input" type="text" placeholder="输入模型 ID，例如 glm-5.1" hidden>
-                                <div id="agentModelOptions" class="provider-model-options" aria-live="polite"></div>
-                            </div>
+                            <select id="agentModelInput" hidden aria-label="连接测试模型"></select>
+                            <input id="agentCustomModelInput" type="hidden">
+                            <div id="agentModelOptions" hidden></div>
                         </div>
 
                         <details class="provider-advanced">
@@ -722,6 +706,8 @@
                                     <div id="agentSdkOptionsStatus" class="agent-config-panel__hint"></div>
                                 </div>
                             </div>
+                        </details>
+
                         </details>
 
                         <div class="agent-config-panel__actions">
@@ -937,6 +923,6 @@
     <script src="agent/state.js"></script>
     <script src="agent/provider-config.js?v=20260828-provider-instance-v2"></script>
     <script src="agent/index.js"></script>
-    <script type="module" src="shell.js?v=20261102-persistent-doc-toggle"></script>
+    <script type="module" src="shell.js?v=20261105-session-pagination"></script>
 </body>
 </html>

@@ -103,6 +103,11 @@ function scopeSvg(svg) {
     return new XMLSerializer().serializeToString(parsed.documentElement);
 }
 
+// Rendering-only entry: canvas keeps its own editing and interaction behavior.
+export async function renderMermaidSvg(source) {
+    return scopeSvg(await renderSource(source));
+}
+
 export async function mountMermaidDiagrams(container) {
     if (!container) return;
     await Promise.all(Array.from(container.querySelectorAll('[data-prd-mermaid]'), async (card) => {

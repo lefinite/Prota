@@ -17,8 +17,8 @@ export function previewScope(context = {}, descriptor = {}) {
 }
 
 export class PreviewObserver {
-    constructor({ workspaceRoot, configDirectory, runId, scope, publish, isCurrent = () => true, config = previewConfig, log = () => {} }) {
-        Object.assign(this, { workspaceRoot, runId, scope, publish, isCurrent, config, log });
+    constructor({ workspaceRoot, configDirectory, runId, scope, publish, isCurrent = () => true, config = previewConfig, log = () => {}, runtimeOrigin = `http://127.0.0.1:${Number(process.env.READIFY_PORT || 8080)}` }) {
+        Object.assign(this, { workspaceRoot, runId, scope, publish, isCurrent, config, log, runtimeOrigin });
         this.cacheRoot = previewCacheRoot(configDirectory, workspaceRoot);
         this.watchers = new Map(); this.previous = new Map(); this.revision = 0;
         this.stopped = false; this.busy = false; this.pending = false;
@@ -103,7 +103,7 @@ export class PreviewObserver {
             for (const page of this.pages || []) {
                 if (this.stopped) break;
                 try {
-                    const snapshot = await createSnapshot({ pageRoot: page.dir, cacheRoot: this.cacheRoot, runId: this.runId, revision: this.revision + 1, previous: this.previous.get(page.dir), config: this.config });
+                    const snapshot = await createSnapshot({ pageRoot: page.dir, cacheRoot: this.cacheRoot, runId: this.runId, revision: this.revision + 1, previous: this.previous.get(page.dir), config: this.config, runtimeOrigin: this.runtimeOrigin });
                     if (!snapshot || this.stopped || !this.isCurrent()) continue;
                     this.revision++; this.previous.set(page.dir, snapshot); this.lastPublish = Date.now();
                     this.latestRevision = revisionEvent(this.runId, page.scope, snapshot);

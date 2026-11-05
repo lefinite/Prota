@@ -42,7 +42,7 @@ fi
 
 # 1. Copy directory
 echo "Cloning $SOURCE_VERSION to $NEW_VERSION..."
-cp -R "$SOURCE_DIR" "$TARGET_DIR"
+python3 "$(dirname "$0")/copy-page-version.py" "$SOURCE_DIR" "$TARGET_DIR"
 
 echo -e "\nSuccessfully forked $PAGE_ID from $SOURCE_VERSION to $NEW_VERSION in project $PROJECT_ID!"
 echo "New path: /src/pages/$PROJECT_ID/$PAGE_ID/$NEW_VERSION/"

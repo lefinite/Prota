@@ -60,6 +60,29 @@ deployer.prepare_gateway(output, deployer.prepare(output, shares), shares)
     assert.equal((await page.request.get(origin+'/shares/reader.zip')).status(),200);
     await page.screenshot({path:'/tmp/prota-share-protected-preview.png'});
     assert.equal(await page.locator('#shareNavigation').count(),0,'single-page shares must not render a directory or toggle');
+    await page.evaluate(() => window.shell.openDocumentDrawer('prd'));
+    const docTabs = page.getByRole('tablist', {name:'文档类型', includeHidden:true});
+    assert.equal(await docTabs.isVisible(), false, 'empty annotations hide the entire document tab switcher');
+    await page.evaluate(async () => {
+        window.shell.shareConfig.annotations = [{selector:'h1', description:'标题交互'}];
+        await window.shell.loadAnnotations();
+        window.shell.renderAnnotationDrawer();
+    });
+    assert.equal(await docTabs.isVisible(), true, 'shares with annotations retain both tabs');
+    await page.getByRole('tab', {name:'交互标注'}).click();
+    await page.evaluate(async () => {
+        window.shell.shareConfig.annotations = [];
+        await window.shell.loadAnnotations();
+        window.shell.renderAnnotationDrawer();
+    });
+    assert.equal(await docTabs.isVisible(), false, 'clearing annotations hides the switcher again');
+    assert.equal(await page.evaluate(() => window.shell.docDrawerMode), 'prd', 'an empty annotation tab falls back to the document');
+    await page.evaluate(() => {
+        window.shell.isShareMode = false;
+        window.shell.updateDocDrawerTabs();
+    });
+    assert.equal(await docTabs.isVisible(), true, 'editing mode keeps the tabs available for adding annotations');
+    await page.evaluate(() => { window.shell.isShareMode = true; window.shell.updateDocDrawerTabs(); });
     assert.deepEqual(failures,[]);
     const stranger=await browser.newContext();
     assert.equal((await stranger.request.get(origin+'/src/pages/fixture/reader/v1/index.html')).status(),404);

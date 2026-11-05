@@ -46,6 +46,8 @@ export class ModelBindings {
         } else {
             if (!providerConfig || providerConfig.provider === MAGPIE_ID || providerConfig.adapter === 'magpie') throw magpieError('invalid_binding', '切换直连服务商需要有效配置。', 422);
             next = this.resolveDirect(providerConfig);
+            // Permission belongs to this session, independently of model/provider defaults.
+            next.sdkOptions = { ...next.sdkOptions, permissionMode: session.providerConfig?.sdkOptions?.permissionMode || 'default' };
         }
         const resolvedRevision = this.bridge.revision;
         const candidate = { ...session, engineInfo: structuredClone(session.engineInfo), providerConfig: next };

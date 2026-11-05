@@ -170,7 +170,7 @@ export class UnifiedSettings {
 
     snapshot(tab) {
         const selector = tab === 'models' ? '#providerFormContent' : '#shareSettingsForm';
-        return JSON.stringify({ fields: [...this.q(selector)?.querySelectorAll('input,select,textarea') || []].map(input => [input.id, ['checkbox','radio'].includes(input.type) ? input.checked : input.id === 'staticDomainInput' && input.disabled ? '' : input.value]), models: tab === 'models' ? this.shell.getSelectedProvider()?.models || [] : undefined });
+        return JSON.stringify({ fields: [...this.q(selector)?.querySelectorAll('input:not([data-model-filter]):not([name=modelId]),select,textarea') || []].map(input => [input.id, ['checkbox','radio'].includes(input.type) ? input.checked : input.id === 'staticDomainInput' && input.disabled ? '' : input.value]), models: tab === 'models' ? { catalog: this.shell.getSelectedProvider()?.models || [], enabled: this.shell.getSelectedProvider()?.enabledModels ?? null } : undefined });
     }
     markSaved(tab, announce = false) { const existing = this.baselines[tab] !== undefined; this.baselines[tab] = this.snapshot(tab); this.userTouched.delete(tab); this.refreshDirty(); if (announce && existing && !this.root.hidden) { this.setFeedback(`${labels[tab]}已保存`); clearTimeout(this.feedbackTimer); this.feedbackTimer = setTimeout(() => { this.q('#usSaveFeedback').textContent = ''; this.refreshDirty(); }, 3000); } }
     dirtyPanels() { return ['sharing','models'].filter(tab => this.initialized.has(tab) && this.userTouched.has(tab) && this.baselines[tab] !== this.snapshot(tab)); }

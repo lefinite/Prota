@@ -63,7 +63,7 @@ description: 在当前项目中新建可运行的首版页面原型。默认智�
 ### 无限画布（infinite-canvas）
 
 - 是项目下的一种页面模式，不是项目总览。注册为一个 page，保存 `targetDevice: "canvas"` 和 `pageMode: "infinite-canvas"`；不得把 infinite-canvas 写进 targetDevice。
-- 完整复制产品安装目录 `src/templates/infinite-canvas/` 到新页面版本目录，并阅读其中 README.md；保留编辑器工具栏、布局保存和交互。
+- 只复制产品安装目录 `src/templates/infinite-canvas-document/` 到新页面版本目录，并阅读 `src/templates/infinite-canvas/README.md`。编辑器由产品共享 Runtime 提供；不复制或修改工具层 JS/CSS、启动入口与 Runtime。业务文件放在 boards/ 和 assets/。
 - 在 `canvas-data.js` 中添加画板与素材对象。画板业务界面在本版本 `boards/{board_id}/index.html`、`styles.css`、`app.js` 中实现，节点 src 指向 `boards/{board_id}/index.html`。子画板不在项目配置中注册。
 - 图片等资源放本版本 assets/，禁止跨版本引用。迭代复制整个版本，包括布局、画板和图片。
 - 用户明确要求无限空间、多画板自由摆放时使用此模式；既有自由画布不会自动升级。

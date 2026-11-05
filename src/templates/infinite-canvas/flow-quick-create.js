@@ -1,5 +1,5 @@
 // Quick create: four dots float outside the hovered or selected object. Click a dot to add the
-// same kind of object in that direction (boards, text and images open the shape panel instead),
+// same flowchart step in that direction (all other objects open the flowchart panel),
 // drag it onto an object to connect, or drop it on blank canvas to pick a shape.
 // Every write is one host.mutate: a node and its edge share one undo record.
 (function(root) {
@@ -16,8 +16,8 @@
   const edgeId = () => 'e_' + crypto.randomUUID().replaceAll('-', '');
   const overlap = (a, b, m = 24) => a.x < b.x + b.width + m && a.x + a.width + m > b.x && a.y < b.y + b.height + m && a.y + a.height + m > b.y;
   const contains = (a, b) => b.x >= a.x && b.y >= a.y && b.x + b.width <= a.x + a.width && b.y + b.height <= a.y + a.height;
-  // Shapes, notes and flow steps duplicate on click; boards, text and images ask which shape to add.
-  const duplicable = n => n.type === 'rect' || n.type === 'ellipse' || n.type === 'note';
+  // Only flowchart steps duplicate on click; all other objects ask which flowchart step to add.
+  const duplicable = n => Boolean(n.flowShape && root.CanvasFlowShapes.has(n.flowShape));
   const isFlow = (n, F) => Boolean(n.flowShape && F.has(n.flowShape));
 
   // Pure placement: collision-free candidates around the source side whose edge routes.
@@ -182,7 +182,7 @@
       const placement = findPlacement(doc, source, node, fromSide, drop);
       if (!placement) return host.notice?.('附近没有可连接的空位，请先挪开相邻对象');
       node.x = placement.x; node.y = placement.y;
-      const edge = { id: edgeId(), fromInstanceId: source.id, toInstanceId: node.id, fromPort: fromSide, toPort: placement.toPort, label: '', kind: 'main' };
+      const edge = { id: edgeId(), fromInstanceId: source.id, toInstanceId: node.id, fromPort: fromSide, toPort: placement.toPort, label: '', kind: 'main', ...host.connectionStyle?.() };
       host.mutate(d => { d.nodes.push(node); (d.edges ||= []).push(edge); });
       keepVisible(node);
       host.select(node.id);
@@ -191,7 +191,7 @@
       const doc = host.state(), source = stateNode(fromId);
       reset();
       if (!dottable(source) || (doc.edges?.length || 0) >= 10000) return;
-      const edge = { id: edgeId(), fromInstanceId: source.id, toInstanceId: toNode.id, fromPort: fromSide, toPort, label: '', kind: 'main' };
+      const edge = { id: edgeId(), fromInstanceId: source.id, toInstanceId: toNode.id, fromPort: fromSide, toPort, label: '', kind: 'main', ...host.connectionStyle?.() };
       const route = R.routeEdges(doc.nodes, [edge], { zoom: doc.viewport.zoom })[0];
       if (!route || route.unroutable || !route.points.length) return host.notice?.('此处被遮挡，换一个连接点或拉开对象');
       host.mutate(d => { (d.edges ||= []).push(edge); });
@@ -330,8 +330,9 @@
         const preset = F.defaults(id), button = document.createElement('button');
         button.type = 'button'; button.dataset.shape = id; button.title = preset.label;
         button.setAttribute('role', 'menuitem'); button.setAttribute('aria-label', preset.label);
-        const icon = make('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true' });
-        for (const d of F.paths(id, 24, 24)) icon.append(make('path', { d }));
+        const box = F.iconBox(id);
+        const icon = make('svg', { viewBox: `0 0 ${box.width} ${box.height}`, 'aria-hidden': 'true' });
+        for (const d of F.paths(id, box.width, box.height)) icon.append(make('path', { d }));
         button.append(icon);
         button.addEventListener('click', () => choose(id));
         // Hover, or keyboard navigation, previews the landing spot; only a click commits.

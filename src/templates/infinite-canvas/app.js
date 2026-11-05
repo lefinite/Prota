@@ -12,6 +12,11 @@
   const materialize = (document, force = schemaEnabled) => D.load(document, identityScope, { migrate: force || document.schemaVersion === 2 });
   const AUTOSAVE_DELAY = 100;
   const floatingPanels = ["#context-menu", "#property-popover", "#command-palette"];
+  // Track the last input modality: menus opened by pointer must not move keyboard
+  // focus, or the auto-focused first item paints a focus ring that reads as a selection box.
+  let lastInputWasKeyboard = false;
+  window.addEventListener("keydown", () => { lastInputWasKeyboard = true; }, true);
+  window.addEventListener("pointerdown", () => { lastInputWasKeyboard = false; }, true);
   const $ = (s) => document.querySelector(s), clone = (value) => JSON.parse(JSON.stringify(value));
   let startupError = null;
   try {
@@ -25,9 +30,10 @@
   catch (error) { startupError = error; prepared = { schemaVersion: 1, revision: 0, nodes: [], viewport: { x: 100, y: 80, zoom: 1 } }; }
   let state = prepared, baseline = clone(initialDocument), selected = /* @__PURE__ */ new Set(), history = [], future = [], dirty = false, saving = false, readOnly = Boolean(startupError), space = false, gesture = null, interacting = null;
   const stage = $("#stage"), world = $("#world"), properties = $("#properties");
+  let agentTextSelection = null;
   let renameOnly = false;
   let propertyEdit = null, propertiesSelection = "", menuInvoker = null, fullscreenFallback = false, imageInsertionPoint = null, imageReplaceTarget = null, groupContext = null, paletteIndex = 0, paletteItems = [], renderFrame = 0, viewAnim = 0;
-  let draftRecovery = null, recoveringDraft = false;
+  let draftRecovery = null, recoveringDraft = false, restoredConflictBackup = null, conflictBackupNotice = null;
   let tool = "select", autoTimer, savePromise = null, conflict = false, agentBusy = false, agentPending = false, clipboard = null, editing = null, panelKey = "";
   const nodeEls = /* @__PURE__ */ new Map(), touches = /* @__PURE__ */ new Map(), boardStamps = /* @__PURE__ */ new Map();
   const boardPreviewUrls = new Map();
@@ -36,21 +42,33 @@
   let boardRightGesture = { boardId: null, count: 0, required: 2, lastTime: 0, lastX: 0, lastY: 0 };
   let annotationBoardId = null, annotationFrameEl = null, deferredBoardMenu = null, viewNotifyFrame = 0;
   const boardFrameBindings = new Map();
-  let agentTargets = /* @__PURE__ */ new Set(), pasteTimer = null;
+  let agentTargets = /* @__PURE__ */ new Set(), preparingTargets = new Set(), pasteTimer = null;
   const draftKey = "prota-canvas-draft:" + location.pathname, clipboardKey = "prota-canvas-clipboard";
   let nodeIndex = D.createIndex(state.nodes);
   const effectiveLocked = (n) => C.locked(state.nodes, n, nodeIndex);
   // Agent targets are mid-rewrite: selecting and viewing stay open, mutating them does not.
   const agentHeld = (n) => {
-    if (!agentBusy || !n) return false;
+    if ((!agentBusy && !agentPending) || !n) return false;
+    const targets = new Set([...agentTargets, ...preparingTargets]);
     let item = n;
     const seen = /* @__PURE__ */ new Set();
     while (item && !seen.has(item.id)) {
-      if (agentTargets.has(item.id)) return true;
+      if (targets.has(item.id)) return true;
       seen.add(item.id);
       item = state.nodes.find((p) => p.id === item.parentId);
     }
-    return false;
+    // A container cannot move/delete an Agent-owned descendant. Siblings of
+    // that descendant remain independently editable.
+    return [...targets].some(id => {
+      let target = state.nodes.find(node => node.id === id);
+      const visited = new Set();
+      while (target && !visited.has(target.id)) {
+        if (target.parentId === n.id) return true;
+        visited.add(target.id);
+        target = state.nodes.find(node => node.id === target.parentId);
+      }
+      return false;
+    });
   };
   const selectedRoots = () => C.roots(state.nodes, selected);
   const movable = () => {
@@ -58,9 +76,8 @@
     const ids = C.descendants(state.nodes, roots.map((n) => n.id));
     return state.nodes.filter((n) => ids.has(n.id));
   };
-  // While an Agent run is active the canvas stays editable (move/add/restyle);
-  // only deletion is withheld until the run settles.
-  const canEdit = () => !readOnly && !recoveringDraft && !agentPending && !annotationBoardId && !boardVersionBusy && !boardStateBusy;
+  // Agent preparation and execution protect only their captured targets.
+  const canEdit = () => !readOnly && !recoveringDraft && !annotationBoardId && !boardVersionBusy && !boardStateBusy;
 
   // Annotations are stored separately from board source and layout. Agent
   // preparation, target locks and active runs do not block this interaction.
@@ -68,6 +85,7 @@
 
  let textTools = null, expandedEditor = null, linkedSavePromise = null, linkedTimer = null, linkedConflict = false;
   const linkedPrds = new Map();
+  const isMarkdownDocument = n => Boolean(n?.markdownDocument || n?.prdPath || n?.markdownSource);
   const prdPath = n => n?.type === "text" ? n.prdPath || n.markdownSource || "" : "";
   const displayText = n => linkedPrds.get(prdPath(n)) ?? n.text ?? "";
   const documentUrl = path => {
@@ -209,22 +227,22 @@
   }
   for (const el of document.querySelectorAll("[data-icon]")) decorate(el, el.dataset.icon, el.textContent.trim());
   const actions = {
-    agent: { label: "Prota", icon: "sparkles", agent: true, when: (ctx) => !readOnly && !ctx.nodes.some(effectiveLocked), run: () => focusAgent() },
-    "edit-text": { label: (ctx) => ctx.single?.type === "text" ? "编辑 Markdown" : "编辑文字", icon: "pen-line", when: (ctx) => ctx.single && ["text", "note", "rect"].includes(ctx.single.type) && ctx.editable, run: (ctx) => startText(ctx.single.id) },
-    style: { label: "样式", icon: "sliders-horizontal", when: (ctx) => ctx.single && ["text", "note", "rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties() },
-    fill: { label: "填充", icon: "paint-bucket", when: (ctx) => ctx.single && ["rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties("填充") },
-    color: { label: "颜色", icon: "paint-bucket", when: (ctx) => ctx.single?.type === "note" && ctx.editable, run: () => openProperties("便签颜色 #fff1b8") },
+    agent: { label: "Prota", icon: "sparkles", agent: true, when: (ctx) => !readOnly && !ctx.nodes.some(effectiveLocked) && (ctx.nodes.length > 1 || ["board", "image", "text"].includes(ctx.single?.type)), run: () => focusAgent() },
+    "edit-text": { label: (ctx) => isMarkdownDocument(ctx.single) ? "编辑 Markdown" : "编辑文字", icon: "pen-line", when: (ctx) => ctx.single && ["text", "note", "rect"].includes(ctx.single.type) && ctx.editable, run: (ctx) => startText(ctx.single.id) },
+    style: { label: "样式", icon: "sliders-horizontal", when: (ctx) => ctx.single && ["board", "text", "note", "rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: () => openProperties() },
+    fill: { label: "颜色", icon: "paint-bucket", when: (ctx) => ctx.single && ["rect", "ellipse"].includes(ctx.single.type) && ctx.editable, run: (ctx, rect) => openNodeColor(ctx.single, "color", "颜色", rect) },
+    color: { label: "颜色", icon: "paint-bucket", when: (ctx) => ctx.single?.type === "note" && ctx.editable, run: (ctx, rect) => openNodeColor(ctx.single, "color", "便签颜色", rect) },
     replace: { label: "替换", icon: "replace", when: (ctx) => ctx.single?.type === "image" && ctx.editable, run: (ctx) => {
       imageReplaceTarget = ctx.single.id;
       $("#image-input").click();
     } },
     "fit-image": { label: "适应比例", icon: "crop", when: (ctx) => ctx.single?.type === "image" && ctx.editable, run: (ctx) => fitImageRatio(ctx.single) },
-    preview: { label: "预览", icon: "play", shortcut: "双击", when: (ctx) => ctx.single?.type === "board" && ctx.single.src, run: (ctx) => previewBoard(ctx.single) },
+    preview: { label: "演示", icon: "play", shortcut: "双击", when: (ctx) => ctx.single?.type === "board" && ctx.single.src, run: (ctx) => { fit([ctx.single], { animate: true, align: state.focusAlignment || "center" }); previewBoard(ctx.single); } },
     "pin-state": { label: (ctx) => ctx.single?.pinnedState ? "更新固定状态" : "固定当前状态", icon: "pin", when: (ctx) => ctx.editable && ctx.single?.type === "board" && ctx.single.src, run: (ctx) => pinBoardState(ctx.single) },
     "copy-state": { label: "以当前状态复制", icon: "copy", when: (ctx) => ctx.editable && ctx.single?.type === "board" && ctx.single.src, run: (ctx) => pinBoardState(ctx.single, true) },
     "reset-state": { label: "回到固定状态", icon: "undo-2", when: (ctx) => Boolean(ctx.single?.pinnedState) && ctx.single.type === "board", run: (ctx) => resetPinnedBoard(ctx.single) },
     "unpin-state": { label: "取消固定", icon: "pin-off", when: (ctx) => ctx.editable && Boolean(ctx.single?.pinnedState), run: (ctx) => mutate(() => { delete ctx.single.pinnedState; }) },
-    annotate: { label: "标注", icon: "pen-line", when: (ctx) => canAnnotateBoard(ctx.single), run: (ctx) => enterBoardAnnotation(ctx.single.id) },
+    annotate: { label: "标注", icon: "pen-line", when: (ctx) => canAnnotateBoard(ctx.single), run: (ctx) => { fit([ctx.single], { animate: true, align: state.focusAlignment || "center" }); enterBoardAnnotation(ctx.single.id); } },
     adjust: { label: "调整", icon: "sliders-horizontal", when: (ctx) => ctx.editable && ctx.single && ctx.single.type !== "board", run: () => openProperties() },
     rename: { label: "重命名", icon: "pencil", shortcut: "F2", when: (ctx) => ctx.editable && ctx.single, run: () => focusName() },
     group: { label: "编组", icon: "group", shortcut: "⌘ G", when: (ctx) => ctx.editable && ctx.roots > 1, run: () => groupSelection() },
@@ -233,6 +251,9 @@
       const r = rect || $("#selection-tools").getBoundingClientRect();
       showMenu(alignmentActions(), r.left, r.bottom + 6);
     } },
+    "align-left": { label: "左对齐", icon: "align-start-vertical", when: (ctx) => ctx.editable && ctx.roots > 1, run: () => align("left") },
+    "align-center-x": { label: "水平居中", icon: "align-center-vertical", when: (ctx) => ctx.editable && ctx.roots > 1, run: () => align("centerX") },
+    "align-right": { label: "右对齐", icon: "align-end-vertical", when: (ctx) => ctx.editable && ctx.roots > 1, run: () => align("right") },
     duplicate: { label: "复制", icon: "copy", shortcut: "⌘ D", when: (ctx) => ctx.editable, run: () => duplicateSelection() },
     "copy-image": { label: "复制到剪贴板", icon: "copy", shortcut: /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ ⇧ C" : "Ctrl Shift C", when: (ctx) => ctx.single?.type === "image", run: (ctx) => copyImageToClipboard(ctx.single) },
     lock: { label: "锁定", icon: "lock", when: (ctx) => ctx.editable, run: () => mutate(() => current().forEach((n) => n.locked = true)) },
@@ -257,7 +278,7 @@
     } },
     "enter-group": { label: "进入分组", icon: "group", when: (ctx) => ctx.single?.type === "group", run: (ctx) => enterGroup(ctx.single) },
     focus: { label: "聚焦选中", icon: "focus", when: (ctx) => ctx.nodes.length > 0, run: () => fit(current(), { animate: true }) },
-    delete: { label: "删除", icon: "trash-2", shortcut: "⌫", danger: true, when: (ctx) => ctx.editable, disabled: () => agentBusy, run: () => removeSelection() }
+    delete: { label: "删除", icon: "trash-2", shortcut: "⌫", danger: true, when: (ctx) => ctx.editable, run: () => removeSelection() }
   };
   function renderNodeTitle(title, node) {
     if (node.type !== "board") { title.textContent = node.name || ""; return; }
@@ -473,7 +494,7 @@
     if (!def || !def.when(ctx)) return null;
     return { id, label: typeof def.label === "function" ? def.label(ctx) : def.label, icon: def.icon, shortcut: def.shortcut, agent: def.agent, danger: def.danger, disabled: def.disabled?.() || false, run: (event, rect) => def.run(ctx, rect) };
   }
-  function contextActions() {
+  function contextActions(options = {}) {
     const ctx = actionContext();
     if (!ctx.nodes.length) return { primary: [], more: [] };
     const primary = [], more = [];
@@ -488,44 +509,66 @@
       return { primary, more };
     }
     if (ctx.single?.type === "board" && !ctx.single.src) {
-      push(primary, "agent");
+      push(primary, "style");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     } else if (ctx.single?.type === "board") {
-      push(primary, "agent");
+      push(primary, "style");
       push(primary, "preview");
       push(primary, "annotate");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     } else if (ctx.single && ["text", "note"].includes(ctx.single.type)) {
-      push(primary, "edit-text");
       push(primary, ctx.single.type === "note" ? "color" : "style");
-      push(primary, "agent");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     } else if (ctx.single && ["rect", "ellipse"].includes(ctx.single.type)) {
-      push(primary, "edit-text");
       push(primary, "fill");
       push(primary, "style");
-      push(primary, "agent");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     } else if (ctx.single?.type === "image") {
       push(primary, "replace");
       push(primary, "copy-image");
-      push(primary, "agent");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     } else if (ctx.single?.type === "group") {
       push(primary, "rename");
       push(primary, "ungroup");
-      push(primary, "agent");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     } else if (ctx.roots > 1) {
       push(primary, "group");
-      push(primary, "align");
-      push(primary, "agent");
+      if (options.toolbar) {
+        push(primary, "align-left");
+        push(primary, "align-center-x");
+        push(primary, "align-right");
+        primary.push({ id: "align-more", label: "更多对齐", icon: "align-horizontal-distribute-center", chevron: true, run: (_, rect) => {
+          const r = rect || $("#selection-tools").getBoundingClientRect();
+          showMenu(alignmentActions().filter((a) => !["left", "centerX", "right"].includes(a.id)), r.left, r.bottom + 6, $(`#selection-tools [data-action="align-more"]`), { keepSelectionTools: true });
+        } });
+      } else push(primary, "align");
       push(primary, "duplicate");
     } else {
-      push(primary, "agent");
       push(primary, "adjust");
+      push(primary, "front");
+      push(primary, "back");
+      push(primary, "focus");
       push(primary, "duplicate");
     }
+    push(primary, "agent");
     for (const id of ["pin-state", "copy-state", "reset-state", "unpin-state", "rename", "enter-group", "preview", "fit-image", "front", "back", "detach", "select-parent", "focus", "lock", "delete"]) {
       const action = resolveAction(id);
       if (action && !primary.some((p) => p.id === id)) more.push(action);
@@ -535,7 +578,7 @@
   function runAction(id, event, rect) {
     const action = resolveAction(id);
     if (!action || action.disabled) {
-      notice(current().some(effectiveLocked) ? "对象已锁定，请先解锁。" : agentBusy ? "Agent 正在处理，结束后才能删除对象。" : "请先选择适用的对象。");
+      notice(current().some(effectiveLocked) ? "对象已锁定，请先解锁。" : current().some(agentHeld) ? "Agent 正在处理此对象，请先操作其他对象。" : "请先选择适用的对象。");
       return false;
     }
     setFloatingPanel("#context-menu", false);
@@ -544,12 +587,34 @@
   }
   function actionButton(action, menu = false) {
     const button = document.createElement("button");
-    decorate(button, action.icon, action.label);
+    decorate(button, action.icon, menu ? action.label : "");
+    button.setAttribute("aria-label", action.label);
+    if (!menu) { button.title = action.label; button.dataset.tip = action.label; }
     button.dataset.action = action.id;
-    if (!menu && action.id === "more") {
+    if (["fill", "color"].includes(action.id)) {
+      button.classList.add("connection-color", "canvas-color-button");
+      button.setAttribute("aria-label", "颜色"); button.setAttribute("aria-haspopup", "dialog"); button.title = "颜色";
+      button.style.setProperty("--line-color", current()[0]?.color || "#ffffff");
+      const swatch = document.createElement("span"); swatch.className = "connection-color-swatch canvas-color-swatch"; swatch.setAttribute("aria-hidden", "true");
+      button.replaceChildren(swatch);
+    }
+    if (!menu && (action.id === "more" || action.id === "align-more")) {
       button.setAttribute("aria-haspopup", "menu");
       button.setAttribute("aria-controls", "context-menu");
       button.setAttribute("aria-expanded", String(!$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")));
+    }
+    if (action.chevron && !menu) {
+      const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      chevron.setAttribute("viewBox", "0 0 24 24");
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.setAttribute("fill", "none");
+      chevron.setAttribute("stroke", "currentColor");
+      chevron.setAttribute("stroke-width", "2");
+      chevron.setAttribute("stroke-linecap", "round");
+      chevron.setAttribute("stroke-linejoin", "round");
+      chevron.classList.add("action-chevron");
+      chevron.innerHTML = '<path d="M6 9l6 6 6-6"/>';
+      button.append(chevron);
     }
     button.disabled = Boolean(action.disabled);
     if (action.agent) button.classList.add("agent");
@@ -563,7 +628,7 @@
     }
     button.onclick = (e) => {
       const rect = button.getBoundingClientRect();
-      if (!menu && action.id === "more" && !$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")) {
+      if (!menu && (action.id === "more" || action.id === "align-more") && !$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools") && menuInvoker === button) {
         setFloatingPanel("#context-menu", false);
         return;
       }
@@ -599,7 +664,9 @@
     }
   }
   function notify() {
-    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { flowShape: n.flowShape || null, prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 49 }, location.origin === "null" ? "*" : location.origin);
+    const target = agentTextSelection && state.nodes.find(n => n.id === agentTextSelection.id);
+    if (!target || selected.size !== 1 || !selected.has(target.id) || String(displayText(target)) !== agentTextSelection.source) agentTextSelection = null;
+    if (window.parent !== window) window.parent.postMessage({ type: "prota:canvas-selection", selected: current().map((n) => ({ id: n.id, name: n.name, type: n.type, src: n.src || "", parentId: n.parentId || null, ...(agentTextSelection?.id === n.id ? { textSelection: { start: agentTextSelection.start, end: agentTextSelection.end, text: agentTextSelection.source.slice(agentTextSelection.start, agentTextSelection.end).slice(0, 20000) } } : {}), bounds: { x: n.x, y: n.y, width: n.width, height: n.height }, attributes: { flowShape: n.flowShape || null, prdPath: prdPath(n), text: String(displayText(n)).slice(0, 1e3), color: n.color || "", fontSize: n.fontSize || 20, locked: effectiveLocked(n) } })), dirty, runtimeVersion: 63 }, location.origin === "null" ? "*" : location.origin);
   }
   function exitInteraction() {
     const previous = state.nodes.find(n => n.id === interacting);
@@ -611,6 +678,8 @@
     if (previous?.pinnedState) resetPinnedBoard(previous);
   }
   function renderBoardStateButton(title, node) {
+    // The pin stays in the title row, pushed to its right end; visibility
+    // itself stays CSS-driven (only the activated board shows it).
     let button = title.querySelector('.board-state-pin');
     const allowed = canEdit() && !effectiveLocked(node) && !agentHeld(node);
     if (!node.src || !allowed) { button?.remove(); return; }
@@ -632,7 +701,8 @@
       title.append(button);
     }
     button.classList.toggle('is-pinned', Boolean(node.pinnedState));
-    button.title = node.pinnedState ? '已固定状态' : '固定当前状态';
+    const stateWarning = nodeEls.get(node.id)?.querySelector('iframe')?.dataset.stateWarning;
+    button.title = node.pinnedState ? stateWarning ? `已固定状态 · ${stateWarning}` : '已固定状态' : '固定当前状态';
     button.setAttribute('aria-label', button.title);
     button.setAttribute('aria-pressed', String(Boolean(node.pinnedState)));
     button.setAttribute('aria-haspopup', node.pinnedState ? 'menu' : 'false');
@@ -695,15 +765,23 @@
     restoringBoardStates.add(frame);
     nodeEls.get(nodeId)?.classList.add('restoring-state');
     try {
-      await window.CanvasBoardState.restore(frame, node.pinnedState, boardPreviewUrls.get(nodeId) || node.src);
+      const result = await window.CanvasBoardState.restore(frame, node.pinnedState, boardPreviewUrls.get(nodeId) || node.src);
       delete frame.dataset.stateError;
+      if (result?.skippedControls) frame.dataset.stateWarning = '页面已更新，部分旧控件已跳过，可重新固定';
+      else delete frame.dataset.stateWarning;
     } catch (error) {
       frame.dataset.stateError = 'true';
-      notice(`${node.name || '画板'}：${error.message}。可进入交互后重新固定。`);
+      // Automatic refresh must not interrupt unrelated canvas work. Keep the
+      // pin intact and attach diagnostics to this board's existing control.
+      frame.dataset.stateWarning = error.message || '固定状态未完整恢复，可重新固定';
     } finally {
       restoringBoardStates.delete(frame);
       delete frame.dataset.statePending;
-      if (nodeEls.get(nodeId)?.querySelector('iframe') === frame) nodeEls.get(nodeId)?.classList.remove('restoring-state');
+      if (nodeEls.get(nodeId)?.querySelector('iframe') === frame) {
+        nodeEls.get(nodeId)?.classList.remove('restoring-state');
+        const title = nodeEls.get(nodeId)?.querySelector('.node-title');
+        if (title) renderBoardStateButton(title, node);
+      }
       connections?.schedule();
     }
   }
@@ -878,6 +956,7 @@
     const options = { capture: true, signal: controller.signal };
     doc.addEventListener("pointerdown", (e) => {
       if (e.button !== 2) resetBoardRightGesture();
+      lastInputWasKeyboard = false;
       setFloatingPanel("#context-menu", false);
     }, options);
     doc.addEventListener("pointermove", (e) => {
@@ -941,6 +1020,7 @@
   // Insertable flowchart presets come from the shared registry; legacy kinds keep their icons.
   const flowRegistry = window.CanvasFlowShapes, legacyFlowIcons = { terminator: "flow-terminator", process: "flow-process", decision: "flow-decision", subprocess: "flow-subprocess", connector: "flow-connector" };
   const flowShapes = Object.fromEntries((flowRegistry?.MENU || []).map(id => [id, { ...flowRegistry.defaults(id), icon: legacyFlowIcons[id] || "flowchart" }]));
+  const colorAlpha = (color, opacity = 1) => opacity === 1 ? color : `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
   function renderFlowGeometry(el, node) {
     el.classList.toggle("flowchart", Boolean(node.flowShape));
     if (!node.flowShape) {
@@ -950,7 +1030,7 @@
     }
     el.dataset.flowShape = node.flowShape;
     // Stroke and text inset are CSS variables so selection/target outlines can still override them.
-    if (node.strokeColor) el.style.setProperty("--flow-stroke", node.strokeColor); else el.style.removeProperty("--flow-stroke");
+    if (node.strokeColor) el.style.setProperty("--flow-stroke", colorAlpha(node.strokeColor, node.strokeOpacity)); else el.style.removeProperty("--flow-stroke");
     if (node.strokeWidth) el.style.setProperty("--flow-stroke-width", node.strokeWidth); else el.style.removeProperty("--flow-stroke-width");
     const inset = flowRegistry?.inset(node.flowShape) || 0;
     if (inset) el.style.setProperty("--flow-inset", `${inset * 100}%`); else el.style.removeProperty("--flow-inset");
@@ -959,7 +1039,7 @@
       svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.classList.add("flow-geometry"); svg.setAttribute("aria-hidden", "true"); el.prepend(svg);
     }
-    const signature = JSON.stringify([node.flowShape, node.width, node.height, node.color]);
+    const signature = JSON.stringify([node.flowShape, node.width, node.height, node.color, node.fillOpacity]);
     if (svg.dataset.geometry === signature) return;
     svg.dataset.geometry = signature;
     const w = node.width, h = node.height;
@@ -967,14 +1047,14 @@
     // The first path is the fillable outline; later paths are decorative strokes only.
     (flowRegistry?.paths(node.flowShape, w, h) || []).forEach((d, index) => {
       const path = document.createElementNS(svg.namespaceURI, "path");
-      path.setAttribute("d", d); path.setAttribute("fill", index ? "none" : node.color || "#ffffff");
+      path.setAttribute("d", d); path.setAttribute("fill", index ? "none" : colorAlpha(node.color || "#ffffff", node.fillOpacity));
       path.setAttribute("vector-effect", "non-scaling-stroke");
       if (index) path.setAttribute("pointer-events", "none");
       svg.append(path);
     });
   }
   function nodeContentSignature(n) {
-    return JSON.stringify([n.type, n.flowShape, n.type === "board" ? "" : displayText(n), n.prdPath, n.markdownSource, n.src, n.pinnedState, n.cloneFrom ? baseline.nodes.some(saved => saved.id === n.id) : null, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
+    return JSON.stringify([n.type, n.markdownDocument, n.flowShape, n.type === "board" ? "" : displayText(n), n.prdPath, n.markdownSource, n.src, n.pinnedState, n.cloneFrom ? baseline.nodes.some(saved => saved.id === n.id) : null, n.type === "board" ? boardPreviewUrls.get(n.id) || "" : "", n.type === "board" ? boardStamps.get(n.id) || 0 : 0]);
   }
   function render(options = {}) {
     if (options.panels === false) {
@@ -1005,8 +1085,8 @@
       previous.delete(n.id);
       nodeEls.set(n.id, el);
       const connectionLayers = ["connection-container", "connection-top-port", "connection-source", "connection-target"].filter(name => el.classList.contains(name));
-      el.className = `node ${n.type}${selected.has(n.id) ? " selected" : ""}${effectiveLocked(n) ? " locked" : ""}${interacting === n.id ? " interacting" : ""}${n.hidden ? " hidden-node" : ""}${editing?.id === n.id ? " editing" : ""}${agentTargets.has(n.id) ? " agent-target" : ""}${n.id === groupContext ? " context" : ""}${contextMembers && !contextMembers.has(n.id) ? " dimmed" : ""}` + (connectionLayers.length ? " " + connectionLayers.join(" ") : "");
-      Object.assign(el.style, { left: `${n.x}px`, top: `${n.y}px`, width: `${n.width}px`, height: `${n.height}px`, background: n.color || "", fontSize: `${n.fontSize || 20}px`, opacity: n.opacity ?? 1, borderRadius: n.type === "ellipse" ? "50%" : `${n.radius || 0}px`, color: n.textColor || "#30323a", fontWeight: n.fontWeight || 400, textAlign: n.textAlign || "left" });
+      el.className = `node ${n.type}${n.type === "text" && !isMarkdownDocument(n) ? " plain-text" : ""}${selected.has(n.id) ? " selected" : ""}${effectiveLocked(n) ? " locked" : ""}${interacting === n.id ? " interacting" : ""}${n.hidden ? " hidden-node" : ""}${editing?.id === n.id ? " editing" : ""}${agentHeld(n) ? " agent-target" : ""}${n.id === groupContext ? " context" : ""}${contextMembers && !contextMembers.has(n.id) ? " dimmed" : ""}` + (connectionLayers.length ? " " + connectionLayers.join(" ") : "");
+      Object.assign(el.style, { left: `${n.x}px`, top: `${n.y}px`, width: `${n.width}px`, height: `${n.height}px`, background: n.color ? colorAlpha(n.color, n.fillOpacity) : "", fontSize: `${n.fontSize || 20}px`, opacity: n.opacity ?? 1, borderRadius: n.type === "ellipse" ? "50%" : `${n.radius || 0}px`, color: colorAlpha(n.textColor || "#30323a", n.textOpacity), fontWeight: n.fontWeight || 400, textAlign: n.textAlign || "left", letterSpacing: `${n.letterSpacing || 0}px` });
       const signature = nodeContentSignature(n);
       if (el.dataset.signature !== signature && editing?.id !== n.id) {
         el.dataset.signature = signature;
@@ -1065,12 +1145,14 @@
           }
         } else if (n.type === "text") {
           content.append(window.CanvasMarkdown.render(displayText(n), { baseUrl: prdPath(n) }));
+          void window.CanvasMarkdown.mount(content,{onResize:()=>scheduleFit(new Set([n.id]))});
           for (const image of content.querySelectorAll("img")) image.addEventListener("load", () => scheduleFit(new Set([n.id])));
         }
         else content.textContent = n.text || "";
       }
       renderFlowGeometry(el, n);
       const inner = el.querySelector(".node-content");
+      if (inner) inner.style.lineHeight = n.lineHeight || "";
       if (inner && n.padding !== void 0) inner.style.padding = n.padding + "px";
       const placeholder = el.querySelector(".board-placeholder");
       if (placeholder) placeholder.hidden = state.nodes.some((child) => child.parentId === n.id);
@@ -1150,8 +1232,17 @@
       count.textContent = `已选 ${nodes.length} 个`;
       box.append(count);
     }
-    const { primary, more } = contextActions();
-    if (innerWidth < 480 && primary.length > 3) more.unshift(...primary.splice(3));
+    const { primary, more } = contextActions({ toolbar: true });
+    for (let index = primary.length - 1; index >= 0; index--) {
+      if (["duplicate", "copy-image", "copy-state"].includes(primary[index].id)) more.unshift(...primary.splice(index, 1));
+    }
+    if (innerWidth < 480) {
+      const agentIndex = primary.findIndex(action => action.agent);
+      const agent = agentIndex >= 0 ? primary.splice(agentIndex, 1)[0] : null;
+      const limit = agent ? 2 : 3;
+      if (primary.length > limit) more.unshift(...primary.splice(limit));
+      if (agent) primary.push(agent);
+    }
     primary.forEach((action) => {
       if (action.agent && box.childElementCount > 0) {
         const divider = document.createElement("span");
@@ -1170,6 +1261,7 @@
       } }));
     }
     if (propertiesSelection !== [...selected].join(",")) {
+      closeNodeColor();
       propertyEdit = null;
       setFloatingPanel("#property-popover", false);
       propertiesSelection = [...selected].join(",");
@@ -1179,30 +1271,163 @@
     positionSelectionTools();
   }
   const boardPresets = [["", "自定义"], ["390x844", "iPhone"], ["412x915", "Android"], ["834x1194", "平板"], ["1440x900", "Web"]];
-  const noteSwatches = ["#fff1b8", "#ffd9d2", "#d4ecec", "#dde6ff", "#f0ddff", "#ffffff"];
+  let nodeColorPanel = null, nodeColorCleanup = null;
+  function closeNodeColor() {
+    nodeColorCleanup?.(); nodeColorCleanup = null;
+    if (nodeColorPanel) { nodeColorPanel.hidden = true; nodeColorPanel.replaceChildren(); }
+  }
+  function openNodeColor(node, key, label, anchor) {
+    closeNodeColor();
+    if (!node || !canEdit() || effectiveLocked(node) || agentHeld(node)) return;
+    const rect = anchor || $("#selection-tools").getBoundingClientRect();
+    if (!nodeColorPanel) {
+      nodeColorPanel = document.createElement("div"); nodeColorPanel.id = "node-colors";
+      nodeColorPanel.className = "floating canvas-color-palette"; nodeColorPanel.setAttribute("role", "dialog");
+      document.body.append(nodeColorPanel);
+    }
+    nodeColorPanel.setAttribute("aria-label", label);
+    let started = false;
+    const apply = value => {
+      const target = state.nodes.find(n => n.id === node.id);
+      if (!target || !selected.has(node.id) || !canEdit() || effectiveLocked(target) || agentHeld(target)) { closeNodeColor(); return; }
+      if (target[key] === value) return;
+      if (!started) { checkpoint(); started = true; }
+      target[key] = value; changed();
+      for (const button of nodeColorPanel.querySelectorAll('[data-color]')) button.setAttribute('aria-pressed', String(button.dataset.color === value));
+    };
+    nodeColorPanel.append(C.colorGrid({ label, value: node[key] || (key === "textColor" ? "#424650" : key === "strokeColor" ? "#97a5b8" : "#ffffff"),
+      presets: key === "color" ? ["#fff1b8", "#ffd9d2", "#d4ecec", "#dde6ff", "#f0ddff", "#ffffff", ...C.COLOR_PRESETS.slice(0, 5)] : C.COLOR_PRESETS,
+      onInput: apply, onCommit: value => { apply(value); closeNodeColor(); stage.focus({ preventScroll: true }); } }));
+    nodeColorPanel.hidden = false;
+    nodeColorPanel.style.left = Math.max(8, Math.min(innerWidth - nodeColorPanel.offsetWidth - 8, rect.left)) + "px";
+    nodeColorPanel.style.top = Math.max(8, Math.min(innerHeight - nodeColorPanel.offsetHeight - 8, rect.top - nodeColorPanel.offsetHeight - 8 < 8 ? rect.bottom + 8 : rect.top - nodeColorPanel.offsetHeight - 8)) + "px";
+    const controller = new AbortController(), options = { capture: true, signal: controller.signal };
+    nodeColorCleanup = () => controller.abort();
+    document.addEventListener("pointerdown", e => { if (!e.target.closest('#node-colors')) closeNodeColor(); }, options);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") { e.stopImmediatePropagation(); closeNodeColor(); stage.focus({ preventScroll: true }); } }, options);
+    window.addEventListener("blur", closeNodeColor, { signal: controller.signal });
+    window.addEventListener("resize", closeNodeColor, options);
+    nodeColorPanel.querySelector("button")?.focus({ preventScroll: true });
+  }
+  function inspectorShapeIcon(id) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const box = flowRegistry.iconBox(id);
+    svg.setAttribute("viewBox", `-3 -3 ${box.width + 6} ${box.height + 6}`); svg.setAttribute("aria-hidden", "true");
+    for (const d of flowRegistry.paths(id, box.width, box.height)) {
+      const path = document.createElementNS(svg.namespaceURI, "path"); path.setAttribute("d", d); svg.append(path);
+    }
+    return svg;
+  }
+  let inspectorDropdown = null;
+  const closeInspectorDropdown = () => { inspectorDropdown?.(); inspectorDropdown = null; };
+  window.addEventListener("resize", closeInspectorDropdown);
+  document.addEventListener("scroll", closeInspectorDropdown, true);
+  document.addEventListener("pointerdown", event => {
+    if (!event.target.closest(".inspector-choice")) closeInspectorDropdown();
+  }, true);
+  function inspectorChoice(label, options, value, onChange, { shapes = false, disabled = false } = {}) {
+    const details = document.createElement("details"); details.className = "inspector-choice";
+    const summary = document.createElement("summary"); summary.setAttribute("aria-label", label); summary.setAttribute("aria-haspopup", "listbox"); summary.setAttribute("aria-expanded", "false");
+    const list = document.createElement("div"); list.className = shapes ? "inspector-options shape-options" : "inspector-options";
+    list.setAttribute("role", "listbox"); list.setAttribute("aria-label", label);
+    list.setAttribute("popover", "manual");
+    const close = () => {
+      details.open = false;
+      if (list.matches(":popover-open")) list.hidePopover();
+      summary.setAttribute("aria-expanded", "false");
+      if (inspectorDropdown === close) inspectorDropdown = null;
+    };
+    const show = () => {
+      if (disabled || !details.isConnected) return;
+      if (inspectorDropdown !== close) closeInspectorDropdown();
+      inspectorDropdown = close; details.open = true;
+      summary.setAttribute("aria-expanded", "true");
+      const anchor = summary.getBoundingClientRect(), margin = 8, gap = 5;
+      const width = Math.min(Math.max(anchor.width, shapes ? 216 : 178), innerWidth - margin * 2);
+      list.style.width = `${width}px`;
+      const below = innerHeight - anchor.bottom - gap - margin, above = anchor.top - gap - margin;
+      const expectedHeight = shapes ? 228 : options.length * 32 + 8;
+      const upward = below < Math.min(228, expectedHeight) && above > below;
+      list.style.maxHeight = `${Math.max(32, Math.min(228, upward ? above : below))}px`;
+      if (!list.matches(":popover-open")) list.showPopover();
+      const height = list.getBoundingClientRect().height;
+      list.style.left = `${Math.max(margin, Math.min(anchor.left, innerWidth - width - margin))}px`;
+      list.style.top = `${Math.max(margin, upward ? anchor.top - gap - height : anchor.bottom + gap)}px`;
+      list.dataset.placement = upward ? "above" : "below";
+    };
+    const update = selected => {
+      summary.replaceChildren();
+      if (shapes) summary.append(inspectorShapeIcon(selected));
+      else { const text = document.createElement("span"); text.textContent = options.find(([id]) => String(id) === String(selected))?.[1] || "自定义"; summary.append(text); }
+      summary.title = options.find(([id]) => String(id) === String(selected))?.[1] || label;
+      const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg"); chevron.setAttribute("viewBox", "0 0 16 16"); chevron.classList.add("choice-chevron"); chevron.innerHTML = '<path d="m5 6 3 3 3-3"/>'; summary.append(chevron);
+      for (const button of list.children) button.setAttribute("aria-selected", button.dataset.value === String(selected));
+    };
+    for (const [id, text] of options) {
+      const button = document.createElement("button"); button.type = "button"; button.dataset.value = id; button.setAttribute("role", "option"); button.setAttribute("aria-label", text); button.title = text;
+      if (shapes) button.append(inspectorShapeIcon(id)); else button.textContent = text;
+      if (label === "字重") button.style.fontWeight = id;
+      button.onclick = () => { onChange(id); update(id); close(); summary.focus({ preventScroll: true }); };
+      list.append(button);
+    }
+    details.append(summary, list); update(value);
+    summary.setAttribute("aria-disabled", disabled);
+    summary.onclick = event => { event.preventDefault(); if (!disabled) details.open ? close() : show(); };
+    details.addEventListener("toggle", () => {
+      if (details.open && !list.matches(":popover-open")) show();
+      if (!details.open) close();
+    });
+    details.addEventListener("keydown", event => {
+      if (disabled) { event.preventDefault(); return; }
+      if (event.key === "Tab") close();
+      if (event.key === "Escape" && details.open) { event.preventDefault(); event.stopPropagation(); close(); summary.focus(); }
+      if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+        event.preventDefault(); show();
+        const buttons = [...list.children], index = buttons.indexOf(document.activeElement);
+        const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : (index + (["ArrowUp", "ArrowLeft"].includes(event.key) ? buttons.length - 1 : 1)) % buttons.length;
+        buttons[next].focus();
+      }
+    });
+    return details;
+  }
+  function bindInspectorScrub(target, input, applyValue) {
+    target.classList.add("scrub-handle"); target.title = "按住左右拖动调整 · Shift 加速 · Alt 细调";
+    target.addEventListener("pointerdown", event => {
+      if (event.button !== 0 || input.disabled || !canEdit()) return;
+      event.preventDefault(); event.stopPropagation();
+      propertyEdit = null;
+      const origin = Number(input.value), step = Number(input.step) || 1, startX = event.clientX;
+      let lastX = startX, value = origin, started = false;
+      target.setPointerCapture(event.pointerId);
+      const move = e => {
+        if (!started && Math.abs(e.clientX - startX) < 3) return;
+        started = true; document.body.classList.add("inspector-scrubbing");
+        value += (e.clientX - lastX) * step * (e.shiftKey ? 10 : e.altKey ? .1 : 1); lastX = e.clientX;
+        const low = input.min === "" ? -1e6 : Number(input.min), high = input.max === "" ? 1e6 : Number(input.max);
+        value = Math.max(low, Math.min(high, value));
+        input.value = Number(value.toFixed(2)); applyValue();
+      };
+      const finish = (cancel = false) => {
+        target.removeEventListener("pointermove", move); target.removeEventListener("pointerup", up); target.removeEventListener("pointercancel", cancelDrag); target.removeEventListener("lostpointercapture", cancelDrag); document.removeEventListener("keydown", escape, true);
+        if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+        document.body.classList.remove("inspector-scrubbing");
+        if (cancel && propertyEdit) { undo(); future = []; }
+        else input.dispatchEvent(new Event("change", { bubbles: true }));
+        propertyEdit = null;
+      };
+      const up = () => finish(), cancelDrag = () => finish(true), escape = e => { if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); finish(true); } };
+      target.addEventListener("pointermove", move); target.addEventListener("pointerup", up); target.addEventListener("pointercancel", cancelDrag); target.addEventListener("lostpointercapture", cancelDrag); document.addEventListener("keydown", escape, true);
+    });
+    target.addEventListener("click", event => event.preventDefault());
+  }
   function renderProperties(focusLabel = "") {
     const n = current()[0];
+    closeInspectorDropdown();
     properties.replaceChildren();
     if (!n || current().length !== 1) return;
     $("#property-title").textContent = renameOnly ? "重命名" : n.name || names[n.type];
     $("#property-popover").setAttribute("aria-label", renameOnly ? "重命名" : "对象样式");
-    if (!renameOnly && n.type === "note" && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
-      const row = document.createElement("div");
-      row.className = "swatch-row";
-      for (const color of noteSwatches) {
-        const swatch = document.createElement("button");
-        swatch.className = "swatch";
-        swatch.style.background = color;
-        swatch.setAttribute("aria-label", "便签颜色 " + color);
-        swatch.setAttribute("aria-pressed", (n.color || "") === color);
-        swatch.onclick = () => mutate(() => {
-          n.color = color;
-        });
-        row.append(swatch);
-      }
-      properties.append(row);
-    }
-    let fields = [["name", "名称", "text"], ["color", "填充", "color"], ["opacity", "不透明度", "number"], ["radius", "圆角", "number"]];
+    let fields = [["name", "名称", "text"], ["color", "颜色", "color"], ["opacity", "不透明度", "number"], ["radius", "圆角", "number"]];
     if (n.type === "group") fields = fields.filter(([key]) => key === "name");
     if (n.type === "ellipse" || n.flowShape) fields = fields.filter(([key]) => key !== "radius");
     if (n.flowShape) fields.splice(fields.findIndex(([key]) => key === "color") + 1, 0, ["strokeColor", "描边", "color"], ["strokeWidth", "描边宽度", "number"]);
@@ -1211,78 +1436,89 @@
     if (["text", "note", "rect", "ellipse"].includes(n.type)) fields.push(["text", "内容", "textarea"], ["fontSize", "字号", "number"], ["textColor", "文字颜色", "color"]);
     if (prdPath(n)) fields = fields.filter(([key]) => key !== "text");
     if (renameOnly) fields = fields.filter(([key]) => key === "name");
-    if (n.type === "board") {
-      const row = document.createElement("label");
-      row.textContent = "设备预设";
-      const select = document.createElement("select");
-      select.setAttribute("aria-label", "设备预设");
-      for (const [value, label] of boardPresets) {
-        const option = document.createElement("option");
-        option.value = value;
-        option.textContent = label;
-        select.append(option);
-      }
-      select.value = boardPresets.find(([value]) => value === `${n.width}x${n.height}`)?.[0] ?? "";
-      select.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
-      select.onchange = () => {
-        const [width, height] = select.value.split("x").map(Number);
-        if (!width) return;
-        mutate(() => {
-          n.width = width;
-          n.height = height;
-        });
-      };
-      row.append(select);
-      properties.append(row);
+    let specialRow = null;
+    if (!renameOnly && (n.type === "board" || n.flowShape && flowRegistry)) {
+      specialRow = document.createElement("div"); specialRow.className = "inspector-special-row";
+      const label = document.createElement("span"); label.textContent = n.type === "board" ? "设备预设" : "形状";
+      const choice = n.type === "board"
+        ? inspectorChoice("设备预设", boardPresets, boardPresets.find(([value]) => value === `${n.width}x${n.height}`)?.[0] ?? "", value => {
+          const [width, height] = value.split("x").map(Number); if (width) { mutate(() => { n.width = width; n.height = height; }); renderProperties(); }
+        }, { disabled: !canEdit() || effectiveLocked(n) || agentHeld(n) })
+        : inspectorChoice("形状", flowRegistry.MENU.filter(id => flowRegistry.has(id)).map(id => [id, flowShapes[id].label]), n.flowShape, value => mutate(() => { n.flowShape = value; }), { shapes: true, disabled: !canEdit() || effectiveLocked(n) || agentHeld(n) });
+      specialRow.append(label, choice);
     }
-    // Switching a flow shape keeps its geometry, text and connections; ports follow the new outline.
-    if (!renameOnly && n.flowShape && flowRegistry) {
-      const row = document.createElement("label");
-      row.textContent = "形状";
-      const select = document.createElement("select");
-      select.setAttribute("aria-label", "形状");
-      for (const id of flowRegistry.MENU.filter(id => flowRegistry.has(id))) {
-        const option = document.createElement("option");
-        option.value = id;
-        option.textContent = flowShapes[id].label;
-        select.append(option);
-      }
-      select.value = n.flowShape;
-      select.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
-      select.onchange = () => mutate(() => {
-        n.flowShape = select.value;
-      });
-      row.append(select);
-      properties.append(row);
+    if (!renameOnly && n.type !== "group") fields.splice(1, 0, ["x", "X", "number"], ["y", "Y", "number"], ["width", "W", "number"], ...(["text", "note"].includes(n.type) ? [] : [["height", "H", "number"]]));
+    if (!renameOnly && ["text", "note", "rect", "ellipse"].includes(n.type)) fields.push(["lineHeight", "行高", "number"], ["letterSpacing", "字距", "number"]);
+    for (let index = fields.length - 1; index >= 0; index--) {
+      const [key, label, type] = fields[index];
+      if (type === "color") fields.splice(index + 1, 0, [{ color: "fillOpacity", textColor: "textOpacity", strokeColor: "strokeOpacity" }[key], `${label}不透明度`, "number"]);
     }
+    const isOpacity = key => ["opacity", "fillOpacity", "textOpacity", "strokeOpacity"].includes(key);
+    const groups = new Map();
+    const groupFor = key => key === "name" ? "对象" : ["x", "y", "width", "height"].includes(key) ? "布局" : ["text", "fontSize", "lineHeight", "letterSpacing"].includes(key) ? "文字" : "外观";
     for (const [key, label, type] of fields) {
-      const row = document.createElement("label");
-      row.textContent = label;
+      const row = document.createElement(type === "color" ? "div" : "label");
+      row.className = `inspector-field field-${key}`;
+      const fieldLabel = document.createElement("span"); fieldLabel.className = "field-label"; fieldLabel.textContent = label; row.append(fieldLabel);
       const input = document.createElement(type === "textarea" ? "textarea" : "input");
       if (type !== "textarea") input.type = type;
       input.value = n[key] ?? (key === "color" ? "#ffffff" : key === "textColor" ? "#424650" : key === "strokeColor" ? "#97a5b8" : key === "strokeWidth" ? 1.5 : key === "opacity" ? 1 : key === "radius" ? 0 : "");
+      if (type === "number" && n[key] !== undefined) input.value = Number(Number(n[key]).toFixed(2));
+      if (isOpacity(key)) input.value = Math.round((n[key] ?? 1) * 100);
+      if (key === "lineHeight") input.value = n.lineHeight ?? (n.type === "text" ? 1.55 : n.flowShape ? 1.45 : 1.5);
+      if (key === "letterSpacing") input.value = n.letterSpacing ?? 0;
       input.setAttribute("aria-label", label);
       input.disabled = !canEdit() || effectiveLocked(n) || agentHeld(n);
-      if (key === "opacity") {
+      if (isOpacity(key)) {
         input.min = 0;
-        input.max = 1;
-        input.step = 0.1;
+        input.max = 100;
+        input.step = 1;
       }
       if (key === "strokeWidth") {
         input.min = 0.5;
         input.max = 10;
         input.step = 0.5;
       }
-      row.append(input);
-      properties.append(row);
+      if (type === "number") {
+        input.step = ["lineHeight", "letterSpacing"].includes(key) ? 0.1 : key === "strokeWidth" ? 0.5 : 1;
+        if (["width", "height", "fontSize"].includes(key)) input.min = key === "fontSize" ? 8 : 1;
+        if (key === "fontSize") input.max = 400;
+        if (key === "radius") { input.min = 0; input.max = 1000; }
+        if (key === "lineHeight") { input.min = .5; input.max = 5; }
+        if (key === "letterSpacing") { input.min = -20; input.max = 100; }
+      }
+      const control = document.createElement("div");
+      control.className = "inspector-control";
+      control.append(input);
+      if (type === "number") {
+        const unit = document.createElement("span"); unit.className = "field-unit";
+        unit.textContent = isOpacity(key) ? "%" : key === "lineHeight" ? "倍" : ["x", "y"].includes(key) ? "" : "px";
+        control.append(unit);
+      }
+      row.append(control);
+      const groupName = groupFor(key);
+      if (!groups.has(groupName)) {
+        const section = document.createElement("section"); section.className = "inspector-section";
+        const heading = document.createElement("h3"); heading.textContent = groupName; section.append(heading);
+        groups.set(groupName, section);
+      }
+      groups.get(groupName).append(row);
       const applyValue = () => {
         let value = input.value;
+        if (type === "color") {
+          const hex = value.trim().replace(/^#/, "");
+          if (!/^(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return;
+          value = "#" + (hex.length === 3 ? [...hex].map(char => char + char).join("") : hex).toLowerCase();
+        }
         if (type === "number") {
           if (value.trim() === "") return;
           value = Number(value);
           if (!Number.isFinite(value) || Math.abs(value) > 1e6) return;
           if (key === "fontSize") value = Math.max(8, Math.min(400, value));
-          if (key === "opacity") value = Math.max(0, Math.min(1, value));
+          if (isOpacity(key)) value = Math.max(0, Math.min(100, value)) / 100;
+          if (["width", "height"].includes(key)) value = Math.max(1, value);
+          if (key === "lineHeight") value = Math.max(0.5, Math.min(5, value));
+          if (key === "letterSpacing") value = Math.max(-20, Math.min(100, value));
           if (key === "radius") value = Math.max(0, Math.min(1e3, value));
           // Matches the document contract (0.5–10) so an out-of-range entry never blocks saving.
           if (key === "strokeWidth") value = Math.max(0.5, Math.min(10, value));
@@ -1292,18 +1528,56 @@
           checkpoint();
           propertyEdit = { node: n.id, key };
         }
+        if (["x", "y"].includes(key)) {
+          const delta = value - n[key], ids = C.descendants(state.nodes, [n.id]);
+          for (const child of state.nodes) if (child.id !== n.id && ids.has(child.id)) child[key] += delta;
+        }
         n[key] = value;
+        if (type === "color") control.querySelector(".node-color-button")?.style.setProperty("--line-color", value);
         changed({ panels: false });
       };
       input.addEventListener("input", applyValue);
       input.addEventListener("change", () => {
         applyValue();
+        if (type === "color") input.value = String(n[key] || "#ffffff").replace(/^#/, "").toUpperCase();
+        else if (isOpacity(key)) input.value = Math.round((n[key] ?? 1) * 100);
+        else if (type === "number") input.value = Number(Number(n[key] ?? input.value).toFixed(2));
         propertyEdit = null;
       });
+      if (type === "number") {
+        bindInspectorScrub(fieldLabel, input, applyValue);
+        bindInspectorScrub(control.querySelector(".field-unit"), input, applyValue);
+      }
+      if (type === "color") {
+        const button = document.createElement("button"); button.type = "button"; button.className = "node-color-button canvas-color-button";
+        button.setAttribute("aria-label", label); button.setAttribute("aria-haspopup", "dialog"); button.disabled = input.disabled;
+        button.style.setProperty("--line-color", input.value);
+        const swatch = document.createElement("span"); swatch.className = "canvas-color-swatch"; swatch.setAttribute("aria-hidden", "true"); button.append(swatch);
+        button.onclick = () => openNodeColor(n, key, label, button.getBoundingClientRect());
+        control.classList.add("inspector-color-control");
+        input.type = "text"; input.className = "color-hex-input";
+        input.value = input.value.replace(/^#/, "").toUpperCase();
+        input.setAttribute("aria-label", `${label} HEX`); input.setAttribute("autocomplete", "off"); input.spellcheck = false;
+        input.addEventListener("blur", () => { input.value = String(n[key] || (key === "textColor" ? "#424650" : key === "strokeColor" ? "#97a5b8" : "#ffffff")).replace(/^#/, "").toUpperCase(); });
+        control.prepend(button);
+      }
     }
-    if (!renameOnly && ["text", "note", "rect"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
+    const appearance = groups.get("外观");
+    for (const [key, alphaKey] of [["color", "fillOpacity"], ["textColor", "textOpacity"], ["strokeColor", "strokeOpacity"]]) {
+      const colorControl = appearance?.querySelector(`.field-${key} .inspector-control`);
+      const opacityRow = appearance?.querySelector(`.field-${alphaKey}`);
+      if (colorControl && opacityRow) {
+        const opacityControl = opacityRow.querySelector(".inspector-control");
+        opacityControl.classList.add("inspector-opacity-control");
+        colorControl.append(opacityControl); opacityRow.remove();
+      }
+    }
+    if (specialRow) groups.get("对象")?.append(specialRow);
+    for (const name of ["对象", "布局", "文字", "外观"]) if (groups.has(name)) properties.append(groups.get(name));
+    if (!renameOnly && ["text", "note", "rect", "ellipse"].includes(n.type) && canEdit() && !effectiveLocked(n) && !agentHeld(n)) {
       const section = document.createElement("details");
       section.className = "property-section";
+      section.open = true;
       const summary = document.createElement("summary");
       summary.textContent = "排版";
       section.append(summary);
@@ -1322,7 +1596,16 @@
         select.onchange = () => mutate(() => {
           n[key] = key === "fontWeight" ? Number(select.value) : select.value;
         });
-        row.append(select);
+        if (key === "textAlign") {
+          const segments = document.createElement("div"); segments.className = "alignment-segments"; segments.setAttribute("role", "group"); segments.setAttribute("aria-label", "文字对齐");
+          for (const [value, text] of options) {
+            const button = document.createElement("button"); button.type = "button"; button.title = text; button.setAttribute("aria-label", text); button.setAttribute("aria-pressed", (n.textAlign || "left") === value);
+            button.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h14M${value === "right" ? 7 : value === "center" ? 5 : 3} 9h10M3 13h14M${value === "right" ? 7 : value === "center" ? 5 : 3} 17h10"/></svg>`;
+            button.onclick = () => { mutate(() => { n.textAlign = value; }); for (const b of segments.children) b.setAttribute("aria-pressed", b === button); };
+            segments.append(button);
+          }
+          row.append(segments);
+        } else row.append(inspectorChoice(label, options, n[key] ?? 400, value => mutate(() => { n[key] = Number(value); })));
         section.append(row);
       }
       properties.append(section);
@@ -1446,12 +1729,8 @@
     });
   }
   function removeSelection() {
-    if (agentBusy) {
-      notice("Agent 正在处理，结束后才能删除对象。");
-      return;
-    }
     mutate(() => {
-      const ids = C.descendants(state.nodes, selectedRoots().filter((n) => !effectiveLocked(n)).map((n) => n.id));
+      const ids = C.descendants(state.nodes, selectedRoots().filter((n) => !effectiveLocked(n) && !agentHeld(n)).map((n) => n.id));
       state.nodes = state.nodes.filter((n) => !ids.has(n.id));
       if (state.edges) state.edges = state.edges.filter(e => !ids.has(e.fromInstanceId) && !ids.has(e.toInstanceId));
       selected.clear();
@@ -1591,7 +1870,7 @@
   // Keep the last point on the canvas when the pointer moves to zoom controls.
   let zoomAnchor = null;
   function rememberZoomAnchor(e) {
-    if (e.target.closest("button,.floating,#selection-tools")) return;
+    if (e.target.closest("button,input,textarea,select,.floating,#selection-tools")) return;
     const r = stage.getBoundingClientRect();
     zoomAnchor = { x: e.clientX - r.left, y: e.clientY - r.top };
   }
@@ -1621,8 +1900,17 @@
     if (!nodes.length) return;
     if (!annotationBoardId) exitInteraction();
     const left = Math.min(...nodes.map((n) => n.x)), top = Math.min(...nodes.map((n) => n.y)), right = Math.max(...nodes.map((n) => n.x + n.width)), bottom = Math.max(...nodes.map((n) => n.y + n.height));
-    const z = Math.max(0.05, Math.min(1.5, (stage.clientWidth - 100) / (right - left), (stage.clientHeight - (align === "top" ? 190 : 100)) / (bottom - top)));
-    const target = { x: (stage.clientWidth - (right - left) * z) / 2 - left * z, y: align === "top" ? 100 - top * z : (stage.clientHeight - (bottom - top) * z) / 2 - top * z, zoom: z };
+    // Fit within the workspace between the side rails, including board titles
+    // above and interaction/status hints below the board.
+    const bounds = stage.getBoundingClientRect();
+    const creation = $(".creation-tools").getBoundingClientRect();
+    const rails = [$(".right-tools")].map(el => el.getBoundingClientRect()).filter(r => r.width && r.height);
+    const safeLeft = creation.width && creation.height ? creation.right - bounds.left + 24 : 32;
+    const safeRight = rails.length ? Math.min(...rails.map(r => r.left - bounds.left)) - 24 : stage.clientWidth - 32;
+    const safeTop = align === "top" ? 100 : 56, safeBottom = stage.clientHeight - 56;
+    const width = Math.max(1, safeRight - safeLeft), height = Math.max(1, safeBottom - safeTop);
+    const z = Math.max(0.05, Math.min(1.5, width / (right - left), height / (bottom - top)));
+    const target = { x: safeLeft + (width - (right - left) * z) / 2 - left * z, y: safeTop + (align === "top" ? 0 : (height - (bottom - top) * z) / 2) - top * z, zoom: z };
     if (animate) animateView(target, 200, () => {
       if (!readOnly) persistView();
     });
@@ -1638,16 +1926,29 @@
     const from = redo ? future : history, to = redo ? history : future;
     if (!from.length) return;
     to.push(clone(state));
+    const inspectorSelection = !$("#property-popover").hidden ? [...selected] : [];
     const revision = state.revision;
-    state = from.pop();
+    const restored = from.pop();
+    const protectedIds = new Set(state.nodes.filter(agentHeld).map(node => node.id));
+    const liveNodes = new Map(state.nodes.map(node => [node.id, node]));
+    restored.nodes = restored.nodes.map(node => protectedIds.has(node.id) ? clone(liveNodes.get(node.id)) : node);
+    const restoredIds = new Set(restored.nodes.map(node => node.id));
+    for (const id of protectedIds) if (!restoredIds.has(id)) restored.nodes.push(clone(liveNodes.get(id)));
+    if (state.edges || restored.edges) {
+      const protectedEdge = edge => protectedIds.has(edge.fromInstanceId) || protectedIds.has(edge.toInstanceId);
+      restored.edges = [...(restored.edges || []).filter(edge => !protectedEdge(edge)), ...(state.edges || []).filter(protectedEdge).map(clone)];
+    }
+    state = restored;
     state.revision = revision;
-    selected.clear();
+    selected = new Set(inspectorSelection.filter(id => state.nodes.some(n => n.id === id)));
+    propertyEdit = null;
     groupContext = null;
     changed();
+    if (selected.size === 1 && inspectorSelection.length) openProperties();
   }
   stage.addEventListener("pointerdown", (e) => {
     if (e.target.closest("#canvas-connections") && !space && tool !== "hand" && e.button !== 1) return;
-    if (e.button === 2 || e.target.closest("button,.floating,#selection-tools") || e.target.closest(".interacting") || e.target.isContentEditable) return;
+    if (e.button === 2 || e.target.closest("button,input,textarea,select,.floating,#selection-tools") || e.target.closest(".interacting") || e.target.isContentEditable) return;
     if (e.button === 0 && tool === "select" && !space && !e.target.closest(".node,#selection-frame") && !$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")) {
       setFloatingPanel("#context-menu", false);
       stage.focus({ preventScroll: true });
@@ -1736,6 +2037,10 @@
     }
     if (gesture) {
       gesture.pointerId = e.pointerId;
+      // Screen anchor kept on every gesture: setSpace can turn a pending
+      // move/marquee into a pan and still needs the original press point.
+      gesture.px = e.clientX;
+      gesture.py = e.clientY;
       positionSelectionTools();
       updateSelectionFrame();
       (n && el?.isConnected ? el : stage).setPointerCapture(e.pointerId);
@@ -1916,7 +2221,7 @@
   stage.addEventListener("dblclick", (e) => {
     if (e.target.closest("#canvas-connections,.connection-handles,.connection-preview,.flow-quick-dots,.flow-quick-preview")) return;
     const el = e.target.closest(".node"), n = state.nodes.find((n2) => n2.id === el?.dataset.id);
-    if (e.target.closest("button,.floating,#selection-tools,[contenteditable=true]") || e.target.isContentEditable || space || tool !== "select" || e.button !== 0) return;
+    if (e.target.closest("button,input,textarea,select,.floating,#selection-tools,[contenteditable=true]") || e.target.isContentEditable || space || tool !== "select" || e.button !== 0) return;
     if (annotationBoardId) return;
     if (!n) {
       // Rapid clicks on quick-create dots move the dots away; the second click must not add text.
@@ -2026,9 +2331,10 @@
       return;
     }
     if (mod && e.key.toLowerCase() === "c") {
-      e.preventDefault();
-      if (e.shiftKey) runAction("copy-image");
-      else copySelection();
+      if (e.shiftKey) {
+        e.preventDefault();
+        runAction("copy-image");
+      }
       return;
     }
     if (mod && e.key.toLowerCase() === "v") {
@@ -2062,8 +2368,8 @@
       zoomTo(1);
       return;
     }
-    if (!mod && { v: 1, h: 1, t: 1, r: 1, o: 1, f: 1 }[e.key.toLowerCase()]) {
-      setTool({ v: "select", h: "hand", t: "text", r: "rect", o: "ellipse", f: "board" }[e.key.toLowerCase()]);
+    if (!mod && { v: 1, h: 1, t: 1, f: 1 }[e.key.toLowerCase()]) {
+      setTool({ v: "select", h: "hand", t: "text", f: "board" }[e.key.toLowerCase()]);
       return;
     }
     if (e.key === "F2") {
@@ -2073,8 +2379,7 @@
     }
     if (e.code === "Space") {
       e.preventDefault();
-      space = true;
-      stage.classList.add("space");
+      setSpace(true);
     }
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
@@ -2091,16 +2396,31 @@
     }
   });
   document.addEventListener("keyup", (e) => {
-    if (e.code === "Space") {
-      space = false;
-      stage.classList.remove("space");
-    }
+    if (e.code === "Space") setSpace(false);
   });
   window.addEventListener("blur", () => {
-    space = false;
-    stage.classList.remove("space");
+    setSpace(false);
     cancelGesture();
   });
+  // Space reaches the canvas late or not at all when the key was pressed
+  // while keyboard focus sat elsewhere (Portal agent panel) or before the
+  // relayed message landed. setSpace is the single writer of the flag so the
+  // relay can feed it too, and a pending gesture that has not touched the
+  // document yet can still turn into a pan instead of dragging objects away.
+  function setSpace(down) {
+    if (space === down) return;
+    space = down;
+    stage.classList.toggle("space", down);
+    if (down && gesture && !gesture.started && (gesture.kind === "move" || gesture.kind === "select")) {
+      if (gesture.kind === "select") {
+        $("#marquee").hidden = true;
+        selected = new Set(gesture.selected);
+        render({ panels: false });
+      }
+      gesture = { kind: "pan", cx: gesture.px ?? gesture.cx, cy: gesture.py ?? gesture.cy, x: state.viewport.x, y: state.viewport.y, pointerId: gesture.pointerId };
+      stage.classList.add("panning");
+    }
+  }
   function snap(nodes, dx, dy) {
     const b = C.bounds(nodes), ids = new Set(nodes.map((n) => n.id)), limit = 6 / state.viewport.zoom;
     let bestX = limit, bestY = limit, guideX = null, guideY = null, resultX = dx, resultY = dy;
@@ -2134,6 +2454,7 @@
     return { dx: resultX, dy: resultY };
   }
   function textSource(el) {
+    if (el.tagName === "TEXTAREA") return el.value;
     // Chromium represents Enter as sibling DIVs with a placeholder BR on empty lines.
     // innerText counts those placeholder breaks twice under pre-wrap.
     function read(parent) {
@@ -2150,7 +2471,7 @@
   const textAutoHeight = (n) => n.type === "text" || n.type === "note";
   // A box only needs re-measuring when what it renders has changed; zoom is a CSS transform.
   const fitSignatures = new Map();
-  const fitSignature = (n) => JSON.stringify([displayText(n), n.width, n.fontSize || 20, n.fontWeight || 400, n.textAlign || "left", n.padding ?? null]);
+  const fitSignature = (n) => JSON.stringify([displayText(n), n.width, n.fontSize || 20, n.fontWeight || 400, n.textAlign || "left", n.lineHeight, n.letterSpacing, n.padding ?? null]);
   function fitContentHeight(n, el = nodeEls.get(n.id)) {
     const inner = el?.querySelector(".node-content");
     if (!inner || !el.isConnected) return false;
@@ -2271,22 +2592,10 @@
   function applyTextCommand(command) {
     const el = editing && nodeEls.get(editing.id)?.querySelector(".node-content");
     if (!el) return;
-    const selection = getSelection(), active = selection.rangeCount ? selection.getRangeAt(0) : null;
-    if (!active || !el.contains(active.commonAncestorContainer)) return;
-    const before = active.cloneRange();before.selectNodeContents(el);before.setEnd(active.startContainer, active.startOffset);
-    const start = before.toString().length, end = start + active.toString().length;
-    const source = textSource(el), edit = window.CanvasMarkdownEditor.transform(source,start,end,command);
-    // Normalize plaintext DOM before selecting a source range; this also handles Enter-created DIVs.
-    el.textContent = source;
-    const node = el.firstChild || el.appendChild(document.createTextNode(""));
-    const range = document.createRange();range.setStart(node,edit.start);range.setEnd(node,edit.end);
-    selection.removeAllRanges();selection.addRange(range);el.focus();
-    document.execCommand("insertText",false,edit.text);
-    if (edit.select && el.firstChild?.nodeType === Node.TEXT_NODE && edit.select[1] <= el.firstChild.length) {
-      const range = document.createRange();range.setStart(el.firstChild,edit.select[0]);range.setEnd(el.firstChild,edit.select[1]);selection.removeAllRanges();selection.addRange(range);
-    }
-    el.oninput?.();
+    const {source,start,end}=window.CanvasMarkdownEditor.snapshot(el);
+    window.CanvasMarkdownEditor.replace(el,window.CanvasMarkdownEditor.transform(source,start,end,command));
   }
+
   function mountTextTools() {
     textTools?.remove();
     textTools = document.createElement("div");textTools.className = "markdown-inline-tools";
@@ -2296,16 +2605,17 @@
     expand.onclick=()=>{
       const edit = editing, n = edit && state.nodes.find(n=>n.id===edit.id), el = n && nodeEls.get(n.id)?.querySelector(".node-content");
       if (!n || !el) return;
+      clearTimeout(linkedTimer);
       expandedEditor={};
       expandedEditor=window.CanvasMarkdownEditor.dialog({title:n.name || "编辑 Markdown",source:textSource(el),baseUrl:prdPath(n),
         onSave:async source=>{
-          if (edit.prdPath && source !== edit.original) {
+          if (edit.prdPath) {
             if (linkedSavePromise) await linkedSavePromise;
-            if (edit.prdPath && source !== edit.original) await saveLinkedMarkdown(edit.prdPath,source,edit.original);
+            await saveLinkedMarkdown(edit.prdPath,source,edit.original);
           }
-          edit.prdPath="";el.textContent=source;el.oninput?.();finishText();expandedEditor=null;
+          edit.prdPath="";el.value=source;el.oninput?.();finishText();expandedEditor=null;
         },
-        onCancel:()=>{expandedEditor=null;el.focus();}});
+        onCancel:()=>{expandedEditor=null;el.focus();if(edit.prdPath)queueLinkedSave(edit,n);}});
     };
     const done = document.createElement("button");done.type="button";done.textContent="完成";done.onpointerdown=e=>e.preventDefault();done.onclick=()=>finishText();
     textTools.append(expand,done);document.body.append(textTools);positionTextTools();
@@ -2317,28 +2627,39 @@
     setFloatingPanel("#context-menu", false);
     const n = state.nodes.find((n2) => n2.id === id);
     if (!n || !["text", "note", "rect"].includes(n.type) || effectiveLocked(n) || agentHeld(n)) return;
+    agentTextSelection = null;
     selected = /* @__PURE__ */ new Set([id]);
     render();
-    const el = nodeEls.get(id)?.querySelector(".node-content");
+    let el = nodeEls.get(id)?.querySelector(".node-content");
     if (!el) return;
     if (prdPath(n)) n.text = displayText(n);
     checkpoint();
     editing = { id, prdPath: prdPath(n), original: n.text || "", historyLength: history.length - 1, composing: false };
     // Editing always uses the saved source, never the rendered Markdown DOM.
-    el.textContent = n.text || "";
-    el.contentEditable = "plaintext-only";
+    if (n.type === "text") {
+      const input=document.createElement("textarea");input.className="node-content";input.rows=1;
+      input.value=n.text || "";input.style.cssText=el.style.cssText;el.replaceWith(input);el=input;
+    } else {
+      el.textContent = n.text || "";
+      el.contentEditable = "plaintext-only";
+    }
     el.spellcheck = false;
-    el.setAttribute("aria-label", n.type === "text" ? "编辑 Markdown 文本" : n.flowShape ? "编辑流程图文字" : n.type === "rect" ? "编辑矩形文字" : "编辑便签");
+    el.setAttribute("aria-label", n.type === "text" ? (isMarkdownDocument(n) ? "编辑 Markdown 文本" : "编辑文本") : n.flowShape ? "编辑流程图文字" : n.type === "rect" ? "编辑矩形文字" : "编辑便签");
     el.parentElement.classList.add("editing");
     // render() ran before `editing` was set; drop the quick-create dots now that the label is being edited.
     flowQuick?.sync();
     el.focus();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    el.onblur = () => { if (!expandedEditor) finishText(); };
+    if (n.type === "text") el.select();
+    else {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    el.onblur = event => {
+      if (!expandedEditor && !event.relatedTarget?.closest('#context-menu[data-text-editing]')) finishText();
+    };
     el.oncompositionstart = () => {
       if (editing) editing.composing = true;
     };
@@ -2365,14 +2686,11 @@
       else autoTimer = setTimeout(() => save({ preserveEditing: true }), AUTOSAVE_DELAY);
     };
     if (n.type === "text") {
-      mountTextTools();
+      if (isMarkdownDocument(n)) mountTextTools();
       el.onkeydown = event => {
         if (event.isComposing) return;
-        if ((event.metaKey || event.ctrlKey) && ["b","i","k"].includes(event.key.toLowerCase())) {
-          event.preventDefault();event.stopPropagation();applyTextCommand({b:"bold",i:"italic",k:"link"}[event.key.toLowerCase()]);
-        }
-        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {event.preventDefault();event.stopPropagation();finishText();}
-        if (event.key === "Tab") {event.preventDefault();document.execCommand("insertText",false,"  ");}
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {event.preventDefault();event.stopPropagation();finishText();return;}
+        window.CanvasMarkdownEditor.handleKey(event,el);
       };
     } else if (n.flowShape) {
       // Flow labels are short: Enter commits, Shift+Enter breaks the line, IME composition never commits.
@@ -2389,6 +2707,7 @@
   function finishText(cancel = false) {
     if (!editing) return;
     const edit = editing;
+    fitSignatures.delete(edit.id);
     const n = state.nodes.find((item) => item.id === edit.id), el = nodeEls.get(edit.id)?.querySelector(".node-content");
     if (el) {
       n.text = textSource(el);
@@ -2484,12 +2803,24 @@
       notice("图片复制失败，请检查图片是否可读取并允许剪贴板访问后重试。");
     }
   }
-  function copySelection() {
+  const canvasClipboardType = "application/x-prota-canvas";
+  document.addEventListener("copy", (e) => {
+    if (e.target.matches("input,textarea,select") || e.target.isContentEditable || !selected.size) return;
+    copySelection(e);
+  });
+  function copySelection(event = null) {
     if (!selected.size) return;
-    clipboard = { nodes: clone(state.nodes.filter((n) => C.descendants(state.nodes, selected).has(n.id))), selected: [...selected], edges: clone((state.edges || []).filter(e => C.descendants(state.nodes, selected).has(e.fromInstanceId) && C.descendants(state.nodes, selected).has(e.toInstanceId))), sourcePath: location.pathname };
+    // Toolbar/menu copies must publish the same format as the native shortcut.
+    if (!event?.clipboardData && document.execCommand("copy")) return;
+    clipboard = { token: uid(), nodes: clone(state.nodes.filter((n) => C.descendants(state.nodes, selected).has(n.id))), selected: [...selected], edges: clone((state.edges || []).filter(e => C.descendants(state.nodes, selected).has(e.fromInstanceId) && C.descendants(state.nodes, selected).has(e.toInstanceId))), sourcePath: location.pathname };
     try {
       localStorage.setItem(clipboardKey, JSON.stringify({ ...clipboard, at: Date.now() }));
     } catch {
+    }
+    if (event?.clipboardData) {
+      event.clipboardData.setData(canvasClipboardType, clipboard.token);
+      event.clipboardData.setData("text/plain", clipboard.nodes.map(n => n.text || n.name || "").join("\n"));
+      event.preventDefault();
     }
     notice("已复制 " + selected.size + " 个对象");
     setTimeout(() => {
@@ -2499,7 +2830,7 @@
   function loadClipboard() {
     try {
       const stored = JSON.parse(localStorage.getItem(clipboardKey) || "null");
-      if (stored?.nodes?.length) clipboard = { nodes: clone(stored.nodes), selected: clone(stored.selected), edges: clone(stored.edges || []), sourcePath: stored.sourcePath };
+      if (stored?.nodes?.length) clipboard = { token: stored.token, nodes: clone(stored.nodes), selected: clone(stored.selected), edges: clone(stored.edges || []), sourcePath: stored.sourcePath };
     } catch {
     }
     return clipboard;
@@ -2599,16 +2930,49 @@
       dropPrd(e.dataTransfer.getData(prdDragType), at).catch(error => notice(error.message || "PRD 读取失败，请重试"));
       return;
     }
-    images(e.dataTransfer.files, at).catch(() => status("图片读取失败", "error"));
+    const files=[...e.dataTransfer.files];
+    const markdownFiles=files.filter(file=>/\.(md|markdown)$/i.test(file.name));
+    void (async()=>{
+      for (const [index,file] of markdownFiles.entries()) {
+        const text=(await file.text()).replace(/^\uFEFF/, "").replace(/\r\n?/g,"\n");
+        if (!canEdit()) return;
+        finishText();
+        mutate(()=>{
+          const node={id:uid(),type:"text",name:file.name,x:Math.round(at.x+index*32),y:Math.round(at.y+index*32),width:720,height:100,text,markdownDocument:true,color:"#ffffff",fontSize:16,padding:28};
+          state.nodes.push(node);selected=new Set([node.id]);
+        });
+      }
+      await images(files.filter(file=>!markdownFiles.includes(file)),at);
+    })().catch(()=>status("文件读取失败", "error"));
   });
+  function pasteText(text) {
+    if (!text.trim() || !canEdit()) return false;
+    const rect = stage.getBoundingClientRect();
+    const at = point(rect.left + stage.clientWidth / 2, rect.top + stage.clientHeight / 2);
+    const width = Math.min(560, Math.max(280, stage.clientWidth * 0.6 / state.viewport.zoom));
+    mutate(() => {
+      const n = { id: uid(), type: "text", name: "文本", text: text.replace(/\r\n?/g, "\n"),
+        x: Math.round(at.x - width / 2), y: Math.round(at.y - 50),
+        width, height: 100, color: "", fontSize: 20 };
+      state.nodes.push(n);
+      selected = new Set([n.id]);
+    });
+    stage.focus();
+    return true;
+  }
   document.addEventListener("paste", (e) => {
-    if (e.target.matches("input,textarea") || e.target.isContentEditable) return;
     clearTimeout(pasteTimer);
-    const files = [...e.clipboardData.files];
+    if (e.target.matches("input,textarea,select") || e.target.isContentEditable || !e.clipboardData || !canEdit()) return;
+    const data = e.clipboardData;
+    const files = [...data.files];
     if (files.length) {
       e.preventDefault();
       images(files).catch(() => status("图片读取失败", "error"));
-    } else if (pasteSelection()) e.preventDefault();
+    } else if (data.getData(canvasClipboardType) && data.getData(canvasClipboardType) === loadClipboard()?.token) {
+      if (pasteSelection()) e.preventDefault();
+    } else if (pasteText(data.getData("text/plain"))) {
+      e.preventDefault();
+    } else if (!data.types.length && pasteSelection()) e.preventDefault();
   });
   // Background saves persist the current source without committing the editor.
   // Explicit saves and outside clicks still finish editing.
@@ -2686,6 +3050,10 @@
         if (dirty) persistDraft({ announce: false });
         if (!dirty) {
           removeStoredValue(draftKey);
+          if (restoredConflictBackup && readStoredValue(draftKey + ":conflict-backup") === restoredConflictBackup) {
+            removeStoredValue(draftKey + ":conflict-backup");
+            restoredConflictBackup = null;
+          }
           $("#notice").hidden = true;
         }
         if (snapshot.nodes.some(n => n.cloneFrom)) render({panels:false});
@@ -2771,6 +3139,7 @@
           writeStoredValue(draftKey + ":conflict-backup", JSON.stringify({ ...backup, disk }));
         } catch {
         }
+        restoredConflictBackup = readStoredValue(draftKey + ":conflict-backup");
         const viewport = state.viewport;
         state = merged.state;
         state.viewport = viewport;
@@ -2791,19 +3160,58 @@
       notice("恢复失败：" + (error.message || "备份不可用"), [{ label: "读取最新版本", run: reloadLatestKeepBackup }]);
     }
   }
+  function backupNoticeToken(raw) {
+    let hash = 2166136261;
+    for (let i = 0; i < raw.length; i++) hash = Math.imul(hash ^ raw.charCodeAt(i), 16777619);
+    return raw.length + ":" + (hash >>> 0);
+  }
+  function keepCurrentDiscardBackup(raw) {
+    // Only discard the backup shown by this notice, never a newer receipt or
+    // the active recovery draft. No document state or disk content is changed.
+    if (readStoredValue(draftKey + ":conflict-backup") !== raw) return;
+    removeStoredValue(draftKey + ":conflict-backup");
+    removeStoredValue(draftKey + ":conflict-backup-dismissed");
+    conflictBackupNotice = null;
+    $("#notice").hidden = true;
+  }
   function offerConflictBackupRestore() {
     try {
-      const backup = JSON.parse(readStoredValue(draftKey + ":conflict-backup") || "null");
+      const raw = readStoredValue(draftKey + ":conflict-backup");
+      const backup = JSON.parse(raw || "null");
       if (!backup?.state) return;
+      // Older runtimes retained already-applied backups indefinitely. Retire
+      // one only when replaying its actual edits would leave this document unchanged.
+      if (backup.baseline) {
+        const useV2 = schemaEnabled || state.schemaVersion === 2 || backup.state.schemaVersion === 2;
+        const merged = C.mergeDocuments(materialize(backup.baseline, useV2), materialize(backup.state, useV2), state);
+        const content = doc => {
+          const normalize = value => Array.isArray(value) ? value.map(normalize) : value && typeof value === "object"
+            ? Object.fromEntries(Object.keys(value).sort().map(key => [key, normalize(value[key])])) : value;
+          const { revision, viewport, ...rest } = doc;
+          return JSON.stringify(normalize(rest));
+        };
+        if (!merged.conflicts.length && content(merged.state) === content(state)) {
+          removeStoredValue(draftKey + ":conflict-backup");
+          return;
+        }
+      }
+      const token = backupNoticeToken(raw);
+      if (readStoredValue(draftKey + ":conflict-backup-dismissed") === token) return;
       const at = new Date(backup.savedAt || Date.now());
       const time = `${at.getHours()}:${String(at.getMinutes()).padStart(2, "0")}`;
-      notice(`冲突前的本机修改已备份（${time}）`, [{ label: "恢复备份", primary: true, run: restoreLocalOverConflict }]);
+      notice(`冲突前的本机修改已备份（${time}）`, [
+        { label: "保留当前状态", primary: true, run: () => keepCurrentDiscardBackup(raw) },
+        { label: "恢复备份", run: restoreLocalOverConflict }
+      ]);
+      conflictBackupNotice = token;
     } catch {
     }
   }
-  async function focusAgent(adaptBoardState = false) {
+  async function focusAgent(adaptBoardState = false, textSelection = null) {
     if (readOnly) return;
-    finishText();
+    if ((await finishText()) === false) return;
+    agentTextSelection = textSelection;
+    notify();
     if (parent === window) {
       notice("请在 Prota 中使用当前 Agent。");
       return;
@@ -2858,9 +3266,9 @@
   function agentState(data) {
     const wasBusy = agentBusy, previousTargets = [...agentTargets];
     agentTargets = new Set(data.active ? data.targetIds || [] : []);
-    for (const [id, el] of nodeEls) el.classList.toggle("agent-target", agentTargets.has(id));
-    if (data.active || wasBusy) agentPending = false;
+    if (data.active || wasBusy) { agentPending = false; preparingTargets.clear(); }
     agentBusy = Boolean(data.active);
+    for (const [id, el] of nodeEls) el.classList.toggle("agent-target", agentHeld(state.nodes.find(n => n.id === id)));
     document.body.classList.toggle("agent-working", agentBusy);
     if (agentBusy && !dirty && !saving) status("已保存 · Agent 正在修改");
     else if (wasBusy) {
@@ -2871,11 +3279,12 @@
       if (dirty || editing || saving) syncAgentOutcome().finally(settle);
       else settle();
     }
-    document.querySelectorAll("#add-board,#add-shape,#add-flowchart,#add-note,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = readOnly);
+    document.querySelectorAll("#add-board,#add-flowchart,#add-note,#image,#first-board,#ask-agent,[data-tool]:not([data-tool=select]):not([data-tool=hand])").forEach((button) => button.disabled = readOnly);
     renderInspector();
   }
   // Context menus replace the toolbar; its own More menu expands underneath it.
   function setFloatingPanel(selector, open) {
+    if ((selector === "#property-popover" && !open) || (open && selector !== "#property-popover")) closeInspectorDropdown();
     if (open) {
       for (const other of floatingPanels) if (other !== selector) $(other).hidden = true;
     }
@@ -2884,8 +3293,10 @@
       delete $(selector).dataset.boardVersions;
       document.querySelectorAll('.board-version[aria-expanded="true"]').forEach(button => button.setAttribute("aria-expanded", "false"));
     }
-    const more = $('#selection-tools [data-action="more"]');
-    more?.setAttribute("aria-expanded", String(!$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")));
+    for (const id of ["more", "align-more"]) {
+      const invokerButton = $(`#selection-tools [data-action="${id}"]`);
+      invokerButton?.setAttribute("aria-expanded", String(!$("#context-menu").hidden && $("#context-menu").hasAttribute("data-selection-tools")));
+    }
     positionSelectionTools();
   }
   function placeFloating(element, x, y) {
@@ -2894,7 +3305,7 @@
     element.style.left = Math.max(10, Math.min(innerWidth - w - 10, x)) + "px";
     element.style.top = Math.max(10, Math.min(innerHeight - h - 10, y)) + "px";
   }
-  function showMenu(items, x, y, invoker = document.activeElement, { keepSelectionTools = false } = {}) {
+  function showMenu(items, x, y, invoker = document.activeElement, { keepSelectionTools = false, textEditing = false } = {}) {
     if (!invoker || invoker === document.body) invoker = stage;
     closePalette();
     setFloatingPanel("#property-popover", false);
@@ -2903,12 +3314,14 @@
     delete menu.dataset.boardVersions;
     delete menu.dataset.flowchart;
     menu.toggleAttribute("data-selection-tools", keepSelectionTools);
+    menu.toggleAttribute("data-text-editing", textEditing);
     menu.style.removeProperty("max-height");
     menuInvoker = invoker;
     for (const item of items) {
       if (item.divider) {
         const divider = document.createElement("div");
         divider.className = "menu-divider";
+        divider.setAttribute("role", "separator");
         menu.append(divider);
       } else if (item.heading) {
         const heading = document.createElement("div");
@@ -2919,7 +3332,13 @@
     }
     placeFloating(menu, x, y);
     if (keepSelectionTools) positionSelectionTools();
-    menu.querySelector("button:not(:disabled)")?.focus({ preventScroll: true });
+    // Keyboard-opened menus keep the focus-first-item behavior; pointer-opened
+    // menus (right-click) focus the menu shell so no focus ring lands on an item.
+    if (textEditing && !lastInputWasKeyboard) {
+      // Keep native textarea selection actively highlighted behind the pointer menu.
+      invoker.focus({ preventScroll: true });
+    } else if (lastInputWasKeyboard) menu.querySelector("button:not(:disabled)")?.focus({ preventScroll: true });
+    else menu.focus({ preventScroll: true });
   }
   function insertAt(kind, at) {
     const n = add(kind, at);
@@ -2933,7 +3352,7 @@
     }
   }
   function creationActions(at = null, category = "all") {
-    const defs = [["mobile", "手机画板", "frame", "boards"], ["web", "Web 画板", "frame", "boards"], ["board", "自由画板", "frame", "boards"], ["text", "文本", "type", "content"], ["note", "便签", "sticky-note", "content"], ["rect", "矩形", "shapes", "shapes"], ["ellipse", "圆形", "shapes", "shapes"], ["image", "图片", "image-plus", "content"]];
+    const defs = [["mobile", "手机画板", "frame", "boards"], ["web", "Web 画板", "frame", "boards"], ["board", "自由画板", "frame", "boards"], ["text", "文本", "type", "content"], ["note", "便签", "sticky-note", "content"], ["image", "图片", "image-plus", "content"]];
     // Picker-only presets (text, circle) already exist as base kinds; keep only real flow shapes here.
     defs.push(...Object.entries(flowShapes).filter(([, preset]) => preset.kind === "flow").map(([shape, preset]) => ["flow-"+shape, preset.label, preset.icon, "flowchart"]));
     return defs.filter(([, , , group]) => category === "all" || category === group).map(([kind, label, icon]) => ({ id: "add-" + kind, label, icon, disabled: !canEdit(), run: () => {
@@ -2946,23 +3365,22 @@
   }
   function openCreateMenu(button, category) {
     const r = button.getBoundingClientRect();
-    showMenu(creationActions(null, category), r.left, Math.max(10, r.top - 300), button);
+    showMenu(creationActions(null, category), r.right + 12, r.top, button);
   }
   $("#add-board").onclick = (e) => openCreateMenu(e.currentTarget, "boards");
-  $("#add-shape").onclick = (e) => openCreateMenu(e.currentTarget, "shapes");
   // The flowchart toolbar and context menu share the quick-create shape grid.
   function openFlowchartMenu(button, at = null) {
     if (!flowQuick || !canEdit()) return;
     setFloatingPanel("#context-menu", false);
     const r = button.getBoundingClientRect();
-    flowQuick.openPicker(r.left, r.top - 12, at, button);
+    flowQuick.openPicker(r.right + 12, r.top, at, button);
     const panel = $("#flow-shape-picker");
-    panel.style.top = Math.max(8, r.top - panel.offsetHeight - 10) + "px";
+    panel.style.top = Math.max(8, Math.min(innerHeight - panel.offsetHeight - 8, r.top)) + "px";
   }
   $("#add-flowchart").onclick = e => openFlowchartMenu(e.currentTarget);
   $("#more-tools").onclick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    showMenu(creationActions().filter((a) => ["add-note", "add-image"].includes(a.id)), rect.left, rect.top - 300, e.currentTarget);
+    showMenu(creationActions().filter((a) => ["add-note", "add-image"].includes(a.id)), rect.right + 12, rect.top, e.currentTarget);
   };
   $("#add-note").onclick = () => add("note");
   $("#ask-agent").onclick = focusAgent;
@@ -2971,7 +3389,11 @@
     setFloatingPanel("#property-popover", false);
     stage.focus();
   };
-  $("#notice-dismiss").onclick = () => $("#notice").hidden = true;
+  $("#notice-dismiss").onclick = () => {
+    if (conflictBackupNotice) writeStoredValue(draftKey + ":conflict-backup-dismissed", conflictBackupNotice);
+    conflictBackupNotice = null;
+    $("#notice").hidden = true;
+  };
   document.querySelectorAll("[data-tool]").forEach((button) => button.onclick = () => {
     finishText();
     exitInteraction();
@@ -2980,6 +3402,7 @@
   });
   function openNodeMenu(el, clientX, clientY, { includeBoardAdd = false } = {}) {
     if (!el) return;
+    lastInputWasKeyboard = false;
     if (!selected.has(el.dataset.id)) {
       selected = /* @__PURE__ */ new Set([el.dataset.id]);
       groupContext = null;
@@ -2992,14 +3415,47 @@
     const board = state.nodes.find((n) => n.id === el.dataset.id && n.type === "board");
     if (includeBoardAdd && board && !effectiveLocked(board) && canEdit()) {
       const at = point(clientX, clientY);
-      items.push({ divider: true }, { heading: "添加到此画板" }, ...creationActions(at).filter((a) => ["add-text", "add-note", "add-rect", "add-ellipse", "add-image"].includes(a.id)));
+      items.push({ divider: true }, { heading: "添加到此画板" }, ...creationActions(at).filter((a) => ["add-text", "add-note", "add-image"].includes(a.id)));
     }
     showMenu(items, clientX, clientY);
   }
   window.addEventListener("contextmenu", (e) => {
     consumeFocusedContextMenu(e);
   }, true);
+  function openTextMenu(el, event) {
+    const edit = editing, { source, start, end } = window.CanvasMarkdownEditor.snapshot(el);
+    const restore = () => {
+      if (editing !== edit || !el.isConnected) return false;
+      el.focus({ preventScroll: true });
+      el.setSelectionRange(start, end);
+      return true;
+    };
+    const copy = async cut => {
+      try {
+        await navigator.clipboard.writeText(source.slice(start, end));
+        if (restore() && cut) document.execCommand("insertText", false, "");
+      } catch { restore(); notice("无法访问剪贴板，请使用键盘快捷键。"); }
+    };
+    const items = [
+      { id: "text-cut", label: "剪切", icon: "scissors", disabled: start === end, run: () => copy(true) },
+      { id: "text-copy", label: "复制", icon: "copy", disabled: start === end, run: () => copy(false) },
+      { id: "text-paste", label: "粘贴", icon: "clipboard-paste", run: async () => {
+        try { const text = await navigator.clipboard.readText(); if (restore()) document.execCommand("insertText", false, text); }
+        catch { restore(); notice("无法访问剪贴板，请使用键盘快捷键。"); }
+      } },
+      { id: "text-select-all", label: "全选", icon: "type", run: () => { if (restore()) el.select(); } },
+      { divider: true },
+      { id: "text-agent", label: "Prota", icon: "sparkles", agent: true, run: () => focusAgent(false, start < end ? { id: edit.id, source, start, end } : null) }
+    ];
+    lastInputWasKeyboard = false;
+    showMenu(items, event.clientX, event.clientY, el, { textEditing: true });
+  }
   stage.addEventListener("contextmenu", (e) => {
+    if (editing && e.target.matches("textarea.node-content") && state.nodes.find(n => n.id === editing.id)?.type === "text") {
+      e.preventDefault();
+      openTextMenu(e.target, e);
+      return;
+    }
     if (e.target.isContentEditable || e.target.closest("#property-popover,#selection-tools,.floating")) return;
     e.preventDefault();
     finishText();
@@ -3038,14 +3494,17 @@
   });
   document.addEventListener("pointerdown", (e) => {
     if (!e.target.closest("#context-menu") && !e.target.closest("[aria-haspopup=menu]") && !e.target.closest("#command-palette")) setFloatingPanel("#context-menu", false);
-    if (!e.target.closest("#property-popover") && !e.target.closest("#selection-tools")) setFloatingPanel("#property-popover", false);
+    if (!e.target.closest("#property-popover,#node-colors") && !e.target.closest("#selection-tools")) setFloatingPanel("#property-popover", false);
+  });
+  $("#context-menu").addEventListener("pointerdown", e => {
+    if (e.currentTarget.hasAttribute("data-text-editing")) e.preventDefault();
   });
   $("#context-menu").addEventListener("keydown", (e) => {
     const buttons = [...$("#context-menu").querySelectorAll("button:not(:disabled)")], index = buttons.indexOf(document.activeElement);
     if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
       e.preventDefault();
       e.stopPropagation();
-      const next = e.key === "Home" ? 0 : e.key === "End" ? buttons.length - 1 : (index + (e.key === "ArrowDown" ? 1 : buttons.length - 1)) % buttons.length;
+      const next = e.key === "Home" ? 0 : e.key === "End" ? buttons.length - 1 : index === -1 ? (e.key === "ArrowDown" ? 0 : buttons.length - 1) : (index + (e.key === "ArrowDown" ? 1 : buttons.length - 1)) % buttons.length;
       buttons[next]?.focus();
     }
     if (e.key === "Escape") {
@@ -3148,7 +3607,7 @@
     return { x: b.x * v.zoom + v.x, y: b.y * v.zoom + v.y, width: b.width * v.zoom, height: b.height * v.zoom };
   }
   function overlayObstacles(extra = []) {
-    return [".canvas-identity", ".view-tools", ".creation-tools", ".zoom-tools", "#notice", ...extra].map((selector) => $(selector)).filter((el) => el && !el.hidden).map((el) => {
+    return [".canvas-identity", ".right-tools", ".creation-tools", "#notice", ...extra].map((selector) => $(selector)).filter((el) => el && !el.hidden).map((el) => {
       const r = el.getBoundingClientRect();
       return { x: r.x - 5, y: r.y - 5, width: r.width + 10, height: r.height + 10 };
     });
@@ -3165,19 +3624,21 @@
       return;
     }
     box.hidden = false;
-    const pos = C.placeOverlay({ anchor, width: box.offsetWidth, height: box.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: [...overlayObstacles(), ...(flowQuick?.dotRects() || [])] });
+    const pos = C.placeOverlay({ anchor, width: box.offsetWidth, height: box.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: [...overlayObstacles(), ...(flowQuick?.dotRects() || [])], adjacent: true, gap: 50 });
     box.style.left = pos.x + "px";
     box.style.top = pos.y + "px";
     box.dataset.placement = pos.placement;
     const menu = $("#context-menu");
     if (!menu.hidden && menu.hasAttribute("data-selection-tools")) {
       const rect = box.getBoundingClientRect();
-      menu.style.left = Math.max(10, Math.min(innerWidth - menu.offsetWidth - 10, rect.right - menu.offsetWidth)) + "px";
-      menu.style.top = rect.bottom + 6 + "px";
-      menu.style.maxHeight = Math.max(0, innerHeight - rect.bottom - 16) + "px";
+      menu.style.maxHeight = Math.max(0, innerHeight - 24) + "px";
+      const menuPos = C.placeOverlay({ anchor: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }, width: menu.offsetWidth, height: menu.offsetHeight, viewport: { width: innerWidth, height: innerHeight }, obstacles: overlayObstacles(), placement: "popover", gap: 10 });
+      menu.style.left = menuPos.x + "px";
+      menu.style.top = menuPos.y + "px";
     }
   }
   function notice(text, actionList = []) {
+    conflictBackupNotice = null;
     $("#notice-text").textContent = text;
     const container = $("#notice-actions");
     const list = Array.isArray(actionList) ? actionList : actionList ? [actionList] : [];
@@ -3451,6 +3912,9 @@
       fullscreenFallback = Boolean(data.active);
       updateFullscreen();
     }
+    // The Portal relays Space held while its own document had focus, so the
+    // pan gesture still works after using the agent panel (see setSpace).
+    if (data.type === "prota:canvas-key" && data.code === "Space") setSpace(Boolean(data.down));
   });
   // Inspector events born inside the annotated board frame are relayed to the
   // Portal with the board identity attached; only the currently annotated
@@ -3531,21 +3995,28 @@
         baseline = clone(draft.baseline);
         changed();
       } else {
-        // Merge independent disk changes automatically; conflicting fields
-        // still require a choice and retain both the draft and disk backup.
-        const backup = writeStoredValue(draftKey + ":conflict-backup", JSON.stringify(draft));
-        if (!backup.ok) throw backup.error;
-        recoveringDraft = true;
-        draftRecovery = restoreLocalOverConflict().finally(() => {
-          recoveringDraft = false;
-          draftRecovery = null;
-          render();
-        });
+        // Independent edits are ordinary recovery, not a conflict backup.
+        const useV2 = schemaEnabled || state.schemaVersion === 2 || draft.state.schemaVersion === 2;
+        const merged = C.mergeDocuments(materialize(draft.baseline, useV2), materialize(draft.state, useV2), state);
+        if (!merged.conflicts.length) {
+          state = merged.state;
+          baseline = clone(initialDocument);
+          changed();
+        } else {
+          const backup = writeStoredValue(draftKey + ":conflict-backup", JSON.stringify(draft));
+          if (!backup.ok) throw backup.error;
+          recoveringDraft = true;
+          draftRecovery = restoreLocalOverConflict().finally(() => {
+            recoveringDraft = false;
+            draftRecovery = null;
+            render();
+          });
+        }
       }
     }
   } catch {
   }
-  if ($("#notice").hidden) offerConflictBackupRestore();
+  if (!recoveringDraft && $("#notice").hidden) offerConflictBackupRestore();
   if (startupError) {
     document.body.classList.add("readonly");
     $("#empty h1").textContent = "暂时无法打开这张画布";
@@ -3562,6 +4033,7 @@
     editing: () => Boolean(editing), annotating: () => Boolean(annotationBoardId), interacting: () => Boolean(interacting),
     selection: () => selected.size === 1 ? state.nodes.find(n => selected.has(n.id)) || null : null,
     multiSelected: id => selected.size > 1 && selected.has(id),
+    connectionStyle: () => connections.getDefaultStyle(),
     select: id => { finishText(); groupContext = null; selected = new Set([id]); render(); },
     // One mutate per quick action keeps node and edge in a single undo record.
     mutate: fn => mutate(() => fn(state)),
@@ -3581,8 +4053,10 @@
     const iframe = nodeEls.get(node.id)?.querySelector("iframe") || null;
     return { boardId: boardFolderOf(node), boardPath: node.src || "", nodeId: node.id, iframe };
   }
-  window.protaCanvas = { runtimeVersion: 49, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value) {
+  window.protaCanvas = { shellFormat: window.__protaCanvasRuntimeManifest ? "shared-v1" : "legacy", runtimeHash: window.__protaCanvasRuntimeManifest?.runtimeHash || null, documentSchema: initialDocument.schemaVersion, runtimeVersion: 63, colorControlVersion: 2, previewSyncVersion: 2, importPrd: (payload, x, y) => dropPrd(payload, point(x, y)), syncPrds, connections: { create: (...args) => connections.add(...args), update: (...args) => connections.update(...args), getRoutes: () => clone(connections.getRoutes()), getSelection: () => connections.getSelection() }, focus: (ids) => fit(state.nodes.filter(n => ids.includes(n.id)), {animate: true, align: state.focusAlignment || "center"}), getBoardFrame, getActiveBoard: () => interacting ? getBoardFrame(interacting) : null, getAnnotationState: () => ({ active: Boolean(annotationBoardId), boardId: annotationBoardId ? boardFolderOf(state.nodes.find(n => n.id === annotationBoardId)) : "", nodeId: annotationBoardId || "" }), enterBoardAnnotation, exitBoardAnnotation, getState: () => clone(state), getSelection: () => [...selected], isDirty: () => dirty, save, prepareNavigation, fit, reloadFromDisk, refreshBoards, agentState, setPreparing(value, targetIds = [...selected]) {
     agentPending = Boolean(value);
+    preparingTargets = new Set(value ? targetIds : []);
+    for (const [id, el] of nodeEls) el.classList.toggle("agent-target", agentHeld(state.nodes.find(n => n.id === id)));
     panelKey = "";
     renderInspector();
   } };

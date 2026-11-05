@@ -115,7 +115,7 @@
     const y = handle.includes("n") ? base.y + base.height - height : handle.includes("s") ? base.y : base.y + (base.height - height) / 2;
     return items.map((n) => ({ id: n.id, x: x + (n.x - base.x) * sx, y: y + (n.y - base.y) * sy, width: n.width * sx, height: n.height * sy }));
   }
-  function placeOverlay({ anchor, width, height, viewport, obstacles = [], placement = "toolbar", margin = 12, gap = 18 }) {
+  function placeOverlay({ anchor, width, height, viewport, obstacles = [], placement = "toolbar", margin = 12, gap = 18, adjacent = false }) {
     const limitX = Math.max(margin, viewport.width - width - margin), limitY = Math.max(margin, viewport.height - height - margin);
     const clamp = (x, y) => ({ x: Math.max(margin, Math.min(limitX, x)), y: Math.max(margin, Math.min(limitY, y)), width, height });
     const cx = anchor.x + (anchor.width - width) / 2, cy = anchor.y + (anchor.height - height) / 2;
@@ -123,7 +123,7 @@
     const overlap = (a, b) => Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
     const padded = { x: anchor.x - 7, y: anchor.y - 25, width: anchor.width + 14, height: anchor.height + 32 };
     let best = null, score = Infinity;
-    for (const name of placement === "popover" ? ["right", "left", "below", "above"] : ["above", "below", "left", "right"]) {
+    for (const name of adjacent ? ["above", "below"] : placement === "popover" ? ["right", "left", "below", "above"] : ["above", "below", "left", "right"]) {
       const rect = candidates[name], cost = overlap(rect, padded) * 3 + obstacles.reduce((sum, item) => {
         const area = overlap(rect, item);
         return sum + (area ? 1e9 + area : 0);
@@ -134,7 +134,7 @@
       }
       if (cost === 0) break;
     }
-    if (score > 0) {
+    if (score > 0 && !adjacent) {
       const xs = [margin, (viewport.width - width) / 2, limitX];
       const ys = [margin, 70, (viewport.height - height) / 2, viewport.height - height - 92, ...obstacles.flatMap((o) => [o.y - height - gap, o.y + o.height + gap])];
       for (const x of xs) for (const y of ys) {
@@ -149,6 +149,22 @@
       }
     }
     return best;
+  }
+  // Shared click-to-apply palette for all canvas color controls.
+  const COLOR_PRESETS = ['#71829b','#3b4a63','#1f2937','#3e63dd','#0ea5e9','#12a594','#bd7327','#f5a524','#e5484d','#d6409f','#8e4ec6'];
+  function colorGrid({ label, value, presets = COLOR_PRESETS, onInput, onCommit }) {
+    const grid = document.createElement('div'); grid.className = 'color-grid';
+    for (const color of presets) {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'color-swatch';
+      button.dataset.color = color; button.style.setProperty('--swatch', color);
+      button.setAttribute('aria-label', label + ' ' + color); button.setAttribute('aria-pressed', String(value === color));
+      button.onclick = () => onCommit(color); grid.append(button);
+    }
+    const custom = document.createElement('label'); custom.className = 'color-swatch color-custom'; custom.title = '自定义颜色';
+    custom.classList.toggle('is-active', !presets.includes(value));
+    const input = document.createElement('input'); input.type = 'color'; input.value = value || '#ffffff'; input.setAttribute('aria-label', '自定义' + label);
+    input.oninput = () => onInput(input.value); input.onchange = () => onCommit(input.value);
+    custom.append(input); grid.append(custom); return grid;
   }
   function mergeDocuments(base, local, remote) {
     const conflicts = new Set();
@@ -196,7 +212,7 @@
     validate(result);
     return { state: result, conflicts: [...conflicts] };
   }
-  const api = { copy, uid, descendants, roots, locked, bounds, duplicate, duplicateEdges, reparent, validate, resizeSelection, placeOverlay, mergeDocuments };
+  const api = { copy, uid, descendants, roots, locked, bounds, duplicate, duplicateEdges, reparent, validate, resizeSelection, placeOverlay, colorGrid, COLOR_PRESETS, mergeDocuments };
   root.CanvasCore = api;
   if (typeof module !== "undefined") module.exports = api;
 })(globalThis);

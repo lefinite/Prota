@@ -1,3 +1,7 @@
+import { sessionIndicator, groupSessionsByPage, sessionPageGroupKey } from './agent/session-list.js';
+import { filterPageTree, normalizePageSearch } from './modules/page-search/index.js';
+import { ModelLibrary } from './agent/model-library.js';
+import { renderModelMenu } from './agent/model-menu.js';
 import { MagpieController, MAGPIE_ID, isMagpie, statusText, applyBindingView, effectiveReasoningConfig } from './agent/magpie.js';
 import { requestPiChoice, flattenPiTree } from './agent/pi-session-dialog.js';
 import { PreviewController } from './preview/controller.js';
@@ -234,7 +238,11 @@ class DemoShell {
         this.agentSessionProviderConfig = null;
         this.agentSessionScope = 'page';
         this.agentSessionsList = [];
+        this.agentSessionReadStatuses = this.readAgentStorage('read-statuses', this.readAgentStorage('read-completions', {})) || {};
+        this.agentSessionStatusBaselineAt = this.readAgentStorage('status-baseline-at', null) || Date.now();
+        this.writeAgentStorage('status-baseline-at', this.agentSessionStatusBaselineAt);
         this.agentSessionSearch = '';
+        this.agentSessionGroupMode = this.readAgentStorage('session-group-mode', 'time') === 'page' ? 'page' : 'time';
         this.agentSessionPageSize = 30;
         this.agentSessionNextCursor = null;
         this.agentSessionHasMore = false;
@@ -315,6 +323,8 @@ class DemoShell {
         this.pageNavSection = document.getElementById('pageNavSection');
         this.backToProjectsBtn = document.getElementById('backToProjectsBtn');
         this.pageListEl = document.getElementById('pageList');
+        this.pageSearchInput = document.getElementById('pageSearchInput');
+        this.pageSearchClear = document.getElementById('pageSearchClear');
         this.addPageBtn = document.getElementById('addPageBtn');
         this.addFolderBtn = document.getElementById('addFolderBtn');
         this.pageDragState = null;
@@ -393,9 +403,6 @@ class DemoShell {
         this.agentModelLabel = document.getElementById('agentModelLabel');
         this.agentModelDropdown = document.getElementById('agentModelDropdown');
         this.agentModelDropdownOpen = false;
-        this.agentReasoningToggle = document.getElementById('agentReasoningToggle');
-        this.agentReasoningLabel = document.getElementById('agentReasoningLabel');
-        this.agentReasoningDropdown = document.getElementById('agentReasoningDropdown');
         this.agentPermissionToggle = document.getElementById('agentPermissionToggle');
         this.agentPermissionLabel = document.getElementById('agentPermissionLabel');
         this.agentPermissionDropdown = document.getElementById('agentPermissionDropdown');
@@ -445,7 +452,6 @@ class DemoShell {
         this.agentSdkOptionsStatus = document.getElementById('agentSdkOptionsStatus');
         this.agentTestConnectionBtn = document.getElementById('agentTestConnectionBtn');
         this.agentCheckBalanceBtn = document.getElementById('agentCheckBalanceBtn');
-        this.agentFetchModelsBtn = document.getElementById('agentFetchModelsBtn');
         this.agentPresetDocsBtn = document.getElementById('agentPresetDocsBtn');
         this.agentConnectionTestResultEl = document.getElementById('agentConnectionTestResult');
         this.agentBalanceResultEl = document.getElementById('agentBalanceResult');
@@ -483,6 +489,7 @@ class DemoShell {
         this.agentImageNoticeRemember = document.getElementById('agentImageNoticeRemember');
         this.agentAttachmentBar = document.getElementById('agentAttachmentBar');
         this.agentPrdContextBar = document.getElementById('agentPrdContextBar');
+        this.agentCanvasContextBar = document.getElementById('agentCanvasContextBar');
         this.agentSendBtn = document.getElementById('agentSendBtn');
 
         // Version panel elements
@@ -634,6 +641,7 @@ class DemoShell {
             folderName: String(raw.folderName || params.get('folderName') || '').trim(),
             shareType,
             generatedAt: String(raw.generatedAt || '').trim(),
+            canvasEntryPath: typeof raw.canvasEntryPath === 'string' ? raw.canvasEntryPath : null,
             annotations: Array.isArray(raw.annotations) ? raw.annotations : null,
             prdContent: typeof raw.prdContent === 'string' ? raw.prdContent : null,
             prdPath: typeof raw.prdPath === 'string' ? raw.prdPath : null,
@@ -1750,13 +1758,9 @@ class DemoShell {
     }
 
     closeAgentInlineDropdowns({ except = null } = {}) {
-        if (except !== 'reasoning' && this.agentReasoningDropdownOpen) {
-            this.agentReasoningDropdownOpen = false;
-            this.agentReasoningDropdown.hidden = true;
-            this.agentReasoningToggle.setAttribute('aria-expanded', 'false');
-        }
         if (except !== 'model' && this.agentModelDropdownOpen) {
             this.agentModelDropdownOpen = false;
+            this.agentModelToggle?.setAttribute('aria-expanded', 'false');
             if (this.agentModelDropdown) this.agentModelDropdown.hidden = true;
         }
         if (except !== 'permission' && this.agentPermissionDropdownOpen) {
@@ -1770,7 +1774,7 @@ class DemoShell {
         if (!target) return;
         const insideModel = Boolean(target.closest('.agent-model-selector-anchor'));
         const insidePermission = Boolean(target.closest('.agent-permission-selector-anchor'));
-        const except = target.closest('.agent-reasoning-anchor') ? 'reasoning' : insideModel ? 'model' : insidePermission ? 'permission' : null;
+        const except = insideModel ? 'model' : insidePermission ? 'permission' : null;
         this.closeAgentInlineDropdowns({ except });
     }
 
@@ -2247,9 +2251,31 @@ class DemoShell {
             }
         });
 
+        this.pageSearchInput?.addEventListener('input', () => {
+            this.pageActionMenuOpenId = null;
+            this.renderSidebar();
+        });
+        this.pageSearchClear?.addEventListener('click', () => {
+            this.pageSearchInput.value = '';
+            this.renderSidebar();
+            this.pageSearchInput.focus();
+        });
+        this.pageSearchInput?.addEventListener('keydown', (event) => {
+            if (event.isComposing) return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                this.pageSearchInput.value = '';
+                this.renderSidebar();
+            } else if (event.key === 'Enter' && normalizePageSearch(this.pageSearchInput.value)) {
+                const firstPage = this.pageListEl?.querySelector('[data-drag-type="page"] .nav-tree-link');
+                if (firstPage) { event.preventDefault(); firstPage.click(); }
+            }
+        });
+
         this.pageListEl?.addEventListener('click', (event) => {
             const folderToggleButton = event.target.closest('[data-folder-toggle]');
             if (folderToggleButton) {
+                if (normalizePageSearch(this.pageSearchInput?.value)) return;
                 event.preventDefault();
                 event.stopPropagation();
                 this.togglePageFolderCollapsed(folderToggleButton.dataset.folderToggle || '');
@@ -2344,7 +2370,7 @@ class DemoShell {
             }
 
             const folderRow = event.target.closest('.nav-tree-link--folder');
-            if (folderRow && this.pageListEl.contains(folderRow)) {
+            if (folderRow && this.pageListEl.contains(folderRow) && !normalizePageSearch(this.pageSearchInput?.value)) {
                 event.preventDefault();
                 this.togglePageFolderCollapsed(folderRow.dataset.id || '');
             }
@@ -2439,6 +2465,27 @@ class DemoShell {
                 this.mainIframe?.contentWindow?.postMessage({ type: 'prota:canvas-fullscreen-state', active: false }, location.origin);
             }
         });
+
+        // Relay Space to the canvas editor while keyboard focus sits in the
+        // Portal (agent panel, sidebars). The canvas only sees key events
+        // aimed at its own document, so pressing Space out here never armed
+        // its pan gesture and the next drag moved objects instead. Editable
+        // targets keep typing spaces; keyup always relays so pan mode can
+        // never get stuck after focus moved again.
+        this.relayCanvasSpaceKey = (event) => {
+            if (event.code !== 'Space' || event.isComposing) return;
+            if (!this.isInfiniteCanvasPage()) return;
+            const frameWindow = this.mainIframe?.contentWindow;
+            if (!frameWindow) return;
+            if (event.type === 'keydown') {
+                const target = event.target;
+                if (target instanceof Element && (target.matches('input,textarea,select') || target.isContentEditable)) return;
+            }
+            try { frameWindow.postMessage({ type: 'prota:canvas-key', code: 'Space', down: event.type === 'keydown' }, location.origin); } catch {}
+        };
+        document.addEventListener('keydown', this.relayCanvasSpaceKey, true);
+        document.addEventListener('keyup', this.relayCanvasSpaceKey, true);
+
         this.bindPreviewFrameEvents(this.mainIframe);
         this.startShortcutBridgeWatchdog();
 
@@ -2729,6 +2776,7 @@ class DemoShell {
             if (e.data.type === 'prota:canvas-selection') {
                 if (e.source !== this.mainIframe?.contentWindow || e.origin !== window.location.origin) return;
                 this.canvasSelection = { projectId: this.activeProjectId, pageId: this.activePageId, version: this.activeVersion, selected: Array.isArray(e.data.selected) ? e.data.selected.slice(0, 100) : [], dirty: Boolean(e.data.dirty) };
+                this.renderAgentCanvasContext();
                 e.source.postMessage({ type: 'prota:canvas-config', readOnly: Boolean(this.isShareMode), pageName: this.getPageRecord()?.name || '' }, e.origin);
                 const documentKey = this.mainIframe.contentDocument;
                 if (this._canvasStatusDocument !== documentKey) { this._canvasStatusDocument = documentKey; this._canvasAgentStatusKey = null; this.syncCanvasAgentStatus(); }
@@ -2851,12 +2899,17 @@ class DemoShell {
             this.closeAgentInlineDropdowns({ except: 'model' });
             this.agentModelDropdownOpen = !this.agentModelDropdownOpen;
             this.renderModelDropdown();
+            if (this.agentModelDropdownOpen) {
+                (this.agentModelDropdown.querySelector('.agent-model-choice.is-active:not(:disabled)') || this.agentModelDropdown.querySelector('button:not(:disabled)'))?.focus();
+                this.refreshModelMenu();
+            }
         });
 
         this.agentModelDropdown?.addEventListener('click', (e) => {
-            if (e.target.closest('[data-magpie-refresh]')) { this.magpieClient?.refresh(true).then(() => this.renderModelDropdown()); return; }
-            const follow = e.target.closest('[data-magpie-policy]'), pinned = e.target.closest('[data-magpie-model]');
-            if (follow || pinned) { this.magpieClient?.choose(follow ? 'follow' : 'pinned', pinned?.dataset.magpieModel); return; }
+            const effort = e.target.closest('[data-reasoning-value]');
+            if (effort) { this.setAgentReasoning(effort.dataset.reasoningValue); return; }
+            const pinned = e.target.closest('[data-magpie-model]');
+            if (pinned) { this.magpieClient?.choose('pinned', pinned.dataset.magpieModel); return; }
 
             const item = e.target.closest('[data-provider-id]');
             const settingsBtn = e.target.closest('[data-action="settings"]');
@@ -2868,58 +2921,29 @@ class DemoShell {
             if (item) {
                 const id = item.dataset.providerId;
                 this.closeAgentInlineDropdowns();
-                this.activateProvider(id);
+                this.activateProvider(id, { model: item.dataset.modelId }).finally(() => this.agentModelToggle.focus());
             }
         });
 
         this.agentModelToggle?.addEventListener('keydown', event => {
             if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
-            event.preventDefault(); this.closeAgentInlineDropdowns({ except: 'model' }); this.agentModelDropdownOpen = true; this.renderModelDropdown();
+            event.preventDefault(); this.closeAgentInlineDropdowns({ except: 'model' }); this.agentModelDropdownOpen = true; this.renderModelDropdown(); this.refreshModelMenu();
             const items = this.agentModelDropdown.querySelectorAll('button:not(:disabled)');
             (event.key === 'ArrowUp' ? items[items.length - 1] : items[0])?.focus();
         });
-        this.agentModelDropdown?.addEventListener('input', event => {
-            if (!event.target.matches('.magpie-model-search')) return;
-            const query = event.target.value.trim().toLowerCase();
-            this.agentModelDropdown.querySelectorAll('[data-magpie-model]').forEach(item => { item.hidden = !item.textContent.toLowerCase().includes(query); });
-        });
         this.agentModelDropdown?.addEventListener('keydown', event => {
             if (event.key === 'Escape') { this.closeAgentInlineDropdowns(); this.agentModelToggle.focus(); return; }
-            if (event.key === 'Tab') { this.closeAgentInlineDropdowns(); return; }
+            if (event.key === 'Tab') {
+                setTimeout(() => { if (!this.agentModelDropdown.contains(document.activeElement)) this.closeAgentInlineDropdowns(); }, 0);
+                return;
+            }
             if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
             const items = [...this.agentModelDropdown.querySelectorAll('button:not(:disabled), input')].filter(item => !item.hidden && item.getClientRects().length);
             if (!items.length) return; event.preventDefault();
             const i = items.indexOf(document.activeElement), next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (i + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length;
             items[next].focus();
         });
-        window.addEventListener('resize', () => { if (this.agentReasoningDropdownOpen) this.positionAgentReasoningMenu(); });
-        this.agentReasoningToggle?.addEventListener('click', () => this.toggleAgentReasoningMenu());
-        this.agentReasoningToggle?.addEventListener('keydown', event => {
-            if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
-                event.preventDefault();
-                this.toggleAgentReasoningMenu(true, event.key === 'ArrowUp');
-            }
-        });
-        this.agentReasoningDropdown?.addEventListener('click', event => {
-            const option = event.target.closest('[data-reasoning-value]');
-            if (option) this.setAgentReasoning(option.dataset.reasoningValue);
-        });
-        this.agentReasoningDropdown?.addEventListener('keydown', event => {
-            const items = [...this.agentReasoningDropdown.querySelectorAll('[data-reasoning-value]')];
-            const index = items.indexOf(document.activeElement);
-            let next;
-            if (event.key === 'ArrowDown') next = (index + 1) % items.length;
-            if (event.key === 'ArrowUp') next = (index - 1 + items.length) % items.length;
-            if (event.key === 'Home') next = 0;
-            if (event.key === 'End') next = items.length - 1;
-            if (next !== undefined) { event.preventDefault(); items[next]?.focus(); }
-            if (event.key === 'Escape') {
-                event.preventDefault(); event.stopPropagation();
-                this.closeAgentInlineDropdowns(); this.agentReasoningToggle.focus();
-            }
-            if (event.key === 'Tab') this.closeAgentInlineDropdowns();
-        });
-
+        window.addEventListener('resize', () => { if (this.agentModelDropdownOpen) this.positionModelMenu(); });
         this.agentPermissionToggle?.addEventListener('click', (e) => {
             e.stopPropagation();
             this.closeAgentInlineDropdowns({ except: 'permission' });
@@ -3184,6 +3208,17 @@ class DemoShell {
             this.removeAgentAttachment(removeButton.dataset.agentRemoveAttachment);
         });
 
+        this.agentCanvasContextBar?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-agent-remove-canvas-context]');
+            if (!button || this.agentRunState?.active) return;
+            const selected = this.getAgentCanvasContextSelection().filter(node => node.id !== button.dataset.agentRemoveCanvasContext);
+            const context = { ...(this.agentSessionContext || this.getAgentContext()), canvasSelection: selected };
+            this.setAgentCanvasContextSelection(context, selected);
+            this.agentSessionContext = context;
+            this.renderAgentCanvasContext();
+            if (this.agentSessionId) this.agentApi.setContext(this.agentSessionId, context).catch(error => this.showToast(error.message || '上下文保存失败，请重试。', true));
+        });
+
         this.agentPrdContextBar?.addEventListener('click', (event) => {
             const clearButton = event.target.closest('[data-agent-clear-prd-context]');
             if (!clearButton) return;
@@ -3202,10 +3237,6 @@ class DemoShell {
             field?.addEventListener('change', () => this.handleAgentConfigInput());
         });
 
-        this.agentModelInput?.addEventListener('change', () => {
-            this.handleAgentModelSelectionChange();
-        });
-
         this.agentSdkOptionsFormatBtn?.addEventListener('click', () => {
             this.formatAgentSdkOptions();
         });
@@ -3216,9 +3247,6 @@ class DemoShell {
         });
         this.agentSdkOptionsPresetBtn?.addEventListener('click', () => {
             this.applyAgentSdkPresetOptions();
-        });
-        this.agentFetchModelsBtn?.addEventListener('click', () => {
-            this.fetchAgentModels();
         });
         this.agentPresetDocsBtn?.addEventListener('click', () => {
             const selected = this.getSelectedProvider();
@@ -3372,6 +3400,47 @@ class DemoShell {
             this.clearActiveAgentSkill();
         });
 
+        document.querySelectorAll('[data-agent-session-group-mode]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.agentSessionGroupMode = button.dataset.agentSessionGroupMode;
+                this.agentSessionGroupOpen = new Map();
+                this._agentSessionGroupActiveId = null;
+                this.writeAgentStorage('session-group-mode', this.agentSessionGroupMode);
+                this.closeAllAgentSessionMenus();
+                this.renderAgentSessionList();
+            });
+        });
+        this.agentSessionList?.addEventListener('toggle', event => {
+            const group = event.target;
+            if (!group.matches?.('details[data-session-page-group]') || !this.agentSessionList.contains(group)) return;
+            this.agentSessionGroupOpen ??= new Map();
+            this.agentSessionGroupOpen.set(group.dataset.sessionPageGroup, group.open);
+            if (!group.open) this.closeAllAgentSessionMenus();
+        }, true);
+        this.agentSessionList?.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            const button = event.target.closest('.agent-session-item')?.querySelector('[data-agent-session-more]');
+            if (button) this.toggleAgentSessionMenu(button, { point: { x: event.clientX, y: event.clientY }, forceOpen: true });
+            else this.closeAllAgentSessionMenus();
+        });
+        this.agentSessionList?.addEventListener('keydown', event => {
+            if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+                const button = event.target.closest('.agent-session-item')?.querySelector('[data-agent-session-more]');
+                if (button) { event.preventDefault(); this.toggleAgentSessionMenu(button, { forceOpen: true }); }
+            }
+        });
+        this.agentSessionList?.addEventListener('scroll', () => {
+            if (this.agentSessionMenu && this.agentSessionList.scrollTop !== this.agentSessionMenu.scrollTop) this.closeAllAgentSessionMenus();
+        }, { passive: true });
+        window.addEventListener('resize', () => this.closeAllAgentSessionMenus());
+        this.mainIframe?.addEventListener('pointerdown', () => this.closeAllAgentSessionMenus());
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && this.agentSessionMenu) {
+                event.preventDefault();
+                this.closeAllAgentSessionMenus({ restoreFocus: true });
+            }
+        });
+
         this.agentSessionList?.addEventListener('click', (event) => {
             const loadMoreButton = event.target.closest('[data-agent-session-load-more]');
             if (loadMoreButton) {
@@ -3381,6 +3450,7 @@ class DemoShell {
             const sessionButton = event.target.closest('[data-agent-session-id]');
             if (sessionButton) {
                 const nextSessionId = sessionButton.dataset.agentSessionId || '';
+                this.markAgentSessionStatusRead(nextSessionId);
                 this.switchAgentSession(nextSessionId).catch((error) => {
                     console.error('Failed to switch agent session:', error);
                     this.showToast('历史会话加载失败，请稍后重试。', true);
@@ -3414,7 +3484,7 @@ class DemoShell {
             }
             const narrowWidth = this.getCssVariable('--agent-panel-narrow-width', 600);
             if (this.agentSessionDrawerOpen && this.agentPanelWidth < narrowWidth) {
-                const clickedInsideSidebar = event.target.closest('.agent-session-sidebar');
+                const clickedInsideSidebar = event.target.closest('.agent-session-sidebar, .agent-session-item__dropdown');
                 const clickedToggleBtn = event.target.closest('#agentSessionDrawerToggle');
                 if (!clickedInsideSidebar && !clickedToggleBtn) {
                     this.agentSessionDrawerOpen = false;
@@ -6300,6 +6370,13 @@ class DemoShell {
             this.pageNavSection.removeAttribute('hidden');
             this.projectNavSection.setAttribute('hidden', 'true');
 
+            if (this.pageSearchProjectId !== this.activeProjectId) {
+                this.pageSearchProjectId = this.activeProjectId;
+                if (this.pageSearchInput) this.pageSearchInput.value = '';
+            }
+            const pageSearchQuery = this.pageSearchInput?.value || '';
+            const isSearchingPages = Boolean(normalizePageSearch(pageSearchQuery));
+            if (this.pageSearchClear) this.pageSearchClear.hidden = !pageSearchQuery;
             this.pageListEl.innerHTML = '';
             const sortedPages = [...(this.projects?.pages || [])].sort((left, right) => {
                 const leftOrder = Number(left.order) || 0;
@@ -6310,10 +6387,21 @@ class DemoShell {
             const activePages = this.getActivePagesSorted();
             const deletedPages = sortedPages.filter((page) => page.deleted);
 
-            this.getOrderedPageTreeItems(null, 0, this.getProjectRecord(), { includeCollapsed: false }).forEach(item => {
+            const pageTreeItems = filterPageTree(
+                this.getOrderedPageTreeItems(null, 0, this.getProjectRecord(), { includeCollapsed: isSearchingPages }),
+                pageSearchQuery
+            );
+            if (isSearchingPages && !pageTreeItems.length) {
+                const empty = document.createElement('li');
+                empty.className = 'page-search-empty';
+                empty.setAttribute('role', 'status');
+                empty.textContent = '未找到匹配页面';
+                this.pageListEl.appendChild(empty);
+            }
+            pageTreeItems.forEach(item => {
                 const li = document.createElement('li');
                 li.className = `nav-item nav-tree-item${this.pageActionMenuOpenId === item.id ? ' is-menu-open' : ''}`;
-                li.draggable = true;
+                li.draggable = !isSearchingPages;
                 li.dataset.dragType = item.type;
                 li.dataset.dragId = item.id;
                 li.dataset.parentId = item.type === 'folder'
@@ -6327,7 +6415,7 @@ class DemoShell {
                 if (item.type === 'folder') {
                     row.innerHTML = `
                         <span class="nav-link__label">
-                            <button type="button" class="nav-tree-toggle${item.folder.collapsed ? ' is-collapsed' : ''}" data-folder-toggle="${this.escapeHtml(item.id)}" title="${item.folder.collapsed ? '展开文件夹' : '收起文件夹'}" aria-label="${item.folder.collapsed ? '展开文件夹' : '收起文件夹'}" aria-expanded="${item.folder.collapsed ? 'false' : 'true'}">
+                            <button type="button" class="nav-tree-toggle${(!isSearchingPages && item.folder.collapsed) ? ' is-collapsed' : ''}" data-folder-toggle="${this.escapeHtml(item.id)}" title="${(!isSearchingPages && item.folder.collapsed) ? '展开文件夹' : '收起文件夹'}" aria-label="${(!isSearchingPages && item.folder.collapsed) ? '展开文件夹' : '收起文件夹'}" aria-expanded="${(!isSearchingPages && item.folder.collapsed) ? 'false' : 'true'}">
                                 <svg class="folder-icon folder-icon--open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19l2.76-7.35A1 1 0 0 1 8.69 11H20.3a1 1 0 0 1 .94 1.35l-2.26 6a1 1 0 0 1-.94.65H5Z"></path><path d="M3 6a2 2 0 0 1 2-2h4l3 3h7a2 2 0 0 1 2 2v2H8.69a1 1 0 0 0-.93.65L5 19H3V6Z"></path></svg>
                                 <svg class="folder-icon folder-icon--closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z"></path></svg>
                             </button>
@@ -6757,7 +6845,7 @@ class DemoShell {
 
     handlePageTreeDragStart(event) {
         const item = event.target.closest('[data-drag-type][data-drag-id]');
-        if (!item || event.target.closest('button')) {
+        if (normalizePageSearch(this.pageSearchInput?.value) || !item || event.target.closest('button')) {
             event.preventDefault();
             return;
         }
@@ -7000,7 +7088,13 @@ class DemoShell {
         const cacheBuster = this.isShareMode && this.shareConfig.generatedAt
             ? `?t=${encodeURIComponent(this.shareConfig.generatedAt)}`
             : `?t=${Date.now()}`;
-        const relativePath = `/src/pages/${this.activeProjectId}/${this.activePageId}/${version}/index.html${cacheBuster}`;
+        const sharePage = this.isShareMode && this.shareConfig.mode === 'folder'
+            ? this.shareConfig.pages?.find(item => item.id === this.activePageId || item.pageId === this.activePageId)
+            : this.shareConfig;
+        const snapshotEntry = this.isShareMode && sharePage?.canvasEntryPath;
+        const entryPath = typeof snapshotEntry === 'string' && /^__prota_canvas\/[a-f0-9]{64}\/src\/pages\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/v\d+\/index\.html$/.test(snapshotEntry)
+            ? '/' + snapshotEntry : `/src/pages/${this.activeProjectId}/${this.activePageId}/${version}/index.html`;
+        const relativePath = entryPath + cacheBuster;
         this.mainIframe.src = relativePath;
 
         // In folder share mode, sync per-page share metadata so existing share-mode code paths
@@ -7430,20 +7524,21 @@ class DemoShell {
     // The load-event path only arms the demo document after every subresource
     // finishes, leaving a dead window where double right-click does nothing
     // (the first click opens the native menu, the second just closes it). This
-    // watchdog arms each new document as soon as parsing completes, well before
-    // `load`. `interactive` also guarantees the page's own scripts have run, so
-    // legacy canvas pages are reliably detected and left alone.
+    // watchdog arms each new document as soon as its body exists. A blocking
+    // script (including one waiting on a remote stylesheet) can leave an already
+    // visible page in `loading` indefinitely, so do not wait for `interactive`.
     startShortcutBridgeWatchdog() {
         if (this._shortcutBridgeWatchdog) return;
         this._shortcutBridgeWatchdog = setInterval(() => {
             if (this.isShareMode || !this.mainIframe?.contentDocument) return;
             try {
                 const doc = this.mainIframe.contentDocument;
-                const state = doc?.readyState;
-                if (!doc || !doc.body || (state !== 'interactive' && state !== 'complete')) return;
+                if (!doc?.body) return;
                 if (doc.getElementById('__readify_shortcut_bridge')) return;
-                // Infinite canvas owns its own entry gestures.
-                if (this.isInfiniteCanvasPage()) return;
+                // Legacy canvases expose their stage before their runtime and
+                // canvas-data script are parsed. Leave their gestures alone too.
+                if (this.isInfiniteCanvasPage()
+                    || (doc.getElementById('stage') && doc.getElementById('world'))) return;
                 this.injectIframeShortcutBridge();
             } catch {}
         }, 150);
@@ -7605,7 +7700,12 @@ class DemoShell {
     }
 
     async upgradeCanvasEditorIfNeeded({ force = false } = {}) {
-        if (this.agentRunState?.active || this.previewController?.busy) return;
+        const retryWhenIdle = () => {
+            if (!this._canvasMigrationRetry && typeof setTimeout === 'function') {
+                this._canvasMigrationRetry = setTimeout(() => { this._canvasMigrationRetry = null; this.upgradeCanvasEditorIfNeeded(); }, 1200);
+            }
+        };
+        if (this.agentRunState?.active || this.previewController?.busy) { retryWhenIdle(); return; }
         if (this.isShareMode || !this.isInfiniteCanvasPage() || this._canvasUpgradePending) return;
         let context;
         try {
@@ -7615,23 +7715,37 @@ class DemoShell {
             const expected = `/src/pages/${context.projectId}/${context.pageId}/${context.version}/index.html`;
             if (!frame || decodeURI(frame.location.pathname) !== expected || doc.readyState === 'loading') return;
             const editor = frame.protaCanvas;
+            const sharedEntry = doc.querySelector('script[data-prota-canvas-shell="shared-v1"]')?.getAttribute?.('data-prota-canvas-shell') === 'shared-v1';
+            if (sharedEntry && !editor) {
+                if (force) { frame.location.reload(); return; }
+                if (!frame.__protaCanvasReadyHook) {
+                    frame.__protaCanvasReadyHook = true;
+                    frame.addEventListener('prota:canvas-ready', () => this.upgradeCanvasEditorIfNeeded(), { once: true });
+                }
+                return;
+            }
             // pageMode is shared by all versions. A historical version may still
             // be a standard demo, so only repair a version that owns a canvas.
             // Keep the script check: a broken editor may not publish its globals.
             const hasCanvasDocument = frame.PROTA_CANVAS || doc.querySelector('script[src$="canvas-data.js"]');
             if (!editor && !hasCanvasDocument) return;
-            if (editor?.isDirty?.()) return;
+            if (editor?.isDirty?.()) { retryWhenIdle(); return; }
             // A draft offered for recovery is also unsaved work, even if the
             // old editor has not initialized or reports a clean baseline.
             try {
                 const draft = JSON.parse(frame.localStorage.getItem('prota-canvas-draft:' + frame.location.pathname) || 'null');
-                if (draft?.state && JSON.stringify(draft.state.nodes) !== JSON.stringify(frame.PROTA_CANVAS?.nodes)) return;
+                if (draft?.state && JSON.stringify(draft.state.nodes) !== JSON.stringify(frame.PROTA_CANVAS?.nodes)) { retryWhenIdle(); return; }
             } catch { return; }
+            if (editor?.shellFormat === 'shared-v1' && !frame.__protaCanvasLegacyEntry) {
+                // The server resolves the current content-hashed runtime; never copy editor files.
+                if (force) frame.location.reload();
+                return;
+            }
             // A partial installation may fail before publishing protaCanvas. Do not require
             // the broken editor to initialize before allowing its resources to be repaired.
-            const healthy = editor?.runtimeVersion >= 49 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 19 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasBoardState && frame.CanvasCore && frame.CanvasFlowShapes && frame.CanvasFlowQuickCreate && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
+            const healthy = editor?.runtimeVersion >= 63 && editor?.colorControlVersion >= 2 && editor?.previewSyncVersion >= 2 && frame.CanvasConnections?.editorVersion >= 20 && frame.CanvasDomain?.schemaVersion === 2 && frame.CanvasBoardState && frame.CanvasCore && frame.CanvasFlowShapes && frame.CanvasFlowQuickCreate && frame.ProtaCanvasIcons && frame.CanvasMarkdown && frame.CanvasMarkdownEditor && frame.marked
                 && doc.querySelector('link[href*="styles.css"]')?.sheet;
-            if (healthy && !force) return;
+            if (healthy && !force && !frame.__protaCanvasLegacyEntry) return;
             const key = `${context.projectId}/${context.pageId}/${context.version}`;
             this._canvasUpgradeAttempts ||= new Set();
             if (!force && this._canvasUpgradeAttempts.has(key)) return;
@@ -7641,8 +7755,10 @@ class DemoShell {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(context)
             });
             const result = await response.json();
+            if (response.status === 423) { this._canvasUpgradeAttempts.delete(key); retryWhenIdle(); return; }
             if (!response.ok) throw new Error(result.error || '修复失败');
-            if (Number(result.runtimeVersion) < 49) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
+            if (result.deferred) return;
+            if (!result.shellFormat && Number(result.runtimeVersion) < 63) throw new Error('本地服务尚未更新，请重启 Prota 后点击修复重试。');
             // A service started before an editor update reports the template's version yet copies
             // from its stale file list. Reload only if every script of the installed entry exists.
             const base = `/src/pages/${context.projectId}/${context.pageId}/${context.version}/`;
@@ -7676,7 +7792,7 @@ class DemoShell {
 
     async focusExistingCanvasAgent(source, adaptBoardState = false) {
         try {
-            const context = this.getAgentContext();
+            let context = this.getAgentContext();
             const ids = new Set((context.canvasSelection || []).map(node => node.id));
             const samePage = item => item?.projectId === context.projectId && item?.pageId === context.pageId && item?.version === context.version;
             const currentScope = this._canvasRunScope || this.agentSessionContext;
@@ -7690,7 +7806,13 @@ class DemoShell {
                 else if (this.agentRunState?.active) await this.createAgentSession({ switchTo: true, sessionScope: 'page', awaitRefresh: true });
             }
             if (!this.agentRunState?.active) {
+                const previous = samePage(this.agentSessionContext) ? this.getAgentCanvasContextSelection() : [];
+                const merged = new Map(previous.map(node => [node.id, node]));
+                for (const node of context.canvasSelection || []) merged.set(node.id, node);
+                if (merged.size > 100) throw new Error('一个会话最多关联 100 个画布对象，请先移除部分上下文。');
+                context = { ...context, canvasSelection: [...merged.values()] };
                 if (this.agentSessionId) await this.agentApi.setContext(this.agentSessionId, context);
+                this.setAgentCanvasContextSelection(context, context.canvasSelection);
                 this.agentSessionContext = context;
                 this.agentSessionScope = 'page';
                 this.agentActiveSkill = null;
@@ -8085,13 +8207,16 @@ class DemoShell {
     }
 
     isInfiniteCanvasPage() {
-        if (this.getPageRecord()?.pageMode === 'infinite-canvas') return true;
-        // Older/imported canvases may still carry mobile metadata. Inspect the
-        // loaded editor so annotation never targets its outer canvas controls.
+        // pageMode is shared by all versions: a historical version can still be
+        // a normal page. The loaded version's document owns annotation routing.
+        // Likewise, imported canvases may still carry mobile metadata.
         try {
             const frame = this.mainIframe?.contentWindow;
-            return Boolean(frame?.protaCanvas || (frame?.document?.querySelector('script[src$="canvas-data.js"]')
-                && frame.document.getElementById('stage') && frame.document.getElementById('world')));
+            const doc = frame?.document;
+            if (!doc?.body) return this.getPageRecord()?.pageMode === 'infinite-canvas';
+            return Boolean(frame.protaCanvas || frame.PROTA_CANVAS
+                || (doc.getElementById('stage') && doc.getElementById('world'))
+                || doc.querySelector('script[src$="canvas-data.js"]'));
         } catch {
             return false;
         }
@@ -8487,6 +8612,12 @@ class DemoShell {
     }
 
     updateDocDrawerTabs() {
+        const hideTabs = this.isShareMode && this.currentAnnotations.length === 0;
+        if (hideTabs && this.docDrawerMode === 'annotations') {
+            this.docDrawerMode = 'prd';
+        }
+        const tabList = this.docTabs[0]?.closest('[role="tablist"]');
+        if (tabList) tabList.hidden = hideTabs;
         this.docTabs.forEach((tab) => {
             const visibleMode = (this.docDrawerMode === 'diagram' || this.docDrawerMode === 'mindmap') ? 'prd' : this.docDrawerMode;
             const isActive = tab.dataset.docTab === visibleMode;
@@ -10115,6 +10246,7 @@ class DemoShell {
         }
 
         this.annotationDrawer.classList.add('is-visible');
+        this.updateDocDrawerTabs();
         this.updateDrawerToggleButton();
         this.annotationDrawer.classList.toggle('is-prd-mode', this.docDrawerMode === 'prd');
         this.annotationDrawer.classList.toggle('is-drawio-mode', this.docDrawerMode === 'diagram');
@@ -10131,7 +10263,6 @@ class DemoShell {
         }
 
         this.viewportContainer.classList.add('has-drawer');
-        this.updateDocDrawerTabs();
 
         if (this.docDrawerMode === 'prd') {
             this.renderPrdDrawer();
@@ -12289,56 +12420,80 @@ class DemoShell {
         }
     }
 
-    async loadAgentSessions({ prewarm = false, reset = true } = {}) {
+    loadAgentSessions({ prewarm = false, reset = true } = {}) {
         const query = (this.agentSessionSearch || '').trim();
-        const cached = query ? [] : this.getCachedAgentSessionList();
-        if (reset && cached.length && !this.agentSessionsList.length) {
-            this.agentSessionsList = cached;
+        reset = reset || query !== (this._agentSessionListQuery || '');
+        const pending = this._agentSessionListTask;
+        if (pending?.query === query) {
+            // Refresh after an append has committed, so its new range is retained.
+            if (reset && !pending.reset) return pending.promise.then(() => {
+                if (query === (this.agentSessionSearch || '').trim()) return this.loadAgentSessions({ prewarm, reset });
+            });
+            return pending.promise;
         }
+        const task = { query, reset, promise: null };
+        this._agentSessionListTask = task;
+        task.promise = this.fetchAgentSessionList({ prewarm, reset, query }).finally(() => {
+            if (this._agentSessionListTask === task) this._agentSessionListTask = null;
+        });
+        return task.promise;
+    }
+
+    async fetchAgentSessionList({ prewarm, reset, query }) {
+        const cached = query ? [] : this.getCachedAgentSessionList();
+        if (reset && cached.length && !this.agentSessionsList.length) this.agentSessionsList = cached;
         const requestId = ++this._agentSessionListRequestId;
         this.agentSessionListLoading = true;
-        if (reset) {
-            this.agentSessionNextCursor = null;
-            this.agentSessionHasMore = false;
-        }
+        const targetCount = reset && query === (this._agentSessionListQuery || '')
+            ? Math.max(this.agentSessionPageSize, this.agentSessionsList.length)
+            : this.agentSessionPageSize;
+        let cursor = reset ? '' : (this.agentSessionNextCursor || '');
+        let hasMore = false;
+        const incoming = new Map();
         try {
-            const data = await this.agentApi.listSessions({
-                limit: this.agentSessionPageSize,
-                cursor: reset ? '' : (this.agentSessionNextCursor || ''),
-                query
-            });
-            if (requestId !== this._agentSessionListRequestId) return;
-            const incoming = Array.isArray(data.sessions) ? data.sessions : [];
+            // The server caps a response at 100. Refill the entire visible range
+            // before committing, even after the user has loaded several pages.
+            do {
+                const data = await this.agentApi.listSessions({
+                    limit: targetCount - incoming.size,
+                    cursor,
+                    query
+                });
+                if (requestId !== this._agentSessionListRequestId || query !== (this.agentSessionSearch || '').trim()) return;
+                for (const session of Array.isArray(data.sessions) ? data.sessions : []) incoming.set(session.id, session);
+                const nextCursor = data.nextCursor || null;
+                hasMore = Boolean(data.hasMore && nextCursor);
+                if (hasMore && nextCursor === cursor) throw new Error('Session pagination cursor did not advance');
+                cursor = nextCursor;
+            } while (hasMore && incoming.size < targetCount);
             if (reset) {
-                this.agentSessionsList = incoming;
+                this.agentSessionsList = [...incoming.values()];
             } else {
-                const knownIds = new Set(this.agentSessionsList.map((session) => session.id));
-                this.agentSessionsList = [
-                    ...this.agentSessionsList,
-                    ...incoming.filter((session) => !knownIds.has(session.id))
-                ];
+                const merged = new Map(this.agentSessionsList.map(session => [session.id, session]));
+                incoming.forEach((session, id) => merged.set(id, session));
+                this.agentSessionsList = [...merged.values()];
             }
-            this.agentSessionNextCursor = data.nextCursor || null;
-            this.agentSessionHasMore = Boolean(data.hasMore && this.agentSessionNextCursor);
+            this._agentSessionListQuery = query;
+            this.agentSessionNextCursor = cursor;
+            this.agentSessionHasMore = hasMore;
             if (!query) this.cacheAgentSessionList(this.agentSessionsList.slice(0, this.agentSessionPageSize));
             this.syncCanvasAgentStatus();
-            if (prewarm) {
-                this.scheduleAgentSessionPrewarm(this.agentSessionsList);
-            }
+            if (prewarm) this.scheduleAgentSessionPrewarm(this.agentSessionsList);
         } catch (error) {
-            console.warn('Failed to load agent sessions from server, using cache:', error);
-            if (reset && cached.length) this.agentSessionsList = cached;
+            if (requestId !== this._agentSessionListRequestId || query !== (this.agentSessionSearch || '').trim()) return;
+            console.warn('Failed to load agent sessions from server, keeping current list:', error);
+            // Leave both the expanded list and its cursor intact for retry.
+            if (!this.agentSessionsList.length && cached.length) this.agentSessionsList = cached;
         } finally {
-            if (requestId === this._agentSessionListRequestId) {
-                this.agentSessionListLoading = false;
-            }
+            if (requestId === this._agentSessionListRequestId) this.agentSessionListLoading = false;
         }
     }
 
     async loadMoreAgentSessions() {
         if (this.agentSessionListLoading || !this.agentSessionHasMore || !this.agentSessionNextCursor) return;
+        const loading = this.loadAgentSessions({ prewarm: false, reset: false });
         this.renderAgentSessionList();
-        await this.loadAgentSessions({ prewarm: false, reset: false });
+        await loading;
         this.renderAgentSessionList();
     }
 
@@ -12506,9 +12661,10 @@ class DemoShell {
 
         if (this.providerCustomList) {
             if (this.agentSavedProviders.length === 0) {
+                this.providerCustomList._content = '';
                 this.providerCustomList.innerHTML = '<div class="provider-list-empty">点击上方“+”按钮连接模型。</div>';
             } else {
-                this.providerCustomList.innerHTML = this.agentSavedProviders.map(provider => `
+                const listHtml = this.agentSavedProviders.map(provider => `
                     <button class="provider-list-item ${provider.id === selected?.id ? 'is-selected' : ''} ${provider.id === active?.id ? 'is-active' : ''}"
                             data-provider-id="${this.escapeHtml(provider.id)}"
                             type="button">
@@ -12521,6 +12677,14 @@ class DemoShell {
                         ${provider.id === active?.id ? '' : `<span class="provider-list-item__switch" data-switch-provider-id="${this.escapeHtml(provider.id)}">使用</span>`}
                     </button>
                 `).join('');
+                if (this.providerCustomList._content !== listHtml) {
+                    const focusId = this.providerCustomList.contains(document.activeElement) ? document.activeElement.dataset.providerId : null;
+                    const scroll = this.providerCustomList.scrollLeft;
+                    this.providerCustomList.innerHTML = listHtml;
+                    this.providerCustomList._content = listHtml;
+                    this.providerCustomList.scrollLeft = scroll;
+                    if (focusId) [...this.providerCustomList.querySelectorAll('[data-provider-id]')].find(node => node.dataset.providerId === focusId)?.focus({ preventScroll: true });
+                }
             }
         }
     }
@@ -12609,6 +12773,8 @@ class DemoShell {
             }
         }
 
+        target.enabledModels = target.model ? [target.model] : [];
+
         // Auto-fill form fields
         if (this.agentProviderNameInput) this.agentProviderNameInput.value = target.label || '';
         if (this.agentBaseUrlInput) this.agentBaseUrlInput.value = target.baseURL || '';
@@ -12641,36 +12807,55 @@ class DemoShell {
         this.agentProviderStore?.selectProvider(id);
         this.syncAgentProviderStoreState();
         this.syncAgentConfigForm();
+        const selectedTab = [...this.providerCustomList.querySelectorAll('[data-provider-id]')].find(node => node.dataset.providerId === id);
+        selectedTab?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        if (id === MAGPIE_ID) this.magpieClient?.refresh(true);
         this.renderAgentWorkbench();
         this.unifiedSettings?.markSaved('models');
     }
 
-    async activateProvider(id = this.selectedProviderId, { silent = false, confirmed = false } = {}) {
+    async activateProvider(id = this.selectedProviderId, { silent = false, confirmed = false, model } = {}) {
         if (this._agentReasoningSaving || this._agentModelSwitching || this.agentRunState.active) return;
-        if (!confirmed && this.unifiedSettings?.guardModels(() => this.activateProvider(id, { silent, confirmed: true }))) return;
-        if (id === MAGPIE_ID) return this.magpieClient?.choose();
+        if (!confirmed && this.unifiedSettings?.guardModels(() => this.activateProvider(id, { silent, confirmed: true, model }))) return;
+        if (id === MAGPIE_ID) {
+            const provider = this.agentProviderStore.providers.find(isMagpie);
+            const modelId = provider?.enabledModels?.[0] || this.magpieClient?.state.defaultModel;
+            return this.magpieClient?.choose('pinned', modelId);
+        }
         const provider = this.agentProviderStore?.providers.find(p => p.id === id);
         if (!provider) return false;
+        const candidate = structuredClone(provider);
+        if (model) {
+            if (!this.agentProviderStore.getEnabledModels(provider).includes(model)) return false;
+            candidate.model = model;
+        }
+        if (getReasoningSelection(candidate).value === 'default') {
+            candidate.sdkOptions = { ...(candidate.sdkOptions || {}) };
+            delete candidate.sdkOptions.reasoningEffort;
+        }
         this._agentModelSwitching = true; this.renderModelLabel();
         try {
             if (this.agentSessionId) {
-                const result = await this.agentApi.setProvider(this.agentSessionId, this.agentProviderStore.buildConfig(provider));
+                const result = await this.agentApi.setProvider(this.agentSessionId, this.agentProviderStore.buildConfig(candidate));
                 applyBindingView(this, result);
                 this.agentSessionProviderConfig = result.providerConfig;
             }
+            Object.assign(provider, candidate);
+            this.closeAgentInlineDropdowns();
             this.agentProviderStore.activateProvider(id);
+            this.persistProviders();
             this.newProviderDraft = null; this.editProviderDraft = null;
             this.unifiedSettings?.userTouched.delete('models'); this.clearAgentStatusResults();
             this.syncAgentProviderStoreState(); this.agentConfig = this.buildAgentConfigFromActiveProvider();
             this.syncAgentConfigForm(); this.renderAgentWorkbench(); this.unifiedSettings?.markSaved('models');
-            if (!silent) this.showToast(`当前供应商已切换为 ${provider.label}`);
+            if (!silent) this.showToast(`已切换为 ${provider.model}`);
             return true;
         } catch (error) { this.showToast(error.message || '模型切换失败，保留原选择。', true); return false; }
-        finally { this._agentModelSwitching = false; this.renderModelLabel(); }
+        finally { this._agentModelSwitching = false; this.renderModelLabel(); this.renderAgentReasoning(); }
     }
 
     async saveActiveProvider() {
-        if (isMagpie(this.getSelectedProvider())) return false;
+        if (isMagpie(this.getSelectedProvider())) return this.magpieClient?.saveModels();
         if (this._agentProviderSaving || !this.agentProviderPersistenceReady) return false;
         const selected = this.getSelectedProvider();
         if (!selected) return false;
@@ -12684,10 +12869,11 @@ class DemoShell {
         const fields = {
             presetId: selected.presetId || null,
             models: [...(selected.models || [])],
+            enabledModels: this.agentProviderStore.getEnabledModels(selected),
             endpointCandidates: [...(selected.endpointCandidates || [])],
             label: this.agentProviderNameInput?.value.trim() || selected.label || '自定义供应商',
             apiType: this.agentApiTypeInput?.value || selected.apiType || 'anthropic-messages',
-            model: this.getAgentModelFormValue() || selected.model || '',
+            model: this.getAgentModelFormValue(),
             baseURL: this.agentBaseUrlInput?.value.trim() || selected.baseURL || '',
             apiKey: this.agentApiKeyInput?.value.trim() || selected.apiKey || '',
             sdkOptions
@@ -12707,6 +12893,7 @@ class DemoShell {
                 apiKey: fields.apiKey,
                 sdkOptions: { ...fields.sdkOptions },
                 models: [...fields.models],
+                enabledModels: [...fields.enabledModels],
                 endpointCandidates: [...(preset?.endpointCandidates || (fields.baseURL ? [fields.baseURL] : []))],
                 createdAt: Date.now(),
                 updatedAt: Date.now()
@@ -12728,6 +12915,7 @@ class DemoShell {
         }
 
         this._agentProviderSaving = true;
+        this.renderAgentControls();
         if (this.agentSaveProviderBtn) this.agentSaveProviderBtn.disabled = true;
         try {
             window.clearTimeout(this._agentProviderPersistTimer);
@@ -12750,6 +12938,7 @@ class DemoShell {
             return false;
         } finally {
             this._agentProviderSaving = false;
+            this.renderAgentControls();
             if (this.agentSaveProviderBtn) this.agentSaveProviderBtn.disabled = false;
         }
     }
@@ -12811,13 +13000,11 @@ class DemoShell {
         if (context?.globalContext || context?.pageId === '__global__') {
             return '工作区会话';
         }
-        const canvas = this.canvasSelection;
-        const selected = this.agentRunState?.active && this._canvasRunScope?.projectId === context.projectId && this._canvasRunScope?.pageId === context.pageId && this._canvasRunScope?.version === context.version ? this._canvasRunScope.canvasSelection : canvas?.projectId === context.projectId && canvas?.pageId === context.pageId && canvas?.version === context.version ? canvas.selected : [];
-        const canvasLabel = selected?.length ? ` · 已选 ${selected.length} 个对象：${selected.map(n => n.name).join('、').slice(0, 80)}` : '';
-        return `${context.pageId} / ${context.version}${canvasLabel}${deletion.blocked ? ' · 已删除' : ''}`;
+        return `${context.pageId} / ${context.version}${deletion.blocked ? ' · 已删除' : ''}`;
     }
 
     updateAgentContextLabel() {
+        this.renderAgentCanvasContext();
         if (this.agentStatusContext && !this.newPageStyleDropdownOpen) {
             this.renderAgentStatusContextControl();
         }
@@ -12965,11 +13152,12 @@ class DemoShell {
         };
     }
 
-    addOptimisticAgentRun(kind, payload = {}) {
+    addOptimisticAgentRun(kind, payload = {}, runContext = null) {
         const runId = `optimistic-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         const createdAt = new Date().toISOString();
         const descriptor = this.createOptimisticAgentDescriptor(kind, payload);
-        const context = this.isAgentGlobalRun(kind, payload) ? this.getAgentGlobalContext() : this.getAgentContext();
+        const context = JSON.parse(JSON.stringify(runContext || descriptor.context));
+        descriptor.context = context;
         this.upsertAgentTimelineEvent({
             id: `${runId}:run-started`,
             type: 'run_started',
@@ -13437,53 +13625,36 @@ class DemoShell {
 
     renderAgentModelPicker(selected) {
         if (!this.agentModelInput) return;
-        const models = this.agentProviderStore?.getModelOptions(selected) || [];
-        const currentModel = String(selected?.model || '').trim();
-        const options = Array.from(new Set(models.map(String).map((model) => model.trim()).filter(Boolean)));
-        const hasCurrent = currentModel && options.includes(currentModel);
-        const selectValue = currentModel && hasCurrent ? currentModel : (currentModel ? '__custom__' : '');
-
-        this.agentModelInput.innerHTML = [
-            `<option value="" ${selectValue ? '' : 'selected'} disabled>选择模型</option>`,
-            ...options.map((model) => (
-                `<option value="${this.escapeHtml(model)}" ${model === selectValue ? 'selected' : ''}>${this.escapeHtml(model)}</option>`
-            )),
-            `<option value="__custom__" ${selectValue === '__custom__' ? 'selected' : ''}>手动输入模型 ID...</option>`
-        ].join('');
-
-        this.agentModelInput.value = selectValue;
-        if (this.agentCustomModelInput) {
-            const isCustom = selectValue === '__custom__';
-            this.agentCustomModelInput.hidden = !isCustom;
-            this.agentCustomModelInput.value = isCustom ? currentModel : '';
-        }
-        if (this.agentModelOptions) {
-            this.agentModelOptions.textContent = options.length
-                ? `${options.length} 个可选模型`
-                : '还没有模型列表，可点击“拉取模型”或手动输入。';
-        }
-    }
-
-    handleAgentModelSelectionChange() {
-        if (this.agentModelInput?.value === '__custom__') {
-            if (this.agentCustomModelInput) {
-                this.agentCustomModelInput.hidden = false;
-                this.agentCustomModelInput.focus();
+        const options = this.agentProviderStore.getModelOptions(selected);
+        const enabled = this.agentProviderStore.getEnabledModels(selected);
+        this.agentModelInput.innerHTML = `<option value="${this.escapeHtml(selected?.model || '')}">${this.escapeHtml(selected?.model || '')}</option>`;
+        this.agentModelInput.value = selected?.model || '';
+        const host = document.getElementById('agentModelLibrary');
+        if (!this.providerModelLibrary) this.providerModelLibrary = new ModelLibrary(host, {
+            escape: value => this.escapeHtml(value), allowCustom: true,
+            onFetch: () => this.fetchAgentModels(),
+            onChange: (ids, catalog) => {
+                const provider = this.getSelectedProvider();
+                if (!provider) return;
+                provider.enabledModels = ids;
+                provider.models = catalog.map(model => model.id);
+                if (!ids.includes(provider.model)) provider.model = ids[0] || '';
+                this.agentModelInput.innerHTML = `<option value="${this.escapeHtml(provider.model)}">${this.escapeHtml(provider.model)}</option>`;
+                this.handleAgentConfigInput();
+                this.unifiedSettings?.userTouched.add('models');
+                this.unifiedSettings?.refreshDirty();
             }
-            this.updateAgentConfigHint('输入模型 ID 后会自动保存。');
-            return;
-        }
-        if (this.agentCustomModelInput) {
-            this.agentCustomModelInput.hidden = true;
-            this.agentCustomModelInput.value = '';
-        }
-        this.handleAgentConfigInput();
+        });
+        this.providerModelLibrary.update({ key: selected?.id,
+            catalog: options.map(id => ({ id, name: id })), selected: enabled,
+            disabled: this.agentRunState.active || this.agentTestingConnection });
     }
 
     syncAgentConfigForm() {
         if (this.unifiedSettings && !this.unifiedSettings.userTouched.has('models') && !this.newProviderDraft) this.editProviderDraft = structuredClone(this.agentProviderStore?.getSelectedProvider() || null);
         this.renderProviderList();
         const selected = this.getSelectedProvider();
+        this.providerFormContent?.classList.toggle('is-creating', Boolean(this.newProviderDraft));
         if (this.magpieClient?.renderDetails()) return;
         if (this.providerFormContent) this.providerFormContent.hidden = !selected;
         if (this.providerFormEmpty) this.providerFormEmpty.hidden = Boolean(selected);
@@ -13544,6 +13715,16 @@ class DemoShell {
 
         if (this.agentProviderNameInput) this.agentProviderNameInput.value = selected.label || '';
         if (this.agentApiTypeInput) this.agentApiTypeInput.value = selected.apiType || this.getAgentPreset(selected.presetId)?.apiType || 'anthropic-messages';
+        document.getElementById('providerEditorName').textContent = selected.label || '新服务商';
+        document.getElementById('providerEditorType').textContent = this.newProviderDraft ? '连接模型服务' : 'API 连接';
+        const connection = document.getElementById('providerConnectionSettings');
+        if (connection.dataset.providerId !== selected.id) {
+            connection.dataset.providerId = selected.id;
+            connection.open = Boolean(this.newProviderDraft || !selected.apiKey || !selected.baseURL);
+        }
+        let hostname = '';
+        try { hostname = new URL(selected.baseURL).host; } catch {}
+        document.getElementById('providerConnectionSummary').textContent = hostname;
         this.renderAgentModelPicker(selected);
         if (this.agentBaseUrlInput) this.agentBaseUrlInput.value = selected.baseURL || '';
         if (this.agentApiKeyInput) this.agentApiKeyInput.value = selected.apiKey || '';
@@ -13592,10 +13773,11 @@ class DemoShell {
         const updatedFields = {
             label: this.agentProviderNameInput?.value.trim() || '未命名供应商',
             apiType: this.agentApiTypeInput?.value || selected.apiType || 'anthropic-messages',
-            model: this.getAgentModelFormValue() || selected.model || '',
+            model: this.getAgentModelFormValue(),
             baseURL: this.agentBaseUrlInput?.value.trim() || '',
             apiKey: this.agentApiKeyInput?.value.trim() || '',
-            sdkOptions: sdkOptions || selected.sdkOptions || {}
+            sdkOptions: sdkOptions || selected.sdkOptions || {},
+            enabledModels: this.agentProviderStore.getEnabledModels(selected)
         };
 
         if (this.newProviderDraft) {
@@ -14218,6 +14400,63 @@ class DemoShell {
         }
     }
 
+    getAgentCanvasContextKey(context = this.agentSessionContext || this.getAgentContext()) {
+        return JSON.stringify([this.agentSessionId || 'draft', context.projectId, context.pageId, context.version]);
+    }
+
+    setAgentCanvasContextSelection(context, selected) {
+        this.agentCanvasContexts ||= new Map();
+        this.agentCanvasContexts.set(this.getAgentCanvasContextKey(context), structuredClone(selected));
+    }
+
+    getAgentCanvasContextSelection() {
+        const context = this.agentSessionContext || this.getAgentContext();
+        if (context?.globalContext || context?.pageId === '__global__' || this.isNewPageStylePickerActive()) return [];
+        const matches = scope => scope?.projectId === context.projectId && scope?.pageId === context.pageId && scope?.version === context.version;
+        if (this.agentRunState?.active) {
+            const scope = this._canvasRunScope || this.agentRunState.descriptor?.context;
+            return matches(scope) ? scope.canvasSelection || [] : [];
+        }
+        return this.agentCanvasContexts?.get(this.getAgentCanvasContextKey(context)) ?? context.canvasSelection ?? [];
+    }
+
+    getAgentCanvasContextSummary(selected = []) {
+        if (!selected.length) return null;
+        const text = selected.length === 1 ? selected[0].textSelection?.text : '';
+        return {
+            label: text ? String(text).replace(/\s+/g, ' ').trim() : selected.map(node => node.name || node.id || '未命名对象').join('、'),
+            typeLabel: text ? '选中文本' : `${selected.length} 个对象`
+        };
+    }
+
+    renderAgentCanvasContext() {
+        const bar = this.agentCanvasContextBar;
+        if (!bar) return;
+        const selected = this.getAgentCanvasContextSelection();
+        bar.hidden = !selected.length;
+        const html = selected.map(node => this.renderAgentCanvasContextCard({
+            ...this.getAgentCanvasContextSummary([node]),
+            typeLabel: node.textSelection ? '选中文本' : '',
+            removeId: this.agentRunState?.active ? null : node.id
+        })).join('');
+        if (bar._contextHtml !== html) {
+            bar.innerHTML = html;
+            bar._contextHtml = html;
+        }
+    }
+
+    renderAgentCanvasContextCard({ label, typeLabel, removeId = null }) {
+        return `
+            <section class="agent-message-prd-context agent-canvas-context${removeId !== null ? ' is-removable' : ''}" aria-label="画布上下文：${this.escapeHtml(typeLabel)}" title="${this.escapeHtml(label)}">
+                <span class="agent-message-prd-context__icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16M4 9h16"/></svg>
+                </span>
+                <span class="agent-message-prd-context__main"><span class="agent-message-prd-context__name">${this.escapeHtml(label)}</span></span>
+                ${typeLabel ? `<span class="agent-message-prd-context__type">${this.escapeHtml(typeLabel)}</span>` : ''}
+                ${removeId !== null ? `<button class="agent-active-prd-context__clear" type="button" data-agent-remove-canvas-context="${this.escapeHtml(removeId)}" aria-label="移除上下文：${this.escapeHtml(label)}">×</button>` : ''}
+            </section>`;
+    }
+
     renderAgentPrdContext() {
         if (!this.agentPrdContextBar) return;
         const prd = this.agentPrdContext;
@@ -14409,6 +14648,9 @@ class DemoShell {
     }
 
     renderAgentChrome() {
+        if (!this.agentWorkbenchOpen || !this.agentSessionDrawerOpen) this.closeAllAgentSessionMenus();
+        if (this.agentWorkbenchOpen && !document.hidden && !this.agentTimelineLoading) this.markAgentSessionStatusRead();
+        this.patchAgentSessionIndicator();
         const state = this.getAgentVisualState();
         if (state !== this.miniTerminalState) {
             this.miniTerminalState = state;
@@ -14475,6 +14717,7 @@ class DemoShell {
     }
 
     renderAgentControls() {
+        this.renderAgentCanvasContext();
         const active = Boolean(this.agentRunState.active);
         const answeringQuestion = Boolean(this.agentPendingQuestion);
         const configBusy = this.agentTestingConnection || this.agentFetchingModels;
@@ -14493,7 +14736,6 @@ class DemoShell {
             this.agentSdkOptionsFormatBtn,
             this.agentSdkOptionsResetBtn,
             this.agentSdkOptionsPresetBtn,
-            this.agentFetchModelsBtn,
             this.agentPresetDocsBtn,
             this.agentTestConnectionBtn,
             this.agentSaveProviderBtn,
@@ -14502,6 +14744,9 @@ class DemoShell {
             if (!el) return;
             el.disabled = active || configBusy;
         });
+
+        this.providerModelLibrary?.setDisabled(active || configBusy || Boolean(this._agentProviderSaving));
+        this.magpieClient?.library?.setDisabled(active || Boolean(this.magpieClient.savingModels));
 
         if (this.agentSkillMenuToggle) {
             this.agentSkillMenuToggle.disabled = active || configBusy || contextBlocked;
@@ -14566,30 +14811,6 @@ class DemoShell {
         ));
     }
 
-    toggleAgentReasoningMenu(open = !this.agentReasoningDropdownOpen, last = false) {
-        if (this.agentReasoningToggle.disabled) return;
-        this.closeAgentInlineDropdowns({ except: 'reasoning' });
-        if (open && this.agentSessionDrawerOpen && (window.innerWidth < 768 || this.agentWorkbench?.classList.contains('is-narrow'))) {
-            this.agentSessionDrawerOpen = false;
-            this.renderAgentChrome();
-        }
-        this.agentReasoningDropdownOpen = open;
-        this.renderAgentReasoning();
-        if (open) {
-            const items = this.agentReasoningDropdown.querySelectorAll('[data-reasoning-value]');
-            (last ? items[items.length - 1] : this.agentReasoningDropdown.querySelector('[aria-checked="true"]'))?.focus();
-        }
-    }
-
-    positionAgentReasoningMenu() {
-        const rect = this.agentReasoningToggle.getBoundingClientRect();
-        const width = Math.min(200, window.innerWidth - 24);
-        const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
-        this.agentReasoningDropdown.style.width = `${width}px`;
-        this.agentReasoningDropdown.style.left = `${left - rect.left}px`;
-        this.agentReasoningDropdown.style.maxHeight = `${Math.max(120, Math.min(520, rect.top - 20))}px`;
-    }
-
     async setAgentReasoning(value) {
         const active = effectiveReasoningConfig(this);
         if (!active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving) return;
@@ -14598,10 +14819,8 @@ class DemoShell {
             await this.magpieClient.choose(binding.policy, binding.pinnedModelId, value); return;
         }
         if (!getReasoningCapability(active).options.some(option => option.value === value)) return;
-        this.closeAgentInlineDropdowns();
-        this.agentReasoningToggle.focus();
+        const menuOpen = this.agentModelDropdownOpen;
         if (getReasoningSelection(active).value === value) return;
-        if (value === getReasoningCapability(active).defaultValue) value = 'default';
         const previous = { ...(active.sdkOptions || {}) };
         active.sdkOptions = { ...previous };
         delete active.sdkOptions.planMode;
@@ -14627,44 +14846,25 @@ class DemoShell {
         } finally {
             this._agentReasoningSaving = false;
             this.renderAgentReasoning(); this.renderAgentControls();
+            if (menuOpen) this.agentModelDropdown.querySelector(`[data-reasoning-value="${getReasoningSelection(active).value}"]`)?.focus();
         }
     }
 
     renderAgentReasoning() {
-        if (!this.agentReasoningToggle) return;
-        const active = effectiveReasoningConfig(this);
-        const capability = getReasoningCapability(active || {});
-        const selection = getReasoningSelection(active || {});
-        const locked = !active || !this.agentProviderPersistenceReady || this.agentRunState.active || this._agentReasoningSaving || this._agentModelSwitching;
         if (this.agentModelToggle) this.agentModelToggle.disabled = Boolean(this._agentReasoningSaving || this._agentModelSwitching);
-        this.agentReasoningToggle.disabled = Boolean(locked);
+        const config = effectiveReasoningConfig(this) || {};
+        const capability = getReasoningCapability(config), selection = getReasoningSelection(config);
         const effectiveValue = selection.value === 'default' ? capability.defaultValue || 'default' : selection.value;
-        const effectiveSelection = capability.options.find(option => option.value === effectiveValue) || selection;
-        this.agentReasoningLabel.textContent = this._agentReasoningSaving ? '保存中' : effectiveSelection.label;
-        this.agentReasoningToggle.title = this.agentRunState.active ? '任务结束后可调整思考强度' : `思考强度：${effectiveSelection.label}${selection.value === 'default' ? '（模型默认）' : ''}`;
-        this.agentReasoningToggle.setAttribute('aria-label', `思考强度：${effectiveSelection.label}`);
-        this.agentReasoningToggle.classList.toggle('is-custom', selection.value !== 'default');
-        if (locked) this.agentReasoningDropdownOpen = false;
-        const open = Boolean(this.agentReasoningDropdownOpen);
-        this.agentReasoningToggle.setAttribute('aria-expanded', String(open));
-        this.agentReasoningDropdown.hidden = !open;
-        if (!open) return;
-        this.positionAgentReasoningMenu();
-        const key = JSON.stringify([active?.id, active?.model, selection.value, capability]);
-        // Status refresh must not replace focused menu items.
-        if (this.agentReasoningDropdown.dataset.renderKey === key) return;
-        this.agentReasoningDropdown.dataset.renderKey = key;
-        const check = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';
-        const options = capability.defaultValue ? capability.options.filter(option => option.value !== 'default') : capability.options;
-        this.agentReasoningDropdown.innerHTML = options.map(option => `<button type="button" role="menuitemradio" tabindex="-1" aria-checked="${option.value === effectiveValue}" data-reasoning-value="${option.value}" class="agent-reasoning-option" title="${this.escapeHtml(option.value === 'default' ? capability.hint : option.description)}">
-            <span>${option.label}</span>${option.value === capability.defaultValue ? '<span class="agent-reasoning-default">默认</span>' : ''}<span class="agent-reasoning-check">${option.value === effectiveValue ? check : ''}</span>
-        </button>`).join('');
+        const summary = document.getElementById('agentModelEffort');
+        if (summary) summary.textContent = this._agentReasoningSaving ? '保存中' : capability.options.length > 1
+            ? (capability.options.find(option => option.value === effectiveValue) || selection).label : '';
+        if (this.agentModelDropdownOpen) this.renderModelDropdown();
     }
 
     renderPermissionLabel() {
         if (!this.agentPermissionLabel) return;
         const mode = this.getActivePermissionMode();
-        this.agentPermissionLabel.textContent = mode;
+        this.agentPermissionLabel.textContent = ({ default: '默认询问', acceptEdits: '自动修改', dontAsk: '仅低风险', bypassPermissions: '全部允许' })[mode] || '默认询问';
     }
 
     renderPermissionDropdown() {
@@ -14677,8 +14877,8 @@ class DemoShell {
         const modes = [
             { value: 'default', label: '默认询问', desc: '高危操作需授权' },
             { value: 'acceptEdits', label: '自动修改', desc: '修改自动授权' },
-            { value: 'dontAsk', label: '完全自动', desc: '无需询问运行' },
-            { value: 'bypassPermissions', label: '跳过权限', desc: '静默跳过验证' }
+            { value: 'dontAsk', label: '仅低风险', desc: '未经授权的高风险操作将被拒绝' },
+            { value: 'bypassPermissions', label: '全部允许', desc: '自动允许工具操作' }
         ];
         
         const items = modes.map((m) => {
@@ -14698,46 +14898,53 @@ class DemoShell {
         const view = this.agentModelView, active = this.getActiveProvider(), effective = view?.effectiveModel;
         this.agentModelLabel.textContent = this._agentModelSwitching ? '切换中…' : effective?.name || effective?.modelId || (isMagpie(active) ? this.magpieClient?.state.defaultModel || 'Magpie' : active?.model || active?.label || '--');
         if (this.agentModelToggle) {
-            const policy = view?.providerBinding?.policy;
-            this.agentModelToggle.title = [effective?.modelId, effective?.source === 'magpie' ? `Magpie（${policy === 'pinned' ? '本会话固定' : '跟随'}）` : active?.label,
+            this.agentModelToggle.title = [effective?.name || effective?.modelId || active?.model, effective?.source === 'magpie' ? 'Magpie' : active?.label,
                 view?.pendingModelChange ? `Magpie 已改为 ${view.pendingModelChange.modelId} · 下轮生效` : '',
                 view?.modelBindingError ? 'Magpie 不可用，请重新连接或选择其他服务商' : ''].filter(Boolean).join(' · ');
             this.agentModelToggle.disabled = Boolean(this._agentModelSwitching || this._agentReasoningSaving);
         }
     }
 
+    async refreshModelMenu() {
+        await this.magpieClient?.refresh(true);
+        if (this.agentModelDropdownOpen) this.renderModelDropdown();
+    }
+
+    positionModelMenu() {
+        const menu = this.agentModelDropdown, anchor = this.agentModelToggle.getBoundingClientRect();
+        const panel = this.agentWorkbench?.getBoundingClientRect();
+        const leftEdge = Math.max(12, (panel?.left || 0) + 12);
+        const rightEdge = Math.min(window.innerWidth - 12, (panel?.right || window.innerWidth) - 12);
+        const width = Math.min(288, rightEdge - leftEdge);
+        menu.style.width = `${width}px`;
+        menu.style.left = `${Math.max(leftEdge, Math.min(anchor.left, rightEdge - width)) - anchor.left}px`;
+        menu.style.maxHeight = `${Math.max(120, Math.min(520, anchor.top - 20))}px`;
+    }
+
     renderModelDropdown() {
         if (!this.agentModelDropdown) return;
-        if (!this.agentModelDropdownOpen) {
-            this.agentModelDropdown.hidden = true;
-            return;
+        const open = Boolean(this.agentModelDropdownOpen);
+        if (open && this.agentSessionDrawerOpen && (window.innerWidth < 768 || this.agentWorkbench?.classList.contains('is-narrow'))) {
+            this.agentSessionDrawerOpen = false;
+            this.renderAgentChrome();
         }
-        if (this.magpieClient) {
-            this.agentModelDropdown.innerHTML = this.magpieClient.menu();
-            this.agentModelDropdown.setAttribute('role', 'menu');
-            this.agentModelDropdown.hidden = false; return;
+        this.agentModelToggle?.setAttribute('aria-expanded', String(open));
+        this.agentModelDropdown.hidden = !open;
+        if (!open) return;
+        this.agentModelDropdown.setAttribute('role', 'dialog');
+        this.agentModelDropdown.setAttribute('aria-label', '模型与思考强度');
+        const content = renderModelMenu(this);
+        if (content !== this.agentModelDropdown._content) {
+            const focused = this.agentModelDropdown.contains(document.activeElement) ? document.activeElement : null;
+            const focusData = focused ? { ...focused.dataset } : null;
+            const scroll = this.agentModelDropdown.querySelector('.agent-model-menu__list')?.scrollTop || 0;
+            this.agentModelDropdown.innerHTML = content;
+            this.agentModelDropdown._content = content;
+            const list = this.agentModelDropdown.querySelector('.agent-model-menu__list');
+            if (list) list.scrollTop = scroll;
+            if (focusData) [...this.agentModelDropdown.querySelectorAll('button')].find(button => JSON.stringify(button.dataset) === JSON.stringify(focusData))?.focus();
         }
-        const active = this.getActiveProvider();
-        const allProviders = this.agentProviderStore?.providers || [];
-        const items = allProviders.map((p) => {
-            const isActive = p.id === this.activeProviderId;
-            const modelDisplay = p.model || '';
-            return `<button class="agent-model-dropdown__item${isActive ? ' is-active' : ''}" data-provider-id="${this.escapeHtml(p.id)}" type="button">
-                <span class="agent-model-dropdown__item-name">${this.escapeHtml(p.label || p.id)}</span>
-                ${modelDisplay ? `<span class="agent-model-dropdown__item-model">${this.escapeHtml(modelDisplay)}</span>` : ''}
-            </button>`;
-        }).join('');
-
-        this.agentModelDropdown.innerHTML = items + `
-            <div class="agent-model-dropdown__divider"></div>
-            <button class="agent-model-dropdown__item agent-model-dropdown__item--settings" data-action="settings" type="button">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8.92 4.6H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.45.57 1 .6 1.58V11a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09c-.58.03-1.13.24-1.51.6z"></path>
-                </svg>
-                <span class="agent-model-dropdown__item-name">设置</span>
-            </button>`;
-        this.agentModelDropdown.hidden = false;
+        this.positionModelMenu();
     }
 
     renderActiveAgentSkill() {
@@ -15100,47 +15307,108 @@ class DemoShell {
     }
 
     getAgentSessionMeta(session = {}) {
-        if (session.sessionScope === 'global') {
-            return '';
-        }
-        const pageId = String(session.pageId || '').trim() || 'unknown';
-        const version = String(session.version || '').trim() || 'v1';
-        return `${pageId} / ${version}`;
+        if (this.agentSessionGroupMode === 'page' || session.sessionScope === 'global') return '';
+        return String(session.pageId || '').trim();
+    }
+
+    getAgentSessionIndicator(session) {
+        return sessionIndicator(session, session.id === this.agentSessionId ? this.agentRunState : null, this.agentSessionReadStatuses?.[session.id], this.agentSessionStatusBaselineAt);
+    }
+
+    markAgentSessionStatusRead(sessionId = this.agentSessionId) {
+        if (!sessionId) return;
+        const session = this.agentSessionsList.find(session => session.id === sessionId) || { id: sessionId };
+        const run = sessionId === this.agentSessionId ? this.agentRunState : null;
+        const indicator = this.getAgentSessionIndicator(session);
+        if (!indicator || indicator.state === 'running') return;
+        this.agentSessionReadStatuses ??= {};
+        this.agentSessionReadStatuses[sessionId] = {
+            runId: run?.runId || session.runId || null,
+            status: run?.status && !['ready', 'disconnected'].includes(run.status) ? run.status : session.status,
+            seenAt: Date.now()
+        };
+        this.writeAgentStorage('read-statuses', this.agentSessionReadStatuses);
+    }
+
+    patchAgentSessionIndicator() {
+        if (!this.agentSessionId || !this.agentSessionList) return;
+        const row = this.agentSessionList.querySelector(`[data-agent-session-id="${CSS.escape(this.agentSessionId)}"]`)?.closest('.agent-session-item');
+        if (!row) return;
+        const session = this.agentSessionsList.find(session => session.id === this.agentSessionId) || { id: this.agentSessionId };
+        const indicator = this.getAgentSessionIndicator(session);
+        const existing = row.querySelector('.agent-session-item__status');
+        if (existing?.dataset.state === indicator?.state && existing?.title === indicator?.label) return;
+        existing?.remove();
+        if (indicator) row.querySelector('.agent-session-item__more')?.insertAdjacentHTML('beforebegin', this.renderAgentSessionIndicator(session));
+    }
+
+    renderAgentSessionIndicator(session) {
+        const indicator = this.getAgentSessionIndicator(session);
+        return indicator ? `<span class="agent-session-item__status" data-state="${indicator.state}" role="img" aria-label="${indicator.label}" title="${indicator.label}"><i></i></span>` : '';
     }
 
     renderAgentSessionList() {
         if (!this.agentSessionList) return;
+        document.querySelectorAll('[data-agent-session-group-mode]').forEach(button => {
+            button.setAttribute('aria-pressed', String(button.dataset.agentSessionGroupMode === this.agentSessionGroupMode));
+        });
         const items = this.getFilteredAgentSessions();
+        if (this.agentSessionMenu && !items.some(session => session.id === this.agentSessionMenu.sessionId)) this.closeAllAgentSessionMenus();
         if (!items.length) {
+            this._agentSessionListHtml = null;
             this.agentSessionList.innerHTML = this.agentSessionListLoading
                 ? '<div class="agent-session-list__status">正在加载历史对话…</div>'
                 : '<div class="agent-session-list__empty">还没有历史对话。点击“新建会话”，或者直接发送消息，Prota 会自动为你创建新会话。</div>';
             return;
         }
-        const groupsHtml = this.groupAgentSessions(items).map(([label, sessions]) => `
-            <section class="agent-session-group">
-                <div class="agent-session-group__label">${this.escapeHtml(label)}</div>
+        const byPage = this.agentSessionGroupMode === 'page';
+        this.agentSessionGroupOpen ??= new Map();
+        if (byPage && this._agentSessionGroupActiveId !== this.agentSessionId) {
+            const active = items.find(session => session.id === this.agentSessionId);
+            if (active) this.agentSessionGroupOpen.set(sessionPageGroupKey(active), true);
+            this._agentSessionGroupActiveId = this.agentSessionId;
+        }
+        const groups = byPage
+            ? groupSessionsByPage(items, this.projects?.projects || [])
+            : this.groupAgentSessions(items);
+        const groupsHtml = groups.map(([label, sessions]) => {
+            const key = byPage ? sessionPageGroupKey(sessions[0]) : '';
+            const open = this.agentSessionGroupOpen.get(key) ?? sessions.some(session => session.id === this.agentSessionId);
+            return `
+            ${byPage ? `<details class="agent-session-group agent-session-group--page" data-session-page-group="${this.escapeHtml(key)}"${open ? ' open' : ''}>` : '<section class="agent-session-group">'}
+                ${byPage ? `<summary class="agent-session-group__toggle" title="${this.escapeHtml(label)}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 4 4 4-4 4"/></svg><span class="agent-session-group__label">${this.escapeHtml(label)}</span></summary>` : `<div class="agent-session-group__label" title="${this.escapeHtml(label)}">${this.escapeHtml(label)}</div>`}
                 <div class="agent-session-group__items">
                     ${sessions.map((session) => `
                         <div class="agent-session-item${session.id === this.agentSessionId ? ' is-active' : ''}">
                             <button type="button" class="agent-session-item__main" data-agent-session-id="${this.escapeHtml(session.id)}">
                                 <div class="agent-session-item__title" title="${this.escapeHtml(session.title || '')}">${this.escapeHtml(this.getAgentSessionDisplayTitle(session))}</div>
-                                ${this.getAgentSessionMeta(session) ? `<div class="agent-session-item__meta" title="${this.escapeHtml(session.contextLabel || `${session.pageId} / ${session.version}`)}">${this.escapeHtml(this.getAgentSessionMeta(session))}</div>` : ''}
+                                ${this.getAgentSessionMeta(session) ? `<div class="agent-session-item__meta" title="${this.escapeHtml(this.getAgentSessionMeta(session))}">${this.escapeHtml(this.getAgentSessionMeta(session))}</div>` : ''}
                             </button>
-                            <button type="button" class="agent-session-item__more" data-agent-session-more="${this.escapeHtml(session.id)}">
+                            ${this.renderAgentSessionIndicator(session)}
+                            <button type="button" class="agent-session-item__more" data-agent-session-more="${this.escapeHtml(session.id)}" aria-label="更多会话操作" aria-haspopup="menu" aria-expanded="false" title="更多">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
                             </button>
                         </div>
                     `).join('')}
                 </div>
-            </section>
-        `).join('');
+            ${byPage ? '</details>' : '</section>'}
+        `;
+        }).join('');
         const loadMoreHtml = this.agentSessionHasMore ? `
             <button type="button" class="agent-session-list__load-more" data-agent-session-load-more${this.agentSessionListLoading ? ' disabled' : ''}>
                 ${this.agentSessionListLoading ? '加载中…' : '加载更多'}
             </button>
         ` : '';
-        this.agentSessionList.innerHTML = `${groupsHtml}${loadMoreHtml}`;
+        const html = `${groupsHtml}${loadMoreHtml}`;
+        if (this._agentSessionListHtml !== html) {
+            this.agentSessionList.innerHTML = html;
+            this._agentSessionListHtml = html;
+        }
+        if (this.agentSessionMenu) {
+            const trigger = this.agentSessionList.querySelector(`[data-agent-session-more="${CSS.escape(this.agentSessionMenu.sessionId)}"]`);
+            trigger?.setAttribute('aria-expanded', 'true');
+            trigger?.closest('.agent-session-item')?.classList.add('is-menu-open');
+        }
     }
 
     renderAgentConnectionResult() {
@@ -17001,11 +17269,15 @@ class DemoShell {
         const visibleMessage = this.stripLegacyNewPageExecutionPrompt(descriptor.message);
         const parsed = this.parseAgentPrdContextMessage(visibleMessage, descriptor.prdContext);
         const contextCard = parsed.context ? this.renderAgentPrdContextCard(parsed.context) : '';
+        const canvasCard = (descriptor.context?.canvasSelection || []).map(node => this.renderAgentCanvasContextCard({
+            ...this.getAgentCanvasContextSummary([node]),
+            typeLabel: node.textSelection ? '选中文本' : ''
+        })).join('');
         const attachments = this.renderAgentMessageAttachments(descriptor.attachments);
         const messageBody = parsed.message
             ? `<div class="agent-user-message__text">${this.renderAgentRichText(parsed.message)}</div>`
             : '';
-        return `<div class="agent-user-message${contextCard ? ' has-prd-context' : ''}${attachments ? ' has-attachments' : ''}">${contextCard}${attachments}${messageBody}</div>`;
+        return `<div class="agent-user-message${contextCard || canvasCard ? ' has-prd-context' : ''}${attachments ? ' has-attachments' : ''}">${contextCard}${canvasCard}${attachments}${messageBody}</div>`;
     }
 
     renderAgentTimelineRow({ role, className, body, meta = '', extra = '', eventId = '' }) {
@@ -17657,6 +17929,7 @@ class DemoShell {
                 projectId: resolved?.project?.id || data.context.projectId || this.activeProjectId || 'readify',
                 pageId: resolved?.page?.id || data.context.pageId,
                 version: data.context.version,
+                canvasSelection: data.context.canvasSelection || [],
                 globalContext: false
             };
         } else {
@@ -17780,6 +18053,7 @@ class DemoShell {
                     projectId: resolved?.project?.id || payload.context.projectId || this.activeProjectId || 'readify',
                     pageId: resolved?.page?.id || payload.context.pageId,
                     version: payload.context.version,
+                    canvasSelection: payload.context.canvasSelection || [],
                     globalContext: false
                 };
             }
@@ -17821,6 +18095,7 @@ class DemoShell {
                     projectId: resolved?.project?.id || payload.context.projectId || this.activeProjectId || 'readify',
                     pageId: resolved?.page?.id || payload.context.pageId,
                     version: payload.context.version,
+                    canvasSelection: payload.context.canvasSelection || [],
                     globalContext: Boolean(payload.context.globalContext)
                 };
             }
@@ -18075,12 +18350,18 @@ class DemoShell {
         }
     }
 
+    getNewSessionProviderConfig() {
+        const config = this.getAgentConfigDraft();
+        const mode = this.agentProviderStore?.defaultPermissionMode;
+        return mode ? { ...config, sdkOptions: { ...config.sdkOptions, permissionMode: mode } } : config;
+    }
+
     async createAgentSession({ switchTo = true, title = '', sessionScope = 'global', awaitRefresh = false } = {}) {
         const data = await this.agentApi.createSession({
             ...(sessionScope === 'global' ? this.getAgentGlobalContext() : this.getAgentContext()),
             title,
             sessionScope,
-            providerConfig: this.getAgentConfigDraft()
+            providerConfig: this.getNewSessionProviderConfig()
         });
         await this.loadAgentSessions();
         if (switchTo) {
@@ -18211,10 +18492,16 @@ class DemoShell {
                     globalContext: false
                 },
             sessionScope,
+            providerBinding: session.providerBinding, effectiveModel: session.effectiveModel,
+            pendingModelChange: session.pendingModelChange, modelBindingError: session.modelBindingError,
+            bindingRevision: session.bindingRevision,
+            runtimePreferences: { permissionMode: session.runtimePreferences?.permissionMode || session.providerConfig?.sdkOptions?.permissionMode || 'default' },
             providerConfig: session.providerConfig || this.agentSessionProviderConfig || this.getAgentConfigDraft(),
             runState: {
                 ...this.getDefaultAgentRunState(),
                 status: session.status || 'ready',
+                runId: session.runId || null,
+                finishedAt: session.finishedAt || null,
                 stageMessage: session.lastSummary || '正在加载历史会话…',
                 active: ['running', 'waiting_approval', 'waiting_user_answer'].includes(session.status)
             }
@@ -18291,26 +18578,53 @@ class DemoShell {
         await this.archiveAgentSessionById(this.agentSessionId);
     }
 
-    toggleAgentSessionMenu(moreButton) {
-        const item = moreButton.closest('.agent-session-item');
-        const existing = item?.querySelector('.agent-session-item__dropdown');
-        if (existing) {
-            existing.remove();
-            item?.classList.remove('is-menu-open');
-            return;
-        }
-        this.closeAllAgentSessionMenus();
+    toggleAgentSessionMenu(moreButton, { point = null, forceOpen = false } = {}) {
         const sessionId = moreButton.dataset.agentSessionMore || '';
+        const alreadyOpen = this.agentSessionMenu?.sessionId === sessionId;
+        this.closeAllAgentSessionMenus();
+        if (!sessionId || (alreadyOpen && !forceOpen)) return;
         const dropdown = document.createElement('div');
         dropdown.className = 'agent-session-item__dropdown';
-        dropdown.innerHTML = `<button type="button" class="agent-session-item__dropdown-item" data-agent-session-delete="${this.escapeHtml(sessionId)}">删除会话</button>`;
-        item?.appendChild(dropdown);
-        item?.classList.add('is-menu-open');
+        dropdown.setAttribute('role', 'menu');
+        dropdown.setAttribute('aria-label', '会话操作');
+        dropdown.innerHTML = `<button type="button" role="menuitem" class="agent-session-item__dropdown-item" data-agent-session-delete="${this.escapeHtml(sessionId)}">删除会话</button>`;
+        // Keep the menu outside the scrolling list and its frequently refreshed rows.
+        document.body.appendChild(dropdown);
+        const anchor = moreButton.getBoundingClientRect();
+        const bounds = dropdown.getBoundingClientRect();
+        const x = point?.x || anchor.right - bounds.width;
+        const y = point?.y || anchor.bottom + 4;
+        dropdown.style.left = `${Math.max(8, Math.min(x, window.innerWidth - bounds.width - 8))}px`;
+        dropdown.style.top = `${Math.max(8, Math.min(y, window.innerHeight - bounds.height - 8))}px`;
+        this.agentSessionMenu = { sessionId, dropdown, scrollTop: this.agentSessionList?.scrollTop };
+        moreButton.setAttribute('aria-expanded', 'true');
+        moreButton.closest('.agent-session-item')?.classList.add('is-menu-open');
+        dropdown.addEventListener('click', event => {
+            const action = event.target.closest('[data-agent-session-delete]');
+            if (!action) return;
+            event.stopPropagation();
+            this.closeAllAgentSessionMenus();
+            this.deleteAgentSessionById(sessionId).catch(error => {
+                console.error('Failed to delete session:', error);
+                this.showToast('删除会话失败，请稍后重试。', true);
+            });
+        });
+        dropdown.addEventListener('keydown', event => {
+            if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+                event.preventDefault();
+                dropdown.querySelector('[role="menuitem"]')?.focus();
+            } else if (event.key === 'Tab') this.closeAllAgentSessionMenus({ restoreFocus: true });
+        });
+        dropdown.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
     }
 
-    closeAllAgentSessionMenus() {
-        this.agentSessionList?.querySelectorAll('.agent-session-item__dropdown').forEach((el) => el.remove());
-        this.agentSessionList?.querySelectorAll('.agent-session-item.is-menu-open').forEach((el) => el.classList.remove('is-menu-open'));
+    closeAllAgentSessionMenus({ restoreFocus = false } = {}) {
+        const sessionId = this.agentSessionMenu?.sessionId;
+        this.agentSessionMenu?.dropdown.remove();
+        this.agentSessionMenu = null;
+        this.agentSessionList?.querySelectorAll('.agent-session-item.is-menu-open').forEach(item => item.classList.remove('is-menu-open'));
+        this.agentSessionList?.querySelectorAll('[data-agent-session-more][aria-expanded="true"]').forEach(button => button.setAttribute('aria-expanded', 'false'));
+        if (restoreFocus && sessionId) this.agentSessionList?.querySelector(`[data-agent-session-more="${CSS.escape(sessionId)}"]`)?.focus({ preventScroll: true });
     }
 
     async deleteAgentSessionById(sessionId) {
@@ -18524,45 +18838,47 @@ class DemoShell {
     }
 
     getActivePermissionMode() {
-        if (this.agentModelView?.runtimePreferences?.permissionMode) return this.agentModelView.runtimePreferences.permissionMode;
-        const active = this.getActiveProvider();
-        return active?.sdkOptions?.permissionMode || this.agentConfig?.sdkOptions?.permissionMode || 'default';
+        if (this.agentSessionId) return this.agentModelView?.runtimePreferences?.permissionMode
+            || this.agentSessionProviderConfig?.sdkOptions?.permissionMode || 'default';
+        return this.agentProviderStore?.defaultPermissionMode || this.getActiveProvider()?.sdkOptions?.permissionMode || 'default';
     }
 
     async updateSdkPermissionMode(permissionMode) {
-        const mode = String(permissionMode || '').trim();
-        const allowed = new Set(['default', 'acceptEdits', 'dontAsk', 'bypassPermissions', 'plan']);
-        if (!allowed.has(mode)) {
-            this.showToast('权限模式可选：default / acceptEdits / dontAsk / bypassPermissions / plan', true);
-            return;
-        }
-        if (this.agentModelView?.providerBinding?.kind === 'magpie') {
-            try {
-                const sessionId = await this.ensureCurrentAgentSession();
-                await this.agentApi.setPermissionMode(sessionId, mode);
-                await this.magpieClient.refresh(); this.renderPermissionLabel();
-                this.showToast(`Agent 权限模式已切换为 ${mode}`);
-            } catch (error) { this.showToast(error.message || '权限模式切换失败', true); }
-            return;
-        }
-        const active = this.getActiveProvider();
-        if (active) {
-            active.sdkOptions = {
-                ...(active.sdkOptions || {}),
-                permissionMode: mode
-            };
-            this.agentConfig = this.buildAgentConfigFromActiveProvider();
-            this.persistProviders();
-            this.syncAgentConfigForm();
-        }
+        const mode = permissionMode === 'plan' ? 'default' : String(permissionMode || '').trim();
+        if (!this.agentProviderStore.normalizePermissionMode(mode) || this._agentPermissionSaving) return false;
+        this._agentPermissionSaving = true;
+        if (this.agentPermissionToggle) this.agentPermissionToggle.disabled = true;
         try {
             const sessionId = await this.ensureCurrentAgentSession();
-            await this.agentApi.setPermissionMode(sessionId, mode);
+            const result = await this.agentApi.setPermissionMode(sessionId, mode);
+            if (sessionId === this.agentSessionId) {
+                if (result.providerBinding) applyBindingView(this, result);
+                this.agentModelView = { ...this.agentModelView, runtimePreferences: { ...this.agentModelView?.runtimePreferences, permissionMode: result.permissionMode || mode } };
+                if (this.agentSessionProviderConfig) this.agentSessionProviderConfig.sdkOptions = { ...this.agentSessionProviderConfig.sdkOptions, permissionMode: mode };
+                this.renderPermissionLabel();
+            }
+            const listed = this.agentSessionsList?.find(session => session.id === sessionId);
+            if (listed) { listed.runtimePreferences = { ...listed.runtimePreferences, permissionMode: mode }; if (result.bindingRevision !== undefined) listed.bindingRevision = result.bindingRevision; }
+            const previous = this.agentProviderStore.defaultPermissionMode;
+            this.agentProviderStore.defaultPermissionMode = mode;
+            try {
+                await this.persistAgentProviderConfig();
+                this.agentProviderStore.persistIds();
+            } catch {
+                this.agentProviderStore.defaultPermissionMode = previous;
+                this.showToast('当前会话权限已更新，新会话默认权限保存失败，请重试。', true);
+                return false;
+            }
+            return true;
         } catch (error) {
-            console.warn('Failed to call agent.setPermissionMode:', error);
+            this.showToast(error.message || '权限切换失败，保留原设置。', true);
+            return false;
+        } finally {
+            this._agentPermissionSaving = false;
+            if (this.agentPermissionToggle) this.agentPermissionToggle.disabled = false;
+            this.renderPermissionLabel();
+            this.renderPermissionDropdown();
         }
-        this.renderPermissionLabel();
-        this.showToast(`Agent 权限模式已切换为 ${mode}`);
     }
 
     parseSlashCommand(rawInput) {
@@ -19051,15 +19367,14 @@ class DemoShell {
             let runContext = globalRun ? this.getAgentGlobalContext() : this.getAgentContext();
             if (!globalRun && this.agentSessionContext) {
                 runContext = { ...this.agentSessionContext };
-                const canvas = this.canvasSelection;
-                if (canvas?.projectId === runContext.projectId && canvas?.pageId === runContext.pageId && canvas?.version === runContext.version) {
-                    runContext.canvasSelection = canvas.selected;
-                    runContext.canvasDirty = canvas.dirty;
-                }
             }
+            if (!globalRun) {
+                runContext.canvasSelection = structuredClone(this.getAgentCanvasContextSelection());
+            }
+
             if (!globalRun && runContext.projectId === this.activeProjectId && runContext.pageId === this.activePageId && runContext.version === this.activeVersion) {
                 const editor = this.mainIframe?.contentWindow?.protaCanvas;
-                editor?.setPreparing?.(true);
+                editor?.setPreparing?.(true, (runContext.canvasSelection || []).map(node => node.id));
                 if (editor?.isDirty() && !(await editor.save())) throw new Error('画布保存未完成，请先处理保存问题。');
                 if (editor) { runContext = { ...runContext, pageMode: 'infinite-canvas', canvasDirty: false }; this._canvasRunScope = JSON.parse(JSON.stringify(runContext)); }
             }
@@ -19071,12 +19386,13 @@ class DemoShell {
             const desiredSessionScope = globalRun ? 'global' : 'page';
             const sessionId = await this.ensureAgentSession({ sessionScope: desiredSessionScope });
             runSessionId = sessionId;
+            if (!globalRun) this.setAgentCanvasContextSelection(runContext, runContext.canvasSelection || []);
             const endpoint = ReadifyAgent.RunRoutes.pathFor(sessionId, kind, payload);
             const controller = new AbortController();
             runController = controller;
             this.agentEventStreamAbortController = controller;
 
-            const optimisticRun = this.addOptimisticAgentRun(kind, payload);
+            const optimisticRun = this.addOptimisticAgentRun(kind, payload, runContext);
             this.agentPendingApproval = null;
             this.agentPendingQuestion = null;
             this.agentRunState = {
@@ -19339,10 +19655,6 @@ class DemoShell {
             return;
         }
         this.agentFetchingModels = true;
-        if (this.agentFetchModelsBtn) {
-            this.agentFetchModelsBtn.disabled = true;
-            this.agentFetchModelsBtn.textContent = '拉取中…';
-        }
         this.renderAgentControls();
         try {
             const result = await this.agentApi.fetchModels(draft);
@@ -19366,10 +19678,6 @@ class DemoShell {
             this.showToast(error instanceof Error ? error.message : String(error), true);
         } finally {
             this.agentFetchingModels = false;
-            if (this.agentFetchModelsBtn) {
-                this.agentFetchModelsBtn.disabled = false;
-                this.agentFetchModelsBtn.textContent = '拉取模型';
-            }
             this.renderAgentControls();
         }
     }

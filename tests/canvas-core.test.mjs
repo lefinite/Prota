@@ -70,3 +70,11 @@ test('floating controls avoid navigation even when selection covers most of a sm
  const nav={x:120,y:740,width:180,height:42};const rect=C.placeOverlay({anchor:{x:-80,y:250,width:700,height:700},width:280,height:80,viewport:{width:320,height:844},obstacles:[nav,{x:10,y:786,width:300,height:48}]});
  assert.ok(rect.x>=0&&rect.x+rect.width<=320);assert.ok(rect.y+rect.height<=740||rect.x+rect.width<=nav.x);
 });
+
+test('selection toolbar stays above or below its object even when chrome blocks both sides',()=>{
+ const anchor={x:500,y:400,width:220,height:100};
+ const rect=C.placeOverlay({anchor,width:420,height:44,viewport:{width:1440,height:1000},adjacent:true,gap:42,obstacles:[{x:0,y:300,width:1440,height:80},{x:0,y:530,width:1440,height:80}]});
+ assert.ok(['above','below'].includes(rect.placement));
+ assert.equal(rect.x,400);
+ assert.ok(Math.abs(rect.y-anchor.y)<200);
+});

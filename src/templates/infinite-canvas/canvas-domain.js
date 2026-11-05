@@ -67,7 +67,7 @@
       if (n.type === 'board' && src && !full(/^boards\/[a-zA-Z0-9_-]+\/index\.html$/, src)) throw Error('画板只能引用本版本 boards 目录');
       if (n.type === 'image' && src && !(/^data:image\/(png|jpeg|webp|gif);base64,/.test(src) || full(/^assets\/[a-zA-Z0-9_.-]+$/, src))) throw Error('图片必须保存在当前版本');
       if ('cloneFrom' in n && (n.type !== 'board' || !full(/^boards\/[a-zA-Z0-9_-]+\/index\.html$/, n.cloneFrom))) throw Error('复制画板来源无效');
-      for (const [key, low, high] of [['opacity',0,1],['radius',0,1000],['fontSize',8,400],['fontWeight',100,900],['padding',0,10000]]) if (key in n && !number(n[key], low, high)) throw Error('样式属性无效');
+      for (const [key, low, high] of [['fillOpacity',0,1],['strokeOpacity',0,1],['textOpacity',0,1],['opacity',0,1],['radius',0,1000],['fontSize',8,400],['fontWeight',100,900],['lineHeight',0.5,5],['letterSpacing',-20,100],['padding',0,10000]]) if (key in n && !number(n[key], low, high)) throw Error('样式属性无效');
       if ('textAlign' in n && !['left','center','right','justify'].includes(n.textAlign)) throw Error('文字对齐属性无效');
       if (state.schemaVersion === 2 && n.type === 'board') {
         if (!identity(n.boardId) || !('boardRevisionId' in n) || (n.boardRevisionId !== null && !identity(n.boardRevisionId))) throw Error('画板版本身份无效');

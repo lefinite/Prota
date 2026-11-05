@@ -9,9 +9,9 @@ Prota treats Magpie as one local provider. The standalone plugin is maintained i
 2. 安装或更新 Prota 专用插件：`magpie plugin add github:lefinite/magpie-agent-prota`。
 3. 在 Magpie 的 Agents → Prota 中选择默认模型。
 4. Prota 设置 → 模型配置 → 我的服务商 → Magpie → 使用 Magpie。
-5. 输入框模型菜单可以选择「跟随 Magpie」，或搜索并固定本会话的模型。
+5. 在 Magpie 服务商设置中直接勾选要使用的模型，再点击“保存配置”。输入框模型菜单只显示已保存的常用模型，点击后固定本会话使用的型号。打开菜单时自动刷新目录，思考强度在同一菜单底部直接选择。
 
-Magpie 默认模型只由 Magpie 修改。固定会话不反写默认模型。外部变更会在空闲后应用；任务运行时保留当前模型，只记录最新待应用值。切回普通服务商会退出当前会话的 Magpie 绑定。
+Magpie 默认模型只由 Magpie 修改。固定会话不反写默认模型。历史的跟随会话继续兼容：外部变更会在空闲后应用；任务运行时保留当前模型，只记录最新待应用值。切回普通服务商会退出当前会话的 Magpie 绑定。
 
 Magpie 的“没有原来的模型，改用…”提示是接入时选定其目录中的模型，不表示 Prota 运行已经切换。以 Prota 的会话模型按钮和后端确认状态为准。Magpie 显示的其他 Agent 安装命令无需执行。
 
@@ -19,7 +19,7 @@ Magpie 的“没有原来的模型，改用…”提示是接入时选定其目�
 
 The fixed anchor is `~/.config/prota/magpie-agent.json`, even when `READIFY_CONFIG_DIR` points elsewhere. Magpie writes `model`, `managedBy`, `provider`, `apiType`, `baseURL`, `apiKey`; Prota reads it, validates the schema and loopback HTTP origin, verifies `/api/hello`, and fetches `/v1/models` using the agent-specific gateway key. Redirects, remote origins, oversized files/responses and symlink escapes are rejected. On POSIX, Prota tightens a validated, owned config inode to `0600` because the tested Magpie host creates it as `0644`; Prota never rewrites its values.
 
-`integration:magpie` is a protected singleton. The ordinary provider store persists no Magpie model, endpoint or key. The gateway keeps its key in memory and the existing isolated Pi environment, not in history, status, SSE or browser storage. Session snapshots persist `providerBinding`, `bindingRevision`, `effectiveModel`; each `run_started` stores its immutable `runModelSnapshot`.
+`integration:magpie` is a protected singleton. The ordinary provider store persists only the optional `enabledModels` shortcut IDs for Magpie, with no runtime model configuration, endpoint or key. The gateway keeps its key in memory and the existing isolated Pi environment, not in history, status, SSE or browser storage. Session snapshots persist `providerBinding`, `bindingRevision`, `effectiveModel`; each `run_started` stores its immutable `runModelSnapshot`.
 
 Model changes use a synchronous per-session reservation, a candidate Pi configuration and `get_state` confirmation. State commits only after runtime readiness, and rolls back on failure. Running tasks and pending approvals/questions block user switches. A following session is reconciled at idle boundaries; pinned sessions keep their exact ID. Missing models, damaged config, plugin disconnects and offline gateways block new runs. No direct provider or paid fallback is selected automatically. The Magpie gateway's own routing/fallback settings remain owned by Magpie.
 

@@ -9,3 +9,8 @@ The unmodified upstream license is distributed at `runtime/pi/LICENSE.pi` and in
 the source submodule at `vendor/pi/LICENSE`. Pi's packaged dependencies retain
 their own license files under `runtime/pi/node_modules/`. Prota's integration is
 implemented in its Gateway and Extension without changing Pi core source.
+
+Page search includes a locally bundled `match` export from pinyin-pro 3.29.5,
+Copyright (c) 2022-present zh-lx, under the MIT License.
+Source: https://github.com/zh-lx/pinyin-pro.
+The license is distributed at `portal/modules/page-search/vendor/LICENSE`.

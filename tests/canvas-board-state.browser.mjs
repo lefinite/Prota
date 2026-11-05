@@ -33,7 +33,7 @@ try {
   let ready=false;for(let i=0;i<80;i++){try{if((await fetch(base+'/api/workspace')).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}assert.ok(ready,logs);
   browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1500,height:1000}});page.setDefaultTimeout(8000);
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(base+'/src/pages/demo/flow/v1/index.html');await page.waitForFunction(()=>window.protaCanvas?.runtimeVersion===49);await page.evaluate(()=>window.protaCanvasSchemaReady);
+  await page.goto(base+'/src/pages/demo/flow/v1/index.html');await page.waitForFunction(()=>window.protaCanvas?.runtimeVersion>=51);await page.evaluate(()=>window.protaCanvasSchemaReady);
   const node=id=>page.locator(`.node[data-id="${id}"]`), frame=id=>page.frameLocator(`.node[data-id="${id}"] iframe`), pin=id=>node(id).locator('.board-state-pin');
   const waitRestore=id=>page.waitForFunction(id=>{const el=document.querySelector(`.node[data-id="${id}"]`);return el?.querySelector('iframe')?.contentDocument?.readyState==='complete' && !el.classList.contains('restoring-state')},id);
   const preview=async id=>{await page.evaluate(id=>protaCanvas.focus([id]),id);await page.waitForTimeout(250);await waitRestore(id);await node(id).locator('.node-content').dblclick({position:{x:10,y:10}});};
@@ -67,13 +67,13 @@ try {
   await preview('a');await frame('a').locator('#code').fill('updated');await pin('a').click();await page.locator('#context-menu').getByRole('menuitem',{name:'更新固定状态',exact:true}).click();
   await page.waitForFunction(()=>protaCanvas.getState().nodes.find(n=>n.id==='a').pinnedState.data.code==='updated'&&!protaCanvas.isDirty());await waitRestore('a');
   await page.getByRole('button',{name:'撤销',exact:true}).click();await waitRestore('a');assert.equal(await frame('a').locator('#code').inputValue(),'7351');
-  await pin('a').click();await page.locator('#context-menu').getByRole('menuitem',{name:'取消固定',exact:true}).click();
+  await preview('a');await pin('a').click();await page.locator('#context-menu').getByRole('menuitem',{name:'取消固定',exact:true}).click();
   assert.equal(await pin('a').getAttribute('aria-pressed'),'false');await page.getByRole('button',{name:'撤销',exact:true}).click();await waitRestore('a');
   console.log('PASS explicit update, unpin and undo restore prior baseline');
   // Legacy global state works; a closed application with no contract fails visibly.
   await page.evaluate(()=>protaCanvas.focus(['b','c']));await page.waitForTimeout(250);await preview('b');await frame('b').locator('#advance').click();await pin('b').click();
   await page.waitForFunction(()=>protaCanvas.getState().nodes.find(n=>n.id==='b').pinnedState);await waitRestore('b');assert.equal(await frame('b').locator('#value').innerText(),'2');
-  await pin('c').click();await page.getByRole('button',{name:'适配状态保存',exact:true}).waitFor();assert.match(await page.locator('#notice-text').innerText(),/适配/);
+  await preview('c');await pin('c').click();await page.getByRole('button',{name:'适配状态保存',exact:true}).waitFor();assert.match(await page.locator('#notice-text').innerText(),/适配/);
   assert.equal(await page.evaluate(()=>protaCanvas.getState().nodes.find(n=>n.id==='c').pinnedState),undefined);
   // A no-op restore passes on the current page but must fail fresh-load validation.
   await fs.writeFile(path.join(dir,'boards/c/index.html'),auto.replace('render();</script>', 'window.ProtaBoardState={version:1,capture:()=>structuredClone(state),restore:()=>{}};render();</script>'));
@@ -89,6 +89,27 @@ try {
   console.log('PASS legacy adapter, unsupported-state guidance and failure preserves previous pin');
   await page.evaluate(()=>protaCanvas.focus(['a']));await page.waitForTimeout(250);await waitRestore('a');
   if(process.env.CANVAS_SCREENSHOTS)await page.screenshot({path:'/tmp/prota-board-state.png'});
+  // Agent DOM updates skip obsolete UI targets without a global notification.
+  const savedPin=await page.evaluate(()=>protaCanvas.getState().nodes.find(n=>n.id==='a').pinnedState);
+  await page.locator('#notice-dismiss').click();
+  await fs.writeFile(path.join(dir,'boards/a/index.html'),html.replace('<details id="details"><summary>说明</summary>详细说明</details>',''));
+  await page.waitForFunction(()=>!protaCanvas.isDirty());
+  await page.evaluate(()=>protaCanvas.refreshBoards(['a']));await waitRestore('a');
+  assert.equal(await frame('a').locator('#code').inputValue(),'7351','compatible controls still restore');
+  assert.equal(await frame('a').locator('#error').innerText(),'验证码错误','application state still restores');
+  assert.equal(await page.locator('#notice').isVisible(),false,'obsolete controls never interrupt canvas work');
+  assert.match(await pin('a').getAttribute('title'),/部分旧控件已跳过/);
+  assert.deepEqual(await page.evaluate(()=>protaCanvas.getState().nodes.find(n=>n.id==='a').pinnedState),savedPin,'old pin is preserved');
+  // A wholly incompatible adapter also stays board-local on background refresh.
+  await fs.writeFile(path.join(dir,'boards/a/index.html'),html.replace('ProtaBoardState={version:1','ProtaBoardState={version:2'));
+  await page.evaluate(()=>protaCanvas.refreshBoards(['a']));await waitRestore('a');
+  assert.equal(await page.locator('#notice').isVisible(),false);
+  assert.match(await pin('a').getAttribute('title'),/接口已变化/);
+  assert.deepEqual(await page.evaluate(()=>protaCanvas.getState().nodes.find(n=>n.id==='a').pinnedState),savedPin);
+  await fs.writeFile(path.join(dir,'boards/a/index.html'),html);
+  await page.evaluate(()=>protaCanvas.refreshBoards(['a']));await waitRestore('a');
+  assert.equal(await pin('a').getAttribute('title'),'已固定状态','successful restoration clears board-local diagnostics');
+  console.log('PASS DOM updates skip obsolete controls; background adapter failures remain board-local; existing pins survive');
   await page.evaluate(()=>window.postMessage({type:'prota:canvas-config',readOnly:true},location.origin));await page.locator('body.readonly').waitFor();assert.equal(await page.locator('.board-state-pin').count(),0);
   await preview('a');await frame('a').locator('#code').fill('read-only-try');await frame('a').locator('#code').press('Escape');await waitRestore('a');assert.equal(await frame('a').locator('#code').inputValue(),'7351');
   assert.deepEqual(errors,[]);console.log('PASS read-only viewing and transient interaction preserve the pin');

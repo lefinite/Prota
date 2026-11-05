@@ -49,6 +49,10 @@ try {
   });
   const original=await state();
   await frame.locator('.node[data-id="png"]').click();
+  await frame.locator('#selection-tools [data-action="more"]').click();
+  assert.ok(await frame.locator('#context-menu [data-action="duplicate"]').isVisible());
+  assert.ok(await frame.locator('#context-menu [data-action="copy-image"]').isVisible());
+  await page.keyboard.press('Escape');
   await page.keyboard.press('Control+Shift+C');
   await frame.waitForFunction(()=>document.querySelector('#notice-text').textContent==='图片已复制到剪贴板');
   assert.deepEqual(await readImage(),{type:'image/png',width:32,height:24,pixel:[0,0,0,0]});
@@ -57,7 +61,12 @@ try {
 
   await frame.locator('.node[data-id="jpeg"]').click();
   await frame.locator('#notice-text').evaluate(el=>el.textContent='');
-  await frame.locator('[data-action="copy-image"]').click();
+  assert.equal(await frame.locator('#selection-tools .button-label').count(),0);
+  assert.equal(await frame.locator('#selection-tools [data-action="copy-image"],#selection-tools [data-action="duplicate"]').count(),0);
+  const unlock=frame.locator('#selection-tools [data-action="unlock"]');
+  assert.equal(await unlock.getAttribute('data-tip'),'解锁');
+  await frame.locator('#selection-tools [data-action="more"]').click();
+  await frame.locator('#context-menu [data-action="copy-image"]').click();
   await frame.waitForFunction(()=>document.querySelector('#notice-text').textContent==='图片已复制到剪贴板');
   const converted=await readImage();assert.equal(converted.width,48);assert.equal(converted.height,20);
   assert.equal(converted.type,'image/png');assert.deepEqual(await state(),original);
@@ -80,7 +89,7 @@ try {
   assert.equal(await frame.locator('#notice-text').textContent(),'editing');
   await frame.locator('#clipboard-input').evaluate(el=>el.remove());
   await frame.locator('.node[data-id="png"]').click();
-  await page.keyboard.press('Control+C');
+  await page.keyboard.press(process.platform==='darwin'?'Meta+C':'Control+C');
   await frame.waitForFunction(()=>document.querySelector('#notice-text').textContent==='已复制 1 个对象');
   await page.keyboard.press('Control+D');
   assert.equal((await state()).nodes.length,4,'duplicate shortcut still creates a canvas copy');

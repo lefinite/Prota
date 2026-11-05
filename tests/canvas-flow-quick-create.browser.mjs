@@ -68,8 +68,39 @@ try{
  await page.keyboard.press('Escape');await page.keyboard.press('ControlOrMeta+z');assert.equal(await snapshot(),hoverSnap);
  await page.keyboard.down('Shift');await selectNode('p');const qc=await center('q');await page.mouse.click(qc.x,qc.y);await page.keyboard.up('Shift');
  assert.equal((await page.evaluate(()=>protaCanvas.getSelection())).length,2);assert.equal(await dots.count(),0,'multi-selection hides dots');
- // Notes duplicate like shapes; locked objects stay without dots.
+ // Notes offer flowchart creation; locked objects stay without dots.
  for(const [id,count] of [['lk',0],['n1',4]]){await page.keyboard.press('Escape');const c=await center(id);await page.mouse.click(c.x,c.y);await page.waitForTimeout(80);assert.equal(await dots.count(),count,id+' dots');}
+ // Non-flow objects ask before creating; cancel leaves the canvas untouched.
+ for (const id of ['n1','bd']) {
+  await fitTo([id]); await selectNode(id); const before=await snapshot(),dot=await dotCenter('right');
+  await page.mouse.click(dot.x,dot.y); await picker.waitFor({state:'visible'});
+  assert.equal(await snapshot(),before,'opening the picker does not clone '+id);
+  await picker.getByRole('menuitem',{name:'判断',exact:true}).click();
+  assert.equal((await state()).nodes.at(-1).flowShape,'decision');
+  assert.equal((await state()).edges.at(-1).fromInstanceId,id);
+  await page.keyboard.press('Escape');await page.keyboard.press('ControlOrMeta+z');assert.equal(await snapshot(),before);
+ }
+ // The shape tool is absent; node fills and property colors use the shared palette.
+ assert.equal(await page.locator('#add-shape').count(),0);
+ for (const [id,label,color] of [['n1','颜色','#ffd9d2'],['p','颜色','#d4ecec']]) {
+  await fitTo([id]); await selectNode(id);
+  const toolbar=await page.locator('#selection-tools').boundingBox(),node=await page.locator('.node[data-id="'+id+'"]').boundingBox();
+  assert.ok(toolbar.y+toolbar.height<=node.y||toolbar.y>=node.y+node.height,'toolbar stays above or below the selection');
+  assert.ok(Math.min(Math.abs(toolbar.y+toolbar.height-node.y),Math.abs(toolbar.y-node.y-node.height))<100,'toolbar stays near the selection '+JSON.stringify({id,toolbar,node}));
+  const colorButton=page.locator('#selection-tools').getByRole('button',{name:label,exact:true});
+  assert.equal(await colorButton.textContent(),'','toolbar shows only the current color');
+  assert.equal(await colorButton.locator('.connection-color-swatch').count(),1,'same color indicator as connections');
+  const before=await snapshot();await colorButton.click();
+  const colors=page.locator('#node-colors');await colors.waitFor({state:'visible'});
+  assert.equal(await colors.locator('.color-swatch').count(),12);
+  await colors.locator('[data-color="'+color+'"]').click();assert.equal((await nodeById(id)).color,color);
+  const expectedRGB=color==='#ffd9d2'?'rgb(255, 217, 210)':'rgb(212, 236, 236)';
+  await page.waitForFunction(rgb=>getComputedStyle(document.querySelector('#selection-tools .canvas-color-swatch')).backgroundColor===rgb,expectedRGB);
+  assert.equal(await page.locator('#selection-tools').getByText('填充',{exact:true}).count(),0);
+  await page.keyboard.press('ControlOrMeta+z');assert.equal(await snapshot(),before,'color change is undoable');await selectNode(id);
+  await page.waitForFunction(id=>{const color=protaCanvas.getState().nodes.find(n=>n.id===id).color,probe=document.createElement('span');probe.style.color=color;document.body.append(probe);const expected=getComputedStyle(probe).color;probe.remove();return getComputedStyle(document.querySelector('#selection-tools .canvas-color-swatch')).backgroundColor===expected;},id);
+ }
+ await fitTo(['p','q','r','t','lk','n1']);
  await selectNode('p');await press('l');assert.equal(await dots.count(),0,'connect tool hides dots');
  await press('Escape');await page.waitForFunction(()=>document.querySelectorAll('.flow-quick-dot').length===0||true);
  await selectNode('p');await press('h');assert.equal(await dots.count(),0,'hand tool hides dots');await press('v');
@@ -111,12 +142,12 @@ try{
  // 3. Consecutive clicks keep extending without overlap or stray double-click text: click the
  //    new node's right dot, then continue from the node the pointer now hovers.
  const rightNode=redone.edges.find(e=>e.fromInstanceId==='p'&&e.fromPort==='right').toInstanceId;
- await selectNode(rightNode);
+ await fitTo([rightNode]);await selectNode(rightNode);
  for(let i=0;i<5;i++){
   const count=(await state()).nodes.length,dot=await dotCenter('right');
   await page.mouse.click(dot.x,dot.y);
   await page.waitForFunction(n=>protaCanvas.getState().nodes.length===n+1,count);
-  const tail=(await state()).nodes.at(-1),c=await center(tail.id);
+  const tail=(await state()).nodes.at(-1);await fitTo([tail.id]);const c=await center(tail.id);
   await page.mouse.move(c.x,c.y,{steps:3});
   await page.waitForFunction(()=>document.querySelectorAll('.flow-quick-dot').length===4);
  }
@@ -235,12 +266,21 @@ try{
  assert.equal((await nodeById(labelled.id)).text,'条件 A\n第二行');
  await page.waitForFunction(()=>document.querySelectorAll('.flow-quick-dot').length===4);
  await page.locator('#selection-tools').getByRole('button',{name:'样式',exact:true}).click();
- await page.getByRole('combobox',{name:'形状',exact:true}).selectOption('cloud');
+ await page.locator('.inspector-choice summary[aria-label="形状"]').click();
+ await page.getByRole('option',{name:'云朵',exact:true}).click();
  await page.waitForFunction(id=>protaCanvas.getState().nodes.find(n=>n.id===id).flowShape==='cloud',labelled.id);
  // A shape-only change moves the incoming endpoint onto the new outline (below the box top).
  const incoming=(await state()).edges.find(e=>e.toInstanceId===labelled.id);
  await page.waitForFunction(([edgeId,nodeId])=>{const n=protaCanvas.getState().nodes.find(n=>n.id===nodeId),p=protaCanvas.connections.getRoutes().find(r=>r.edge.id===edgeId)?.points.at(-1),o=window.CanvasConnections.outlinePoint(n,'top');return p&&p.x===o.x&&p.y===o.y&&o.y>n.y;},[incoming.id,labelled.id]);
- await page.getByLabel('描边',{exact:true}).fill('#22aa66');
+ await page.locator('.node-color-button[aria-label="描边"]').click();
+ const strokePalette=page.locator('#node-colors');await strokePalette.waitFor({state:'visible'});
+ const strokeBefore=(await nodeById(labelled.id)).strokeColor;
+ await strokePalette.locator('input[type=color]').evaluate(el=>{el.value='#22aa66';el.dispatchEvent(new Event('input',{bubbles:true}));});
+ assert.equal((await nodeById(labelled.id)).strokeColor,'#22aa66','custom colors preview live');
+ await page.waitForFunction(()=>getComputedStyle(document.querySelector('.node-color-button[aria-label="描边"] .canvas-color-swatch')).backgroundColor==='rgb(34, 170, 102)');
+ await strokePalette.locator('input[type=color]').evaluate(el=>{el.value='#229966';el.dispatchEvent(new Event('input',{bubbles:true}));el.value='#22aa66';el.dispatchEvent(new Event('change',{bubbles:true}));});
+ await page.keyboard.press('ControlOrMeta+z');assert.equal((await nodeById(labelled.id)).strokeColor,strokeBefore,'one undo restores a custom color gesture');
+ await page.keyboard.press('ControlOrMeta+Shift+z');
  await page.waitForFunction(id=>protaCanvas.getState().nodes.find(n=>n.id===id).strokeColor==='#22aa66',labelled.id);
  // Property edits render on the next frame; the selected outline then shows the chosen stroke.
  await page.waitForFunction(id=>getComputedStyle(document.querySelector(`.node[data-id="${id}"] .flow-geometry path`)).stroke==='rgb(34, 170, 102)',labelled.id);
@@ -295,6 +335,7 @@ try{
  await page.waitForFunction(id=>protaCanvas.getState().edges.find(e=>e.id===id).color==='#8e4ec6',lineEdge.id);
  assert.ok(await palette.isHidden(),'picking a swatch closes the palette');
  await page.waitForFunction(s=>getComputedStyle(document.querySelector(s)).stroke==='rgb(142, 78, 198)',lineSel);
+ await page.waitForFunction(()=>getComputedStyle(document.querySelector('#connection-tools .canvas-color-swatch')).backgroundColor==='rgb(142, 78, 198)');
  assert.equal(await page.evaluate(s=>document.querySelector(s).getAttribute('marker-end'),lineSel),'url(#canvas-arrow-c8e4ec6)','the arrowhead matches the custom color');
  assert.deepEqual(await presets.evaluateAll(els=>els.map(el=>el.getAttribute('aria-pressed'))),['false','false'],'a custom color clears the preset highlight');
  if(shots)await page.screenshot({path:'/tmp/prota-flow-quick-line-color.png'});
@@ -358,6 +399,27 @@ try{
   assert.ok(made.x>=board.x+board.width+24,'the new step sits beside the board');}
  await page.keyboard.press('Escape');await page.keyboard.press('ControlOrMeta+z');assert.equal(await snapshot(),snap);
  console.log('PASS boards show dots on hover, keep the title clear, and ask which shape to add');
+
+ // Style changes apply to both creation paths, including a custom color on a dashed line.
+ await fitTo(['p','r']);
+ for (const [preset,kind,color] of [['橙色虚线','exception','#e5484d'],['灰色实线','main','#12a594']]) {
+  await page.evaluate(()=>protaCanvas.connections.create('p','r'));
+  await page.getByRole('button',{name:preset,exact:true}).click();
+  await page.getByRole('button',{name:'线条颜色',exact:true}).click();
+  await page.getByRole('button',{name:'线条颜色 '+color,exact:true}).click();
+  const original=(await state()).edges.at(-1);
+  await page.keyboard.press('Escape');
+  await page.evaluate(()=>protaCanvas.connections.create('p','r'));
+  let made=(await state()).edges.at(-1);
+  assert.deepEqual([made.kind,made.color],[kind,color],'ordinary connections inherit the latest complete style');
+  await selectNode('p');
+  await page.waitForFunction(()=>document.querySelector('.flow-quick-dot[data-node-id="p"][data-side=right]'));
+  const at=await dotCenter('right');await page.mouse.click(at.x,at.y);
+  made=(await state()).edges.at(-1);
+  assert.deepEqual([made.kind,made.color],[kind,color],'quick-create connections inherit the same complete style');
+  assert.deepEqual((await state()).edges.find(e=>e.id===original.id),original,'creating connections preserves existing lines');
+ }
+ console.log('PASS ordinary and quick-created connections inherit custom colors and solid/dashed styles');
 
  // 11. Save, reload and read-only sharing.
  await page.waitForFunction(()=>!protaCanvas.isDirty());const saved=await snapshot();

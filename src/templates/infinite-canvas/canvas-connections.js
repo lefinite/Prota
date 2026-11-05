@@ -125,7 +125,7 @@
 })(globalThis);
 (function(root){
   'use strict';
-  root.CanvasConnections.editorVersion=19;
+  root.CanvasConnections.editorVersion=20;
   root.CanvasConnections.install=function(host){
     const NS='http://www.w3.org/2000/svg',stage=document.querySelector('#stage'),world=document.querySelector('#world');
     const make=(tag,attrs={})=>{const el=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);return el;};
@@ -140,6 +140,9 @@
     // `color` on the edge overrides the kind color while the kind keeps its dash pattern.
     const colors={main:'#71829b',secondary:'#71829b',exception:'#bd7327'},names={main:'灰色实线',secondary:'灰色实线',exception:'橙色虚线'};
     const strokeOf=e=>e.color||colors[e.kind]||colors.main;
+    let defaultStyle={kind:'main'};
+    const getDefaultStyle=()=>({...defaultStyle});
+    function rememberStyle(e){defaultStyle={kind:e.kind||'main',...(e.color?{color:e.color}:{})};}
     // One arrowhead per line color, keyed by the validated hex so ids stay safe.
     const markerId=color=>'canvas-arrow-c'+color.slice(1).toLowerCase();
     const sideNames={left:'左',right:'右',top:'上',bottom:'下'},sides=['left','right','top','bottom'];
@@ -210,10 +213,11 @@
     function choose(id){if(inline&&inline.id!==id)finishInline(true);selected=id;clearNodes();render();}
     function add(from,to,changes={}){
       if(!host.canEdit()||from===to||![from,to].every(id=>!blocked(stateNode(id))))return null;
-      const next={...changes,id:'e_'+crypto.randomUUID().replaceAll('-',''),fromInstanceId:from,toInstanceId:to,label:String(changes.label||'').slice(0,200),kind:['main','secondary','exception'].includes(changes.kind)?changes.kind:'main'};
+      const next={...defaultStyle,...changes,id:'e_'+crypto.randomUUID().replaceAll('-',''),fromInstanceId:from,toInstanceId:to,label:String(changes.label||'').slice(0,200),kind:['main','secondary','exception'].includes(changes.kind)?changes.kind:defaultStyle.kind};
+      if(!next.color)delete next.color;
       host.mutate(doc=>(doc.edges||=[]).push(next));choose(next.id);clearPreview();host.setTool('select');return next.id;
     }
-    function update(id,changes){if(!host.canEdit()||!host.state().edges?.some(e=>e.id===id))return;const allowed={};for(const k of ['label','kind','color','fromPort','toPort','fromInstanceId','toInstanceId','fromAnchor','toAnchor','manualRoute'])if(k in changes)allowed[k]=changes[k];host.mutate(doc=>{const target=doc.edges.find(e=>e.id===id);Object.assign(target,allowed);if('color' in allowed&&!allowed.color)delete target.color;});}
+    function update(id,changes){if(!host.canEdit()||!host.state().edges?.some(e=>e.id===id))return;const allowed={};for(const k of ['label','kind','color','fromPort','toPort','fromInstanceId','toInstanceId','fromAnchor','toAnchor','manualRoute'])if(k in changes)allowed[k]=changes[k];host.mutate(doc=>{const target=doc.edges.find(e=>e.id===id);Object.assign(target,allowed);if('color' in allowed&&!allowed.color)delete target.color;if('kind' in allowed||'color' in allowed)rememberStyle(target);});}
     function remove(){if(!selected||!host.canEdit())return;finishInline(false);const id=selected;selected=null;host.mutate(doc=>doc.edges=(doc.edges||[]).filter(e=>e.id!==id));toolbar.hidden=true;}
     const isDeleteKey=event=>event.key==='Delete'||event.key==='Backspace'||event.code==='Backspace'||event.keyCode===8||event.keyCode===46;
     const isEditableTarget=event=>event.target instanceof Element&&Boolean(event.target.closest('input,select,textarea,[contenteditable]:not([contenteditable="false"])'));
@@ -266,9 +270,9 @@
         // A click-to-apply palette: the system color dialog used to drop a chosen color when
         // the user clicked outside it. Swatches commit on click; the hex field and the native
         // picker are for anything else, and the picker streams live while it is dragged.
-        const custom=document.createElement('button');custom.type='button';custom.className='connection-color';
+        const custom=document.createElement('button');custom.type='button';custom.className='connection-color canvas-color-button';
         custom.setAttribute('aria-label','线条颜色');custom.setAttribute('aria-haspopup','dialog');custom.title='线条颜色';
-        const swatch=document.createElement('span');swatch.className='connection-color-swatch';swatch.setAttribute('aria-hidden','true');
+        const swatch=document.createElement('span');swatch.className='connection-color-swatch canvas-color-swatch';swatch.setAttribute('aria-hidden','true');
         custom.append(swatch);styles.append(custom);
         custom.onclick=event=>{event.stopPropagation();toggleColorPopover(custom);};
         const auto=button('恢复自动连接','sparkles',()=>update(e.id,{fromPort:'auto',toPort:'auto',manualRoute:null}));auto.dataset.action='auto';
@@ -431,7 +435,7 @@
     }
     function candidateEdge(hit){
       const {node,anchor,port}=hit,existing=drag&&!drag.creating?host.state().edges?.find(e=>e.id===drag.id):null;
-      return existing?{...existing,manualRoute:null,[drag.end==='from'?'fromInstanceId':'toInstanceId']:node?.id,[drag.end==='from'?'fromPort':'toPort']:port,[drag.end==='from'?'fromAnchor':'toAnchor']:anchor}:{id:'preview',fromInstanceId:source,toInstanceId:node?.id,fromPort:sourceSide,toPort:port,fromAnchor:sourceAnchor,toAnchor:anchor};
+      return existing?{...existing,manualRoute:null,[drag.end==='from'?'fromInstanceId':'toInstanceId']:node?.id,[drag.end==='from'?'fromPort':'toPort']:port,[drag.end==='from'?'fromAnchor':'toAnchor']:anchor}:{...defaultStyle,id:'preview',fromInstanceId:source,toInstanceId:node?.id,fromPort:sourceSide,toPort:port,fromAnchor:sourceAnchor,toAnchor:anchor};
     }
     function ghost(e){
       const origin=source||drag?.fixed,node=stateNode(origin);if(!node){clearPreview();return;}
@@ -527,11 +531,11 @@
     // Palette state. `colorDrag` marks one continuous native-picker drag so it lands as one undo step.
     let colorPopover=null,colorFor=null,colorDrag=false;
     // Eleven presets fill three rows of four, with the custom cell as the twelfth.
-    const palette=['#71829b','#3b4a63','#1f2937','#3e63dd','#0ea5e9','#12a594','#bd7327','#f5a524','#e5484d','#d6409f','#8e4ec6'];
+    const palette=root.CanvasCore.COLOR_PRESETS;
     const normalizeColor=value=>{const v=String(value||'').trim().toLowerCase();return /^#[0-9a-f]{6}$/.test(v)?v:/^#[0-9a-f]{3}$/.test(v)?'#'+[...v.slice(1)].map(c=>c+c).join(''):null;};
     function applyColor(id,value,{coalesce=false}={}){
       const color=normalizeColor(value);if(!color||!host.canEdit())return false;
-      const current=host.state().edges?.find(e=>e.id===id);if(!current||current.color===color)return true;
+      const current=host.state().edges?.find(e=>e.id===id);if(!current)return false;rememberStyle({...current,color});if(current.color===color)return true;
       host.mutate(doc=>{const target=doc.edges.find(e=>e.id===id);if(target)target.color=color;},{coalesce});
       return true;
     }
@@ -548,26 +552,15 @@
       const current=edge();if(!current)return;
       colorFor=current.id;colorDrag=false;
       if(!colorPopover){
-        colorPopover=document.createElement('div');colorPopover.id='connection-colors';colorPopover.className='floating';
+        colorPopover=document.createElement('div');colorPopover.id='connection-colors';colorPopover.className='floating canvas-color-palette';
         colorPopover.setAttribute('role','dialog');colorPopover.setAttribute('aria-label','线条颜色');
         colorPopover.addEventListener('pointerdown',event=>event.stopPropagation());
         document.body.append(colorPopover);
       }
       colorPopover.replaceChildren();
-      const grid=document.createElement('div');grid.className='color-grid';
-      for(const value of palette){
-        const item=document.createElement('button');item.type='button';item.className='color-swatch';
-        item.style.setProperty('--swatch',value);item.dataset.color=value;item.setAttribute('aria-label','线条颜色 '+value);
-        item.onclick=()=>{applyColor(colorFor||current.id,value);closeColorPopover();stage.focus({preventScroll:true});};
-        grid.append(item);
-      }
-      // The last cell is "any color": one plain rainbow circle opens the system picker.
-      const customCell=document.createElement('label');customCell.className='color-swatch color-custom';
-      customCell.setAttribute('aria-label','自定义颜色');customCell.title='自定义颜色';
-      const native=document.createElement('input');native.type='color';native.setAttribute('aria-label','自定义线条颜色');
-      native.addEventListener('input',()=>{if(colorPopover.hidden||!colorFor)return;if(applyColor(colorFor,native.value,{coalesce:colorDrag}))colorDrag=true;});
-      native.addEventListener('change',()=>{if(colorPopover.hidden||!colorFor)return;applyColor(colorFor,native.value,{coalesce:colorDrag});colorDrag=false;closeColorPopover();});
-      customCell.append(native);grid.append(customCell);
+      const grid=root.CanvasCore.colorGrid({label:'线条颜色',value:strokeOf(current),
+        onInput:value=>{if(colorPopover.hidden||!colorFor)return;if(applyColor(colorFor,value,{coalesce:colorDrag}))colorDrag=true;},
+        onCommit:value=>{if(colorPopover.hidden||!colorFor)return;applyColor(colorFor,value,{coalesce:colorDrag});closeColorPopover();stage.focus({preventScroll:true});}});
       colorPopover.append(grid);
       syncColorPopover(current,strokeOf(current));
       colorPopover.hidden=false;
@@ -610,6 +603,6 @@
     },true);
     // Only anchored documents need DOM tracking; routing is cached until geometry or page identity changes.
     const tracker=setInterval(()=>{if(host.state().edges?.some(e=>e.fromAnchor||e.toAnchor))schedule();},200);window.addEventListener('pagehide',()=>clearInterval(tracker),{once:true});
-    return {schedule,render,add,update,remove,clear:()=>{finishInline(true);selected=null;clearPreview();toolbar.hidden=true;schedule();},setTool(value){if(value!==currentTool){currentTool=value;clearPreview();if(value==='connect'){finishInline(true);selected=null;clearNodes();toolbar.hidden=true;}}updateHint();},getRoutes:()=>routes,getSelection:()=>selected};
+    return {schedule,render,add,update,remove,getDefaultStyle,clear:()=>{finishInline(true);selected=null;clearPreview();toolbar.hidden=true;schedule();},setTool(value){if(value!==currentTool){currentTool=value;clearPreview();if(value==='connect'){finishInline(true);selected=null;clearNodes();toolbar.hidden=true;}}updateHint();},getRoutes:()=>routes,getSelection:()=>selected};
   };
 })(globalThis);

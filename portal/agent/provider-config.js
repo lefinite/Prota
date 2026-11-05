@@ -442,6 +442,7 @@ class AgentProviderConfigStore {
         this.providers = [];
         this.activeProviderId = null;
         this.selectedProviderId = null;
+        this.defaultPermissionMode = null;
     }
 
     setPresets(presets) {
@@ -449,6 +450,7 @@ class AgentProviderConfigStore {
     }
 
     load() {
+        this.defaultPermissionMode = this.normalizePermissionMode(this.readStorage('provider-default-permission-mode', null));
         this.migrateLegacyProviderConfig();
         const storedProviders = this.readStorage('providers', null);
         this.providers = this.normalizeProviderInstances(storedProviders);
@@ -469,7 +471,7 @@ class AgentProviderConfigStore {
             if (usedIds.has('integration:magpie')) return false;
             usedIds.add('integration:magpie'); return true;
         }).map((provider) => {
-            if (provider.id === 'integration:magpie' || provider.adapter === 'magpie') return { id: 'integration:magpie', kind: 'integration', adapter: 'magpie', label: 'Magpie', presetId: null, apiType: 'openai-responses', model: '', baseURL: '', apiKey: '', sdkOptions: {}, models: [], endpointCandidates: [] };
+            if (provider.id === 'integration:magpie' || provider.adapter === 'magpie') return { id: 'integration:magpie', kind: 'integration', adapter: 'magpie', label: 'Magpie', presetId: null, apiType: 'openai-responses', model: '', baseURL: '', apiKey: '', sdkOptions: {}, models: [], endpointCandidates: [], ...(Array.isArray(provider.enabledModels) ? { enabledModels: [...new Set(provider.enabledModels.filter(v => typeof v === 'string' && v.trim()))] } : {}) };
             const normalized = cloneAgentProviderValue(provider, { ...provider });
             let id = String(normalized.id || '').trim();
             if (!id || usedIds.has(id)) id = createAgentProviderInstanceId();
@@ -588,6 +590,7 @@ class AgentProviderConfigStore {
     }
 
     persistIds() {
+        this.writeStorage('provider-default-permission-mode', this.defaultPermissionMode);
         this.writeStorage('active-provider-id', this.activeProviderId);
         this.writeStorage('selected-provider-id', this.selectedProviderId);
     }
@@ -595,12 +598,14 @@ class AgentProviderConfigStore {
     exportState() {
         return {
             providers: this.providers,
+            defaultPermissionMode: this.defaultPermissionMode,
             activeProviderId: this.activeProviderId,
             selectedProviderId: this.selectedProviderId
         };
     }
 
     replaceState(state) {
+        this.defaultPermissionMode = this.normalizePermissionMode(state?.defaultPermissionMode);
         this.providers = this.normalizeProviderInstances(state?.providers);
         this.activeProviderId = state?.activeProviderId || null;
         this.selectedProviderId = state?.selectedProviderId || null;
@@ -611,6 +616,10 @@ class AgentProviderConfigStore {
         this.ensureValidSelection();
         this.writeStorage('providers', this.providers);
         this.persistIds();
+    }
+
+    normalizePermissionMode(value) {
+        return ['default', 'acceptEdits', 'dontAsk', 'bypassPermissions'].includes(value) ? value : null;
     }
 
     createFromPreset(presetId) {
@@ -699,6 +708,7 @@ class AgentProviderConfigStore {
         const has = (key) => Object.prototype.hasOwnProperty.call(draft, key);
         if (has('presetId')) provider.presetId = draft.presetId || null;
         if (has('models')) provider.models = [...new Set(draft.models || [])];
+        if (has('enabledModels')) provider.enabledModels = [...new Set(draft.enabledModels || [])];
         provider.label = (has('label') ? draft.label : provider.label) || '未命名供应商';
         provider.apiType = (has('apiType') ? draft.apiType : provider.apiType) || 'anthropic-messages';
         provider.model = has('model') ? draft.model : (provider.model || '');
@@ -745,8 +755,15 @@ class AgentProviderConfigStore {
         return Array.from(new Set([
             ...(preset?.models || []),
             ...(provider?.models || []),
+            ...(provider?.enabledModels || []),
             provider?.model
         ].filter(Boolean)));
+    }
+
+    getEnabledModels(provider = this.getSelectedProvider()) {
+        return Array.isArray(provider?.enabledModels)
+            ? [...new Set(provider.enabledModels.filter(v => typeof v === 'string' && v.trim()))]
+            : (provider?.model ? [provider.model] : []);
     }
 
     mergeModels(models = []) {
