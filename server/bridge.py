@@ -1443,6 +1443,30 @@ def read_share_mindmap(root, project_id, page_id, version, requested_path=''):
 
 
 
+def read_share_tracking(version_dir):
+    """Read a bounded, version-scoped measurement specification for shared previews."""
+    manifest = Path(version_dir) / 'tracking' / 'events.json'
+    if not manifest.is_file():
+        return None
+    try:
+        if manifest.stat().st_size > 256 * 1024:
+            return None
+        with manifest.open('r', encoding='utf-8') as source:
+            data = json.load(source)
+        if not isinstance(data, dict) or data.get('schemaVersion') != 1:
+            return None
+        events = data.get('events')
+        if not isinstance(events, list) or len(events) > 12:
+            return None
+        if not isinstance(data.get('scope'), dict):
+            return None
+        if any(not isinstance(event, dict) or not isinstance(event.get('targets'), list) for event in events):
+            return None
+        return data
+    except (OSError, ValueError, TypeError):
+        return None
+
+
 def read_share_annotations(version_dir):
     ann_path = os.path.join(version_dir, 'annotations.json')
     if os.path.isfile(ann_path):
@@ -4230,6 +4254,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             page = read_project_page(root, project_id, page_id) or {}
             page_name = params.get('pageName') or page.get('name') or page_id
             annotations = read_share_annotations(version_dir)
+            tracking = read_share_tracking(version_dir)
             prd = read_share_prd(root, project_id, page_id, version, params.get('prdPath') or '')
             diagram = read_share_drawio(root, project_id, page_id, version, params.get('diagramPath') or '')
             mindmap = read_share_mindmap(root, project_id, page_id, version, params.get('mindmapPath') or '')
@@ -4248,6 +4273,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'includePrd': include_prd,
                 'demoPath': f'/src/pages/{project_id}/{page_id}/{version}/index.html',
                 'annotations': annotations if include_annotations else [],
+                'tracking': tracking,
                 'prdContent': prd.get('content') if include_prd else '',
                 'prdPath': f'/{prd.get("path")}' if include_prd and prd.get('path') else '',
                 'prdFilename': prd.get('filename') if include_prd else '',
@@ -4277,6 +4303,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'shareType': share_type,
                 'generatedAt': share_data['generatedAt'],
                 'annotations': annotations if include_annotations else [],
+                'tracking': tracking,
                 'prdContent': prd.get('content') if include_prd else '',
                 'prdPath': f'/{prd.get("path")}' if include_prd and prd.get('path') else '',
                 'prdFilename': prd.get('filename') if include_prd else '',
@@ -4460,6 +4487,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 except ValueError:
                     continue
                 annotations = read_share_annotations(version_dir)
+                tracking = read_share_tracking(version_dir)
                 prd = read_share_prd(root, project_id, page.get('id'), version,
                                      prd_overrides.get(str(page.get('id'))) or params.get('prdPath') or '')
                 diagram = read_share_drawio(root, project_id, page.get('id'), version, params.get('diagramPath') or '')
@@ -4474,6 +4502,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                     'order': _safe_order(page.get('order')),
                     'demoPath': f'/src/pages/{project_id}/{page.get("id")}/{version}/index.html',
                     'annotations': annotations,
+                    'tracking': tracking,
                     'prdContent': prd.get('content') or '',
                     'prdPath': f'/{prd.get("path")}' if prd.get('path') else '',
                     'prdFilename': prd.get('filename') or '',
