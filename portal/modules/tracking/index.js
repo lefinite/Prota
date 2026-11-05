@@ -228,21 +228,31 @@ export class TrackingReview {
       return;
     }
     const filter=this.scope;
+    const activeBoard=this.shell.isInfiniteCanvasPage() ? this.shell.mainIframe?.contentWindow?.protaCanvas?.getActiveBoard?.() : null;
+    const visibleEvents=this.events.map((event,index)=>({event,index})).filter(({event}) =>
+      filter!=='current' || !activeBoard || event.targets.some(t=>t.boardId===activeBoard.boardId));
     body.innerHTML=`<div class="tracking-toolbar">
       <button type="button" data-tracking-action="scope">${filter==='all'?'全部事件':'当前画板'} · 切换</button>
       <button type="button" data-tracking-action="inspect">${this.inspect?'选择控件':'预览交互'}</button>
       <button type="button" data-tracking-action="reload">刷新</button>
       <button type="button" data-tracking-action="copy">复制清单</button>
-    </div><div class="tracking-cards">${this.events.map((event,i)=>{
+    </div><div class="tracking-cards">${visibleEvents.map(({event,index:i})=>{
       const active=this.active===event.id;
+      const status=event.targets.length===0?'逻辑事件':event.targets.some(t=>t.status==='needs_review'||!this.resolveElement(t))?'需确认':'已绑定';
+      const targets=event.targets.map(t=>{
+        const anchor=t.anchor?.method==='data-attribute'
+          ? `[data-prota-track-id="${t.anchor.value}"]`
+          : t.anchor?.value||'';
+        return `<p class="tracking-target"><strong>${escapeHtml(t.boardId||'当前页面')}</strong> · ${escapeHtml(t.path)}<code>${escapeHtml(anchor)}</code><span>${t.status==='needs_review'||!this.resolveElement(t)?'需确认':'已绑定'}</span></p>`;
+      }).join('');
       return `<article class="tracking-card ${active?'is-active':''}" data-tracking-card="${escapeHtml(event.id)}">
         <button class="tracking-card__title" data-tracking-event="${escapeHtml(event.id)}"><span class="tracking-number">${i+1}</span><strong>${escapeHtml(event.title)}</strong> <small>${escapeHtml(event.priority)}</small></button>
         <code>${escapeHtml(event.name)}</code>
         <p>${escapeHtml(event.purpose)}</p>
-        <p class="tracking-muted">触发：${escapeHtml(event.trigger?.when)}</p>
+        <p class="tracking-muted">触发：${escapeHtml(event.trigger?.when)}</p><p class="tracking-muted">状态：${escapeHtml(status)}</p>
         ${active?`<div class="tracking-details">问题：${escapeHtml(event.question)}<p>决策：${escapeHtml(event.decision)}</p>
-          <p>参数：${escapeHtml((event.parameters||[]).map(p=>p.name).join(', ')||'无')}</p>
-          <p>${event.targets.length?'控件目标 '+event.targets.length+' 个':'逻辑事件 · 无实体控件'}</p></div>`:''}
+          <p>参数：${escapeHtml((event.parameters||[]).map(p=>p.type==='enum'?p.name+' ('+(p.allowedValues||[]).join('/')+')':p.name+':'+p.type).join(', ')||'无')}</p>
+          <p>${event.targets.length?'控件目标 '+event.targets.length+' 个':'逻辑事件 · 无实体控件'}</p>${targets}</div>`:''}
       </article>`;
     }).join('')}</div>
     ${this.omitted.length?`<details class="tracking-omitted"><summary>已排除 ${this.omitted.length} 个低价值事件</summary>${this.omitted.map(x=>`<p>${escapeHtml(x.candidate)}：${escapeHtml(x.reason)}</p>`).join('')}</details>`:''}`;
