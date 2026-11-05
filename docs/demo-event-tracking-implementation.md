@@ -1,6 +1,6 @@
 # Prota Demo 埋点设计与可视化模式：完整技术执行方案
 
-> 状态：已完成代码评审；本次交付 `.claude/skills/demo-event-tracking/` 可运行 Skill 及结构校验脚本。下文的 Portal 埋点 Tab、画布联动、分享查看器为**待实施的产品改造**，不要误认为已上线。
+> 状态：**已在 `feat/demo-event-tracking-skill-plan` 实施**。包括 Skill、事件协议校验、右侧埋点 Tab、普通 Demo/无限画布的 iframe 双向定位、单页与文件夹分享快照、ZIP 离线 `review.html`、GitHub Actions 测试。上线前仍需完成 PR 审核并合并到 `main`。
 >
 > 范围：只描述、定位、交付 Demo 埋点，不对接 GA4/神策/友盟等 SDK，不采集真实用户数据，不增加服务器/数据库成本。
 
@@ -223,14 +223,14 @@ const tracking = new TrackingManager({
 | 阶段 | 具体修改 | 交付验收 |
 | --- | --- | --- |
 | S0 已完成 | 新建 `.claude/skills/demo-event-tracking/{SKILL.md,references/contract.md,scripts/validate.mjs,agents/openai.yaml}` | Prota Gateway 能自动发现 `/demo-event-tracking`；Validator 通过 |
-| S1 数据加载 | 新建 `portal/modules/tracking/manager.js` 与 manifest parser；在 `shell.js` 注入活动上下文 | 切项目/页面/版本只载入当前 JSON；格式错误可见，空数据正常 |
-| S2 抽屉 | `portal/index.html` 新 Tab；`shell.js` 的 mode 白名单、Tab 事件、drawer renderer；`shell.css` 样式 | 三 Tab 互切，无新常驻栏、无 PRD/标注退化 |
-| S3 控件定位 | 复用 `getCanvasBoardFrame()` 与 `getMarkerGeometry()`，独立 overlay、列表→控件、控件→列表 | 双层 iframe、跨板同名 selector、滚动/缩放/重载精准 |
-| S4 检查态 | 增加选择控件/预览交互状态；必要时 `app.js` 扩展 `enterReviewBoard()` | 默认点击不会触发提交；关闭状态原交互完全恢复；撤销栈/业务文件不变 |
-| S5 分享 | `server/bridge.py` 读 manifest 写入单页/文件夹分享 payload；ZIP 追加离线 `review.html` | Vercel、ZIP 均只读、版本锁定、脱离本机独立打开 |
-| S6 回归 | 新增追踪单测/真实浏览器测试；验证旧版本、保存、分享、标注 | 验收矩阵全部通过，正常 Demo 无埋点时与之前一致 |
+| S1 已实现 · 数据加载 | 新建 `portal/modules/tracking/manager.js` 与 manifest parser；在 `shell.js` 注入活动上下文 | 切项目/页面/版本只载入当前 JSON；格式错误可见，空数据正常 |
+| S2 已实现 · 抽屉 | `portal/index.html` 新 Tab；`shell.js` 的 mode 白名单、Tab 事件、drawer renderer；`shell.css` 样式 | 三 Tab 互切，无新常驻栏、无 PRD/标注退化 |
+| S3 已实现 · 控件定位 | 复用 `getCanvasBoardFrame()` 与 `getMarkerGeometry()`，独立 overlay、列表→控件、控件→列表 | 双层 iframe、跨板同名 selector、滚动/缩放/重载精准 |
+| S4 已实现 · 检查态 | 增加选择控件/预览交互状态；必要时 `app.js` 扩展 `enterReviewBoard()` | 默认点击不会触发提交；关闭状态原交互完全恢复；撤销栈/业务文件不变 |
+| S5 已实现 · 分享 | `server/bridge.py` 读 manifest 写入单页/文件夹分享 payload；ZIP 追加离线 `review.html` | Vercel、ZIP 均只读、版本锁定、脱离本机独立打开 |
+| S6 已实施 · 回归 | 新增追踪单测/真实浏览器测试；验证旧版本、保存、分享、标注 | 验收矩阵全部通过，正常 Demo 无埋点时与之前一致 |
 
-推荐首次 PR 只包含 S0（此次文件），随后按 S1–S6 实施。UI 改造不应混入 Skill 提示词迭代，以便定位回归。
+以上 S0–S6 已合并在本功能 PR 的提交历史中；保留逐阶段结构以便代码审核与回归。
 
 ### 8.1 必做测试
 
@@ -286,3 +286,26 @@ git diff --check
 开发者拿到某个版本的分享链接后，不用连接创建者电脑：打开 Demo → 右侧“埋点” → 点击列表直接定位控件 / 点击控件查看事件定义 → 复制事件名、触发条件与参数；如果是逻辑结果，则看清它所属的页面和触发条件。
 
 **这使 Prota 从“只交付可见原型”增加到“交付原型 + 可审核埋点方案”，而不是变成运行数据分析平台。**
+
+## 十一、2026-11-05 实施记录
+
+**当前分支**：`feat/demo-event-tracking-skill-plan`，对应 PR #5。没有直接修改 `main`，也没有修改用户工作区内任何现有业务版本。
+
+### 已落地源码
+
+- `.claude/skills/demo-event-tracking/{SKILL.md,references/contract.md,scripts/validate.mjs,agents/openai.yaml}`：Demo 埋点生成与验证。
+- `portal/modules/tracking/index.js`：独立 TrackingReview 管理器，版本校验、清单呈现、DOM 属性/selector 唯一定位、标记层、点击检查/预览切换、监听释放、画板上下文隔离。
+- `portal/index.html`、`portal/shell.js`、`portal/shell.css`：复用右侧文档抽屉新增第三个“埋点”Tab，使用独立 overlay，不修改业务画板的交互和样式。
+- `server/bridge.py`：在静态单页/文件夹发布 payload 中固化 `tracking`，下载 ZIP 中包含 `review.html`。
+- `server/demo_tracking_review.py`：ZIP 构建时生成离线审阅器，只对 ZIP 内的 HTML 副本注入受限消息桥，保留原工作区文件原样。
+- `tests/demo-event-tracking.test.mjs`、`tests/test_demo_tracking_review.py`、`tests/demo-event-tracking.browser.mjs`、`tests/demo-event-tracking-portal.browser.mjs`：结构、离线通信与真实 Portal/Bridge 集成。
+- `.github/workflows/demo-event-tracking.yml`：自动运行 JavaScript/Python 静态校验、单测及 Chromium 浏览器测试。
+
+### 验证与限制
+
+- GitHub Actions **Demo Event Tracking** 流程已完成普通 Demo、离线 ZIP 与真实嵌套 iframe 测试；请以 PR 最新 commit 对应的 Actions 结果为合并准则。
+- Skill 是**按需执行**而非每次创建页面自动埋点；需要在 Agent 调用 `/demo-event-tracking` 生成对应版本清单。
+- 该模式只交付方案，不进行真实 SDK 上报；无后端事件接收服务。
+- 静态链接只能审阅发布时快照，不应期待实时同步作者工作区。
+- 跨域第三方 iframe 不做侵入式检查；无法唯一定位的目标应在清单里标记“需确认”。
+- 此次未重构 `src/templates/infinite-canvas/app.js`，直接复用其现有 `getBoardFrame` / `focus` 与标注的几何映射能力；没有更改 Runtime 版本号。
