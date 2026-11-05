@@ -30,7 +30,9 @@ jobs:
           npm ci --ignore-scripts
           npx playwright install --with-deps chromium
       - name: Offline tracking review browser test
-        run: node tests/demo-event-tracking.browser.mjs
+        run: |
+          node tests/demo-event-tracking.browser.mjs
+          node tests/demo-event-tracking-portal.browser.mjs
       - name: Python syntax and offline reviewer unit tests
         run: |
           python3 -m py_compile server/bridge.py server/demo_tracking_review.py
