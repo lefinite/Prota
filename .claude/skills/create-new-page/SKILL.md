@@ -1,72 +1,44 @@
 ---
 name: create-new-page
-description: 在当前项目中新建可运行的首版页面原型。默认智能判断手机页面、Web 页面或自由画布，也支持手动指定。适用于“新增页面”“创建页面”“加一个页面”；不负责现有页面优化或迭代版本。
+description: 在当前项目中新建可运行的无限画布首版原型，由 Agent 自动判断内部手机 H5、Web、自定义或混合画板，支持可选视觉模板与 Web 框架参考。适用于“新增页面”“创建页面”“加一个页面”；不负责现有页面优化或迭代版本。
 ---
 
 # 创建新页面
 
 在当前项目中新建页面并交付可交互的首版 Demo。对用户说明与页面文案默认中文；标识符和文件名使用英文。
 
-## 先判断呈现方式
+## 统一创建模式
 
-创建模式为 `auto`（默认）、`mobile`、`web` 、`canvas` 或 `infinite-canvas`。`auto` 只是创建时的决策模式，页面元数据必须保存实际选择的 `targetDevice`，不得保存 `auto`。
+**所有新建页面都使用无限画布**。顶层页面始终保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`；手机 H5、桌面 Web、自定义布局只是内部画板的表现形式，不能注册为独立顶层页面，也不能写入顶层 `targetDevice`。
 
-1. 用户本次明确文字要求优先；其次遵守本次手动选择。智能模式不代表用户指定手机、风格或框架，不读取过去残留的选择作为约束。
-2. 智能模式按核心任务、展示空间及项目上下文判断，不按“小组件”“看板”“管理”等单个关键词硬路由：
-   - 普通 App 页面、移动端操作流程：`mobile`，保留手机框。
-   - 完整网页、业务后台：`web`，无手机框。
-   - 独立组件、桌面场景、尺寸或状态对比、配置与实时预览等需要自由组织空间的内容：`canvas`。
-3. 设计对象与呈现方式分开考虑。手机小组件可放在宽屏自由画布上设计，局部预览可以展示手机桌面；不必将整套配置界面塞入手机壳。
-4. 需求不明确时结合项目上下文，普通移动端需求仍采用 `mobile`。只要求组件外观时不要自动扩成配置工具；需要可配置交互时再增加面板。
-5. 用一句话说明所选方式与原因，然后直接实现，不增加确认环节。
+1. 根据用户需求和项目上下文判断**每个画板**的合适尺寸、内容、交互与位置。手机 App 流程适合手机尺寸的 H5 画板；网站与管理后台适合桌面 Web 画板；小组件、设计系统、对比与实时配置等适合自定义画板；同一画布可混用。
+2. 单界面需求只创建一个业务画板；明确列出多个界面则创建所需的各画板；完整业务流程自主决定合理界面数量。不要凑数量、简化生成质量或要求用户逐个重复操作。
+3. 用户明确的文字要求高于 Agent 推断；没有指定的技术选型与视觉方向完全自主决定。不要把旧 `mobile-frame` / `web-frame` / `canvas-frame` 当作新的顶层页面类型。
+4. 生成的 HTML、CSS、JS 及交互不被预设 UI 框架或设备外框限制；局部可以出现设备外观，画布本身不要套上手机框。
+5. 模板只约束合适业务画板的视觉表达，**不得改变画布编辑器的工具栏、右键菜单、样式**。未选模板即为 Agent 智能选择，不受旧缓存选项影响。
 
-**确定方式后再读取对应模板及设计规范。** 只加载适用分支，不将手机框或 Web 框架要求带入自由画布。后续迭代沿用已保存方式，除非用户明确要求改变；历史页面缺失 `targetDevice` 时仍视为 `mobile`，不重新分类。
+### 可选模板
+
+- **视觉风格**：当 Portal 给出 `### 选定的视觉模板` 时，读取该模板的 DESIGN.md、USAGE.md 及必要设计资源；把 Token、排版与视觉语言应用到适合的业务画板。模板原先按“移动端”归类不意味着新画布只能创建手机画板。
+- **Web 框架参考**：当 Portal 给出 `### 选定的 Web 框架参考` 时，读取精确指定的 `src/templates/framework-skills/{id}/SKILL.md` 和 [Web 框架执行规则](references/web-framework.md)。所选框架的设计语言与组件行为应用于适合的 Web 画板，其余画板仍由 Agent 自主设计。
+- 不得同时混用多套 Web 主 UI 框架，不得把模板资源放到业务版本外或引入运行时对 Skill 文件的引用；参考框架需要转成画板自己的静态 HTML/CSS/JS。
 
 ## 运行上下文与交付约束
 
 - Portal 执行上下文中的 `projectId` 是当前项目的唯一依据，不从配置重新推断；没有上下文时才读取工作区 `data/projects.json` 的 `activeProjectId`，无效时取第一个未删除项目，禁止硬编码 `readify`。
 - 模板和内置 Skill 从产品安装目录读取；页面、配置、会话和附件写入运行上下文指定的工作区，不写入产品安装目录。
 - 新页面创建于 `src/pages/{project_id}/{page_id}/v1/`。未给定 `page_id` 时按功能取唯一的语义化英文标识。
-- 每个版本自包含 `index.html`、`styles.css`、`app.js`；不得跨页面或版本引用 CSS/JS，运行时不引用模板或 Skill 目录。
-- 同步工作区 `data/projects.json` 与工作区 `portal/shell.js` 的 `defaultData` 元数据快照，保存实际 `targetDevice`。产品安装目录的 `portal/shell.js` 保持空白默认数据。
+- 每个版本保存独立的画布文档和全部 `boards/`、`assets/`；编辑器使用产品共享 Runtime，分享与 ZIP 由统一打包器固定并内置 Runtime；每个业务画板自包含 `index.html`、`styles.css`、`app.js`。不得跨页面或版本引用 CSS/JS，业务画板运行时不引用模板或 Skill 目录。
+- 同步工作区 `data/projects.json` 与工作区 `portal/shell.js` 的 `defaultData` 元数据快照，保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`。产品安装目录的 `portal/shell.js` 保持空白默认数据。
 - Demo 仍在 iframe 内加载，保留版本切换、标注、截图和分享能力。
 
-## 按呈现方式实现
-
-### 手机页面（mobile）
-
-从安装目录 `src/templates/mobile-frame/` 复制 `index.html`、`styles.css`、`app.js`、`frame-fit.js`。
-
-- 保留 `.demo-stage`、`.phone-shell`、`.phone-screen`、`.status-bar`、`.app-content` 结构和本地 `frame-fit.js`。
-- 内容放在 `.app-content`；保留 `Shared mobile frame` 样式区，在 `Page content` 中实现页面设计。
-- 本次明确选择了手机风格时才读取指定规范；没有指定时根据需求自主设计。
-- 不加载 Web 框架 Skill。
-
-### Web 页面（web）
-
-从安装目录 `src/templates/web-frame/` 复制中性 `index.html`、`styles.css`、`app.js`，不套手机框。
-
-- Portal 本次绑定了前端框架时，读取 [Web 框架执行规则](references/web-framework.md)，再按执行上下文给出的精确路径读取唯一框架 Skill。
-- 智能判断或用户文字要求 Web、但没有绑定框架时，自主选择适合需求的布局与视觉，不默认套后台模板，也不自动读取某个框架 Skill。
-- 框架 Skill 只从 `src/templates/framework-skills/` 按绑定路径读取，不能从 `.claude/skills/` 自动发现。
-
-### 自由画布（canvas）
-
-从安装目录 `src/templates/canvas-frame/` 复制中性 `index.html`、`styles.css`、`app.js`。
-
-- 这是自适应 HTML 展示区域，不要求实现无限画布编辑器。
-- 根据内容决定布局、尺寸和背景，不强制手机壳、状态栏、后台导航、卡片组合或 UI 框架。
-- 设备场景可作为局部预览；不要引入会重排整个画布的手机框适配脚本。
-- 可以继承项目品牌与用户明确的视觉偏好，但不继承手机壳或后台结构。
-- 配置与预览需要联动；仅展示组件时突出组件本身，不自动增加无关控制项。
-
-### 无限画布（infinite-canvas）
+## 实现无限画布
 
 - 是项目下的一种页面模式，不是项目总览。注册为一个 page，保存 `targetDevice: "canvas"` 和 `pageMode: "infinite-canvas"`；不得把 infinite-canvas 写进 targetDevice。
 - 只复制产品安装目录 `src/templates/infinite-canvas-document/` 到新页面版本目录，并阅读 `src/templates/infinite-canvas/README.md`。编辑器由产品共享 Runtime 提供；不复制或修改工具层 JS/CSS、启动入口与 Runtime。业务文件放在 boards/ 和 assets/。
 - 在 `canvas-data.js` 中添加画板与素材对象。画板业务界面在本版本 `boards/{board_id}/index.html`、`styles.css`、`app.js` 中实现，节点 src 指向 `boards/{board_id}/index.html`。子画板不在项目配置中注册。
 - 图片等资源放本版本 assets/，禁止跨版本引用。迭代复制整个版本，包括布局、画板和图片。
-- 用户明确要求无限空间、多画板自由摆放时使用此模式；既有自由画布不会自动升级。
+- 对所有新建页面使用此模式；历史 mobile、web、canvas-frame 页面及其版本不做自动升级或重写。
 - 修改已有画布前读取最新 canvas-data.js，保持未涉及对象与 ID，不覆盖浏览器未保存的布局。
 - 编辑器运行时需包含 canvas-core.js。parentId 表示容器关系，坐标使用世界坐标；用户选中对象时默认只修改该对象及其后代。生成画板界面后自动设置 src，不让用户手填路径；不得替换编辑器运行文件。
 
@@ -74,6 +46,6 @@ description: 在当前项目中新建可运行的首版页面原型。默认智�
 
 - 首版有真实内容与核心交互反馈，无空模板、死按钮或无意义的业务模块。
 - 预览在所选呈现方式下完整可见，窄窗口不遮挡主要操作；自由画布不被整体缩进手机框。
-- 新页面已注册到正确项目，`targetDevice` 与实现一致，两份工作区配置同步。
-- 自包含资源可独立打开，分享与截图保留实际呈现方式。
+- 新页面已注册到正确项目，`targetDevice: "canvas"`、`pageMode: "infinite-canvas"`，两份工作区配置同步。
+- 分享与 ZIP 产物自包含并可独立打开，分享与截图保留实际呈现方式。
 - 总结所选呈现方式、页面路径、关键交互与验证结果。

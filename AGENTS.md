@@ -17,13 +17,13 @@
   - `web`：Web 页面，使用框架无关的 `src/templates/web-frame/`
   - `canvas`：自由画布，使用中性的 `src/templates/canvas-frame/`；不强制设备外框或 UI 框架
 - 历史页面、缺失 `targetDevice` 的页面一律视为 `mobile`，同步配置时需要补上该属性。
-- 创建项目时不选择端类型。
-- 创建页面默认“智能判断”（`auto` 仅为创建模式，不写入页面元数据），保留手机、Web、自由画布手动选择。先判断呈现方式再加载对应 Skill；用户本次明确文字要求优先于选择器默认值。普通移动端页面仍采用手机框；根据核心任务选择网页或自由画布，不凭单个关键词切换。
-- 创建后保存实际 `targetDevice` 为 `mobile`、`web` 或 `canvas`；后续迭代沿用该方式，除非用户明确要求改变。历史页面不重新推断或批量改写。
+- 创建项目时不选择端类型。**所有新建页面统一创建无限画布**，顶层保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`。
+- Agent 在内部根据需求智能判断各业务画板适合手机 H5、桌面 Web、自定义尺寸还是混合展示；模板只为业务画板提供视觉/组件参考，不决定页面模式，也不改变编辑器样式。
+- `mobile`、`web`、旧 `canvas` 的端类型继续用于读取历史页面；后续迭代沿用历史页面已有方式，不重新推断或批量改写。
 
 ### 页面级无限画布
 
-- 无限画布是独立的页面模式：保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`，只复制 `src/templates/infinite-canvas-document/` 的轻量文档入口。编辑器由产品共享 Runtime 提供，不复制或修改页面内的编辑器 JS/CSS；编辑器唯一源码为 `src/templates/infinite-canvas/`，启动器为 `src/canvas-runtime/boot.js`。分享和 ZIP 由统一打包器固定并内置 Runtime。既有 `canvas` 页面继续使用中性 canvas-frame，不自动升级。
+- 无限画布是所有新页面的统一模式：保存 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`，只复制 `src/templates/infinite-canvas-document/` 的轻量文档入口。编辑器由产品共享 Runtime 提供，不复制或修改页面内的编辑器 JS/CSS；编辑器唯一源码为 `src/templates/infinite-canvas/`，启动器为 `src/canvas-runtime/boot.js`。分享和 ZIP 由统一打包器固定并内置 Runtime。既有 `canvas` 页面继续使用中性 canvas-frame，不自动升级。
 - 内部画板和素材属于当前页面版本；画板代码放 `boards/{board_id}/`，图片放 `assets/`，布局保存为 `canvas-data.js`。不将内部画板注册为顶层页面。
 - 迭代、下载和分享包含完整版本目录。修改前读取最新布局，保留无关对象与稳定 ID；不覆盖浏览器未保存的布局。
 
@@ -39,11 +39,8 @@
 ## 4. 新增页面（用户要求“新增页面”时）
 
 1. 在 `src/pages/{project_id}/` 下创建：`{new_page_id}/v1/`；`project_id` 必须使用 Portal 运行上下文中的当前活动项目，不得硬编码 `readify`
-2. 根据页面 `targetDevice` 复制对应模板并编写基础 Demo 代码：
-   - `mobile`：复制 `src/templates/mobile-frame/`
-   - `web`：复制 `src/templates/web-frame/`
-   - `canvas`：复制 `src/templates/canvas-frame/`
-3. 同时在 `projects.json` 和 `portal/shell.js` 的 `defaultData` 中注册新页面
+2. 只复制 `src/templates/infinite-canvas-document/` 作为首版文档入口，编辑器由产品共享 Runtime 提供；根据需求创建一个或多个 `boards/{board_id}/`，每个业务画板有独立 HTML/CSS/JS 并关联 `canvas-data.js`，支持混合手机、Web、自定义形式。
+3. 在 `projects.json` 和 `portal/shell.js` 的 `defaultData` 中注册一个新页面，设置 `targetDevice: "canvas"`、`pageMode: "infinite-canvas"`；画板不注册为顶层页面。用户选择模板时仅读取相关设计规范并应用于合适的画板。
 
 ## 5. UI 交互规则
 

@@ -141,6 +141,7 @@ class DemoShell {
         this.skillSearchQuery = '';
         this.newPageStyleId = 'default';
         this.newPageFrameworkId = 'ant-design-skill';
+        this.newPageTemplateKind = 'auto';
         this.newPageTargetDevice = 'infinite-canvas';
         this.newPageStyleDropdownOpen = false;
         this.newPageStyleMenuEl = null;
@@ -3511,13 +3512,7 @@ class DemoShell {
             this.executeSlashCommandById(commandOption.dataset.agentCommandId || '');
         });
 
-        this.agentStatusContext?.addEventListener('change', (event) => {
-            if (this.agentRunState?.active || !event.target.matches('[data-new-page-mode]')) return;
-            this.setNewPageTargetDevice(event.target.value);
-            this.agentStatusContext.querySelector('[data-new-page-mode]')?.focus();
-        });
         this.agentStatusContext?.addEventListener('click', (event) => {
-            if (event.target.closest('[data-new-page-mode]')) return;
             if (this.agentRunState?.active) return;
             const styleToggle = event.target.closest('[data-new-page-style-toggle]');
             if (styleToggle) {
@@ -3547,7 +3542,6 @@ class DemoShell {
         });
         this.agentStatusContext?.addEventListener('keydown', (event) => {
             if (this.agentRunState?.active || !['Enter', ' '].includes(event.key)) return;
-            if (event.target.closest?.('[data-new-page-mode]')) return;
             if (event.target.closest?.('[data-new-page-style-toggle]')) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -5142,7 +5136,8 @@ class DemoShell {
     }
 
     getNewPageStyleOptions() {
-        const templates = (this.templatesData?.templates || []).filter((template) => template.enabled !== false);
+        const disabled = new Set(this.templatesData?.disabled || []);
+        const templates = (this.templatesData?.templates || []).filter((template) => template.enabled !== false && !disabled.has(template.id));
         return [
             {
                 id: 'default',
@@ -5179,17 +5174,18 @@ class DemoShell {
     }
 
     getNewPagePickerOptions() {
-        if (['auto', 'canvas', 'infinite-canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return [];
-        return this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
-            ? this.getNewPageFrameworkOptions()
-            : this.getNewPageStyleOptions();
+        return [
+            { id: 'auto', kind: 'auto', name: '智能选择', description: '不限制视觉风格，由 Agent 根据需求决定' },
+            ...this.getNewPageStyleOptions().filter(option => option.id !== 'default').map(option => ({ ...option, kind: 'style' })),
+            ...this.getNewPageFrameworkOptions().map(option => ({ ...option, kind: 'framework' }))
+        ];
     }
 
     getNewPageSelectedPickerOption() {
-        if (['auto', 'canvas', 'infinite-canvas'].includes(this.normalizeNewPageMode(this.newPageTargetDevice))) return null;
-        return this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
-            ? this.getNewPageSelectedFramework()
-            : this.getNewPageSelectedStyle();
+        const kind = this.newPageTemplateKind;
+        const id = kind === 'framework' ? this.newPageFrameworkId : kind === 'style' ? this.newPageStyleId : 'auto';
+        return this.getNewPagePickerOptions().find(option => option.kind === kind && option.id === id)
+            || this.getNewPagePickerOptions()[0];
     }
 
     isNewPageStylePickerActive() {
@@ -5245,9 +5241,15 @@ class DemoShell {
     }
 
     renderNewPageStyleMenuItems() {
-        const isFrameworkPicker = this.normalizeNewPageMode(this.newPageTargetDevice) === 'web';
         const selected = this.getNewPageSelectedPickerOption();
-        return this.getNewPagePickerOptions().map((option) => {
+        const renderOption = (option) => {
+            const isFrameworkPicker = option.kind === 'framework';
+            const isActive = option.id === selected?.id && option.kind === selected?.kind;
+            if (option.kind === 'auto') {
+                return `<button type="button" class="new-page-style-menu__item is-auto${isActive ? ' is-active' : ''}" data-new-page-template-kind="auto" data-new-page-style-option="auto" role="option" aria-selected="${isActive}">
+                    <span class="new-page-style-menu__meta"><strong>智能选择</strong><small>由 Agent 根据需求决定各画板的视觉风格</small></span>
+                </button>`;
+            }
             if (isFrameworkPicker) {
                 const screenshot = this.getFrameworkScreenshot(option);
                 const previewPage = this.getFrameworkPreviewPage(option);
@@ -5258,7 +5260,7 @@ class DemoShell {
                         </span>`
                     : this.renderStyleMiniPreview(option, { className: 'new-page-style-menu__preview' });
                 return `
-                    <button type="button" class="new-page-style-menu__item is-framework${option.id === selected?.id ? ' is-active' : ''}" data-new-page-style-option="${this.escapeHtml(option.id)}" role="option" aria-selected="${option.id === selected?.id ? 'true' : 'false'}">
+                    <button type="button" class="new-page-style-menu__item is-framework${isActive ? ' is-active' : ''}" data-new-page-template-kind="framework" data-new-page-style-option="${this.escapeHtml(option.id)}" role="option" aria-selected="${isActive}">
                         ${shotBlock}
                         <span class="new-page-style-menu__meta">
                             <strong>${this.escapeHtml(option.name || option.id)}</strong>
@@ -5271,7 +5273,7 @@ class DemoShell {
             const previewPage = this.getMobileTemplatePreviewPage(option);
             if (screenshot) {
                 return `
-                    <button type="button" class="new-page-style-menu__item is-mobile-shot${option.id === selected?.id ? ' is-active' : ''}" data-new-page-style-option="${this.escapeHtml(option.id)}" role="option" aria-selected="${option.id === selected?.id ? 'true' : 'false'}">
+                    <button type="button" class="new-page-style-menu__item is-mobile-shot${isActive ? ' is-active' : ''}" data-new-page-template-kind="style" data-new-page-style-option="${this.escapeHtml(option.id)}" role="option" aria-selected="${isActive}">
                         <span class="new-page-framework-shot is-portrait">
                             <img class="new-page-framework-shot__img" src="${this.escapeHtml(screenshot)}" alt="${this.escapeHtml(option.name || option.id)} 预览" loading="lazy" data-new-page-framework-screenshot="${this.escapeHtml(screenshot)}" data-new-page-shot-orientation="portrait" />
                             ${previewPage ? `<span class="new-page-framework-shot__view" role="link" tabindex="0" data-new-page-framework-view="${this.escapeHtml(previewPage)}" title="新窗口打开完整预览" aria-label="新窗口打开 ${this.escapeHtml(option.name || option.id)} 完整预览"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14 5h5v5M19 5l-7 7M19 14v3a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3"/></svg></span>` : ''}
@@ -5284,20 +5286,28 @@ class DemoShell {
                 `;
             }
             return `
-                <button type="button" class="new-page-style-menu__item${option.id === selected?.id ? ' is-active' : ''}" data-new-page-style-option="${this.escapeHtml(option.id)}" role="option" aria-selected="${option.id === selected?.id ? 'true' : 'false'}">
+                <button type="button" class="new-page-style-menu__item${isActive ? ' is-active' : ''}" data-new-page-template-kind="style" data-new-page-style-option="${this.escapeHtml(option.id)}" role="option" aria-selected="${isActive}">
                     ${this.renderStyleMiniPreview(option, { className: 'new-page-style-menu__preview' })}
                     <span class="new-page-style-menu__meta">
                         <strong>${this.escapeHtml(option.name || option.id)}</strong>
                     </span>
                 </button>
             `;
-        }).join('');
+        };
+        const options = this.getNewPagePickerOptions();
+        return [
+            '<div class="new-page-style-menu__heading">智能创作</div>',
+            ...options.filter(option => option.kind === 'auto').map(renderOption),
+            '<div class="new-page-style-menu__heading">视觉风格</div>',
+            ...options.filter(option => option.kind === 'style').map(renderOption),
+            '<div class="new-page-style-menu__heading">Web 框架</div>',
+            ...options.filter(option => option.kind === 'framework').map(renderOption)
+        ].join('');
     }
 
     getNewPageStyleMenuPosition() {
         const triggerRect = this.agentStatusContext?.querySelector('[data-new-page-style-toggle]')?.getBoundingClientRect();
-        const isFrameworkPicker = this.normalizeNewPageMode(this.newPageTargetDevice) === 'web';
-        const menuWidth = Math.min(isFrameworkPicker ? 440 : 360, window.innerWidth - 24);
+        const menuWidth = Math.min(440, window.innerWidth - 24);
         const menuMaxHeight = Math.min(430, window.innerHeight - 120);
         if (!triggerRect) {
             return { left: 12, top: 96 };
@@ -5330,7 +5340,9 @@ class DemoShell {
                 if (!styleOption) return;
                 event.preventDefault();
                 event.stopPropagation();
-                if (this.normalizeNewPageMode(this.newPageTargetDevice) === 'web') {
+                if (styleOption.dataset.newPageTemplateKind === 'auto') {
+                    this.setNewPageTemplateAuto();
+                } else if (styleOption.dataset.newPageTemplateKind === 'framework') {
                     this.setNewPageFramework(styleOption.dataset.newPageStyleOption || 'ant-design-skill');
                 } else {
                     this.setNewPageStyle(styleOption.dataset.newPageStyleOption || 'default');
@@ -5365,10 +5377,7 @@ class DemoShell {
             }, { passive: true });
             document.body.appendChild(this.newPageStyleMenuEl);
         }
-        this.newPageStyleMenuEl.classList.toggle(
-            'is-framework-picker',
-            this.normalizeNewPageMode(this.newPageTargetDevice) === 'web'
-        );
+        this.newPageStyleMenuEl.classList.add('is-unified-picker');
         const position = this.getNewPageStyleMenuPosition();
         this.newPageStyleMenuEl.style.left = `${position.left}px`;
         this.newPageStyleMenuEl.style.top = `${position.top}px`;
@@ -5456,27 +5465,9 @@ class DemoShell {
     composeNewPageStarter({ templateId = this.newPageStyleId, frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = this.newPageTargetDevice } = {}) {
         const project = this.getProjectRecord(projectId);
         const projectLabel = project ? `${project.name || project.id}（${project.id}）` : (projectId || '当前项目');
-        const normalizedTargetDevice = this.normalizeNewPageMode(targetDevice);
-        const deviceLabel = this.getPageDeviceLabel(normalizedTargetDevice);
-        if (normalizedTargetDevice === 'auto') {
-            return `请在项目「${projectLabel}」中新建页面，根据需求判断最适合的呈现方式。`;
-        }
-        if (normalizedTargetDevice === 'infinite-canvas') {
-            return `请在项目「${projectLabel}」中新建页面级无限画布，内部支持多个画板、文本和素材自由摆放。`;
-        }
-        if (normalizedTargetDevice === 'canvas') {
-            return `请在项目「${projectLabel}」中新建自由画布，按内容组织展示与交互。`;
-        }
-        if (normalizedTargetDevice === 'web') {
-            const framework = this.getNewPageFrameworkOptions().find((item) => item.id === frameworkId)
-                || this.getNewPageFrameworkOptions()[0];
-            return `请在项目「${projectLabel}」中新建${deviceLabel}页面，并使用「${framework.name}」前端框架 Skill。`;
-        }
-        const style = this.getNewPageStyleOptions().find((item) => item.id === templateId) || this.getNewPageStyleOptions()[0];
-        if (!style || style.id === 'default') {
-            return `请在项目「${projectLabel}」中新建${deviceLabel}页面。`;
-        }
-        return `请在项目「${projectLabel}」中新建${deviceLabel}页面，并使用「${style.name}」风格。设计规范文件：${style.filePath}`;
+        const selected = this.getNewPageSelectedPickerOption();
+        const templateHint = selected.kind === 'auto' ? '' : `，参考「${selected.name}」模板`;
+        return `请在项目「${projectLabel}」中新建无限画布${templateHint}，由 Agent 根据需求决定内部画板的手机、Web 或自定义呈现方式。`;
     }
 
     syncNewPagePrompt({ force = false } = {}) {
@@ -5527,52 +5518,37 @@ class DemoShell {
         const project = this.getProjectRecord(this.activeProjectId);
         const projectId = project?.id || this.activeProjectId || '';
         const projectName = project?.name || projectId;
-        const mode = this.normalizeNewPageMode(this.newPageTargetDevice);
+        const selected = this.getNewPageSelectedPickerOption();
         const lines = [
             '### 执行上下文',
             `当前活动项目 ID：\`${projectId}\`。`,
             `当前活动项目名称：「${projectName}」。`,
             `新页面必须创建在当前工作区的 \`src/pages/${projectId}/{page_id}/v1/\`；不要从 data/projects.json 的 activeProjectId 重新推断项目。`,
             '',
-            '### 页面呈现方式',
-            `创建模式：\`${mode}\`（${this.getPageDeviceLabel(mode)}）。`,
-            '先确定呈现方式，再读取对应模板与 Skill；用户本次明确的文字要求优先于选择器，默认值不是用户明确要求。',
-            '创建后在工作区 data/projects.json 中保存实际 targetDevice：mobile、web 或 canvas，并同步工作区 portal/shell.js 元数据快照；不要保存 auto。',
-            '用一句话说明采用的呈现方式及原因后直接实现，无需额外确认；后续迭代沿用已保存的方式，除非用户明确要求改变。'
+            '### 统一无限画布',
+            '新建入口一律创建页面级无限画布，保存 targetDevice: "canvas"、pageMode: "infinite-canvas"；不要因为生成手机/Web 画板而把顶层页面改成 mobile/web。',
+            '只复制产品模板 src/templates/infinite-canvas-document/ 文档入口到当前页面版本目录，先阅读 src/templates/infinite-canvas/README.md。编辑器由产品共享 Runtime 提供，不复制或修改编辑器 JS/CSS；画板放在本版本 boards/{board_id}/，素材放 assets/，布局放在 canvas-data.js。',
+            '在工作区 data/projects.json 中注册一个顶层页面，并同步工作区 portal/shell.js 的元数据快照；内部画板不得注册成顶层页面。',
+            '根据用户真正的设计对象，独立判断每个画板是手机 H5（适合手机尺寸）、桌面 Web（适合桌面尺寸）还是自定义尺寸/自由内容；可以在同一画布混合多种形式。不要再选择或复制旧的 mobile-frame、web-frame、canvas-frame 作为顶层页面。',
+            '根据需求自主决定画板数量和空间关系：单界面需求生成一个画板；明确多个界面按需逐个生成；完整业务流程自主拆分必要界面；不因无限画布而强制多画板。',
+            '生成方式、HTML/CSS/JS、视觉语言与交互完全由 Agent 自主决定，不增加妨碍质量的技术限制。各业务画板都要有 boards/{board_id}/index.html、styles.css、app.js，并自动在 canvas-data.js 关联 src；不交付空白占位或要求用户逐个重试。',
+            '模板只作用于业务画板，不修改无限画布编辑器外壳；未涉及的内容、稳定节点 ID 与已有版本不能被覆盖。新旧页面并存，历史页面沿用其已有呈现方式。',
+            '业务画板必须采用本版本内的相对资源，且在 iframe 中与编辑器样式隔离；完整页面目录需要能在 ZIP / Vercel 静态分享中独立运行，不能依赖模板目录、其它版本或本地 Prota 服务。'
         ];
-        if (mode === 'infinite-canvas') {
-            lines.push('这是页面层级的无限画布，不是项目视图。保存 targetDevice: "canvas" 和 pageMode: "infinite-canvas"。',
-                '完整复制产品模板 src/templates/infinite-canvas/ 到当前页面版本目录，先阅读其中 README.md。保留编辑器功能；画板业务代码放在本版本 boards/{board_id}/，素材放 assets/。',
-                '使用 canvas-data.js 定义画板、文本、便签、形状、图片的位置与尺寸；子画板不注册为项目页面。整张画布作为一个页面迭代和分享。',
-                '根据用户意图判断首次创建的界面数量：单界面需求对应一个画板；明确列出多个界面时，每个界面对应一个画板；完整业务流程由你结合需求自主判断必要的界面及数量。例如“设计登录页面”创建一个画板，“设计登录、注册、忘记密码三个界面”创建三个画板，“设计完整的电商购物流程”由你合理拆分。',
-                '在本次任务中完成所有所需界面的实际内容与必要交互，每个业务画板创建自己的 boards/{board_id}/index.html、styles.css、app.js，并自动关联节点 src。不能只创建空白画板、只完成其中一个界面或要求用户逐个重复操作。各界面保持一致的视觉语言和与单界面任务同等的视觉质量、交互完整性，不为凑齐数量而简化为占位内容；生成方式由你自主决定。');
-            return lines.join('\n');
-        }
-        if (mode === 'auto') {
-            lines.push(
-                '当前为智能判断，用户没有指定设备外框、移动端风格或 Web 框架，不得把默认值或历史选择作为强制约束。',
-                '根据核心任务判断：普通 App 页面和移动端流程优先 mobile，保留手机框；完整网页或后台采用 web；独立组件、场景模拟、配置与实时预览、尺寸或状态对比等需要自由组织空间时采用 canvas。不要仅凭单个关键词判断。',
-                '需求不明确时结合项目上下文，普通移动端需求默认 mobile。设计对象属于手机，并不要求整个展示界面放进手机框。',
-                'mobile 复制 src/templates/mobile-frame/ 并保留手机框；web 复制 src/templates/web-frame/；canvas 复制 src/templates/canvas-frame/。后两者不强制设备外框或 UI 框架。'
-            );
+        if (selected.kind === 'style') {
+            lines.push('### 选定的视觉模板',
+                `用户选择了「${selected.name}」视觉风格。先读取其设计规范文件：${selected.filePath}。`,
+                '按模板的视觉 Token、组件语言应用到适合的业务画板；不以模板原有手机分类限制画板尺寸，允许按需求同时创建 Web/自定义画板。',
+                this.formatTemplateFilesForPrompt(selected));
+        } else if (selected.kind === 'framework') {
+            lines.push('### 选定的 Web 框架参考',
+                `用户选择了「${selected.name}」（${selected.technology}）。完整读取 ${selected.skillPath} 及其中要求的参考规范；只将其设计语言和组件交互应用到适合的 Web 业务画板。`,
+                '保留不同框架可辨认的布局、组件与交互差异。框架不决定整个画布的类型；手机或自由尺寸画板按需求自主设计。',
+                '依照 .claude/skills/create-new-page/references/web-framework.md 的静态原生 HTML/CSS/JS 交付原则，将必要样式收敛到每个画板自己的文件，不引入运行时对框架包的外部依赖。');
         } else {
-            lines.push(`用户在选择器中指定「${this.getPageDeviceLabel(mode)}」；没有相反的明确文字要求时，保存 targetDevice: "${mode}"。`);
-            if (mode === 'mobile') {
-                lines.push('从 src/templates/mobile-frame/ 复制 index.html、styles.css、app.js、frame-fit.js，并保留手机外框结构。');
-                const style = this.getNewPageSelectedStyle();
-                if (style && style.id !== 'default') {
-                    lines.push('### 风格选择', `手机页面使用「${style.name}」风格：${style.filePath}`, this.formatTemplateFilesForPrompt(style));
-                }
-            } else if (mode === 'web') {
-                lines.push('从 src/templates/web-frame/ 复制中性 index.html、styles.css、app.js 运行骨架，不使用手机外框。');
-                const framework = this.getNewPageSelectedFramework();
-                lines.push('### 前端框架', `用户在前端框架选择器中选择了「${framework.name}」（${framework.technology}）。`,
-                    `若最终采用 web，必须完整读取并使用对应 Skill：${framework.skillPath}；不混用其他框架。`);
-            } else {
-                lines.push('从 src/templates/canvas-frame/ 复制中性 index.html、styles.css、app.js；不强制手机框、后台结构或 UI 框架。',
-                    '围绕核心内容安排空间。需要设备场景时可在局部预览中使用设备外观；只有需求涉及可配置项时才增加配置面板，避免扩张任务。');
-            }
+            lines.push('### 视觉方向', '模板为智能选择：不预设设备、样式或框架，Agent 自主发挥；不要读取过去残留的模板选项。');
         }
+        lines.push('完成后简短说明各画板采用的形式及原因，无需先询问用户。');
         return lines.filter(Boolean).join('\n');
     }
 
@@ -5596,6 +5572,7 @@ class DemoShell {
 
     setNewPageStyle(styleId = 'default', { syncPrompt = true } = {}) {
         this.newPageStyleId = styleId || 'default';
+        this.newPageTemplateKind = this.newPageStyleId === 'default' ? 'auto' : 'style';
         this.newPageStyleDropdownOpen = false;
         try {
             if (this.newPageStyleId === 'default') {
@@ -5612,6 +5589,7 @@ class DemoShell {
         const selected = this.getNewPageFrameworkOptions().find((item) => item.id === frameworkId)
             || this.getNewPageFrameworkOptions()[0];
         this.newPageFrameworkId = selected.id;
+        this.newPageTemplateKind = 'framework';
         this.newPageStyleDropdownOpen = false;
         try {
             window.localStorage.setItem(workspaceStorageKey('readify:pending-framework'), this.newPageFrameworkId);
@@ -5621,8 +5599,20 @@ class DemoShell {
     }
 
     setNewPageTargetDevice(targetDevice = 'infinite-canvas', { syncPrompt = true } = {}) {
-        this.newPageTargetDevice = this.normalizeNewPageMode(targetDevice);
+        // Legacy skill activation entry: the new page defaults to an unconstrained canvas.
+        this.newPageTargetDevice = 'infinite-canvas';
+        this.newPageTemplateKind = 'auto';
+        this.newPageStyleId = 'default';
         this.closeNewPageStyleMenu({ renderControl: false });
+        if (syncPrompt) this.syncNewPagePrompt();
+        this.renderAgentStatusContextControl();
+    }
+
+    setNewPageTemplateAuto({ syncPrompt = true } = {}) {
+        this.newPageTemplateKind = 'auto';
+        this.newPageStyleId = 'default';
+        this.closeNewPageStyleMenu({ renderControl: false });
+        try { window.localStorage.removeItem(workspaceStorageKey('readify:pending-template')); } catch {}
         if (syncPrompt) this.syncNewPagePrompt();
         this.renderAgentStatusContextControl();
     }
@@ -5714,7 +5704,7 @@ class DemoShell {
         if (shouldEnterProject) {
             this.enterProject(targetProjectId);
         }
-        this.openNewPageAgentFlow({ templateId, projectId: targetProjectId, targetDevice: 'mobile' }).then(() => {
+        this.openNewPageAgentFlow({ templateId, templateKind: 'style', projectId: targetProjectId }).then(() => {
             this.showToast(`已选择「${tpl.name}」，请补充页面需求后发送`);
         });
     }
@@ -5728,11 +5718,9 @@ class DemoShell {
         if (!targetProjectId) return;
         const isWeb = tpl.targetDevice === 'web';
         if (isWeb) {
-            this.newPageTargetDevice = 'web';
             this.newPageFrameworkId = tpl.id;
             try { window.localStorage.setItem(workspaceStorageKey('readify:pending-framework'), tpl.id); } catch {}
         } else {
-            this.newPageTargetDevice = 'mobile';
             this.newPageStyleId = tpl.id;
             try { window.localStorage.setItem(workspaceStorageKey('readify:pending-template'), tpl.id); } catch {}
         }
@@ -5743,8 +5731,8 @@ class DemoShell {
         this.openNewPageAgentFlow({
             templateId: isWeb ? 'default' : tpl.id,
             frameworkId: isWeb ? tpl.id : this.newPageFrameworkId,
+            templateKind: isWeb ? 'framework' : 'style',
             projectId: targetProjectId,
-            targetDevice: isWeb ? 'web' : 'mobile'
         }).then(() => {
             this.showToast(`已选择「${tpl.name}」，请补充页面需求后发送`);
         });
@@ -5765,6 +5753,7 @@ class DemoShell {
             if (!enabled && this.newPageFrameworkId === templateId) {
                 const fallback = this.getNewPageFrameworkOptions()[0];
                 if (fallback) this.newPageFrameworkId = fallback.id;
+                if (this.newPageTemplateKind === 'framework') this.setNewPageTemplateAuto();
             }
             this.renderTemplatesHome();
             this.showToast(`${enabled ? '已启用' : '已停用'}模板「${templateId}」`);
@@ -7276,7 +7265,7 @@ class DemoShell {
         }
     }
 
-    async openNewPageAgentFlow({ templateId = 'default', frameworkId = this.newPageFrameworkId, projectId = this.activeProjectId, targetDevice = 'infinite-canvas' } = {}) {
+    async openNewPageAgentFlow({ templateId = 'default', frameworkId = this.newPageFrameworkId, templateKind = null, projectId = this.activeProjectId } = {}) {
         await this.loadTemplatesData();
         if (projectId) {
             this.activeProjectId = projectId;
@@ -7286,7 +7275,10 @@ class DemoShell {
         this.newPageFrameworkId = this.getNewPageFrameworkOptions().some((item) => item.id === frameworkId)
             ? frameworkId
             : 'ant-design-skill';
-        this.newPageTargetDevice = this.normalizeNewPageMode(targetDevice);
+        this.newPageTemplateKind = templateKind === 'framework' || templateKind === 'style'
+            ? templateKind
+            : templateId !== 'default' ? 'style' : 'auto';
+        this.newPageTargetDevice = 'infinite-canvas';
         this.newPageStyleDropdownOpen = false;
         this.openAgentWorkbench();
         const reusableSessionId = this.findReusableAgentSessionId({ sessionScope: 'global' });
@@ -13031,48 +13023,36 @@ class DemoShell {
         if (!this.agentStatusContext) return;
         if (this.isNewPageStylePickerActive()) {
             this.agentStatusContext.hidden = false;
-            const selectedDevice = this.normalizeNewPageMode(this.newPageTargetDevice);
             const selected = this.getNewPageSelectedPickerOption();
-            const pickerLabel = selectedDevice === 'web' ? '前端框架' : '风格';
             this.agentStatusContext.classList.add('is-clickable', 'is-style-picker');
             this.agentStatusContext.classList.remove('has-clear');
-            this.agentStatusContext.title = selected ? `选择页面呈现方式和${pickerLabel}` : '选择页面呈现方式';
-            // Mount once: replacing a native select on the one-second status
-            // tick dismisses its popup and drops keyboard focus before selection.
-            let modeSelect = this.agentStatusContext.querySelector('[data-new-page-mode]');
-            if (!modeSelect) {
+            this.agentStatusContext.title = '统一无限画布 · 可选设计模板';
+            // Keep the trigger mounted across status ticks, preserving focus.
+            if (!this.agentStatusContext.querySelector('[data-new-page-presentation-options]')) {
                 this.agentStatusContext.innerHTML = `
                     <span class="new-page-config-control">
-                        <select class="new-page-mode-select" data-new-page-mode aria-label="页面呈现方式" title="选择页面呈现方式">
-                            ${['auto', 'mobile', 'web', 'canvas', 'infinite-canvas'].map(mode => `<option value="${mode}">${this.getPageDeviceLabel(mode)}</option>`).join('')}
-                        </select>
+                        <span class="new-page-mode-label" title="所有新页面均使用无限画布">无限画布</span>
                         <span class="new-page-presentation-options" data-new-page-presentation-options></span>
                     </span>
                 `;
-                modeSelect = this.agentStatusContext.querySelector('[data-new-page-mode]');
-            }
-            if (modeSelect.dataset.renderedMode !== selectedDevice) {
-                modeSelect.value = selectedDevice;
-                modeSelect.dataset.renderedMode = selectedDevice;
             }
             const optionsHost = this.agentStatusContext.querySelector('[data-new-page-presentation-options]');
-            const optionsKey = JSON.stringify([selectedDevice, selected?.id, selected?.name]);
+            const optionsKey = JSON.stringify([selected?.kind, selected?.id, selected?.name]);
             if (optionsHost.dataset.renderKey !== optionsKey) {
-                optionsHost.innerHTML = selected ? `
+                optionsHost.innerHTML = `
                     <span class="new-page-style-control" data-new-page-style-root="1">
-                        <button type="button" class="new-page-style-control__trigger" data-new-page-style-toggle="1" aria-label="选择${pickerLabel}" aria-haspopup="listbox" aria-expanded="false">
+                        <button type="button" class="new-page-style-control__trigger" data-new-page-style-toggle="1" aria-label="选择设计模板" aria-haspopup="listbox" aria-expanded="false">
                             <span class="new-page-style-control__text">
-                                <strong>${this.escapeHtml(selected.name || (selectedDevice === 'web' ? 'Ant Design' : '默认风格'))}</strong>
+                                <strong>模板：${this.escapeHtml(selected?.name || '智能选择')}</strong>
                             </span>
                             <svg class="new-page-style-control__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
                     </span>
-                ` : selectedDevice === 'infinite-canvas' ? `
                     <button type="button" class="new-page-blank-canvas" data-new-page-blank-canvas="1" title="跳过 Agent，直接创建空白画布">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                         空白画布
                     </button>
-                ` : `<span class="new-page-mode-hint">${selectedDevice === 'auto' ? '按需求选择呈现方式' : '按内容自由组织'}</span>`;
+                `;
                 optionsHost.dataset.renderKey = optionsKey;
             }
             optionsHost.querySelector('[data-new-page-style-toggle]')?.setAttribute('aria-expanded', String(this.newPageStyleDropdownOpen));

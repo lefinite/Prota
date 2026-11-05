@@ -20,11 +20,24 @@ test('全局新建页面任务保留 Portal 当前活动项目', () => {
     assert.match(serverSource, /Portal 当前活动项目 ID 是 \$\{session\.context\.projectId\}/);
 });
 
-test('Web 使用框架无关的白模板目录', () => {
+test('新建页面统一无限画布，旧页面模板仅为历史兼容保留', () => {
+    assert.equal(existsSync(new URL('../src/templates/infinite-canvas/index.html', import.meta.url)), true);
     assert.equal(existsSync(new URL('../src/templates/web-frame/index.html', import.meta.url)), true);
-    assert.equal(existsSync(new URL('../src/templates/web-ant-design', import.meta.url)), false);
-    assert.match(shellSource, /src\/templates\/web-frame\//);
-    assert.doesNotMatch(shellSource, /src\/templates\/web-ant-design\//);
+    assert.equal(existsSync(new URL('../src/templates/mobile-frame/index.html', import.meta.url)), true);
+    assert.match(shellSource, /this\.newPageTargetDevice = 'infinite-canvas'/);
+    assert.match(shellSource, /new-page-mode-label/);
+    assert.doesNotMatch(shellSource, /<select class="new-page-mode-select"/);
+    assert.match(shellSource, /根据用户真正的设计对象，独立判断每个画板/);
+    assert.match(shellSource, /targetDevice: "canvas".*pageMode: "infinite-canvas"/);
+    assert.match(serverSource, /所有新增页面必须创建统一无限画布/);
+});
+
+test('视觉模板和 Web 框架可供无限画布共用且不锁定顶层设备', () => {
+    assert.match(shellSource, /data-new-page-template-kind="auto"/);
+    assert.match(shellSource, /data-new-page-template-kind="framework"/);
+    assert.match(shellSource, /data-new-page-template-kind="style"/);
+    assert.match(shellSource, /templateKind: isWeb \? 'framework' : 'style'/);
+    assert.match(shellSource, /模板只作用于业务画板/);
 });
 
 test('框架模板 Skill 与普通 Skill 自动发现目录隔离', () => {
