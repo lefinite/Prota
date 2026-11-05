@@ -23,6 +23,7 @@ import { VercelConnection } from './modules/settings/vercel.js';
 import { PRDModule } from './modules/prd/index.js?v=20261102-persistent-doc-toggle';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
 import { MindmapModule } from './modules/mindmap/index.js?v=20260701-xmind-v12';
+import { TrackingReview } from './modules/tracking/index.js';
 
 let workspaceMetadata = null;
 if (location.protocol !== 'file:' && !window.__READIFY_SHARE__) {
@@ -177,6 +178,7 @@ class DemoShell {
         this.docDrawerMode = this.isShareMode
             ? 'prd'
             : this.readDocDrawerMode();
+        this.trackingReview = new TrackingReview(this);
         this.docDrawerExpanded = this.docDrawerMode === 'prd';
         this.prdDrawerWidth = this.readPrdDrawerWidth();
         if (Number.isFinite(this.prdDrawerWidth)) {
@@ -7083,8 +7085,10 @@ class DemoShell {
         this.resetPrdDocumentState();
         this.renderAnnotationDrawer();
         this.clearAnnotationMarkers();
+        this.trackingReview.load();
 
         // Load iframe
+        this.trackingReview.stop();
         const cacheBuster = this.isShareMode && this.shareConfig.generatedAt
             ? `?t=${encodeURIComponent(this.shareConfig.generatedAt)}`
             : `?t=${Date.now()}`;
@@ -7102,6 +7106,7 @@ class DemoShell {
         if (this.isShareMode && this.shareConfig.mode === 'folder') {
             const meta = this.getActiveFolderSharePageMeta(this.activePageId, version);
             this.shareConfig.annotations = meta?.annotations ? [...meta.annotations] : null;
+            this.shareConfig.tracking = meta?.tracking || null;
             this.shareConfig.prdContent = meta?.prdContent ?? null;
             this.shareConfig.prdPath = meta?.prdPath ?? null;
             this.shareConfig.prdFilename = meta?.prdFilename ?? null;
@@ -7509,6 +7514,7 @@ class DemoShell {
         // every subresource finishes loading.
         this.injectIframeShortcutBridge();
         await this.loadAnnotations();
+        if (this.trackingReview?.visible()) await this.trackingReview.load();
         this.injectIframeShortcutBridge();
         this.syncAnnotationButtonState(this.annotationMode);
 
@@ -8337,7 +8343,7 @@ class DemoShell {
     readDocDrawerMode() {
         try {
             const mode = window.localStorage.getItem(workspaceStorageKey('readify:doc-drawer-mode'));
-            return ['prd', 'annotations'].includes(mode) ? mode : 'prd';
+            return ['prd', 'annotations', 'tracking'].includes(mode) ? mode : 'prd';
         } catch (error) {
             return 'prd';
         }
@@ -8465,7 +8471,7 @@ class DemoShell {
         if (preserveWidth && !this.prdDrawerFullscreen && this.annotationDrawer.parentElement.clientWidth > 900) {
             this.applyPrdDrawerWidth(this.annotationDrawer.getBoundingClientRect().width);
         }
-        this.docDrawerMode = ['prd', 'diagram', 'mindmap', 'annotations'].includes(mode) ? mode : 'annotations';
+        this.docDrawerMode = ['prd', 'diagram', 'mindmap', 'annotations', 'tracking'].includes(mode) ? mode : 'annotations';
         if (!preserveWidth && ['prd', 'diagram', 'mindmap'].includes(this.docDrawerMode)) {
             const savedWidth = this.readPrdDrawerWidth();
             if (savedWidth !== null) {
@@ -8495,7 +8501,7 @@ class DemoShell {
     }
 
     openDocumentDrawer(mode = this.docDrawerMode, { forceReload = false, path = '' } = {}) {
-        this.docDrawerMode = ['prd', 'diagram', 'mindmap', 'annotations'].includes(mode) ? mode : 'annotations';
+        this.docDrawerMode = ['prd', 'diagram', 'mindmap', 'annotations', 'tracking'].includes(mode) ? mode : 'annotations';
         if (['prd', 'diagram', 'mindmap'].includes(this.docDrawerMode)) {
             const savedWidth = this.readPrdDrawerWidth();
             if (savedWidth !== null) {
@@ -9669,12 +9675,19 @@ class DemoShell {
             this.visibleAnnotations = [];
             this.renderAnnotationDrawer();
             this.renderAnnotationMarkers();
+            this.syncTrackingReview();
             return;
         }
 
         this.visibleAnnotations = this.collectVisibleAnnotations();
         this.renderAnnotationDrawer();
         this.renderAnnotationMarkers();
+        this.syncTrackingReview();
+    }
+
+    syncTrackingReview() {
+        if (this.trackingReview.visible()) this.trackingReview.start();
+        else this.trackingReview.stop();
     }
 
     refreshPendingAnnotationPosition() {
@@ -10299,6 +10312,10 @@ class DemoShell {
         if (this.prdDownloadBtn) this.prdDownloadBtn.hidden = true;
         if (this.prdExpandBtn) this.prdExpandBtn.hidden = true;
 
+        if (this.docDrawerMode === 'tracking') {
+            this.trackingReview.render();
+            return;
+        }
         const totalCount = this.currentAnnotations.length;
         const visibleCount = this.visibleAnnotations.length;
         const scopeControl = totalCount > 0

@@ -12214,3 +12214,22 @@ body.canvas-focused .main-content > .annotation-drawer { display: none !importan
 .agent-canvas-context.is-removable:not(:has(.agent-message-prd-context__type)) {
     grid-template-columns: 28px minmax(0, 1fr) auto;
 }
+/* The review overlay belongs to Portal; never to generated business pages. */
+.tracking-marker-layer {position:absolute;inset:0;pointer-events:none;z-index:18;overflow:hidden;}
+.tracking-marker {position:absolute;pointer-events:auto;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:#b97722;color:#fff;font:600 12px/1 sans-serif;box-shadow:0 2px 8px #0003;cursor:pointer;}
+.tracking-marker.is-active {background:#8e4b08;outline:2px solid #d9a45a;outline-offset:2px;}
+.tracking-toolbar {display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+.tracking-toolbar button {border:1px solid var(--border-color,#dadce4);border-radius:7px;background:transparent;padding:7px 9px;color:inherit;cursor:pointer;font-size:12px;}
+.tracking-card {padding:12px;border:1px solid var(--border-color,#e5e6eb);border-radius:10px;margin-bottom:9px;overflow-wrap:anywhere;}
+.tracking-card.is-active {border-color:#ba873f;background:color-mix(in srgb,#d7a25a 7%,transparent);}
+.tracking-card__title {width:100%;display:flex;align-items:center;gap:9px;text-align:left;border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0 5px;}
+.tracking-card__title strong {flex:1;font-size:13px;}
+.tracking-card__title small {font-size:11px;opacity:.7;}
+.tracking-number {width:21px;height:21px;display:grid;place-items:center;flex-shrink:0;border-radius:50%;color:white;background:#b97722;font-size:11px;}
+.tracking-card code {font-size:11px;opacity:.75;}
+.tracking-card p {font-size:12px;line-height:1.6;margin:7px 0 0;}
+.tracking-muted {opacity:.7;}
+.tracking-details {border-top:1px solid #d9d9df;margin-top:9px;padding-top:9px;font-size:12px;line-height:1.7;}
+.tracking-omitted {font-size:12px;margin-top:16px;}
+.tracking-omitted p {margin:6px 0;}
+.tracking-empty {padding:24px 14px;font-size:13px;line-height:1.8;opacity:.75;}

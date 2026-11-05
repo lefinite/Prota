@@ -1176,8 +1176,16 @@ def build_page_zip_bytes(root, project_id, page_id, version, canvas_runtime_hash
         version_dir = snapshot_directory(root, canvas_entry_path, segments)
         page_dir = version_dir.parent
     extra_runtime = zip_runtime_files(root, version_dir, canvas_runtime_hash)
+    # Generate offline review assets from the same pinned version as the runtime.
+    try:
+        from server.demo_tracking_review import build_review_bundle
+    except ImportError:
+        from demo_tracking_review import build_review_bundle
+    manifest = read_share_tracking(version_dir)
+    review_html, review_bridges = build_review_bundle(version, manifest)
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr('review.html', review_html)
         for folder in [version_dir, page_dir / 'docs']:
             if not folder.is_dir():
                 continue
@@ -1188,7 +1196,17 @@ def build_page_zip_bytes(root, project_id, page_id, version, canvas_runtime_hash
                 if file.is_file() and not any(part.startswith('.') or part in {'node_modules', '__pycache__'} for part in relative.parts):
                     if extra_runtime and (relative.as_posix().startswith(version + '/__prota_runtime/') or len(relative.parts) == 2 and relative.name in EDITOR_FILES):
                         continue
-                    archive.write(file, relative.as_posix())
+                    inner = file.relative_to(version_dir).as_posix() if folder == version_dir else ''
+                    if inner in review_bridges and file.suffix.lower() == '.html':
+                        original = file.read_text(encoding='utf-8')
+                        script = review_bridges[inner]
+                        if re.search(r'</head\s*>', original, flags=re.I):
+                            modified = re.sub(r'</head\s*>', lambda m: script + m.group(0), original, count=1, flags=re.I)
+                        else:
+                            modified = script + original
+                        archive.writestr(relative.as_posix(), modified.encode('utf-8'))
+                    else:
+                        archive.write(file, relative.as_posix())
         for name, content in extra_runtime.items():
             archive.writestr(version + '/' + name, content)
     return buffer.getvalue()
@@ -1507,6 +1525,30 @@ def read_share_mindmap(root, project_id, page_id, version, requested_path=''):
         'mindmaps': mindmaps
     }
 
+
+
+def read_share_tracking(version_dir):
+    """Read a bounded, version-scoped measurement specification for shared previews."""
+    manifest = Path(version_dir) / 'tracking' / 'events.json'
+    if not manifest.is_file():
+        return None
+    try:
+        if manifest.stat().st_size > 256 * 1024:
+            return None
+        with manifest.open('r', encoding='utf-8') as source:
+            data = json.load(source)
+        if not isinstance(data, dict) or data.get('schemaVersion') != 1:
+            return None
+        events = data.get('events')
+        if not isinstance(events, list) or len(events) > 12:
+            return None
+        if not isinstance(data.get('scope'), dict):
+            return None
+        if any(not isinstance(event, dict) or not isinstance(event.get('targets'), list) for event in events):
+            return None
+        return data
+    except (OSError, ValueError, TypeError):
+        return None
 
 
 def read_share_annotations(version_dir):
@@ -4350,6 +4392,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             page = read_project_page(root, project_id, page_id) or {}
             page_name = params.get('pageName') or page.get('name') or page_id
             annotations = read_share_annotations(version_dir)
+            tracking = read_share_tracking(version_dir)
             prd = read_share_prd(root, project_id, page_id, version, params.get('prdPath') or '', strict_version=bool(access_policy and access_policy.get('mcpTokenHash')),
                                  requested_explicit=params.get('prdSelection') != 'remembered')
             diagram = read_share_drawio(root, project_id, page_id, version, params.get('diagramPath') or '')
@@ -4369,6 +4412,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'includePrd': include_prd,
                 'demoPath': f'/src/pages/{project_id}/{page_id}/{version}/index.html',
                 'annotations': annotations if include_annotations else [],
+                'tracking': tracking,
                 'prdContent': prd.get('content') if include_prd else '',
                 'prdPath': f'/{prd.get("path")}' if include_prd and prd.get('path') else '',
                 'prdFilename': prd.get('filename') if include_prd else '',
@@ -4398,6 +4442,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 'shareType': share_type,
                 'generatedAt': share_data['generatedAt'],
                 'annotations': annotations if include_annotations else [],
+                'tracking': tracking,
                 'prdContent': prd.get('content') if include_prd else '',
                 'prdPath': f'/{prd.get("path")}' if include_prd and prd.get('path') else '',
                 'prdFilename': prd.get('filename') if include_prd else '',
@@ -4586,6 +4631,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 except ValueError:
                     continue
                 annotations = read_share_annotations(version_dir)
+                tracking = read_share_tracking(version_dir)
                 prd = read_share_prd(root, project_id, page.get('id'), version,
                                      prd_overrides.get(str(page.get('id'))) or params.get('prdPath') or '',
                                      strict_version=bool(access_policy and access_policy.get('mcpTokenHash')),
@@ -4602,6 +4648,7 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                     'order': _safe_order(page.get('order')),
                     'demoPath': f'/src/pages/{project_id}/{page.get("id")}/{version}/index.html',
                     'annotations': annotations,
+                    'tracking': tracking,
                     'prdContent': prd.get('content') or '',
                     'prdPath': f'/{prd.get("path")}' if prd.get('path') else '',
                     'prdFilename': prd.get('filename') or '',
