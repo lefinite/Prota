@@ -146,9 +146,9 @@ try {
     });
     await preview.locator('#selection-tools [data-action=edit-text]').click();
     await preview.locator('.node.editing .node-content').fill('未保存的局部修改');
-    await preview.locator('.node.editing .node-content').press('Tab');
-    // Blurring inline text editing can leave the selection toolbar collapsed.
-    // Re-select the same object through the canvas before invoking its Agent action.
+    // Tab is an indentation shortcut in the Markdown editor, not a blur/finish
+    // action. Commit with the visible editor control before using selection tools.
+    await preview.getByRole('button', { name: '完成', exact: true }).click();
     await preview.locator('.node.text').click();
     await wait(() => preview.locator('#selection-tools [data-action=agent]').isVisible(), 'selected text Agent action visible');
     const viewBeforeAgent = await preview.locator('#stage').evaluate(() => window.protaCanvas.getState().viewport);
