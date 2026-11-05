@@ -119,6 +119,34 @@ class RuntimePackageTests(unittest.TestCase):
         self.assertEqual(archive.read('v1/canvas-data.js'),data)
         self.assertEqual(json.loads(archive.read('v1/__prota_runtime/runtime-manifest.json'))['runtimeHash'],old_hash)
 
+    def test_frozen_shared_runtime_zip_keeps_tracking_review_and_business_content(self):
+        tracking = self.version / 'tracking/events.json'
+        tracking.parent.mkdir()
+        tracking.write_text(json.dumps({
+            'schemaVersion': 1,
+            'scope': {'projectId': 'demo', 'pageId': 'a', 'version': 'v1'},
+            'events': [{'id': 'home_click', 'targets': [{
+                'kind': 'canvas-board', 'boardId': 'home',
+                'path': 'boards/home/index.html', 'status': 'bound',
+                'anchor': {'method': 'selector', 'value': 'button'}
+            }]}]
+        }))
+        original_board = (self.version / 'boards/home/index.html').read_bytes()
+        payload = self.payload()
+        pin_share_pages(self.root, payload)
+        tracking.write_text('{}')
+        (self.version / 'boards/home/index.html').write_text('later changes')
+        archive = zipfile.ZipFile(io.BytesIO(build_page_zip_bytes(
+            self.root, 'demo', 'a', 'v1', payload['canvasRuntimeHash'], payload['canvasEntryPath'])))
+        self.assertIn(b'home_click', archive.read('review.html'))
+        self.assertIn(b'data-prota-review-bridge', archive.read('v1/index.html'))
+        board = archive.read('v1/boards/home/index.html')
+        self.assertIn(b'data-prota-review-bridge', board)
+        self.assertTrue(board.endswith(original_board))
+        self.assertEqual(json.loads(archive.read('v1/tracking/events.json'))['events'][0]['id'], 'home_click')
+        self.assertEqual(json.loads(archive.read('v1/__prota_runtime/runtime-manifest.json'))['runtimeHash'], payload['canvasRuntimeHash'])
+        self.assertEqual((self.version / 'boards/home/index.html').read_text(), 'later changes')
+
     def test_folder_deployment_deduplicates_runtime_and_gateway_grants_exact_files(self):
         make_canvas(self.root, 'b')
         ordinary = self.root / 'src/pages/demo/ordinary/v1'

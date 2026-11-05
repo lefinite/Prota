@@ -30,7 +30,7 @@ try {
     await fs.cp(path.join(app, 'src/templates/mobile-frame'), path.join(root, 'src/pages/demo/legacy/v1'), { recursive: true });
     await fs.cp(path.join(app, 'src/templates/web-frame'), path.join(root, 'src/pages/demo/website/v1'), { recursive: true });
     await fs.cp(path.join(app, 'src/templates/canvas-frame'), path.join(root, 'src/pages/demo/widget/v1'), { recursive: true });
-    await fs.cp(path.join(app, 'src/templates/infinite-canvas'), path.join(root, 'src/pages/demo/infinite/v1'), { recursive: true });
+    await fs.cp(path.join(app, 'src/templates/infinite-canvas-document'), path.join(root, 'src/pages/demo/infinite/v1'), { recursive: true });
     // A local phone preview inside canvas must not activate whole-page mobile fitting.
     await write('src/pages/demo/widget/v1/index.html', '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="./styles.css"></head><body><main class="demo-stage"><label>标题 <input id="title" value="阅读进度"></label><section class="phone-shell"><div class="phone-screen"><h1 id="preview">阅读进度</h1></div></section></main><script src="./app.js"></script></body></html>');
     await write('src/pages/demo/widget/v1/styles.css', '*{box-sizing:border-box}body{margin:0;font-family:sans-serif}.demo-stage{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:32px;min-height:100vh}.phone-shell{background:#eee;padding:24px;border-radius:24px}.phone-screen{padding:16px}input{max-width:100%}@media(max-width:600px){.demo-stage{grid-template-columns:1fr}}');
@@ -144,11 +144,10 @@ try {
         await fs.writeFile(file, 'window.PROTA_CANVAS = ' + JSON.stringify(document) + ';');
         await route.fulfill({ status: 200, contentType: 'text/event-stream', body: '' });
     });
-    await preview.locator('#selection-tools [data-action=edit-text]').click();
-    await preview.locator('.node.editing .node-content').fill('未保存的局部修改');
-    // Tab is an indentation shortcut in the Markdown editor, not a blur/finish
-    // action. Commit with the visible editor control before using selection tools.
-    await preview.getByRole('button', { name: '完成', exact: true }).click();
+    // Plain text uses inline double-click editing in the current shared runtime.
+    await preview.locator('.node.text .node-content').dblclick();
+    await preview.locator('.node.editing textarea.node-content').fill('未保存的局部修改');
+    await preview.locator('#stage').click({ position: { x: 900, y: 600 } });
     await preview.locator('.node.text').click();
     await wait(() => preview.locator('#selection-tools [data-action=agent]').isVisible(), 'selected text Agent action visible');
     const viewBeforeAgent = await preview.locator('#stage').evaluate(() => window.protaCanvas.getState().viewport);
@@ -177,12 +176,11 @@ try {
     assert.deepEqual(await preview.locator('#stage').evaluate(() => window.protaCanvas.getState().viewport), viewBeforeAgent);
     assert.deepEqual(await preview.locator('#stage').evaluate(() => window.protaCanvas.getSelection()), selectionBeforeAgent);
     await page.evaluate(() => window.shell.closeAgentWorkbench());
-    await preview.locator('#document-name').click();await preview.getByRole('textbox',{name:'画布名称',exact:true}).fill('无限画布 · 重命名测试');await preview.getByRole('textbox',{name:'画布名称',exact:true}).press('Enter');
-    await wait(() => page.evaluate(() => window.shell.getPageRecord().name === '无限画布 · 重命名测试'), 'inline canvas rename uses existing page metadata');
+    assert.equal(await preview.locator('#document-name').isVisible(), false, 'embedded canvas uses the Portal page title');
     await preview.locator('#stage').evaluate(() => { document.documentElement.requestFullscreen = () => Promise.reject(new Error('fixture unsupported')); });
     const beforeFocus = await preview.locator('#stage').evaluate(() => ({viewport:window.protaCanvas.getState().viewport,selection:window.protaCanvas.getSelection()}));
     await preview.locator('#fullscreen').click();await wait(() => page.locator('body').evaluate(body=>body.classList.contains('canvas-focused')), 'embedded fullscreen fallback');
-    await wait(() => preview.locator('#fullscreen').textContent().then(text=>text.trim()==='退出全屏'), 'fallback exit label');
+    await wait(() => preview.locator('#fullscreen').getAttribute('aria-pressed').then(value=>value==='true'), 'fallback active state');
     await preview.locator('#stage').focus();await page.keyboard.press('Escape');await wait(() => page.locator('body').evaluate(body=>!body.classList.contains('canvas-focused')), 'Escape exits fallback');
     assert.deepEqual(await preview.locator('#stage').evaluate(() => ({viewport:window.protaCanvas.getState().viewport,selection:window.protaCanvas.getSelection()})),beforeFocus);
     await page.evaluate(() => window.shell.switchPage('legacy'));
@@ -221,39 +219,30 @@ try {
     const override = await fs.readFile(path.join(root, 'shots/override.png'));
     assert.equal(override.readUInt32BE(16), 1470, 'explicit capture device overrides saved presentation');
     assert.deepEqual(await fs.readFile(path.join(root, 'src/pages/demo/legacy/v1/index.html')), originalLegacy);
-    // Reproduce the user's actual failure: V4 HTML/app are present, but icons.js was never installed.
-    const canvasDirectory=path.join(root,'src/pages/demo/infinite/v1');
-    const originalLayout=await fs.readFile(path.join(canvasDirectory,'canvas-data.js'));
-    await write('src/pages/demo/infinite/v1/boards/preserved/index.html','<h1>Keep business prototype</h1>');
-    await fs.rm(path.join(canvasDirectory,'icons.js'));await fs.rm(path.join(canvasDirectory,'LICENSE.lucide'));
-    const repairPage=await browser.newPage({viewport:{width:1440,height:1000}});repairPage.setDefaultTimeout(15000);
-    const expectedStartupErrors=[];let repairRequests=0;
-    repairPage.on('pageerror',error=>expectedStartupErrors.push(error.message));
-    repairPage.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/api/canvas/upgrade'))repairRequests++;});
-    await repairPage.route(/fonts\.google/,route=>route.abort());
-    await repairPage.route(/http:\/\/(localhost|127\.0\.0\.1):8081\//,route=>route.continue({url:route.request().url().replace(/:8081\//,`:${agentPort}/`)}));
-    await repairPage.goto(`${base}/portal/index.html`,{waitUntil:'domcontentloaded'});
-    await wait(()=>repairPage.evaluate(()=>Boolean(window.shell?.projects?.projects?.length)),'repair fixture Portal ready');
-    await repairPage.evaluate(()=>{window.shell.enterProject('demo');return window.shell.switchPage('infinite');});
-    const repairedFrame=repairPage.frameLocator('#mainIframe');
-    await wait(()=>repairedFrame.locator('#stage').evaluate(()=>Boolean(window.protaCanvas&&window.ProtaCanvasIcons)),'broken V4 runtime repaired automatically');
-    assert.equal(repairRequests,1,'partial installation needs one repair, not an endless reload');
-    assert.ok(expectedStartupErrors.some(error=>error.includes('undefined')),'the regression must actually reproduce missing-icon initialization failure');
-    assert.equal(await repairedFrame.locator('#canvas-startup-error').isVisible(),false);
-    await repairedFrame.locator('#add-board').click();await repairedFrame.getByRole('menuitem',{name:'手机画板',exact:true}).waitFor();await repairPage.keyboard.press('Escape');
-    assert.deepEqual(await fs.readFile(path.join(canvasDirectory,'canvas-data.js')),originalLayout);
-    assert.equal(await fs.readFile(path.join(canvasDirectory,'boards/preserved/index.html'),'utf8'),'<h1>Keep business prototype</h1>');
-    assert.ok((await fs.stat(path.join(canvasDirectory,'LICENSE.lucide'))).isFile());
-    // Without Portal, a failed startup must show a working retry control instead of dead buttons.
-    const offlinePage=await browser.newPage();
-    await offlinePage.route('**/icons.js',route=>route.fulfill({status:404,body:'missing'}));
-    await offlinePage.goto(`${base}/src/pages/demo/infinite/v1/index.html`);
-    await offlinePage.locator('#canvas-startup-error').waitFor();
-    assert.match(await offlinePage.locator('#canvas-startup-detail').textContent(),/icons\.js/);
-    assert.equal(await offlinePage.locator('#canvas-startup-retry').isVisible(),true);
-    await offlinePage.unroute('**/icons.js');await offlinePage.locator('#canvas-startup-retry').click();
-    await offlinePage.waitForFunction(()=>Boolean(window.protaCanvas));assert.equal(await offlinePage.locator('#canvas-startup-error').isVisible(),false);
-    await repairPage.close();await offlinePage.close();
+    // Shared shells resolve current editor tools without installing runtime files per page.
+    const canvasDirectory = path.join(root, 'src/pages/demo/infinite/v1');
+    const originalLayout = await fs.readFile(path.join(canvasDirectory, 'canvas-data.js'));
+    await write('src/pages/demo/infinite/v1/boards/preserved/index.html', '<h1>Keep business prototype</h1>');
+    assert.equal(await fs.stat(path.join(canvasDirectory, 'icons.js')).then(() => true, () => false), false);
+    const repairPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const startupErrors = []; let repairRequests = 0;
+    repairPage.on('pageerror', error => startupErrors.push(error.message));
+    repairPage.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/canvas/upgrade')) repairRequests++; });
+    await repairPage.route(/fonts\.google/, route => route.abort());
+    await repairPage.route(/http:\/\/(localhost|127\.0\.0\.1):8081\//, route => route.continue({ url: route.request().url().replace(/:8081\//, `:${agentPort}/`) }));
+    await repairPage.goto(`${base}/portal/index.html`, { waitUntil: 'domcontentloaded' });
+    await wait(() => repairPage.evaluate(() => Boolean(window.shell?.projects?.projects?.length)), 'shared shell Portal ready');
+    await repairPage.evaluate(() => { window.shell.enterProject('demo'); return window.shell.switchPage('infinite'); });
+    const repairedFrame = repairPage.frameLocator('#mainIframe');
+    await wait(() => repairedFrame.locator('#stage').evaluate(() => Boolean(window.protaCanvas && window.ProtaCanvasIcons)), 'shared runtime loaded');
+    assert.equal(repairRequests, 0, 'shared documents do not need per-page tool repairs');
+    assert.deepEqual(startupErrors, []);
+    await repairedFrame.locator('#add-board').click();
+    await repairedFrame.getByRole('menuitem', { name: '手机画板', exact: true }).waitFor();
+    await repairPage.keyboard.press('Escape');
+    assert.deepEqual(await fs.readFile(path.join(canvasDirectory, 'canvas-data.js')), originalLayout);
+    assert.equal(await fs.readFile(path.join(canvasDirectory, 'boards/preserved/index.html'), 'utf8'), '<h1>Keep business prototype</h1>');
+    await repairPage.close();
     assert.deepEqual(await fs.readFile(path.join(app, 'portal/shell.js')), originalShell);
     assert.deepEqual(errors, []);
     console.log('PASS: intelligent default, manual choices, isolated instructions, real dispatch payload, canvas interaction, legacy phone fit, page/folder shares, metadata-aware screenshots and explicit overrides.');

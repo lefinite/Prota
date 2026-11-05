@@ -198,10 +198,10 @@ try{
  assert.deepEqual(await page.evaluate(()=>protaCanvas.getSelection()),[made.id]);
  await page.keyboard.press('Escape');await page.keyboard.press('ControlOrMeta+z');assert.equal(await snapshot(),snap,'one undo removes the chosen node and its edge');
  // The grid is keyboard operable.
- await openPicker();assert.equal(await page.evaluate(()=>document.activeElement.dataset.shape),'text');
+ await openPicker();assert.equal(await page.evaluate(()=>document.activeElement.dataset.shape),'terminator');
  await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowDown');assert.equal(await page.evaluate(()=>document.activeElement.dataset.shape),'circle');
  await page.locator('.flow-shape-preview').waitFor();assert.equal(await snapshot(),snap,'keyboard preview writes nothing');
- await page.keyboard.press('ArrowLeft');await page.keyboard.press('Enter');await picker.waitFor({state:'hidden'});
+ await page.keyboard.press('Home');for(let i=0;i<3;i++)await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');await picker.waitFor({state:'hidden'});
  next=await state();assert.deepEqual([next.nodes.at(-1).flowShape,next.edges.at(-1).toInstanceId],['process',next.nodes.at(-1).id]);
  await page.keyboard.press('Escape');await page.keyboard.press('ControlOrMeta+z');assert.equal(await snapshot(),snap);
  console.log('PASS drop on blank opens the shape grid; Esc/outside/blur/pointercancel write nothing; a choice commits atomically');

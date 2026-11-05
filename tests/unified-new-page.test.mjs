@@ -65,6 +65,9 @@ test('template selection changes only the business board instructions, not the p
     const initial = shell.getNewPageExecutionInstructions();
     assert.match(initial, /targetDevice: "canvas".*pageMode: "infinite-canvas"/);
     assert.match(initial, /手机 H5.*桌面 Web.*自定义尺寸/);
+    assert.match(initial, /src\/templates\/infinite-canvas-document\//);
+    assert.match(initial, /共享 Runtime/);
+    assert.doesNotMatch(initial, /完整复制产品模板 src\/templates\/infinite-canvas\//);
     assert.doesNotMatch(initial, /design-systems\/|framework-skills\//);
 
     shell.setNewPageStyle('midnight-terminal', { syncPrompt: false });

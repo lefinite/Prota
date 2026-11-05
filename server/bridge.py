@@ -1183,6 +1183,8 @@ def build_page_zip_bytes(root, project_id, page_id, version, canvas_runtime_hash
         from demo_tracking_review import build_review_bundle
     manifest = read_share_tracking(version_dir)
     review_html, review_bridges = build_review_bundle(version, manifest)
+    if manifest is None:
+        review_bridges = {}
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr('review.html', review_html)

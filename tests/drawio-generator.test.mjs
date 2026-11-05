@@ -10,12 +10,18 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const generator = path.join(root, 'tools/drawio/generate.mjs');
 
 function fixture() {
-    const inputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'drawio-generator-'));
+    const inputDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'drawio-generator-')));
     const project = `.drawio-test-${process.pid}-${Date.now()}`;
-    const projectRoot = path.join(root, 'src/pages', project);
+    // Keep generator outputs in an isolated workspace, independent of local settings.
+    fs.mkdirSync(path.join(inputDir, 'src/pages'), { recursive: true });
+    fs.mkdirSync(path.join(inputDir, 'data'));
+    fs.writeFileSync(path.join(inputDir, 'data/projects.json'), JSON.stringify({ projects: [] }));
+    fs.writeFileSync(path.join(inputDir, 'workspace.json'), JSON.stringify({ id: 'drawio-test', formatVersion: 1 }));
+    const projectRoot = path.join(inputDir, 'src/pages', project);
     const output = path.join(projectRoot, 'page/docs/diagrams/v1.drawio');
     return {
         inputDir,
+        env: { ...process.env, READIFY_WORKSPACE: inputDir },
         project,
         projectRoot,
         output,
@@ -55,7 +61,7 @@ test('标准流程图只显示短标签，并把跨层线与回退线绕到外�
             ]
         }));
 
-        execFileSync(process.execPath, [generator, '--input', input, '--project', current.project, '--page', 'page', '--version', 'v1', '--output', current.output]);
+        execFileSync(process.execPath, [generator, '--input', input, '--project', current.project, '--page', 'page', '--version', 'v1', '--output', current.output], { env: current.env });
         const xml = fs.readFileSync(current.output, 'utf8');
 
         assert.match(xml, /value="开始播放" dataDescription="用户发起播放请求"/);
@@ -77,7 +83,7 @@ test('拒绝句子式节点文案', () => {
             nodes: [{ id: 'start', label: '这是一个非常啰嗦而且完全不应该出现在框里的节点说明文字' }],
             edges: []
         }));
-        const result = spawnSync(process.execPath, [generator, '--input', input, '--project', current.project, '--page', 'page', '--version', 'v1', '--output', current.output], { encoding: 'utf8' });
+        const result = spawnSync(process.execPath, [generator, '--input', input, '--project', current.project, '--page', 'page', '--version', 'v1', '--output', current.output], { encoding: 'utf8', env: current.env });
 
         assert.notEqual(result.status, 0);
         assert.match(result.stderr, /too long/);
