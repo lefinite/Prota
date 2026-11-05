@@ -38,15 +38,15 @@ Use your own model provider, fetch its available models or enter a model ID manu
 
 Describe the idea. Prota analyzes the task, designs and writes the page (`index.html`, `styles.css`, `app.js`), checks the code, and shows the live result. You can see its progress as it works.
 
-New pages default to **Auto**: Prota chooses a presentation for the task. You can also select it yourself, and explicit instructions in your prompt take priority.
+Every new page uses an **infinite canvas**. Prota chooses the size, number and presentation of its internal boards based on the task, including mixed mobile, web and custom boards.
 
-| Presentation | Best for |
+| Board presentation | Best for |
 | --- | --- |
-| Mobile | App screens and mobile flows, displayed in a phone frame |
+| Mobile H5 | App screens and mobile flows at appropriate mobile dimensions |
 | Web | Websites, dashboards and business applications with a responsive browser layout |
-| Free canvas | Standalone components, desktop widgets, state comparisons and configuration with live previews; no required device frame or UI framework |
+| Custom board | Standalone components, desktop widgets, state comparisons and configuration with live previews; no required device frame or UI framework |
 
-Later versions keep the page’s presentation unless you ask to change it.
+Choose an optional visual style or web-framework reference for suitable business boards, or leave the template on intelligent selection. Existing pages and versions keep their original presentation.
 
 <img src="./assets/readme/en/prototype.jpg" width="100%" alt="Prota Agent turns a one-sentence prompt into a working mobile prototype">
 
@@ -109,7 +109,7 @@ For link sharing, click **Connect Vercel** in Settings and authorize in your bro
 [Startup and sharing guide](./docs/share-setup-guide.md) · [Developer setup](./docs/developer-setup.md)
 
 1. **Connect a model:** click the gear icon in the top-right of the project list and go to **Settings → Models**. Pick a preset or choose *OpenAI-compatible / custom*, then enter your API key. Both Anthropic Messages-style and OpenAI-compatible APIs are supported.
-2. **Create a project and a page:** describe your idea with **Auto** selected, or choose **Mobile**, **Web** or **Free canvas** yourself. Select a style or framework when appropriate. For supported models, you can adjust thinking intensity in the composer.
+2. **Create a project and a page:** describe your idea to create an infinite canvas with automatically chosen mobile, web or mixed boards. Optionally choose a template, or start with a blank canvas. For supported models, you can adjust thinking intensity in the composer.
 3. **Iterate and document:** try a new version, annotate changes, and generate a PRD for the requirement you want to hand off.
 4. **(Optional) Share:** connect Vercel in **Settings → Sharing**, set expiry and an optional password, and publish. Use **Share management** to manage or withdraw existing links. See [the startup and sharing guide](./docs/share-setup-guide.md) for publishing details.
 

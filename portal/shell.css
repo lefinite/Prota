@@ -4293,8 +4293,20 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
 
 .new-page-presentation-options {
     display: inline-flex;
+    align-items: center;
+    gap: 6px;
     min-width: 0;
     max-width: 100%;
+}
+
+.new-page-mode-label {
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border-radius: 10px;
+    color: #cbd5e1;
+    background: rgba(148, 163, 184, 0.10);
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .new-page-mode-select {
@@ -4561,6 +4573,24 @@ body.is-share-mode--multi-page .page-selector-trigger:hover .page-selector-arrow
 
 .new-page-style-menu.is-framework-picker {
     width: min(440px, calc(100vw - 24px));
+}
+
+.new-page-style-menu.is-unified-picker {
+    width: min(440px, calc(100vw - 24px));
+}
+
+.new-page-style-menu__heading {
+    grid-column: 1 / -1;
+    padding: 9px 6px 1px;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.new-page-style-menu__item.is-auto {
+    grid-column: 1 / -1;
+    text-align: left;
+    padding: 12px;
 }
 
 .new-page-style-menu::-webkit-scrollbar {
