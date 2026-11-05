@@ -1,0 +1,4 @@
+interface:
+  display_name: "Demo 埋点设计"
+  short_description: "为 Prota Demo 筛选高价值埋点并生成可视化清单"
+  default_prompt: "Use $demo-event-tracking to analyze the active Prota demo and create a lean, reviewable event tracking specification."
