@@ -1162,8 +1162,16 @@ def build_page_zip_bytes(root, project_id, page_id, version):
     page_dir = Path(root) / 'src/pages' / project_id / page_id
     if not (page_dir / version).is_dir():
         raise FileNotFoundError('Version directory not found')
+    # Review assets are generated only inside the archive. Never rewrite user files.
+    try:
+        from server.demo_tracking_review import build_review_bundle
+    except ImportError:
+        from demo_tracking_review import build_review_bundle
+    manifest = read_share_tracking(page_dir / version)
+    review_html, review_bridges = build_review_bundle(version, manifest)
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr('review.html', review_html)
         for folder in [page_dir / version, page_dir / 'docs']:
             if not folder.is_dir():
                 continue
@@ -1172,7 +1180,17 @@ def build_page_zip_bytes(root, project_id, page_id, version):
                 if file.is_symlink():
                     raise ValueError('下载资源不能包含符号链接。')
                 if file.is_file() and not any(part.startswith('.') or part in {'node_modules', '__pycache__'} for part in relative.parts):
-                    archive.write(file, relative.as_posix())
+                    inner = file.relative_to(page_dir / version).as_posix() if folder == page_dir / version else ''
+                    if inner in review_bridges and file.suffix.lower() == '.html':
+                        original = file.read_text(encoding='utf-8')
+                        script = review_bridges[inner]
+                        if re.search(r'</head\s*>', original, flags=re.I):
+                            modified = re.sub(r'</head\s*>', lambda m: script + m.group(0), original, count=1, flags=re.I)
+                        else:
+                            modified = script + original
+                        archive.writestr(relative.as_posix(), modified.encode('utf-8'))
+                    else:
+                        archive.write(file, relative.as_posix())
     return buffer.getvalue()
 
 
