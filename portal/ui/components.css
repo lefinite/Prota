@@ -40,6 +40,18 @@
 .pui-button--compact { min-height: var(--pui-size-control-compact); padding: 0 var(--pui-space-3); }
 .pui-button:disabled,
 .pui-icon-button:disabled { opacity: .45; cursor: not-allowed; }
+.pui-button[aria-busy="true"] { opacity: .8; cursor: progress; pointer-events: none; }
+.pui-button[aria-busy="true"]::before {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: pui-spin 800ms linear infinite;
+}
+@keyframes pui-spin { to { transform: rotate(360deg); } }
 .pui-button:active:not(:disabled),
 .pui-icon-button:active:not(:disabled) { transform: translateY(1px); }
 
@@ -134,5 +146,5 @@
 .pui-status--warning { color: var(--pui-color-warning); }
 
 @media (prefers-reduced-motion: reduce) {
-  .pui-button, .pui-icon-button, .pui-card--interactive, .pui-dialog[open] { animation: none; transition: none; }
+  .pui-button, .pui-icon-button, .pui-card--interactive, .pui-dialog[open], .pui-button[aria-busy="true"]::before { animation: none; transition: none; }
 }

@@ -21,11 +21,11 @@
     <section class="showcase-section" aria-labelledby="colors-heading">
       <h2 id="colors-heading">颜色 · Semantic tokens</h2>
       <div class="showcase-grid">
-        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--workspace"></div><div class="showcase-swatch__meta"><strong>Workspace</strong><code>#F8F9FB</code></div></div>
-        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--surface"></div><div class="showcase-swatch__meta"><strong>Surface</strong><code>#FFFFFF</code></div></div>
-        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--text"></div><div class="showcase-swatch__meta"><strong>Text</strong><code>#1A1D24</code></div></div>
-        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--brand"></div><div class="showcase-swatch__meta"><strong>Brand accent</strong><code>#6366F1</code></div></div>
-        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--primary"></div><div class="showcase-swatch__meta"><strong>Accessible primary</strong><code>#4F46E5</code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--workspace"></div><div class="showcase-swatch__meta"><strong>Workspace</strong><code data-color-token="workspace"></code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--surface"></div><div class="showcase-swatch__meta"><strong>Surface</strong><code data-color-token="surface"></code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--text"></div><div class="showcase-swatch__meta"><strong>Text</strong><code data-color-token="text"></code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--brand"></div><div class="showcase-swatch__meta"><strong>Brand accent</strong><code data-color-token="brand"></code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--primary"></div><div class="showcase-swatch__meta"><strong>Accessible primary</strong><code data-color-token="primary"></code></div></div>
       </div>
     </section>
     <section class="showcase-section" aria-labelledby="buttons-heading">
@@ -38,6 +38,7 @@
           <button class="pui-button pui-button--ghost" type="button">文字操作</button>
           <button class="pui-button pui-button--danger" type="button">危险操作</button>
           <button class="pui-button pui-button--primary" type="button" disabled>不可用</button>
+          <button class="pui-button pui-button--secondary" type="button" aria-busy="true">正在处理</button>
           <button class="pui-icon-button" type="button" aria-label="更多选项" title="更多选项"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
         </div>
         <div class="showcase-row"><button class="pui-button pui-button--secondary pui-button--compact" type="button">紧凑工具按钮</button><p class="showcase-note">主 CTA 只有一个；密集工具栏才使用紧凑规格。</p></div>

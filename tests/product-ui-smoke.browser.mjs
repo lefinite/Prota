@@ -39,6 +39,8 @@ try {
   });
   assert.equal(computed.background, 'rgb(79, 70, 229)');
   assert.ok(computed.height >= 36);
+  assert.equal(await page.locator('[data-color-token="primary"]').textContent(), '#4F46E5');
+  assert.equal(await page.getByRole('button', { name: '正在处理' }).getAttribute('aria-busy'), 'true');
 
   for (const width of [1440, 1024, 860, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
