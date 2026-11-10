@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'portal/**'
+      - 'server/bridge.py'
       - 'src/templates/infinite-canvas/**'
       - 'design-system/**'
       - 'tools/ui/**'

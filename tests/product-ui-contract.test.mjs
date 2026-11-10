@@ -43,6 +43,17 @@ test('Portal loads product tokens and primitives before legacy CSS', () => {
   assert.ok(tokensIndex >= 0 && tokensIndex < componentsIndex && componentsIndex < shellIndex);
 });
 
+test('Share shells use absolute product UI asset paths', () => {
+  const script = [
+    'from server.bridge import build_share_page_html',
+    'html = build_share_page_html({"pageName": "Prota UI Smoke", "version": "v1"})',
+    'assert \'href="/portal/ui/tokens.css?v=1"\' in html',
+    'assert \'href="/portal/ui/components.css?v=1"\' in html',
+    'assert \'href="ui/tokens.css\' not in html'
+  ].join('\n');
+  execFileSync('python3', ['-c', script], { cwd: root, stdio: 'pipe' });
+});
+
 test('Agent governance points to the live contract and excludes business demos', () => {
   const agents = file('AGENTS.md');
   assert.match(agents, /docs\/prota-ui-guidelines\.md/);

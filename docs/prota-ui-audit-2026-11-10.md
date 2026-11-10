@@ -90,6 +90,7 @@
 | 画布和第三方外壳 Token 分叉 | 同一生成器同步无限画布自包含 CSS 与 draw.io 外壳映射 | 历史版本运行时与共享工具层更新需按兼容策略验证 |
 | AI Review 无硬性检查 | 变更行静态 Lint、Token 同步检查、颜色对比度/隔离规则测试、PR 清单、GitHub CI | 真实功能页面的视觉美感与交互完整性仍需 Agent/人工审查 |
 | 开源发布可能丢文件 | 更新 `tools/public-release.py` 白名单包含 Token 源、规范和新测试 | 完整发布包仍需独立做一次端到端校验 |
+| 分享页相对路径会错位 | `server/bridge.py` 将 `ui/*.css` 绝对化到 `/portal/ui/`，并添加生成分享页的集成测试 | 仍须在正式分享域名上检查实际页面加载 |
 
 新增验证命令：`npm run ui:tokens:check`、`npm run ui:test`、`npm run ui:lint`、`npm run ui:browser`。浏览器检查截图来自 `portal/ui/showcase.html` 的**组件契约页**，不能冒充项目首页、Agent 工作台或旧设置界面的视觉回归。
 

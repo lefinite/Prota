@@ -49,6 +49,7 @@ npx playwright install chromium
 - 迁移某个旧组件时，先记下当前最终计算样式、相同组件实例和行为测试；再在原 CSS/DOM 位置收敛到 Token/`pui-*` 类，删除覆盖链，并保存前后截图。
 - `#6366F1` 是品牌强调/描边色，与白色对比度约 4.47:1；**小字号白字实心主按钮**要用 `--pui-color-primary`（`#4F46E5`，约 6.29:1），Hover 用 `--pui-color-primary-hover`。旧样式仍使用 `--accent` 的地方属于后续迁移范围，不能宣称现有全部按钮已达标。
 - 无限画布的编辑器运行时采用生成的**内嵌 Token**，不引用 Portal 外部 CSS；历史版本、业务画板的私有样式与分享 ZIP 不得因设计系统升级而改变。
+- 分享页由 `server/bridge.py` 的 `build_share_page_html()` 从 Portal 页面生成；它必须将新 `ui/*.css` 的相对 URL 重写到 `/portal/ui/*.css`。`npm run ui:test` 已包含真实分享页 HTML 的路径集成断言。
 - 第三方 draw.io 只同步工具外壳的基本色；不能全局覆盖图形颜色或编辑内容。
 
 ## 维护边界

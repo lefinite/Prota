@@ -1479,6 +1479,10 @@ def build_share_page_html(share_data):
     title = f'{share_data.get("pageName") or share_data.get("pageId") or "Prota"} {str(share_data.get("version") or "").upper()} · Prota Share'.strip()
     share_script = f'<script>window.__READIFY_SHARE__ = {data_json};</script>'
     html = html.replace('<script src="/workspace-data.js"></script>', '')
+    # Product UI token/primitives links are relative in /portal/index.html.
+    # Share pages live under /shares/, so resolve them back to the product
+    # installation rather than requesting non-existent /shares/ui/*.css.
+    html = html.replace('href="ui/', 'href="/portal/ui/')
     html = html.replace('href="modules/settings/', 'href="/portal/modules/settings/')
     html = html.replace('href="modules/sharing/', 'href="/portal/modules/sharing/')
 
