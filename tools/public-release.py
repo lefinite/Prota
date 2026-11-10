@@ -15,12 +15,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from server import workspace
 
 ROOT = Path(__file__).resolve().parents[1]
-DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'integrations/pi', 'src/templates', 'tools', '.claude/skills', 'assets']
+DIRECTORIES = ['.github', 'Prota.app', '.githooks', 'portal', 'server', 'scripts', 'integrations/pi', 'src/templates', 'tools', '.claude/skills', 'assets', 'design-system']
 FILES = ['Prota.exe', 'package.json', 'package-lock.json', 'LICENSE', 'README.md', 'README.zh-CN.md', 'AGENTS.md', '.gitignore', 'start-portal.command',
          'data/agent-provider-presets.json', 'data/agent-sdk-extension.mjs', 'data/templates.json',
          'docs/workspace-and-publishing.md', 'docs/share-setup-guide.md', 'docs/sharing-flow.mmd', 'docs/sharing-flow.svg',
          'docs/developer-setup.md', 'docs/workspace-storage.md', 'docs/unified-settings-design.md', 'docs/provider-model-discovery.md',
-         'docs/magpie-integration.md', '.gitmodules', 'pi-version.json', 'THIRD_PARTY_NOTICES.md', 'docs/agent-pi-architecture.md', 'docs/agent-pi-upgrade.md']
+         'docs/magpie-integration.md', 'docs/prota-ui-guidelines.md', 'docs/prota-ui-audit-2026-11-10.md',
+         'tests/product-ui-contract.test.mjs', 'tests/product-ui-smoke.browser.mjs',
+         '.gitmodules', 'pi-version.json', 'THIRD_PARTY_NOTICES.md', 'docs/agent-pi-architecture.md', 'docs/agent-pi-upgrade.md']
 PRIVATE_PARTS = {'node_modules', '__pycache__', '.git', '.DS_Store', 'user-preferences.md', '.readify-skills.json', 'skill-backups'}
 SIGNALS = [r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',
            r'gh[pousr]_[A-Za-z0-9]{25,}', r'sk-[A-Za-z0-9_-]{24,}']

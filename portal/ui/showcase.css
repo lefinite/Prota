@@ -1,0 +1,32 @@
+/* Documentation-only layout; product controls come from components.css. */
+html { background: var(--pui-color-workspace); color: var(--pui-color-text); font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; }
+body { margin: 0; }
+.showcase { width: min(1080px, calc(100% - 40px)); margin: 0 auto; padding: 40px 0 72px; }
+.showcase-header { display: flex; justify-content: space-between; align-items: start; gap: 24px; margin-bottom: 36px; }
+.showcase h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -.6px; }
+.showcase h2 { font-size: 18px; margin: 0 0 18px; }
+.showcase p { margin: 0; line-height: 1.6; }
+.showcase-note { color: var(--pui-color-muted); font-size: 13px; }
+.showcase-section { margin-top: 32px; }
+.showcase-surface { padding: 24px; border: 1px solid var(--pui-color-border); border-radius: 14px; background: var(--pui-color-surface); }
+.showcase-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.showcase-row + .showcase-row { margin-top: 18px; }
+.showcase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.showcase-swatch { border: 1px solid var(--pui-color-border); overflow: hidden; border-radius: 10px; }
+.showcase-swatch__color { height: 68px; }
+.showcase-swatch__color--workspace { background: var(--pui-color-workspace); }
+.showcase-swatch__color--surface { background: var(--pui-color-surface); }
+.showcase-swatch__color--text { background: var(--pui-color-text); }
+.showcase-swatch__color--brand { background: var(--pui-color-brand); }
+.showcase-swatch__color--primary { background: var(--pui-color-primary); }
+.showcase-swatch__meta { padding: 12px; font-size: 12px; }
+.showcase-swatch__meta strong { display: block; font-size: 13px; margin-bottom: 4px; }
+.showcase-swatch__meta code { color: var(--pui-color-muted); }
+.showcase-label { margin: 0 0 8px; font-size: 12px; font-weight: 500; color: var(--pui-color-muted); }
+.showcase-inputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.showcase-card-title { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.showcase-card-description { color: var(--pui-color-muted); font-size: 13px; }
+.showcase-link { color: var(--pui-color-primary); font-size: 13px; }
+.showcase-link:focus-visible { outline: 2px solid var(--pui-color-primary); outline-offset: 2px; }
+.showcase-card-link { text-decoration: none; }
+@media (max-width: 640px) { .showcase { width: min(100% - 24px, 1080px); padding-top: 24px; } .showcase-header { display: block; } .showcase-header .pui-button { margin-top: 16px; } .showcase-surface { padding: 16px; } .showcase-inputs { grid-template-columns: 1fr; } }

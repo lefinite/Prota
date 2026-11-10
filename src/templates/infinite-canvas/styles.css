@@ -7,10 +7,12 @@
   font-size: 12px;
   color: #252832;
   background: #f7f8fa;
-  --accent:#5765ce;
-  --accent-ink:#4c58be;
-  --line:#e7e9f0;
-  --muted:#8b919e;
+  /* prota-ui tokens:start */
+  --accent: #6366f1;
+  --accent-ink: #4f46e5;
+  --line: #e5e7eb;
+  --muted: #6b7280;
+  /* prota-ui tokens:end */
   --surface:rgba(255,255,255,.94);
   --zoom:1;
   font-variant-numeric: tabular-nums;
