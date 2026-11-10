@@ -1,0 +1,47 @@
+name: Prota Product UI Contract
+
+on:
+  pull_request:
+    paths:
+      - 'portal/**'
+      - 'src/templates/infinite-canvas/**'
+      - 'design-system/**'
+      - 'tools/ui/**'
+      - 'tests/product-ui-*'
+      - 'docs/prota-ui-*'
+      - 'AGENTS.md'
+      - 'package.json'
+      - '.github/workflows/product-ui.yml'
+
+jobs:
+  ui-contract:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify token generation and UI contracts
+        run: |
+          npm run ui:tokens:check
+          npm run ui:test
+          npm run ui:lint -- --base '${{ github.event.pull_request.base.sha }}'
+      - name: Install Chromium for UI smoke
+        run: npx playwright install --with-deps chromium
+      - name: Review component states across viewports
+        run: npm run ui:browser
+        env:
+          PROTA_UI_ARTIFACT_DIR: ${{ runner.temp }}/prota-ui-screenshots
+      - name: Attach review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prota-ui-review-screenshots
+          path: ${{ runner.temp }}/prota-ui-screenshots/*.png
+          if-no-files-found: ignore

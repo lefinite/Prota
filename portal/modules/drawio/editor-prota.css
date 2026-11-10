@@ -12,15 +12,17 @@
     --workspace-color: #f2f3f6;
     --inactive-color: #f6f7f9;
     --active-color: #eeefff;
+    /* prota-ui tokens:start */
     --primary-color: #6366f1;
-    --primary-hover-color: #5558e8;
+    --primary-hover-color: #4f46e5;
+    --border-color: #e5e7eb;
+    --text-color: #1a1d24;
+  /* prota-ui tokens:end */
     --accent-color: rgba(99, 102, 241, 0.075);
     --accent-hover-color: rgba(99, 102, 241, 0.12);
     --accent-text-color: #5558e8;
-    --border-color: #e8e9ee;
     --highlight-color: #f5f6f8;
     --scrollbar-hover-color: #a7aebb;
-    --text-color: #20232a;
 
     --prota-ink: #20232a;
     --prota-muted: #697180;

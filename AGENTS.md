@@ -87,3 +87,5 @@
 - 开发完成后必须执行规范第 7 节 **Review → 修复 → 复检**：记录 P0/P1/P2 证据，修复 P0/P1，检查实际渲染、重要状态、键盘操作与适用视口。只做静态代码检查不得宣称 UI 已通过。
 - 用户说“UI 不好看”“不统一”“按规范 review / 优化”时，直接按第 7 节对**本次涉及的产品 UI** 自审与修复，输出差异、修改文件和验证结果；不只给口头建议。
 - 本规范**不强制套用于用户生成的业务 Demo、画板 HTML/CSS/JS、品牌模板**。这类内容仍按用户指令和所选设计系统自主设计；产品 UI 调整不得改动历史业务页面、破坏 iframe 样式隔离、版本独立和静态分享。
+- UI 实现以 `design-system/product.tokens.json` 为唯一 Token 源，组件参考 `portal/ui/components.css`，交互预览见 `portal/ui/showcase.html`。修改 Token 后运行 `npm run ui:tokens`，不要直接编辑生成文件。完整架构说明见 `design-system/README.md`。
+- 产品 UI PR 必须运行 `npm run ui:tokens:check`、`npm run ui:test` 与增量 `npm run ui:lint -- --base <base-ref>`；可见 UI 变更还需运行 `npm run ui:browser`，对实际功能页面补充截图和状态/交互回归。自动检查只覆盖规则子集，不代替视觉评审。

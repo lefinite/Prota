@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prota UI Design System</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="showcase.css">
+  <script defer src="showcase.js"></script>
+</head>
+<body>
+  <main class="showcase">
+    <header class="showcase-header">
+      <div>
+        <h1>Prota UI</h1>
+        <p class="showcase-note">产品工具层的真实组件与 Token 参照页。业务 Demo 不套用此风格。</p>
+      </div>
+      <a class="pui-button pui-button--secondary" href="../../docs/prota-ui-guidelines.md">阅读规范</a>
+    </header>
+    <section class="showcase-section" aria-labelledby="colors-heading">
+      <h2 id="colors-heading">颜色 · Semantic tokens</h2>
+      <div class="showcase-grid">
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--workspace"></div><div class="showcase-swatch__meta"><strong>Workspace</strong><code>#F8F9FB</code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--surface"></div><div class="showcase-swatch__meta"><strong>Surface</strong><code>#FFFFFF</code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--text"></div><div class="showcase-swatch__meta"><strong>Text</strong><code>#1A1D24</code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--brand"></div><div class="showcase-swatch__meta"><strong>Brand accent</strong><code>#6366F1</code></div></div>
+        <div class="showcase-swatch"><div class="showcase-swatch__color showcase-swatch__color--primary"></div><div class="showcase-swatch__meta"><strong>Accessible primary</strong><code>#4F46E5</code></div></div>
+      </div>
+    </section>
+    <section class="showcase-section" aria-labelledby="buttons-heading">
+      <h2 id="buttons-heading">按钮 · States and priority</h2>
+      <div class="showcase-surface">
+        <p class="showcase-label">Normal / hover / focus / active（可直接交互）</p>
+        <div class="showcase-row">
+          <button class="pui-button pui-button--primary" type="button" id="showcaseOpen">主要操作 · 打开弹窗</button>
+          <button class="pui-button pui-button--secondary" type="button">次要操作</button>
+          <button class="pui-button pui-button--ghost" type="button">文字操作</button>
+          <button class="pui-button pui-button--danger" type="button">危险操作</button>
+          <button class="pui-button pui-button--primary" type="button" disabled>不可用</button>
+          <button class="pui-icon-button" type="button" aria-label="更多选项" title="更多选项"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+        </div>
+        <div class="showcase-row"><button class="pui-button pui-button--secondary pui-button--compact" type="button">紧凑工具按钮</button><p class="showcase-note">主 CTA 只有一个；密集工具栏才使用紧凑规格。</p></div>
+      </div>
+    </section>
+    <section class="showcase-section" aria-labelledby="fields-heading">
+      <h2 id="fields-heading">输入与反馈</h2>
+      <div class="showcase-surface showcase-inputs">
+        <label class="pui-field"><span class="pui-field__label">项目名称</span><input class="pui-input" placeholder="输入项目名称" value="新产品原型"><span class="pui-field__hint">说明只出现一次，放在真正需要的位置。</span></label>
+        <label class="pui-field"><span class="pui-field__label">模型</span><select class="pui-select"><option>智能选择</option><option>手动指定</option></select></label>
+        <label class="pui-field"><span class="pui-field__label">不可用的输入</span><input class="pui-input" value="正在同步" disabled></label>
+        <label class="pui-field"><span class="pui-field__label">错误示例</span><input class="pui-input" value="无效路径" aria-invalid="true" aria-describedby="showcaseError"><span class="pui-field__hint pui-status--error" id="showcaseError">请选择一个可写入的文件夹。</span></label>
+      </div>
+    </section>
+    <section class="showcase-section" aria-labelledby="cards-heading">
+      <h2 id="cards-heading">卡片与状态</h2>
+      <div class="showcase-grid">
+        <article class="pui-card"><h3 class="showcase-card-title">简洁的内容卡片</h3><p class="showcase-card-description">保持标题、信息和操作三层以内。</p></article>
+        <a href="#cards-heading" class="pui-card pui-card--interactive showcase-card-link"><h3 class="showcase-card-title">可交互卡片</h3><p class="showcase-card-description">Hover 有轻微强调，键盘焦点可见。</p></a>
+        <div class="pui-card"><p class="pui-status pui-status--success" role="status">已保存，当前内容安全</p><p class="pui-status pui-status--warning">有尚未同步的修改</p><p class="pui-status pui-status--error" role="alert">保存失败，可重试</p></div>
+      </div>
+    </section>
+    <section class="showcase-section"><p class="showcase-note">验收：1440 / 1024 / 860 / 390 像素宽度、键盘 Tab/Escape、输入错误与高对比度，以及减少动态效果偏好。</p></section>
+  </main>
+  <dialog id="showcaseDialog" class="pui-dialog" aria-labelledby="showcaseDialogTitle">
+    <header class="pui-dialog__header"><h2 id="showcaseDialogTitle" class="pui-dialog__title">确认示例</h2><button id="showcaseClose" class="pui-icon-button" type="button" aria-label="关闭弹窗" title="关闭弹窗"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+    <div class="pui-dialog__body"><p>一个弹窗只有一个主要操作。按 Esc 或点击取消关闭，并返回原来的焦点位置。</p></div>
+    <footer class="pui-dialog__actions"><button type="button" class="pui-button pui-button--secondary" id="showcaseCancel">取消</button><button type="button" class="pui-button pui-button--primary" id="showcaseConfirm">确认</button></footer>
+  </dialog>
+</body>
+</html>

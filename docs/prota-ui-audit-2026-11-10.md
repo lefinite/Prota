@@ -77,3 +77,20 @@
 - 记录默认/hover/焦点/禁用/加载/错误/空态中**适用的**状态，键盘和中文长文本。
 - 说明是否改了共享 Token、是否新增 `!important`、是否触及产品运行时/业务画板隔离。
 - 跑与本次改动有关的真实回归；未运行需明确说明，不得以静态检查冒充交互通过。
+
+## 6. 二次 Review：从规范文档到可执行体系
+
+上一版仅有文字规范和 `AGENTS.md`，缺少可被代码与 CI 执行的设计系统。二次 Review 补齐：
+
+| 缺口 | 本次落地 | 仍需继续治理 |
+| --- | --- | --- |
+| Token 不是代码单一来源 | `design-system/product.tokens.json` + 生成 `portal/ui/tokens.css`；兼容旧变量 | 旧 CSS 大量硬编码与 `!important` 尚未逐一迁移 |
+| 主按钮颜色缺少对比度检验 | 品牌色 `#6366F1` 与白字约 4.47:1；新主按钮使用 `#4F46E5`，约 6.29:1；有自动对比度测试 | 旧 `.btn-primary` 等使用 `--accent` 的按钮仍需分组件修正 |
+| 新组件无复用入口 | 新增有作用域的 `.pui-*` Button/Input/Dialog/Card 原语及交互参照页 | 旧设置、分享、PRD 等 DOM/样式需按模块有测试地替换 |
+| 画布和第三方外壳 Token 分叉 | 同一生成器同步无限画布自包含 CSS 与 draw.io 外壳映射 | 历史版本运行时与共享工具层更新需按兼容策略验证 |
+| AI Review 无硬性检查 | 变更行静态 Lint、Token 同步检查、颜色对比度/隔离规则测试、PR 清单、GitHub CI | 真实功能页面的视觉美感与交互完整性仍需 Agent/人工审查 |
+| 开源发布可能丢文件 | 更新 `tools/public-release.py` 白名单包含 Token 源、规范和新测试 | 完整发布包仍需独立做一次端到端校验 |
+
+新增验证命令：`npm run ui:tokens:check`、`npm run ui:test`、`npm run ui:lint`、`npm run ui:browser`。浏览器检查截图来自 `portal/ui/showcase.html` 的**组件契约页**，不能冒充项目首页、Agent 工作台或旧设置界面的视觉回归。
+
+这一步建立了防止**新增**不一致的系统；**不等于** 238 处旧 `!important` 已清零，也不等于所有旧模块都已换成 `pui-*`。后续大规模旧 UI 迁移应按 S1–S3 的截图、行为回归和分享兼容测试推进。

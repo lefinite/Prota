@@ -5,6 +5,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "ui:tokens": "node tools/ui/generate-tokens.mjs",
+    "ui:tokens:check": "node tools/ui/generate-tokens.mjs --check",
+    "ui:lint": "node tools/ui/lint.mjs",
+    "ui:test": "node --test tests/product-ui-contract.test.mjs",
+    "ui:browser": "node tests/product-ui-smoke.browser.mjs",
     "pi:build": "node scripts/build-pi.mjs",
     "pi:verify": "node scripts/verify-pi.mjs",
     "pi:update": "node scripts/update-pi.mjs",

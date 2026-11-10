@@ -1,0 +1,138 @@
+/* Prota product-only primitives. Opt in with pui-* classes; never style
+   unscoped business board markup or third-party canvas content. */
+.pui-button,
+.pui-icon-button,
+.pui-input,
+.pui-select,
+.pui-textarea {
+  box-sizing: border-box;
+  font: inherit;
+}
+
+.pui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pui-space-2);
+  min-height: var(--pui-size-control);
+  padding: 0 var(--pui-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--pui-radius-control);
+  background: transparent;
+  color: var(--pui-color-text);
+  font-size: var(--pui-font-body);
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--pui-motion-fast), border-color var(--pui-motion-fast), color var(--pui-motion-fast);
+}
+
+.pui-button--primary { background: var(--pui-color-primary); color: var(--pui-color-surface); }
+.pui-button--primary:hover:not(:disabled) { background: var(--pui-color-primary-hover); }
+.pui-button--secondary { background: var(--pui-color-surface); border-color: var(--pui-color-border); }
+.pui-button--secondary:hover:not(:disabled) { background: var(--pui-color-workspace); }
+.pui-button--ghost { color: var(--pui-color-muted); }
+.pui-button--ghost:hover:not(:disabled) { background: var(--pui-color-workspace); color: var(--pui-color-text); }
+.pui-button--danger { color: var(--pui-color-danger); border-color: var(--pui-color-border); background: var(--pui-color-surface); }
+.pui-button--danger:hover:not(:disabled) { background: var(--pui-color-danger-soft); border-color: var(--pui-color-danger); }
+.pui-button--compact { min-height: var(--pui-size-control-compact); padding: 0 var(--pui-space-3); }
+.pui-button:disabled,
+.pui-icon-button:disabled { opacity: .45; cursor: not-allowed; }
+.pui-button:active:not(:disabled),
+.pui-icon-button:active:not(:disabled) { transform: translateY(1px); }
+
+.pui-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: var(--pui-size-control);
+  height: var(--pui-size-control);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--pui-radius-small);
+  background: transparent;
+  color: var(--pui-color-muted);
+  cursor: pointer;
+  transition: background-color var(--pui-motion-fast), color var(--pui-motion-fast);
+}
+.pui-icon-button:hover:not(:disabled) { background: var(--pui-color-workspace); color: var(--pui-color-text); }
+.pui-icon-button svg { display: block; width: var(--pui-size-icon-large); height: var(--pui-size-icon-large); stroke-width: 2; }
+
+.pui-button:focus-visible,
+.pui-icon-button:focus-visible,
+.pui-input:focus-visible,
+.pui-select:focus-visible,
+.pui-textarea:focus-visible,
+.pui-card--interactive:focus-visible {
+  outline: 2px solid var(--pui-color-primary);
+  outline-offset: 2px;
+}
+
+.pui-field { display: grid; gap: var(--pui-space-2); min-width: 0; }
+.pui-field__label { color: var(--pui-color-text); font-size: var(--pui-font-body); font-weight: 500; }
+.pui-field__hint { color: var(--pui-color-muted); font-size: var(--pui-font-caption); line-height: 1.5; }
+.pui-input,
+.pui-select,
+.pui-textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--pui-size-field);
+  padding: var(--pui-space-2) var(--pui-space-3);
+  border: 1px solid var(--pui-color-border);
+  border-radius: var(--pui-radius-control);
+  background: var(--pui-color-surface);
+  color: var(--pui-color-text);
+  font-size: var(--pui-font-body-large);
+  line-height: 1.45;
+}
+.pui-input::placeholder,
+.pui-textarea::placeholder { color: var(--pui-color-muted); }
+.pui-input:disabled,
+.pui-select:disabled,
+.pui-textarea:disabled { background: var(--pui-color-workspace); opacity: .65; cursor: not-allowed; }
+.pui-field[aria-invalid="true"] :is(.pui-input,.pui-select,.pui-textarea),
+.pui-input[aria-invalid="true"],
+.pui-select[aria-invalid="true"],
+.pui-textarea[aria-invalid="true"] { border-color: var(--pui-color-danger); }
+
+.pui-card {
+  box-sizing: border-box;
+  padding: var(--pui-space-4);
+  border: 1px solid var(--pui-color-border);
+  border-radius: var(--pui-radius-card);
+  background: var(--pui-color-surface);
+  color: var(--pui-color-text);
+}
+.pui-card--interactive { cursor: pointer; transition: border-color var(--pui-motion-normal), box-shadow var(--pui-motion-normal); }
+.pui-card--interactive:hover { border-color: var(--pui-color-brand); box-shadow: 0 8px 24px rgba(15,23,42,.07); }
+
+.pui-dialog {
+  box-sizing: border-box;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--pui-color-border);
+  border-radius: var(--pui-radius-dialog);
+  background: var(--pui-color-surface);
+  color: var(--pui-color-text);
+  box-shadow: 0 24px 64px rgba(15,23,42,.16);
+}
+.pui-dialog::backdrop { background: rgba(20,28,43,.32); }
+.pui-dialog__header { display: flex; justify-content: space-between; align-items: center; gap: var(--pui-space-3); padding: var(--pui-space-6) var(--pui-space-6) var(--pui-space-3); }
+.pui-dialog__title { margin: 0; font-size: var(--pui-font-dialog); font-weight: 600; line-height: 1.35; }
+.pui-dialog__body { padding: 0 var(--pui-space-6) var(--pui-space-6); font-size: var(--pui-font-body-large); line-height: 1.55; }
+.pui-dialog__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--pui-space-2); padding: var(--pui-space-3) var(--pui-space-6) var(--pui-space-6); }
+.pui-dialog[open] { animation: pui-dialog-enter var(--pui-motion-dialog) ease-out; }
+@keyframes pui-dialog-enter { from { opacity: .7; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.pui-status { display: flex; align-items: center; gap: var(--pui-space-2); font-size: var(--pui-font-body); line-height: 1.5; }
+.pui-status--success { color: var(--pui-color-success); }
+.pui-status--error { color: var(--pui-color-danger); }
+.pui-status--warning { color: var(--pui-color-warning); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pui-button, .pui-icon-button, .pui-card--interactive, .pui-dialog[open] { animation: none; transition: none; }
+}
