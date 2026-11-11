@@ -76,6 +76,24 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(json.loads((target / 'workspace.json').read_text())['formatVersion'], 1)
         self.assertFalse(workspace.LOCK_PATH.exists())
 
+    def test_migration_preserves_live_wal_ledger_and_snapshots(self):
+        import sqlite3
+        ledger = self.source / 'data/user-edits.sqlite3'
+        connection = sqlite3.connect(ledger)
+        self.addCleanup(connection.close)
+        connection.execute('PRAGMA journal_mode=WAL')
+        connection.execute('CREATE TABLE edits (text TEXT)')
+        connection.execute('INSERT INTO edits VALUES (?)', ('人工修改',))
+        connection.commit()
+        self.write('data/user-edit-assets/snapshots/fixture', '完整恢复快照')
+        target = self.base / 'ledger-copy'
+        self.assertEqual(self.run_change(target)['state'], 'complete')
+        from contextlib import closing
+        with closing(sqlite3.connect(target / 'data/user-edits.sqlite3')) as copied:
+            self.assertEqual(copied.execute('SELECT text FROM edits').fetchone()[0], '人工修改')
+            self.assertEqual(copied.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
+        self.assertEqual((target / 'data/user-edit-assets/snapshots/fixture').read_text(), '完整恢复快照')
+
     def test_hash_mismatch_does_not_switch_or_delete_source(self):
         with patch.object(workspace, 'digest', side_effect=[b'first', b'changed']):
             result = self.run_change(self.base / 'failed')

@@ -1,79 +1,64 @@
-# Prota Demo tracking manifest v1
+# Prota tracking manifest v2
 
-This version-scoped artifact is an inert **measurement specification**, not live collection.
-
-Path: `src/pages/{projectId}/{pageId}/{version}/tracking/events.json`.
-
-## Example
+An inert version-scoped measurement specification at `src/pages/{projectId}/{pageId}/{version}/tracking/events.json`. v1 is readable for compatibility; new generation uses v2.
 
 ```json
 {
-  "schemaVersion": 1,
-  "scope": {
-    "projectId": "sample",
-    "pageId": "login",
-    "version": "v2",
-    "pageMode": "standard"
+  "schemaVersion": 2,
+  "scope": {"projectId":"sample","pageId":"account","version":"v2","pageMode":"standard"},
+  "naming": {
+    "application":{"code":"rdify","label":"Readify"},
+    "business":{"code":"ainvest","label":"Ainvest"},
+    "platform":"web"
   },
-  "events": [
-    {
-      "id": "login_submit",
-      "name": "login_submit",
-      "title": "提交登录",
-      "purpose": "衡量用户是否尝试完成核心登录流程",
-      "question": "用户到达登录页后是否真正尝试提交？",
-      "decision": "是否需要降低登录表单操作门槛",
-      "score": {
-        "impact": 3,
-        "actionability": 3,
-        "gap": 2,
-        "cost": 1,
-        "duplicate": 0,
-        "total": 7
-      },
-      "priority": "P0",
-      "signal": "attempt",
-      "trigger": { "type": "submit", "when": "主动提交有效的登录表单，不代表登录成功" },
-      "parameters": [
-        { "name": "method", "type": "enum", "allowedValues": ["password", "code"], "source": "当前登录方式，无账号内容" }
-      ],
-      "targets": [
-        {
-          "kind": "page",
-          "path": "index.html",
-          "anchor": { "method": "data-attribute", "value": "login-submit" },
-          "confidence": "high",
-          "status": "bound"
-        }
-      ]
-    }
+  "screens":[
+    {"id":"login","title":"登录页","code":"loginPage","path":"index.html","route":{"hash":"#login"},"anchor":{"method":"selector","value":"[data-view=login]"},"status":"reviewed"},
+    {"id":"register","title":"注册","code":"registerPage","path":"register.html","status":"reviewed"},
+    {"id":"recovery","title":"找回密码","code":"recoverPasswordPage","path":"index.html","route":{"hash":"#login"},"anchor":{"method":"selector","value":"[data-view=recovery]"},"navigation":[{"action":"click","anchor":{"method":"data-attribute","value":"open-recovery"}}],"status":"reviewed","reason":"保留关键提交，排除输入框焦点"}
   ],
-  "omitted": [
-    { "candidate": "password_focus", "reason": "焦点次数不能支持可行动的产品决策" }
-  ]
+  "events":[{
+    "id":"login_submit","screenId":"login","name":"rdify_ainvest_loginPage_login_continue","title":"提交登录",
+    "registrationId":"","controlType":"element",
+    "block":{"code":"login","label":"登录"},"element":{"code":"continue","label":"继续"},
+    "operations":["click"],"signal":"attempt","trigger":{"type":"submit","when":"主动提交有效表单；每次有效提交一次，不代表登录成功"},
+    "purpose":"衡量登录尝试","question":"用户是否完成表单提交？","decision":"是否降低表单门槛",
+    "score":{"impact":3,"actionability":3,"gap":2,"cost":1,"duplicate":0,"total":7},"priority":"P0",
+    "parameters":[{"name":"loginMethod","type":"enum","meaning":"登录方式","allowedValues":["password","code"],"source":"当前选中的登录方式","notes":"不包含账号原文"}],
+    "targets":[{"kind":"page","path":"index.html","anchor":{"method":"data-attribute","value":"login-submit"},"confidence":"high","status":"bound"}]
+  }],
+  "omitted":[{"screenId":"login","candidate":"password_focus","reason":"不能支持可行动决策"}]
 }
 ```
 
-## Rules
+## Scope, screens and navigation
 
-- `scope` exactly matches the directory. `pageMode` is `standard` or `infinite-canvas`. Use the latter only when page metadata says `pageMode: "infinite-canvas"`.
-- `events` is an ordered 0–12 array. Every event requires `id`, `name`, `title`, `purpose`, `question`, `decision`, `score`, `priority`, `signal`, `trigger`, `parameters`, `targets`.
-- IDs and names are lower-case `snake_case` starting with a letter. `id` identifies this manifest entry. `name` is the implementation event name and may recur across different pages for identical semantics.
-- `score.total = impact + actionability + gap - cost - duplicate`. All factors are bounded integers. Every event scores ≥5. `P0` iff ≥7, `P1` for 5–6.
-- `signal` is `attempt`, `outcome`, `exposure`, `error`, or `engagement`. An attempted click/submit is not success. Use `targets: []` for outcomes/errors that lack a real visual target.
-- `trigger.type` is `click`, `submit`, `view`, `result`, `error`, or `change`. `when` states the exact qualifying transition and dedup conditions.
-- `parameters` contains 0–5 safe dimensions. Name is `snake_case`; type is `string`, `number`, `boolean`, or `enum`. Enums use 2–20 bounded `allowedValues`; every parameter has `source`. Exclude phone, email, password, token, raw input, full URL query, free text, and user content.
-- Each target has `kind`, `path`, `anchor`, `confidence`, `status`. `kind=page` means ordinary Demo iframe; `canvas-board` means a nested board iframe, with required `boardId` and `nodeId` where known. Same CSS selector in two boards is never interchangeable.
-- `path` identifies the actual iframe document: `index.html` for a normal page, `boards/{boardId}/index.html` for a board. The source of its DOM element can be an imported JS/JSX file, but this target path must still identify the iframe document. No absolute path, `..`, protocol URL, or editor template path.
-- `anchor.method` is `data-attribute` (preferred) or `selector` (fallback). For the former `value="login-submit"` means `data-prota-track-id="login-submit"`. For the latter `value` is a CSS selector unique **within its specified iframe**, which needs browser validation.
-- `confidence` is `high`, `medium`, or `low`. `status` is `bound` or `needs_review`. Low/missing/ambiguous locator must be `needs_review`, with no misleading badge.
-- `omitted` contains candidate names and concrete rejection reasons. These do not count as events.
+- `scope` must match current directory, pageMode is standard/infinite-canvas.
+- `naming.application` is fixed to `{code:"rdify",label:"Readify"}`; `naming.business` is fixed to `{code:"ainvest",label:"Ainvest"}` for this company workflow. Never derive either from feature scope. `platform` (app/web/plugin/other) is retained for reader compatibility/export only, not ID construction.
+- Optional per-screen platform hints may group export sheets. APP/Web/ext distinction is a convention within the page code (loginPage / webHome / extBar), not a mandatory classification or extra key level. Preserve established page codes.
+- `screens` inventories all distinct business screens across all boards, paths, routes and view switches. id is stable snake_case; title is human name, code is the naming segment. `path` is a local HTML path relative to this version; safe subdirectories are supported. Never use `..`, absolute URLs, protocols, queries or hashes inside path.
+- Infinite canvas screens require boardId and nodeId when known. `path` may be the board entry or another local HTML document reached from it. Board identity is retained through navigation.
+- `route.hash` and `route.search` distinguish URL states, including empty strings. `anchor` identifies a uniquely visible root to distinguish same-URL state-driven views. On view switches old hidden roots must not qualify.
+- `navigation` is an optional ordered set (≤12) of `{action:"click",anchor:{method,value}}` navigation-only steps from the screen's path/route entry. No arbitrary JS, inputs, submit, delete or other consequential actions. The review UI can replay these to locate offscreen events. If a state cannot be safely reproduced mark the screen needs_review and explain.
+- `status` reviewed/needs_review; pending requires reason. A zero-event reviewed screen includes reason. Above 8 retained events per screen requires budgetReason, maximum 12. No whole-flow 12-event cap. Runtime bound: ≤200 screens / 2400 events.
 
-## Lifecycle
+## Events and company keys
 
-- Regeneration uses semantic IDs, not DOM order or timestamp; do not create noisy diffs or overwrite prior business versions.
-- The existing version-copy procedure may copy the manifest to a new version. Reconcile the new version's interactions, update only that new copy, and mark vanished targets.
-- Portal fetches `tracking/events.json` with cache-busting on context change and Agent completion. Invalid JSON is an error, not a false “zero events.”
-- Visual markers are computed in the Portal overlay with existing iframe geometry and zoom clipping, never as CSS in the generated business page.
-- The immutable static share payload contains the published manifest snapshot. ZIP includes the same manifest; its read-only viewer must not rely on author's local Prota.
-- Logical events with no target appear as list-only cards; stale/ambiguous targets show “需确认”, never a guessed element.
+- id: stable internal snake_case identity, unique within manifest.
+- name: exact company implementation key. Page: `rdify_ainvest_{page}`; element: `rdify_ainvest_{page}_{block}_{element}`. Chinese names use the parallel Readify_Ainvest prefix. A page has no block or element. An element has code/label for both.
+- title is the concise human event name. Optional fullName preserves an approved full Chinese label; otherwise Excel composes application/business/page/block/element labels, matching the source workbook.
+- registrationId: existing numeric platform assignment as a string, or empty/omitted. Never generate arbitrary numeric IDs.
+- screenId references the owning screen. One semantic company key has one event record with multiple operations/targets as needed. Keys are unique, operations are unique within an event.
+- operations: show/click/stay/start/slide/submit/result/error/change; operation is separate from key. trigger.type retains click/submit/view/result/error/change; trigger.when specifies transitions, timing and dedup.
+- purpose/question/decision required. Score integer ranges: impact 0–3, actionability 0–3, gap 0–2, cost 0–2, duplicate 0–2. total = impact + actionability + gap - cost - duplicate; retain ≥5; priority P0 iff ≥7, else P1.
+- parameters: 0–5, each name (camelCase or snake_case), type (string/int/number/boolean/enum), meaning, source; optional notes, operation (must be supported by event), allowedValues (2–20 for enum). Duplicate names are invalid. Avoid secrets/raw user input. Preserve established safe names and units.
+- targets: array, may be empty for logical outcome events. kind page/canvas-board, path exactly equals owning screen path, boardId matches screen for boards, nodeId where known. anchor data-attribute/selector; preferred `data-prota-track-id` stable token. confidence high/medium/low; status bound/needs_review, low must be needs_review. One match in correct live document and screen required. Same selector in another route or board must not bind.
+- Page exposure can bind a screen root. It must not intercept all clicks within that root.
+- omitted: candidates with explicit reason and optional screenId.
+
+## Lifecycle and display
+
+Preserve semantic identities and unrelated objects; regenerate all screens, not just first screenshot. Do not mutate historical versions. Portal reloads on context change / Agent completion, rebinds new documents and gates markers by route/root visibility. Business clicks continue normally. Overlay markers/list locate each other. Excel is a true .xlsx, parameters per row. Published share/ZIP uses its pinned manifest; no live telemetry or author-local dependencies.
+
+## Manual review and deletion
+
+Event `reviewStatus` is `valid` or `needs_review`. Valid events have no visible normal-state badge. Human review is one way: unresolved events/pages can be confirmed valid; the review UI and API do not offer a reverse transition back to uncertain. A screen can be marked `status: reviewed`, `reviewedByUser: true` without rewriting bindings. Runtime absence on a different page is not a review failure. User-deleted events are removed from the ordered events array; `review.deletedEvents` retains `{event,index,deletedAt}` for undo and regeneration exclusion. Display numbers derive from the current array, never from stable IDs. Preserve these manual decisions on regeneration. Share/ZIP viewers remain read-only.

@@ -10,6 +10,8 @@ import json
 import re
 import shutil
 import tempfile
+from html.parser import HTMLParser
+import urllib.parse
 from pathlib import Path
 
 from server import workspace
@@ -42,8 +44,71 @@ def safe_file(path):
     return path.read_bytes()
 
 
-def document_entry(app=None):
-    return safe_file(Path(app or workspace.APP_ROOT) / 'src/templates/infinite-canvas-document/index.html')
+EXTENSION_CONFIG = re.compile(r'<script\b[^>]*\bid=["\']prota-canvas-extensions["\'][^>]*>(.*?)</script>', re.S | re.I)
+
+
+def page_extensions(directory):
+    """Preserve page-owned host integrations while sharing only editor code."""
+    directory = Path(directory)
+    def valid(value):
+        if not isinstance(value, str):
+            raise ValueError('画布扩展路径无效')
+        parsed = urllib.parse.urlsplit(value)
+        path = urllib.parse.unquote(parsed.path)
+        parts = path.removeprefix('./').split('/')
+        if parsed.scheme or parsed.netloc or path.startswith('/') or '\\' in path or not parts or any(not part or part.startswith('.') for part in parts):
+            raise ValueError('画布扩展必须位于当前版本目录')
+        target = directory.joinpath(*parts)
+        if any(item.is_symlink() for item in [target, *target.parents] if directory in item.parents):
+            raise ValueError('画布扩展不能包含符号链接')
+        if not target.is_file():
+            raise ValueError('画布扩展文件缺失：' + value)
+        return value
+    def normalize(config):
+        if not isinstance(config, dict) or config.get('version') != 1:
+            raise ValueError('画布扩展配置无效')
+        result = {'version':1}
+        for kind in ('scripts', 'styles'):
+            values = config.get(kind, [])
+            if not isinstance(values, list) or len(values) > 32:
+                raise ValueError('画布扩展配置无效')
+            result[kind] = list(dict.fromkeys(valid(value) for value in values))
+        return result
+    class References(HTMLParser):
+        def __init__(self):
+            super().__init__(); self.scripts=[]; self.styles=[]
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            value = attrs.get('src') if tag == 'script' else attrs.get('href') if tag == 'link' and attrs.get('rel') == 'stylesheet' else None
+            if not value:
+                return
+            path = urllib.parse.urlsplit(value).path.removeprefix('./')
+            if path in {*EDITOR_FILES, 'canvas-data.js', '__prota_runtime/boot.js'} or '__prota_runtime/' in path:
+                return
+            (self.scripts if tag == 'script' else self.styles).append(value)
+    sources = [directory/'index.html', directory/'.canvas-runtime-backup/shared-v1/index.html', directory/'.canvas-runtime-backup/index.html']
+    for source in sources:
+        if not source.is_file():
+            continue
+        text = safe_file(source).decode('utf-8')
+        explicit = EXTENSION_CONFIG.search(text)
+        if explicit:
+            return normalize(json.loads(explicit[1]))
+        refs = References(); refs.feed(text)
+        if refs.scripts or refs.styles:
+            return normalize({'version':1,'scripts':refs.scripts,'styles':refs.styles})
+    return {'version':1,'scripts':[],'styles':[]}
+
+
+def document_entry(app=None, directory=None):
+    entry = safe_file(Path(app or workspace.APP_ROOT) / 'src/templates/infinite-canvas-document/index.html')
+    if directory is not None:
+        config = page_extensions(directory)
+        if config['scripts'] or config['styles']:
+            encoded = json.dumps(config, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
+            marker = '<script type="application/json" id="prota-canvas-extensions">' + encoded + '</script>\n'
+            entry = entry.replace(b'<script src="./canvas-data.js">', marker.encode() + b'<script src="./canvas-data.js">')
+    return entry
 
 
 def is_shared(directory):
@@ -213,14 +278,14 @@ def public_files(directory):
             yield relative, file
 
 
-def freeze_canvas_page(root, directory, parts, runtime_hash):
+def freeze_canvas_page(root, directory, parts, runtime_hash, app=None):
     # Freeze at share creation, before ZIP generation; later workspace edits cannot
     # make HTML disagree with the ZIP or replace another share's business snapshot.
     entries = {}
     for relative, file in public_files(directory):
         if relative.parts[0] == '__prota_runtime' or len(relative.parts) == 1 and relative.name in EDITOR_FILES:
             continue
-        entries['/'.join(parts) + '/' + relative.as_posix()] = safe_file(file)
+        entries['/'.join(parts) + '/' + relative.as_posix()] = document_entry(app, directory) if relative.as_posix() == 'index.html' else safe_file(file)
     docs = Path(directory).parent / 'docs'
     if docs.is_dir():
         for relative, file in public_files(docs):
@@ -268,7 +333,7 @@ def pin_share_pages(root, payload, app=None):
             validate_document_schema(directory, manifest)
             page['canvasRuntimeHash'] = manifest['runtimeHash']
             if not page.get('canvasEntryPath'):
-                page['canvasEntryPath'] = freeze_canvas_page(root, directory, parts, manifest['runtimeHash'])
+                page['canvasEntryPath'] = freeze_canvas_page(root, directory, parts, manifest['runtimeHash'], app)
             old_prefix = 'src/pages/' + '/'.join(parts[:2]) + '/'
             new_prefix = str(Path(page['canvasEntryPath']).parents[1]).replace('\\', '/') + '/'
             def rewrite_paths(value):
@@ -342,6 +407,8 @@ def migrate_entry(root, params, app=None):
         raise ValueError('画布路径无效')
     if not is_canvas(directory):
         raise ValueError('仅能迁移无限画布')
+    from server.copy_edits import guard_legacy_runtime
+    guard_legacy_runtime(directory)
     manifest, _ = runtime_bundle(app)
     validate_document_schema(directory, manifest)
     with page_lock(directory):
@@ -368,7 +435,7 @@ def migrate_entry(root, params, app=None):
             staged = directory / '.canvas-shared-entry.tmp'
             if staged.is_symlink():
                 raise ValueError('迁移暂存路径无效')
-            staged.write_bytes(document_entry(app))
+            staged.write_bytes(document_entry(app, directory))
             try:
                 staged.replace(directory / 'index.html')
                 # Retire only known top-level editor resources. Board JS/CSS is business data.
@@ -425,7 +492,11 @@ def copy_version(source, destination, app=None):
         raise ValueError('目标版本已存在')
     if not is_canvas(source):
         shutil.copytree(source, destination)
+        from server.copy_edits import inherit_version_edits
+        inherit_version_edits(source, destination)
         return
+    from server.copy_edits import guard_legacy_runtime
+    guard_legacy_runtime(source)
     manifest, _ = runtime_bundle(app)
     validate_document_schema(source, manifest)
     with tempfile.TemporaryDirectory(prefix='.canvas-iterate-', dir=destination.parent) as temp:
@@ -437,5 +508,5 @@ def copy_version(source, destination, app=None):
             target = staged / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(safe_file(file))
-        (staged / 'index.html').write_bytes(document_entry(app))
+        (staged / 'index.html').write_bytes(document_entry(app, source))
         staged.rename(destination)

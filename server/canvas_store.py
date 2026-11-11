@@ -215,6 +215,8 @@ def upgrade_runtime(root, params, template):
     if root not in directory.parents or not (directory/'canvas-data.js').is_file():
         raise ValueError('无限画布不存在')
     with LOCK:
+        from server.copy_edits import guard_legacy_runtime
+        guard_legacy_runtime(directory)
         backup = directory/'.canvas-runtime-backup'
         if backup.is_symlink():
             raise ValueError('备份目录无效')

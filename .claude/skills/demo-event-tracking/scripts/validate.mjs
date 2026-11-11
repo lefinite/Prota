@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import {validateTrackingManifest} from '../../../../portal/modules/tracking/model.js';
 
 const file = process.argv[2];
 if (!file) {
@@ -24,7 +25,13 @@ try {
 }
 
 if (!object(doc)) fail('$', 'must be an object');
-if (doc?.schemaVersion !== 1) fail('schemaVersion', 'must be 1');
+const v2=doc?.schemaVersion===2;
+if (![1,2].includes(doc?.schemaVersion)) fail('schemaVersion', 'must be 1 or 2');
+try{validateTrackingManifest(doc,doc?.scope||{});}catch(error){fail('$',error.message);}
+if (v2) {
+  if (doc.naming?.application?.code !== 'rdify' || doc.naming?.application?.label !== 'Readify') fail('naming.application','company classification must be rdify / Readify');
+  if (doc.naming?.business?.code !== 'ainvest' || doc.naming?.business?.label !== 'Ainvest') fail('naming.business','company business line must be ainvest / Ainvest; do not infer it from the feature');
+}
 const scope = doc?.scope;
 if (!object(scope)) fail('scope', 'must be an object');
 for (const field of ['projectId', 'pageId', 'version']) {
@@ -36,12 +43,12 @@ const expectedPath = path.join('src', 'pages', scope?.projectId || '', scope?.pa
 if (!manifestPath.endsWith(path.sep + expectedPath)) fail('$', `expected location under ${expectedPath}`);
 const versionDir = path.dirname(path.dirname(manifestPath));
 
-if (!Array.isArray(doc?.events) || doc.events.length > 12) fail('events', 'must have 0..12 items');
+if (!Array.isArray(doc?.events) || doc.events.length > (v2?2400:12)) fail('events', 'must have 0..12 items');
 const eventIds = new Set();
 for (const [i, event] of (Array.isArray(doc?.events) ? doc.events : []).entries()) {
   const key = `events[${i}]`;
   if (!object(event)) { fail(key, 'must be an object'); continue; }
-  for (const field of ['id', 'name']) if (!snake(event[field])) fail(`${key}.${field}`, 'must be snake_case');
+  for (const field of (v2?['id']:['id','name'])) if (!snake(event[field])) fail(`${key}.${field}`, 'must be snake_case');
   if (eventIds.has(event.id)) fail(`${key}.id`, 'duplicate');
   eventIds.add(event.id);
   for (const field of ['title', 'purpose', 'question', 'decision']) if (!text(event[field])) fail(`${key}.${field}`, 'required');
@@ -61,10 +68,10 @@ for (const [i, event] of (Array.isArray(doc?.events) ? doc.events : []).entries(
   const params = new Set();
   for (const [j, param] of (Array.isArray(event.parameters) ? event.parameters : []).entries()) {
     const key2 = `${key}.parameters[${j}]`;
-    if (!object(param) || !snake(param.name) || !text(param.source)) fail(key2, 'name and source required');
+    if (!object(param) || !(v2?/^[A-Za-z][A-Za-z0-9_]*$/.test(param.name||''):snake(param.name)) || !text(param.source)) fail(key2, 'name and source required');
     if (params.has(param?.name)) fail(key2, 'duplicate parameter');
     params.add(param?.name);
-    if (!oneOf(param?.type, ['string', 'number', 'boolean', 'enum'])) fail(`${key2}.type`, 'unsupported');
+    if (!oneOf(param?.type, ['string', 'int', 'number', 'boolean', 'enum'])) fail(`${key2}.type`, 'unsupported');
     if (param?.type === 'enum' && (!Array.isArray(param.allowedValues) || param.allowedValues.length < 2 || param.allowedValues.length > 20 || !param.allowedValues.every(text))) fail(`${key2}.allowedValues`, 'enum needs 2..20 values');
     if (/phone|email|password|token|secret|credential|raw_?input|full_?url/i.test(param?.name || '')) fail(`${key2}.name`, 'potentially sensitive');
   }
@@ -77,8 +84,8 @@ for (const [i, event] of (Array.isArray(doc?.events) ? doc.events : []).entries(
     if (scope?.pageMode === 'infinite-canvas' && target.kind !== 'canvas-board') fail(`${key2}.kind`, 'must target a board iframe');
     if (scope?.pageMode === 'standard' && target.kind !== 'page') fail(`${key2}.kind`, 'must target a page iframe');
     if (target.kind === 'canvas-board' && (!text(target.boardId) || !/^[A-Za-z0-9_-]+$/.test(target.boardId))) fail(`${key2}.boardId`, 'required');
-    if (target.kind === 'canvas-board' && target.path !== `boards/${target.boardId}/index.html`) fail(`${key2}.path`, 'must identify board iframe document');
-    if (target.kind === 'page' && target.path !== 'index.html') fail(`${key2}.path`, 'must identify page iframe document');
+    if (!v2 && target.kind === 'canvas-board' && target.path !== `boards/${target.boardId}/index.html`) fail(`${key2}.path`, 'must identify board iframe document');
+    if (!v2 && target.kind === 'page' && target.path !== 'index.html') fail(`${key2}.path`, 'must identify page iframe document');
     if (!text(target.path) || target.path.startsWith('/') || target.path.includes('..') || target.path.includes('://') || target.path.includes('\\')) fail(`${key2}.path`, 'unsafe relative path');
     else if (!fs.existsSync(path.join(versionDir, target.path))) fail(`${key2}.path`, 'file not found');
     if (!object(target.anchor) || !oneOf(target.anchor.method, ['data-attribute', 'selector']) || !text(target.anchor.value)) fail(`${key2}.anchor`, 'method/value required');
@@ -91,6 +98,11 @@ for (const [i, event] of (Array.isArray(doc?.events) ? doc.events : []).entries(
 if (!Array.isArray(doc?.omitted)) fail('omitted', 'must be an array');
 for (const [i, rejected] of (Array.isArray(doc?.omitted) ? doc.omitted : []).entries()) {
   if (!text(rejected?.candidate) || !text(rejected?.reason)) fail(`omitted[${i}]`, 'candidate and reason required');
+}
+
+if(v2&&Array.isArray(doc.screens))for(const [i,screen]of doc.screens.entries()) {
+ if(!fs.existsSync(path.join(versionDir,screen.path)))fail(`screens[${i}].path`,'file not found');
+ if(doc.events.filter(e=>e.screenId===screen.id).length>8&&!text(screen.budgetReason))fail(`screens[${i}].budgetReason`,'justify more than 8 events');
 }
 
 if (errors.length) {

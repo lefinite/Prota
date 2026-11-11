@@ -22,6 +22,8 @@ test('real Pi: Magpie follow/pinned, tool loop, pending latest, restart, removal
     await write(path.join(workspace, 'workspace.json'), { id: 'magpie-fixture', formatVersion: 1 });
     await write(path.join(workspace, 'data/projects.json'), { projects: [{ id: 'demo', pages: [{ id: 'reader', versions: ['v1'], targetDevice: 'mobile' }] }] });
     let models = ['a', 'b', 'c']; const requests = []; let release, arrived;
+    let mainRequests = 0, titleReply = '阅读器交互优化', titleGate = null, titleArrived = () => {};
+    let titleRequests = 0;
     const reached = new Promise(resolve => { arrived = resolve; });
     const gate = new Promise(resolve => { release = resolve; });
     const gateway = http.createServer(async (req, res) => {
@@ -33,15 +35,18 @@ test('real Pi: Magpie follow/pinned, tool loop, pending latest, restart, removal
         }
         let raw = ''; for await (const chunk of req) raw += chunk;
         const body = JSON.parse(raw); requests.push(body);
-        if (requests.length === 1) { arrived(); await gate; }
+        const isTitle = JSON.stringify(body.messages).includes('请为下面 Prota 终端会话生成一个中文短标题');
+        if (isTitle) { titleRequests++; titleArrived(); if (titleGate) await titleGate; }
+        else { mainRequests++; if (mainRequests === 1) { arrived(); await gate; } }
         const lastUser = body.messages.findLastIndex(m => m.role === 'user');
         const tools = body.messages.slice(lastUser + 1).filter(m => m.role === 'tool');
         let delta, finish;
-        if (tools.length === 0 && requests.length === 1) {
+        if (!isTitle && tools.length === 0 && mainRequests === 1) {
             delta = { tool_calls: [{ index: 0, id: 'write-prototype', type: 'function', function: { name: 'write', arguments: JSON.stringify({ path: page + '/app.js', content: 'globalThis.magpiePrototype = true;' }) } }] }; finish = 'tool_calls';
-        } else if (tools.length === 1 && body.model === 'fixture/a') {
+        } else if (!isTitle && tools.length === 1 && body.model === 'fixture/a') {
             delta = { tool_calls: [{ index: 0, id: 'read-prototype', type: 'function', function: { name: 'read', arguments: JSON.stringify({ path: page + '/app.js' }) } }] }; finish = 'tool_calls';
-        } else { delta = { content: 'Prototype updated and verified.' }; finish = 'stop'; }
+        } else { delta = { content: isTitle
+            ? (JSON.stringify(body.messages.at(-1)?.content).includes('标题超过10个字') ? '阅读器交互优化' : titleReply) : 'Prototype updated and verified.' }; finish = 'stop'; }
         const chunk = (delta, finish_reason = null) => ({ id: 'fixture', object: 'chat.completion.chunk', created: 1, model: body.model, choices: [{ index: 0, delta, finish_reason }] });
         res.writeHead(200, { 'Content-Type': 'text/event-stream' });
         res.write(`data: ${JSON.stringify(chunk({ role: 'assistant', ...delta }))}\n\n`);
@@ -91,6 +96,70 @@ test('real Pi: Magpie follow/pinned, tool loop, pending latest, restart, removal
     assert.equal((await view()).effectiveModel.modelId, 'fixture/a');
     await stop(); await start(); assert.equal((await api(base + '/history')).providerBinding.policy, 'pinned');
     assert.equal((await view()).effectiveModel.modelId, 'fixture/a');
+    const named = await api('/api/agent/session', { projectId: 'demo', pageId: 'reader', version: 'v1',
+        providerConfig: { provider: 'integration:magpie', adapter: 'magpie' } });
+    const namedBase = `/api/agent/session/${named.sessionId}`;
+    await api(namedBase + '/model-binding', { kind: 'magpie', policy: 'pinned', pinnedModelId: 'fixture/a',
+        expectedRevision: (await api(namedBase + '/model-binding')).bindingRevision });
+    titleReply = '阅读器交互流程与操作体验优化设计';
+    let releaseTitle;
+    titleGate = new Promise(resolve => { releaseTitle = resolve; });
+    const titleReached = new Promise(resolve => { titleArrived = resolve; });
+    t.after(() => releaseTitle());
+    const namedResponse = await fetch(`http://127.0.0.1:${port}${namedBase}/message`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: 'demo', pageId: 'reader', version: 'v1', message: '请帮我优化阅读器中的交互体验' }) });
+    assert.equal(namedResponse.status, 200);
+    await namedResponse.text();
+    await titleReached;
+    // The title finishes AFTER the task's last persistence. No history requests
+    // or later business events may be needed to save the generated name.
+    releaseTitle(); titleGate = null;
+    const namedFile = path.join(workspace, 'data/agent-sessions', named.sessionId + '.json');
+    let saved;
+    for (let i = 0; i < 200; i++) {
+        saved = JSON.parse(await fs.readFile(namedFile, 'utf8'));
+        if (saved.titleSource === 'ai') break;
+        await pause(30);
+    }
+    assert.equal(saved.title, '阅读器交互优化', logs);
+    assert.equal(saved.titleSource, 'ai');
+    let namedHistory;
+    for (let i = 0; i < 200; i++) {
+        namedHistory = await api(namedBase + '/history');
+        if (namedHistory.title === '阅读器交互优化') break;
+        await pause(30);
+    }
+    assert.equal(namedHistory.title, '阅读器交互优化', logs);
+    const titleRequest = requests.find(r => JSON.stringify(r.messages).includes('请为下面 Prota 终端会话生成一个中文短标题'));
+    assert.equal(titleRequest.model, 'fixture/a', 'Title must respect the pinned Magpie model');
+    assert.equal(titleRequest.tools?.length || 0, 0, 'Title generation must not expose tools');
+    assert.equal((await api(namedBase + '/model-binding')).effectiveModel.modelId, 'fixture/a');
+    await stop(); await start();
+    assert.equal((await api(namedBase + '/history')).title, '阅读器交互优化', 'Generated title must survive restart');
+    // An empty title must remain retryable, including across a restart and
+    // through the SDK entry point. Retry uses the original request.
+    titleReply = '';
+    const retry = await api('/api/agent/session', { projectId: 'demo', pageId: 'reader', version: 'v1',
+        providerConfig: { provider: 'integration:magpie', adapter: 'magpie' } });
+    const retryBase = `/api/agent/session/${retry.sessionId}`;
+    await api(retryBase + '/sdk/prompt', { prompt: '请帮我优化阅读器中的交互体验' });
+    const retryFile = path.join(workspace, 'data/agent-sessions', retry.sessionId + '.json');
+    for (let i = 0; i < 200 && !logs.includes('Title generation returned empty text'); i++) await pause(30);
+    assert.ok(logs.includes('Title generation returned empty text'), logs);
+    assert.equal(JSON.parse(await fs.readFile(retryFile, 'utf8')).titleSource, 'local');
+    await stop();
+    const legacyTitle = JSON.parse(await fs.readFile(retryFile, 'utf8'));
+    delete legacyTitle.titleSource;
+    await write(retryFile, legacyTitle);
+    titleReply = '阅读器交互优化'; await start();
+    const titleCountBeforeRetry = titleRequests;
+    for (let i = 0; i < 200; i++) {
+        if ((await api(retryBase + '/history')).title === '阅读器交互优化') break;
+        await pause(30);
+    }
+    assert.equal((await api(retryBase + '/history')).title, '阅读器交互优化');
+    assert.equal(titleRequests, titleCountBeforeRetry + 1, 'Concurrent history reads must share the title request');
     await api(base + '/sdk/set-model', { model: 'fixture/c' }, 409);
     models = ['b', 'c']; await api('/api/agent/magpie/refresh', {});
     const before = requests.length; await api(base + '/sdk/prompt', { prompt: 'Must not run' }, 422); assert.equal(requests.length, before);

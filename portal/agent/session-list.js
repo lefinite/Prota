@@ -44,10 +44,10 @@ export function sessionPageGroupKey(session) {
         ? 'global' : JSON.stringify([session.projectId, session.pageId]);
 }
 
-export function groupSessionsByPage(items, projects) {
+export function groupSessionsByPage(items, projects, sort = 'updated') {
     const groups = new Map();
     const sorted = [...items].sort((a, b) =>
-        new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+        new Date((sort === 'created' ? b.createdAt : b.updatedAt) || b.createdAt || 0) - new Date((sort === 'created' ? a.createdAt : a.updatedAt) || a.createdAt || 0));
     for (const session of sorted) {
         const global = session.sessionScope === 'global' || !session.pageId || session.pageId === '__global__';
         const key = sessionPageGroupKey(session);

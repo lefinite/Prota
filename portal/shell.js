@@ -1,3 +1,5 @@
+import { initSidebarLayout } from './modules/sidebar/layout.js';
+import { editRequest, editScope, verifyPreview } from './modules/copy-edits/index.js';
 import { sessionIndicator, groupSessionsByPage, sessionPageGroupKey } from './agent/session-list.js';
 import { filterPageTree, normalizePageSearch } from './modules/page-search/index.js';
 import { ModelLibrary } from './agent/model-library.js';
@@ -20,7 +22,7 @@ import { showShareProgress } from './modules/sharing/progress.js';
 import { renderShareNavigation } from './modules/sharing/navigation.js';
 import { downloadPageArchive } from './modules/sharing/download.js';
 import { VercelConnection } from './modules/settings/vercel.js';
-import { PRDModule } from './modules/prd/index.js?v=20261102-persistent-doc-toggle';
+import { PRDModule } from './modules/prd/index.js?v=20261106-editor-selection';
 import { DrawioModule } from './modules/drawio/index.js?v=20260701-xmind-v8';
 import { MindmapModule } from './modules/mindmap/index.js?v=20260701-xmind-v12';
 import { TrackingReview } from './modules/tracking/index.js';
@@ -245,6 +247,7 @@ class DemoShell {
         this.agentSessionStatusBaselineAt = this.readAgentStorage('status-baseline-at', null) || Date.now();
         this.writeAgentStorage('status-baseline-at', this.agentSessionStatusBaselineAt);
         this.agentSessionSearch = '';
+        this.agentSessionSort = this.readAgentStorage('session-sort', 'updated') === 'created' ? 'created' : 'updated';
         this.agentSessionGroupMode = this.readAgentStorage('session-group-mode', 'time') === 'page' ? 'page' : 'time';
         this.agentSessionPageSize = 30;
         this.agentSessionNextCursor = null;
@@ -417,9 +420,7 @@ class DemoShell {
         this.agentNewSessionBtn = document.getElementById('agentNewSessionBtn');
         this.agentSessionDrawerToggle = document.getElementById('agentSessionDrawerToggle');
         this.agentSessionSearchInput = document.getElementById('agentSessionSearchInput');
-        this.agentSessionSearchToggle = document.getElementById('agentSessionSearchToggle');
         this.agentSessionSidebarHeader = document.getElementById('agentSessionSidebarHeader');
-        this.agentSessionSearchOpen = false;
         this.agentSessionList = document.getElementById('agentSessionList');
         this.agentTimeline = document.getElementById('agentTimeline');
         this.agentImagePreviewModal = document.getElementById('agentImagePreviewModal');
@@ -1363,6 +1364,7 @@ class DemoShell {
             this.agentSessionsList = this.getCachedAgentSessionList();
         }
         this.applyShareModeChrome();
+        initSidebarLayout(this);
         this.applyAgentPanelWidth();
 
         if (this.isShareMode) {
@@ -2989,42 +2991,63 @@ class DemoShell {
             }, 250);
         });
 
-        // 搜索图标：点击展开/收起输入框
-        this.agentSessionSearchToggle?.addEventListener('click', () => {
-            this.agentSessionSearchOpen = !this.agentSessionSearchOpen;
-            this.agentSessionSidebarHeader?.classList.toggle('is-searching', this.agentSessionSearchOpen);
-            this.agentSessionSearchToggle?.setAttribute('aria-expanded', String(this.agentSessionSearchOpen));
-            if (this.agentSessionSearchOpen) {
-                requestAnimationFrame(() => this.agentSessionSearchInput?.focus());
-            }
+        const sessionOptions = document.getElementById('agentSessionOptions');
+        const sessionMore = document.getElementById('agentSessionMore');
+        const searchClear = document.getElementById('agentSessionSearchClear');
+        this.agentSessionSearchInput?.addEventListener('input', () => {
+            searchClear.hidden = !this.agentSessionSearchInput.value;
         });
-
-        // Esc 清空并收起
-        this.agentSessionSearchInput?.addEventListener('keydown', (event) => {
+        const clearSessionSearch = () => {
+            this.agentSessionSearchInput.value = '';
+            this.agentSessionSearchInput.dispatchEvent(new Event('input'));
+            this.agentSessionSearchInput.focus();
+        };
+        searchClear?.addEventListener('click', clearSessionSearch);
+        this.agentSessionSearchInput?.addEventListener('keydown', event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
-                const hadQuery = Boolean(this.agentSessionSearch);
-                this.agentSessionSearchInput.value = '';
-                this.agentSessionSearch = '';
-                this.agentSessionSearchOpen = false;
-                this.agentSessionSidebarHeader?.classList.remove('is-searching');
-                this.agentSessionSearchToggle?.setAttribute('aria-expanded', 'false');
-                if (hadQuery) {
-                    this.loadAgentSessions({ prewarm: false, reset: true })
-                        .then(() => this.renderAgentSessionList())
-                        .catch(() => {});
-                }
+                clearSessionSearch();
             }
         });
-
-        // 输入框为空失焦时自动收起
-        this.agentSessionSearchInput?.addEventListener('blur', () => {
-            if (!this.agentSessionSearchInput.value.trim()) {
-                this.agentSessionSearchOpen = false;
-                this.agentSessionSidebarHeader?.classList.remove('is-searching');
-                this.agentSessionSearchToggle?.setAttribute('aria-expanded', 'false');
+        sessionOptions?.addEventListener('beforetoggle', event => {
+            if (event.newState !== 'open') return;
+            const rect = sessionMore.getBoundingClientRect();
+            sessionOptions.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - 236))}px`;
+            sessionOptions.style.top = `${Math.max(8, Math.min(rect.bottom + 6, innerHeight - 240))}px`;
+            sessionOptions.classList.toggle('opens-inward', rect.right + 460 > innerWidth);
+        });
+        let sessionSubmenuTimer;
+        sessionOptions?.querySelectorAll('details').forEach(detail => {
+            detail.addEventListener('pointerenter', event => {
+                if (event.pointerType === 'touch' || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+                clearTimeout(sessionSubmenuTimer);
+                sessionOptions.querySelectorAll('details').forEach(item => { item.open = item === detail; });
+            });
+            detail.addEventListener('pointerleave', event => {
+                if (event.pointerType === 'touch') return;
+                sessionSubmenuTimer = setTimeout(() => { detail.open = false; }, 160);
+            });
+        });
+        sessionOptions?.addEventListener('toggle', () => {
+            const open = sessionOptions.matches(':popover-open');
+            sessionMore.setAttribute('aria-expanded', String(open));
+            if (!open) {
+                clearTimeout(sessionSubmenuTimer);
+                sessionOptions.querySelectorAll('details').forEach(detail => { detail.open = false; });
             }
         });
+        sessionOptions?.addEventListener('click', event => {
+            const button = event.target.closest('[data-agent-session-group-mode], [data-agent-session-sort]');
+            if (!button) return;
+            if (button.dataset.agentSessionSort) {
+                this.agentSessionSort = button.dataset.agentSessionSort;
+                this.writeAgentStorage('session-sort', this.agentSessionSort);
+                this.renderAgentSessionList();
+            }
+            sessionOptions.hidePopover();
+            sessionMore.focus();
+        });
+        window.addEventListener('resize', () => sessionOptions?.hidePopover());
 
         this.agentWorkbenchClose?.addEventListener('click', () => {
             this.closeAgentWorkbench();
@@ -7506,7 +7529,10 @@ class DemoShell {
         // every subresource finishes loading.
         this.injectIframeShortcutBridge();
         await this.loadAnnotations();
-        if (this.trackingReview?.visible()) await this.trackingReview.load();
+        if (this.trackingReview?.visible()) {
+            if (this.trackingReview.key() !== this.trackingReview.lastContextKey) await this.trackingReview.load();
+            else { this.trackingReview.bindFrames(); this.trackingReview.paint(); this.trackingReview.updateStatuses(); }
+        }
         this.injectIframeShortcutBridge();
         this.syncAnnotationButtonState(this.annotationMode);
 
@@ -7977,7 +8003,7 @@ class DemoShell {
             selector: copyTarget && copyTarget !== this.pendingAnnotation.element
                 ? this.buildElementSelector(copyTarget)
                 : this.pendingAnnotation.selector,
-            originalText,
+            originalText: copyTarget?.children?.length === 0 ? copyTarget.textContent : originalText,
             tagName: copyTarget?.tagName || this.pendingAnnotation.meta?.tagName || '',
             id: copyTarget?.id || '',
             className: copyTarget?.className || ''
@@ -8070,64 +8096,51 @@ class DemoShell {
     }
 
     async syncAnnotationCopyToCode() {
-        if (!this.pendingAnnotation || !this.annotationPanel) return;
+        if (!this.pendingAnnotation || !this.annotationPanel || this._copySaving) return;
         const copy = this.getSelectedAnnotationCopy();
         const input = this.annotationCopyPanel?.querySelector('.annotation-copy-panel__input');
-        const nextText = String(input?.value || '').trim();
-        if (!copy?.originalText) {
-            this.showToast('当前元素没有可修改的文本', true);
-            return;
+        const nextText = String(input?.value ?? '');
+        if (!copy?.originalText || !nextText || nextText === copy.originalText) {
+            this.showToast('请输入有变化的文案', true); return;
         }
-        if (!nextText) {
-            this.showToast('请输入新文案', true);
-            return;
+        const context = this._copyEditContext;
+        if (!context || context.selector !== copy.selector || context.originalText !== copy.originalText) {
+            this.showToast('目标已变化，请重新选择', true); return;
         }
-        if (nextText === copy.originalText) {
-            this.showToast('文案没有变化', true);
-            return;
-        }
-
+        this._copySaving = true;
+        const button = this.annotationCopyPanel.querySelector('.annotation-copy-panel__sync');
+        button.disabled = true;
         try {
-            const response = await fetch('http://localhost:8080/api/copy-edits', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    projectId: this.activeProjectId,
-                    pageId: this.activePageId,
-                    version: this.activeVersion,
-                    changes: [{
-                        selector: copy.selector,
-                        originalText: copy.originalText,
-                        nextText,
-                        tagName: copy.tagName,
-                        id: copy.id,
-                        className: copy.className,
-                        htmlSnippet: this.captureElementContext(copy.selector)?.htmlSnippet || ''
-                    }]
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(await response.text() || '同步文案失败');
+            await context.baseline;
+            // Preserve an operation ID across timeouts; a different payload gets a new ID.
+            if (context.nextText !== nextText) { context.clientEditId = crypto.randomUUID(); context.nextText = nextText; }
+            const request = { clientEditId: context.clientEditId, ...context.scope,
+                target: { type: 'page' }, element: { ...copy, nextText, outerHtmlSnippet: context.snippet },
+                ...(context.sha ? { expectedSourceSha256: context.sha } : {}) };
+            try { localStorage.setItem('prota-copy-edit-pending', JSON.stringify(request)); } catch {}
+            const result = await editRequest('', request);
+            if (result.status !== 'committed' && result.status !== 'verified') {
+                this.showToast(result.detail || '编辑已保留，暂未完成保存', true); return;
             }
-
-            const result = await response.json();
-            const item = Array.isArray(result.results) ? result.results[0] : null;
-            if (!item || (item.status !== 'updated' && item.status !== 'patched')) {
-                console.warn('[copy-edit] Copy edit was not synced:', item || result);
-                throw new Error(item?.reason || '没有在代码中找到可修改的文本');
-            }
-
-            this.showToast('文案已同步到代码');
+            this.showToast('已写入源码，预览确认中');
+            if (Object.entries(editScope(this)).some(([key, value]) => context.scope[key] !== value)) return;
             this.clearIframeSelection();
             this.annotationPanel.style.display = 'none';
-            this.hideAnnotationLinkTrigger();
-            this.hideAnnotationCopyPanel();
-            this.pendingAnnotation = null;
+            this.hideAnnotationLinkTrigger(); this.hideAnnotationCopyPanel(); this.pendingAnnotation = null;
+            const loaded = new Promise(resolve => {
+                const timer = setTimeout(() => resolve(false), 8000);
+                this.mainIframe.addEventListener('load', () => { clearTimeout(timer); resolve(true); }, { once: true });
+            });
             this.refreshCurrentDemo();
+            const reloaded = await loaded;
+            const verified = reloaded ? await verifyPreview(this, result) : result;
+            if (verified.status === 'verified') {
+                try { localStorage.removeItem('prota-copy-edit-pending'); } catch {}
+                this.showToast('已保存');
+            } else this.showToast('源码已保存，预览验证未通过，请刷新页面确认', true);
         } catch (error) {
             this.showToast(error instanceof Error ? error.message : String(error), true);
-        }
+        } finally { this._copySaving = false; button.disabled = false; }
     }
 
     async enterAnnotationMode(source = 'parent') {
@@ -12060,6 +12073,18 @@ class DemoShell {
         `;
         panel.querySelector('.annotation-copy-panel__sync')
             .addEventListener('click', () => this.syncAnnotationCopyToCode());
+        panel.querySelector('.annotation-copy-panel__input').addEventListener('input', (event) => {
+            const context = this._copyEditContext;
+            const copy = this.getSelectedAnnotationCopy();
+            if (!context || !copy) return;
+            context.nextText = event.target.value; context.clientEditId = crypto.randomUUID();
+            try {
+                localStorage.setItem('prota-copy-edit-pending', JSON.stringify({ ...context.scope,
+                    clientEditId: context.clientEditId, target: { type: 'page' },
+                    element: { ...copy, nextText: context.nextText, outerHtmlSnippet: context.snippet },
+                    ...(context.sha ? { expectedSourceSha256: context.sha } : {}) }));
+            } catch {}
+        });
         panel.querySelector('.annotation-copy-panel__input')
             .addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
@@ -12084,6 +12109,25 @@ class DemoShell {
         const input = panel.querySelector('.annotation-copy-panel__input');
         if (input) input.value = copyText;
         panel.hidden = false;
+        const copy = this.getSelectedAnnotationCopy();
+        if (copy) {
+            const context = { ...copy, scope: editScope(this), snippet: this.getEditableCopyTarget(this.pendingAnnotation.element)?.outerHTML || '' };
+            const request = { ...context.scope, clientEditId: crypto.randomUUID(), target: { type: 'page' },
+                element: { ...copy, nextText: copy.originalText, outerHtmlSnippet: context.snippet } };
+            context.baseline = editRequest('/baseline', request).then(result => { context.sha = result.sourceSha256; });
+            context.baseline.catch(() => {});
+            try {
+                const draft = JSON.parse(localStorage.getItem('prota-copy-edit-pending') || 'null');
+                if (draft && Object.entries(context.scope).every(([key, value]) => draft[key] === value)
+                    && draft.element.selector === copy.selector && draft.element.originalText === copy.originalText) {
+                    input.value = draft.element.nextText;
+                    context.nextText = draft.element.nextText; context.clientEditId = draft.clientEditId;
+                    context.baseline = Promise.resolve(); context.sha = draft.expectedSourceSha256;
+                    context.snippet = draft.element.outerHtmlSnippet;
+                }
+            } catch {}
+            this._copyEditContext = context;
+        }
         if (this.annotationPanel) {
             const annotationWidth = this.annotationPanel.offsetWidth
                 || parseFloat(getComputedStyle(this.annotationPanel).width)
@@ -15257,8 +15301,8 @@ class DemoShell {
             return haystacks.some((item) => item.includes(query));
         });
         return filtered.sort((left, right) => {
-            const leftTime = new Date(left.updatedAt || left.createdAt || 0).getTime();
-            const rightTime = new Date(right.updatedAt || right.createdAt || 0).getTime();
+            const leftTime = new Date((this.agentSessionSort === 'created' ? left.createdAt : left.updatedAt) || left.createdAt || 0).getTime();
+            const rightTime = new Date((this.agentSessionSort === 'created' ? right.createdAt : right.updatedAt) || right.createdAt || 0).getTime();
             return rightTime - leftTime;
         });
     }
@@ -15283,7 +15327,7 @@ class DemoShell {
         };
         const now = new Date();
         items.forEach((session) => {
-            const updatedAt = new Date(session.updatedAt || session.createdAt || now.toISOString());
+            const updatedAt = new Date((this.agentSessionSort === 'created' ? session.createdAt : session.updatedAt) || session.createdAt || now.toISOString());
             const diffMs = now.getTime() - updatedAt.getTime();
             if (diffMs < 24 * 60 * 60 * 1000 && now.getDate() === updatedAt.getDate()) {
                 groups['今天'].push(session);
@@ -15349,13 +15393,16 @@ class DemoShell {
         document.querySelectorAll('[data-agent-session-group-mode]').forEach(button => {
             button.setAttribute('aria-pressed', String(button.dataset.agentSessionGroupMode === this.agentSessionGroupMode));
         });
+        document.querySelectorAll('[data-agent-session-sort]').forEach(button => {
+            button.setAttribute('aria-pressed', String(button.dataset.agentSessionSort === this.agentSessionSort));
+        });
         const items = this.getFilteredAgentSessions();
         if (this.agentSessionMenu && !items.some(session => session.id === this.agentSessionMenu.sessionId)) this.closeAllAgentSessionMenus();
         if (!items.length) {
             this._agentSessionListHtml = null;
             this.agentSessionList.innerHTML = this.agentSessionListLoading
                 ? '<div class="agent-session-list__status">正在加载历史对话…</div>'
-                : '<div class="agent-session-list__empty">还没有历史对话。点击“新建会话”，或者直接发送消息，Prota 会自动为你创建新会话。</div>';
+                : this.agentSessionSearch ? '<div class="agent-session-list__empty">没有找到相关对话</div>' : '<div class="agent-session-list__empty">还没有历史对话。点击“新建会话”，或者直接发送消息，Prota 会自动为你创建新会话。</div>';
             return;
         }
         const byPage = this.agentSessionGroupMode === 'page';
@@ -15366,7 +15413,7 @@ class DemoShell {
             this._agentSessionGroupActiveId = this.agentSessionId;
         }
         const groups = byPage
-            ? groupSessionsByPage(items, this.projects?.projects || [])
+            ? groupSessionsByPage(items, this.projects?.projects || [], this.agentSessionSort)
             : this.groupAgentSessions(items);
         const groupsHtml = groups.map(([label, sessions]) => {
             const key = byPage ? sessionPageGroupKey(sessions[0]) : '';
@@ -17962,6 +18009,7 @@ class DemoShell {
         if (['run_finished', 'run_failed'].includes(eventName) && this.previewController?.state.runId === event.runId) {
             this.previewController.finish(eventName === 'run_failed' || ['interrupted', 'failed', 'cancelled'].includes(payload.status)).catch(error => console.debug('[preview]', error));
         }
+        if (eventName === 'run_finished' && this.trackingReview?.visible()) this.trackingReview.load();
         let timelineChange = null;
 
         if (this.miniTerminalContainer) {

@@ -201,367 +201,20 @@ def normalize_safe_segment(value):
     return re.sub(r'[^a-zA-Z0-9_\-]', '', str(value or '')).strip()
 
 
-def replace_copy_text_in_file(file_path, original_text, next_text):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    candidates = [original_text]
-    if '\n' not in original_text:
-        candidates.extend([
-            original_text.replace(' ', ''),
-            original_text.replace(' ', '\\n'),
-            original_text.replace(' ', '\\\\n')
-        ])
-
-    escaped_original = json.dumps(original_text, ensure_ascii=False)[1:-1]
-    escaped_next = json.dumps(next_text, ensure_ascii=False)[1:-1]
-    if escaped_original != original_text:
-        candidates.append(escaped_original)
-
-    seen = set()
-    unique_candidates = []
-    for candidate in candidates:
-        if candidate and candidate not in seen:
-            seen.add(candidate)
-            unique_candidates.append(candidate)
-
-    matches = []
-    for candidate in unique_candidates:
-        count = content.count(candidate)
-        if count:
-            matches.append((candidate, count))
-
-    total_matches = sum(count for _, count in matches)
-    if total_matches == 0:
-        return {'status': 'missing', 'count': 0}
-
-    next_content = content
-    replaced_count = 0
-    for matched_text, count in matches:
-        replacement = escaped_next if matched_text == escaped_original else next_text
-        next_content = next_content.replace(matched_text, replacement)
-        replaced_count += count
-
-    if next_content == content:
-        return {'status': 'missing', 'count': 0}
-
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(next_content)
-
-    return {'status': 'updated', 'count': replaced_count}
-
-
-def replace_copy_html_snippet_in_file(file_path, html_snippet, original_text, next_text):
-    if not html_snippet or not original_text:
-        return {'status': 'missing', 'count': 0}
-
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    snippets = [html_snippet]
-    stripped = html_snippet.strip()
-    if stripped != html_snippet:
-        snippets.append(stripped)
-
-    decoded_original = html.unescape(original_text)
-    escaped_original = html.escape(decoded_original, quote=False)
-    escaped_next = html.escape(next_text, quote=False)
-
-    for snippet in snippets:
-        if not snippet or snippet not in content:
-            continue
-        next_snippet = snippet
-        replacements = [
-            (original_text, next_text),
-            (decoded_original, next_text),
-            (escaped_original, escaped_next)
-        ]
-        changed = False
-        for source, target in replacements:
-            if source and source in next_snippet:
-                next_snippet = next_snippet.replace(source, target, 1)
-                changed = True
-                break
-        if not changed or next_snippet == snippet:
-            continue
-        next_content = content.replace(snippet, next_snippet, 1)
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(next_content)
-        return {'status': 'updated', 'count': 1, 'strategy': 'htmlSnippet'}
-
-    return {'status': 'missing', 'count': 0}
-
-
-def normalize_visible_text(value):
-    return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', str(value or '')))).strip()
-
-
-def parse_simple_selector(selector):
-    raw = str(selector or '').split('>')[-1].strip()
-    raw = re.sub(r':nth-of-type\(\d+\)', '', raw)
-    if not raw:
-        return {}
-    if raw.startswith('#'):
-        return {'id': raw[1:]}
-    tag_match = re.match(r'^([a-zA-Z][\w-]*)', raw)
-    tag = tag_match.group(1).lower() if tag_match else ''
-    id_match = re.search(r'#([\w\-\\]+)', raw)
-    classes = [item.replace('\\', '') for item in re.findall(r'\.([\w\-\\]+)', raw)]
-    return {
-        'tag': tag,
-        'id': id_match.group(1).replace('\\', '') if id_match else '',
-        'classes': classes
-    }
-
-
-def tag_attrs_match(attrs, parsed):
-    if parsed.get('id'):
-        id_match = re.search(r'\bid\s*=\s*["\']([^"\']+)["\']', attrs)
-        if not id_match or id_match.group(1) != parsed['id']:
-            return False
-    classes = parsed.get('classes') or []
-    if classes:
-        class_match = re.search(r'\bclass\s*=\s*["\']([^"\']+)["\']', attrs)
-        if not class_match:
-            return False
-        source_classes = set(class_match.group(1).split())
-        if not all(cls in source_classes for cls in classes):
-            return False
-    return True
-
-
-def replace_copy_selector_in_file(file_path, selector, original_text, next_text):
-    parsed = parse_simple_selector(selector)
-    if not parsed or not (parsed.get('id') or parsed.get('classes')):
-        return {'status': 'missing', 'count': 0}
-
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    tag = parsed.get('tag') or r'[a-zA-Z][\w-]*'
-    pattern = re.compile(
-        rf'<(?P<tag>{tag})(?P<attrs>[^>]*)>(?P<body>.*?)</(?P=tag)>',
-        re.DOTALL | re.IGNORECASE
-    )
-    matches = []
-    normalized_original = normalize_visible_text(original_text)
-    for match in pattern.finditer(content):
-        attrs = match.group('attrs') or ''
-        if not tag_attrs_match(attrs, parsed):
-            continue
-        body = match.group('body')
-        if normalized_original and normalize_visible_text(body) != normalized_original:
-            continue
-        matches.append(match)
-
-    if not matches:
-        return {'status': 'missing', 'count': 0}
-
-    escaped_next = html.escape(next_text, quote=False)
-    next_content_parts = []
-    cursor = 0
-    replaced_count = 0
-    for match in matches:
-        body = match.group('body')
-        if '<' in body and normalize_visible_text(body) != normalize_visible_text(original_text):
-            continue
-        next_content_parts.append(content[cursor:match.start('body')])
-        next_content_parts.append(escaped_next)
-        cursor = match.end('body')
-        replaced_count += 1
-
-    if not replaced_count:
-        return {'status': 'missing', 'count': 0}
-
-    next_content_parts.append(content[cursor:])
-    next_content = ''.join(next_content_parts)
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(next_content)
-    return {'status': 'updated', 'count': replaced_count, 'strategy': 'selector'}
-
-
-def upsert_copy_patch(version_dir, selector, next_text):
-    if not selector or not next_text:
-        return None
-
-    app_path = os.path.join(version_dir, 'app.js')
-    if os.path.isfile(app_path):
-        with open(app_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-    else:
-        content = ''
-
-    start_marker = '/* READIFY_COPY_PATCHES_START */'
-    end_marker = '/* READIFY_COPY_PATCHES_END */'
-    patches = []
-    marker_pattern = re.compile(
-        re.escape(start_marker) + r'\n(?P<body>.*?)\n' + re.escape(end_marker),
-        re.DOTALL
-    )
-    match = marker_pattern.search(content)
-    if match:
-        body = match.group('body')
-        json_match = re.search(r'const patches = (?P<json>\[.*?\]);', body, re.DOTALL)
-        if json_match:
-            try:
-                parsed = json.loads(json_match.group('json'))
-                if isinstance(parsed, list):
-                    patches = parsed
-            except Exception:
-                patches = []
-
-    next_patch = {'selector': selector, 'text': next_text}
-    replaced = False
-    for index, patch in enumerate(patches):
-        if isinstance(patch, dict) and patch.get('selector') == selector:
-            patches[index] = next_patch
-            replaced = True
-            break
-    if not replaced:
-        patches.append(next_patch)
-
-    patches_json = json.dumps(patches, ensure_ascii=False, indent=2)
-    block = f"""{start_marker}
-(() => {{
-  const patches = {patches_json};
-  const applyReadifyCopyPatches = () => {{
-    patches.forEach((patch) => {{
-      const target = document.querySelector(patch.selector);
-      if (target && target.textContent !== patch.text) {{
-        target.textContent = patch.text;
-      }}
-    }});
-  }};
-  if (document.readyState === "loading") {{
-    document.addEventListener("DOMContentLoaded", applyReadifyCopyPatches);
-  }} else {{
-    applyReadifyCopyPatches();
-  }}
-  window.addEventListener("load", applyReadifyCopyPatches);
-  setTimeout(applyReadifyCopyPatches, 0);
-  setTimeout(applyReadifyCopyPatches, 120);
-  setTimeout(applyReadifyCopyPatches, 600);
-  if (document.body) {{
-    new MutationObserver(applyReadifyCopyPatches).observe(document.body, {{
-      childList: true,
-      subtree: true,
-      characterData: true
-    }});
-  }}
-}})();
-{end_marker}"""
-
-    if match:
-        next_content = marker_pattern.sub(block, content)
-    else:
-        next_content = content.rstrip() + '\n\n' + block + '\n'
-
-    with open(app_path, 'w', encoding='utf-8') as f:
-        f.write(next_content)
-
-    return os.path.relpath(app_path, get_project_root())
-
-
 def apply_copy_edits(project_id, page_id, version, changes):
-    root = get_project_root()
-    safe_project_id = normalize_safe_segment(project_id)
-    safe_page_id = normalize_safe_segment(page_id)
-    safe_version = normalize_safe_segment(version)
-    if not safe_project_id or not safe_page_id or not safe_version:
-        raise ValueError('Invalid projectId, pageId, or version')
-
-    version_dir = os.path.join(root, 'src', 'pages', safe_project_id, safe_page_id, safe_version)
-    if not os.path.isdir(version_dir):
-        raise FileNotFoundError(f'Version directory not found: src/pages/{safe_project_id}/{safe_page_id}/{safe_version}')
-
-    ordered_files = []
-    for filename in ('app.js', 'index.html', 'styles.css'):
-        file_path = os.path.join(version_dir, filename)
-        if os.path.isfile(file_path):
-            ordered_files.append(file_path)
-    for filename in os.listdir(version_dir):
-        if not filename.endswith(('.js', '.html', '.css', '.json')):
-            continue
-        file_path = os.path.join(version_dir, filename)
-        if os.path.isfile(file_path) and file_path not in ordered_files:
-            ordered_files.append(file_path)
-
-    results = []
-    for index, change in enumerate(changes):
-        original_text = str(change.get('originalText') or '').strip()
-        next_text = str(change.get('nextText') or '').strip()
-        selector = str(change.get('selector') or '').strip()
-        html_snippet = str(change.get('htmlSnippet') or '').strip()
-        if not original_text or not next_text or original_text == next_text:
-            results.append({
-                'index': index,
-                'status': 'skipped',
-                'reason': 'empty_or_unchanged',
-                'originalText': original_text,
-                'nextText': next_text
-            })
-            continue
-
-        per_file = []
-        updated = None
-        updated_count = 0
-        for file_path in ordered_files:
-            outcome = replace_copy_html_snippet_in_file(file_path, html_snippet, original_text, next_text)
-            rel_path = os.path.relpath(file_path, root)
-            if outcome['status'] == 'updated':
-                updated = rel_path
-                updated_count = outcome.get('count', 1)
-                per_file.append({'file': rel_path, **outcome})
-                break
-
-            outcome = replace_copy_selector_in_file(file_path, selector, original_text, next_text)
-            if outcome['status'] == 'updated':
-                updated = rel_path
-                updated_count = outcome.get('count', 1)
-                per_file.append({'file': rel_path, **outcome})
-                break
-
-            outcome = replace_copy_text_in_file(file_path, original_text, next_text)
-            if outcome['status'] == 'updated':
-                updated = rel_path
-                updated_count = outcome.get('count', 1)
-                per_file.append({'file': rel_path, **outcome})
-                break
-            if outcome['status'] == 'missing':
-                per_file.append({'file': rel_path, **outcome})
-
-        if updated:
-            results.append({
-                'index': index,
-                'status': 'updated',
-                'file': updated,
-                'count': updated_count,
-                'originalText': original_text,
-                'nextText': next_text
-            })
-        else:
-            patched_file = upsert_copy_patch(version_dir, selector, next_text)
-            if patched_file:
-                results.append({
-                    'index': index,
-                    'status': 'patched',
-                    'file': patched_file,
-                    'reason': '源码中没有找到原文案，已按选择器写入运行时文案补丁',
-                    'selector': selector,
-                    'originalText': original_text,
-                    'nextText': next_text
-                })
-            else:
-                results.append({
-                    'index': index,
-                    'status': 'missing',
-                    'reason': '没有在当前版本源码中找到原文案，也缺少可用选择器',
-                    'files': [os.path.relpath(path, root) for path in ordered_files],
-                    'originalText': original_text,
-                    'nextText': next_text
-                })
-
-    return results
+    """Legacy transport only; all writes go through the durable edit service."""
+    from server.copy_edits import EditService
+    import uuid
+    service = EditService(get_project_root())
+    try:
+        return [service.create({
+            'clientEditId': change.get('clientEditId') or str(uuid.uuid4()),
+            'projectId': project_id, 'pageId': page_id, 'version': version,
+            'target': {'type': 'page'}, 'element': change,
+            **({'expectedSourceSha256': change['expectedSourceSha256']} if change.get('expectedSourceSha256') else {})
+        }) for change in changes]
+    finally:
+        service.close()
 
 
 def migrate_to_projects():
@@ -1535,17 +1188,21 @@ def read_share_tracking(version_dir):
     if not manifest.is_file():
         return None
     try:
-        if manifest.stat().st_size > 256 * 1024:
+        if manifest.stat().st_size > 8 * 1024 * 1024:
             return None
         with manifest.open('r', encoding='utf-8') as source:
             data = json.load(source)
-        if not isinstance(data, dict) or data.get('schemaVersion') != 1:
+        if not isinstance(data, dict) or data.get('schemaVersion') not in (1, 2):
             return None
         events = data.get('events')
-        if not isinstance(events, list) or len(events) > 12:
+        if not isinstance(events, list) or len(events) > (2400 if data.get('schemaVersion') == 2 else 12):
             return None
         if not isinstance(data.get('scope'), dict):
             return None
+        if data.get('schemaVersion') == 2:
+            screens = data.get('screens')
+            if not isinstance(screens, list) or not 1 <= len(screens) <= 200 or any(not isinstance(screen, dict) for screen in screens):
+                return None
         if any(not isinstance(event, dict) or not isinstance(event.get('targets'), list) for event in events):
             return None
         return data
@@ -2482,6 +2139,10 @@ _PRODUCT_BUILD = _product_build()
 
 
 class BridgeHandler(http.server.SimpleHTTPRequestHandler):
+    # Browsers can preconnect without sending a request. Bound the wait so an
+    # idle socket cannot block this single-threaded server indefinitely.
+    timeout = 15
+
     # Ensure UTF-8 charset for text-based files to avoid garbled characters in browsers
     extensions_map = http.server.SimpleHTTPRequestHandler.extensions_map.copy()
     extensions_map.update({
@@ -2510,6 +2171,8 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def translate_path(self, url_path):
         clean = urllib.parse.unquote(urllib.parse.urlsplit(url_path).path).lstrip('/')
+        if any(part.startswith('user-edits') or part == 'user-edit-assets' for part in Path(clean).parts):
+            return str(workspace.CONFIG_DIR / '__denied__')
         if clean == 'data/template-states.json':
             return str(workspace.CONFIG_DIR / 'template-states.json')
         if clean == 'workspace-data.js':
@@ -2549,6 +2212,11 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
         if clean_path.startswith('/__prota_preview/'):
             from server.preview_http import serve
             return serve(self, workspace)
+        if clean_path.startswith('/api/copy-edits/v2'):
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机管理人工修改'})
+            from server.copy_edits import handle
+            return handle(self, get_project_root())
         if clean_path == '/api/product/health':
             import hashlib
             return self.workspace_reply(200, {'product': 'prota', 'installation': hashlib.sha256(str(workspace.APP_ROOT.resolve()).encode()).hexdigest(), 'build': _PRODUCT_BUILD})
@@ -2656,6 +2324,9 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         clean_path = self.path.split('?')[0]
+        if clean_path == '/api/tracking/review':
+            from server.tracking_review_http import mutate
+            return mutate(self, workspace)
         if clean_path == '/api/preview/config':
             from server.preview_http import configuration
             return configuration(self, workspace, update=True)
@@ -2739,6 +2410,11 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
                 return self.workspace_reply(200, manage(get_project_root(), params, self.headers.get('Host', 'localhost:8080')))
             except Exception as error:
                 return self.workspace_reply(400, {'error': str(error)})
+        if clean_path.startswith('/api/copy-edits/v2'):
+            if not self.workspace_local():
+                return self.workspace_reply(403, {'error': '只能在本机管理人工修改'})
+            from server.copy_edits import handle
+            return handle(self, get_project_root())
         if self.path.startswith('/api/iterate'):
             self.handle_iterate()
         elif self.path.startswith('/api/create-project'):
@@ -3752,47 +3428,24 @@ class BridgeHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(f"Server error: {str(e)}".encode('utf-8'))
 
     def handle_copy_edits(self):
-        content_length = int(self.headers.get('Content-Length', '0'))
-        post_data = self.rfile.read(content_length)
-        params = json.loads(post_data.decode('utf-8') or '{}')
-
-        project_id = params.get('projectId', 'readify')
-        page_id = params.get('pageId')
-        version = params.get('version')
-        changes = params.get('changes')
-
-        if not page_id or not version or not isinstance(changes, list):
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(b'Missing pageId, version, or changes')
-            return
-
+        if not self.workspace_local():
+            return self.workspace_reply(403, {'error': '只能在本机修改文案'})
         try:
-            results = apply_copy_edits(project_id, page_id, version, changes)
-            updated_count = len([item for item in results if item.get('status') in ('updated', 'patched')])
-            response = {
-                "status": "success" if updated_count == len(changes) else "partial",
-                "updatedCount": updated_count,
-                "totalCount": len(changes),
-                "results": results
-            }
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json; charset=UTF-8')
-            self.end_headers()
-            self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
-        except FileNotFoundError as e:
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(str(e).encode('utf-8'))
-        except ValueError as e:
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(str(e).encode('utf-8'))
-        except Exception as e:
-            print(f"Error in handle_copy_edits: {str(e)}")
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(f"Server error: {str(e)}".encode('utf-8'))
+            length = int(self.headers.get('Content-Length', '0'))
+            if not 0 < length <= 64000:
+                raise ValueError('请求大小无效')
+            params = json.loads(self.rfile.read(length))
+            changes = params.get('changes')
+            if not isinstance(changes, list) or not 0 < len(changes) <= 100:
+                raise ValueError('缺少有效修改内容')
+            results = apply_copy_edits(params.get('projectId'), params.get('pageId'), params.get('version'), changes)
+            count = sum(item['status'] in ('committed', 'verified') for item in results)
+            return self.workspace_reply(200, {'status': 'committed' if count == len(results) else 'pending',
+                                             'updatedCount': count, 'totalCount': len(results), 'results': results})
+        except (ValueError, TypeError):
+            return self.workspace_reply(400, {'error': '请求格式无效'})
+        except Exception:
+            return self.workspace_reply(503, {'error': '保存服务暂不可用，请保留输入后重试'})
 
     def handle_bind_jump(self):
         content_length = int(self.headers.get('Content-Length', '0'))
@@ -5129,6 +4782,8 @@ if __name__ == '__main__':
         allow_reuse_address = True
 
 
+    from server.user_edit_reconcile import start_worker as start_edit_worker
+    start_edit_worker(workspace.workspace_root, workspace.bridge_locked)
     from server.canvas_autosave import start_worker
     start_worker(workspace.workspace_root, workspace.bridge_locked)
     from server.prd_autosave import start_worker as start_prd_worker

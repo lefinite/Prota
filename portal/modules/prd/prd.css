@@ -2202,3 +2202,12 @@ body.is-resizing-prd-drawer .prd-drawer-resize-handle::after {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+/* Document navigation accommodates every visible tab on one row. */
+.main-content > .annotation-drawer .annotation-drawer__header .doc-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 220px;
+    min-width: 0;
+    flex: 0 1 220px;
+    max-width: 100%;
+}

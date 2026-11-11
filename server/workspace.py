@@ -4,6 +4,7 @@ Application files and credentials never move with a workspace. Nothing switches
 until the complete asset copy has been verified; the source is never deleted.
 """
 import hashlib
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -23,7 +24,8 @@ LOCK_PATH = CONFIG_DIR / 'workspace.lock'
 ASSET_PATHS = ('src/pages', 'assets', 'shares', 'data/projects.json', 'data/settings.json',
                'data/agent-sessions', 'data/agent-uploads', 'data/agent-checkpoints', 'data/active-prd-context.json',
                'data/share-archive', 'data/published-static', 'data/share-management.json',
-               'data/share-access.json', 'data/share-passwords.json', 'data/share-mcp-tokens.json', 'data/share-mcp-drafts')
+               'data/share-access.json', 'data/share-passwords.json', 'data/share-mcp-tokens.json', 'data/share-mcp-drafts',
+               'data/user-edits.sqlite3', 'data/user-edit-assets')
 _job = None
 _mutex = threading.Lock()
 
@@ -293,11 +295,22 @@ def _run(job):
                 for index, (file, relative, _) in enumerate(files):
                     destination = stage / relative
                     destination.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(file, destination)
+                    if relative.as_posix() == 'data/user-edits.sqlite3':
+                        import sqlite3
+                        with closing(sqlite3.connect(f'file:{file}?mode=ro', uri=True)) as source_db, closing(sqlite3.connect(destination)) as target_db:
+                            source_db.backup(target_db)
+                        destination.chmod(0o600)
+                    else:
+                        shutil.copy2(file, destination)
                     _job['completed'] = index + 1
                 _job.update(phase='校验', completed=0)
                 for index, (file, relative, _) in enumerate(files):
-                    if digest(file) != digest(stage / relative):
+                    if relative.as_posix() == 'data/user-edits.sqlite3':
+                        import sqlite3
+                        with closing(sqlite3.connect(f'file:{file}?mode=ro', uri=True)) as source_db, closing(sqlite3.connect(stage / relative)) as target_db:
+                            if list(source_db.iterdump()) != list(target_db.iterdump()) or target_db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                                raise ValueError('人工修改账本复制校验失败')
+                    elif digest(file) != digest(stage / relative):
                         raise ValueError(f'文件校验失败：{relative}')
                     _job['completed'] = index + 1
             else:

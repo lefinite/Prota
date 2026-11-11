@@ -1,3 +1,4 @@
+import { userEditBoundary } from './user-edits.mjs';
 import { MagpieBridge, MAGPIE_ID, magpieError } from './magpie/bridge.mjs';
 import { ModelBindings, bindingView } from './magpie/bindings.mjs';
 import { canvasPersistence } from './canvas-autosave.mjs';
@@ -46,8 +47,9 @@ const MAX_SESSION_TITLE_CHARS = 10;
 const SESSION_TITLE_FALLBACK = '新会话';
 // 命名专用小模型：与主对话模型解耦，快且便宜
 const SESSION_TITLE_MODEL = 'glm-5.3-flash';
-// 部分模型（如 glm-5.3）带思考输出，maxTokens 太小会导致返回空文本
-const SESSION_TITLE_MAX_TOKENS = 512;
+// Reserve output headroom and disable thinking for the isolated naming request.
+const SESSION_TITLE_MAX_TOKENS = 2048;
+const SESSION_TITLE_TIMEOUT_MS = 30000;
 const DEFAULT_SESSION_PAGE_SIZE = 30;
 const MAX_SESSION_PAGE_SIZE = 100;
 const SESSION_PERSIST_DEBOUNCE_MS = 300;
@@ -74,6 +76,10 @@ const CHECKPOINT_EXCLUDED_PREFIXES = [
     '.claude/skills/',
     '.codex/',
     'assets/',
+    'data/user-edits.sqlite3',
+    'data/user-edits.sqlite3-wal',
+    'data/user-edits.sqlite3-shm',
+    'data/user-edit-assets/',
     'data/agent-checkpoints/',
     'data/agent-sessions/',
     'data/agent-uploads/',
@@ -776,6 +782,7 @@ async function emitLiveRunChanges(session, runId, activeRun = null) {
     })));
     if (signature === activeRun.liveChangesSignature) return null;
 
+    await protectedEditBoundary('scan', activeRun.id);
     activeRun.liveChangesSignature = signature;
     emitEvent(session, 'run_live_changes', {
         ...changes,
@@ -1125,8 +1132,8 @@ function trimToSessionTitleLength(value) {
     return Array.from(String(value || '')).slice(0, MAX_SESSION_TITLE_CHARS).join('');
 }
 
-function normalizeSessionTitle(value, fallback = SESSION_TITLE_FALLBACK) {
-    const cleaned = String(value || '')
+function cleanSessionTitle(value) {
+    return String(value || '')
         .replace(/[\r\n]+/g, ' ')
         .replace(/[“”"‘'`]/g, '')
         .replace(/^(会话)?标题\s*[:：]\s*/i, '')
@@ -1134,6 +1141,10 @@ function normalizeSessionTitle(value, fallback = SESSION_TITLE_FALLBACK) {
         .replace(/\s+/g, '')
         .replace(/^[#\-*·:：，。,.!?！？、；;]+|[#\-*·:：，。,.!?！？、；;]+$/g, '')
         .trim();
+}
+
+function normalizeSessionTitle(value, fallback = SESSION_TITLE_FALLBACK) {
+    const cleaned = cleanSessionTitle(value);
     const safeFallback = fallback === ''
         ? ''
         : (String(fallback || SESSION_TITLE_FALLBACK).trim() || SESSION_TITLE_FALLBACK);
@@ -1173,6 +1184,7 @@ function createSessionSnapshot(session) {
     return redactSecrets({
         id: session.id,
         title: session.engineInfo?.sessionName || normalizeSessionTitle(session.title || createSessionTitle(session.context)),
+        titleSource: session.titleSource || null,
         sessionScope: inferSessionScope(session),
         sdkSessionId: session.sdkSessionId || session.id,
         engineInfo: session.engineInfo || null,
@@ -1502,6 +1514,7 @@ async function getHydratedSession(sessionId) {
             title: snapshot.engineInfo?.sessionName || normalizeSessionTitle(
                 snapshot.title || createSessionTitle(normalizedContext, snapshot.runState?.lastSummary)
             ),
+            titleSource: snapshot.titleSource || null,
             sessionScope: inferSessionScope(snapshot),
             sdkSessionId: snapshot.sdkSessionId || snapshot.id,
             engineInfo: snapshot.engineInfo || null,
@@ -3374,10 +3387,17 @@ function isGenericSessionTitle(value = '') {
     ]).has(title) || title.startsWith('/');
 }
 
+function sessionTitleDescriptor(session, descriptor) {
+    return (session.timeline || []).find(event => event.type === 'run_started')?.payload?.descriptor || descriptor;
+}
+
 function shouldRefreshSessionTitle(session, descriptor) {
-    if (!session || !descriptor || session.engineInfo?.sessionName) return false;
-    const hasPriorRun = (session.timeline || []).some((event) => event.type === 'run_started');
-    return !hasPriorRun || isGenericSessionTitle(session.title);
+    if (!session || !descriptor || session.closed || session.engineInfo?.sessionName || session.titleSource === 'ai') return false;
+    const firstDescriptor = sessionTitleDescriptor(session, descriptor);
+    const hasPriorRun = (session.timeline || []).some(event => event.type === 'run_started');
+    // Recognize old truncated titles without replacing custom or generated names.
+    return !hasPriorRun || session.titleSource === 'local' || isGenericSessionTitle(session.title)
+        || session.title === createLocalSessionTitle(session.context, firstDescriptor);
 }
 
 function buildSessionTitlePrompt(session, descriptor) {
@@ -3390,7 +3410,7 @@ function buildSessionTitlePrompt(session, descriptor) {
     }[descriptor.kind] || descriptor.kind || '任务';
     return [
         '请为下面 Prota 终端会话生成一个中文短标题。',
-        '要求：10个字以内；只输出标题本身；不要引号、标点、换行、编号；不要使用“对话消息”“新会话”等泛称。',
+        '要求：用4至8个汉字概括任务，最多10个字；避免英文；只输出完整标题本身；不要引号、标点、换行、编号；不要使用“对话消息”“新会话”等泛称。',
         '',
         `页面范围：${session.context?.globalContext ? '未限定页面范围' : `${session.context.pageId}/${session.context.version}`}`,
         `任务类型：${kindCopy}`,
@@ -3398,23 +3418,41 @@ function buildSessionTitlePrompt(session, descriptor) {
     ].join('\n');
 }
 
-async function generateAiSessionTitle(session, descriptor, fallbackTitle) {
-    if (!session?.providerConfig?.apiKey || session.providerBinding?.kind === 'magpie') return '';
+async function generateAiSessionTitle(session, descriptor) {
+    if (!session) return '';
+    const usesMagpie = session.providerBinding?.kind === 'magpie';
+    if (!usesMagpie && !session.providerConfig?.apiKey) return '';
     const titleSession = {
-        id: `title-${randomUUID()}`, _transient: true, context: session.context,
-        providerConfig: { ...session.providerConfig, model: SESSION_TITLE_MODEL,
-            sdkOptions: { maxTokens: SESSION_TITLE_MAX_TOKENS, maxTurns: 1, permissionMode: 'bypassPermissions' } }
+        id: `title-${randomUUID()}`, _transient: true, context: session.context
     };
     try {
-        const result = await piGateway.run(titleSession, {
-            prompt: buildSessionTitlePrompt(session, descriptor), runId: randomUUID(),
-            options: { allowedTools: [], maxTurns: 1, maxTokens: SESSION_TITLE_MAX_TOKENS,
-                permissionMode: 'bypassPermissions', requestTimeoutMs: 12000,
-                appendSystemPrompt: '只输出10个字以内的中文会话标题，不解释。' },
-            signal: AbortSignal.timeout(12000), emit: () => {}, setRunState: () => {},
-            approval: async () => 'deny', question: async () => { throw new Error('Title generation cannot ask questions'); }
-        });
-        return normalizeSessionTitle(result.result, fallbackTitle);
+        // Magpie owns model IDs and protocols. Resolve the existing binding for
+        // this isolated request rather than sending the direct-provider model
+        // name through its gateway or changing the conversation's binding.
+        let providerConfig = session.providerConfig;
+        if (usesMagpie) {
+            await magpie.refresh();
+            providerConfig = await magpie.resolve(session.providerBinding);
+        }
+        titleSession.providerConfig = { ...providerConfig,
+            model: usesMagpie ? providerConfig.model : SESSION_TITLE_MODEL,
+            sdkOptions: { maxTokens: SESSION_TITLE_MAX_TOKENS, reasoningEffort: 'off', maxTurns: 1, permissionMode: 'bypassPermissions' } };
+        let prompt = buildSessionTitlePrompt(session, descriptor);
+        for (let attempt = 0; attempt < 2; attempt++) {
+            const result = await piGateway.run(titleSession, {
+                prompt, runId: randomUUID(),
+                options: { allowedTools: [], maxTurns: 1, maxTokens: SESSION_TITLE_MAX_TOKENS,
+                    permissionMode: 'bypassPermissions', reasoningEffort: 'off', requestTimeoutMs: SESSION_TITLE_TIMEOUT_MS,
+                    appendSystemPrompt: '只输出10个字以内的中文会话标题，不解释。' },
+                signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS), emit: () => {}, setRunState: () => {},
+                approval: async () => 'deny', question: async () => { throw new Error('Title generation cannot ask questions'); }
+            });
+            if (!String(result.result || '').trim()) throw new Error(`Title generation returned empty text (${result.stop_reason || 'unknown'})`);
+            const title = cleanSessionTitle(result.result);
+            if (title && Array.from(title).length <= MAX_SESSION_TITLE_CHARS) return title;
+            prompt = '标题超过10个字。请重新概括为4至8个汉字，表达完整含义，不要英文，只输出标题。';
+        }
+        throw new Error('Generated title exceeds the title length limit');
     } catch (error) {
         console.warn('[agent-gateway] Failed to generate AI session title:', error.message);
         return '';
@@ -3436,18 +3474,36 @@ function emitSessionTitleUpdated(session, source = 'local') {
 }
 
 async function refreshSessionTitle(session, descriptor) {
+    if (session._titlePromise) return session._titlePromise;
     if (!shouldRefreshSessionTitle(session, descriptor)) return;
-    const fallbackTitle = createLocalSessionTitle(session.context, descriptor);
-    const previousTitle = normalizeSessionTitle(session.title, '');
-    if (fallbackTitle && fallbackTitle !== previousTitle) {
-        session.title = fallbackTitle;
-        emitSessionTitleUpdated(session, 'local');
-    }
-    const aiTitle = await generateAiSessionTitle(session, descriptor, fallbackTitle);
-    if (aiTitle && aiTitle !== normalizeSessionTitle(session.title, '')) {
-        session.title = aiTitle;
-        emitSessionTitleUpdated(session, 'ai');
-    }
+    descriptor = sessionTitleDescriptor(session, descriptor);
+    const operation = (async () => {
+        const fallbackTitle = createLocalSessionTitle(session.context, descriptor);
+        session.titleSource = 'local';
+        if (fallbackTitle && fallbackTitle !== session.title) {
+            session.title = fallbackTitle;
+            emitSessionTitleUpdated(session, 'local');
+        }
+        await persistSession(session);
+        const expectedTitle = session.title;
+        const aiTitle = await generateAiSessionTitle(session, descriptor);
+        // A late response must not overwrite a manual name or resurrect a deleted session.
+        if (aiTitle && !session.closed && !session.engineInfo?.sessionName && session.title === expectedTitle) {
+            session.title = aiTitle;
+            session.titleSource = 'ai';
+            await persistSession(session);
+            emitSessionTitleUpdated(session, 'ai');
+        }
+    })();
+    session._titlePromise = operation;
+    try { await operation; } finally { delete session._titlePromise; }
+}
+
+function scheduleSessionTitleRefresh(session, descriptor) {
+    if (!shouldRefreshSessionTitle(session, descriptor)) return;
+    refreshSessionTitle(session, descriptor).catch(error => {
+        console.warn('[agent-gateway] Failed to refresh session title:', error);
+    });
 }
 
 async function buildActionPrompt(session, descriptor, internalInstructions = '') {
@@ -3881,7 +3937,32 @@ async function inspectBusinessPrdArtifact(session) {
     }
 }
 
-async function runSessionTask(session, descriptor, { internalInstructions = '' } = {}) {
+async function protectedEditBoundary(action, lease) {
+    return userEditBoundary(action, getWorkspaceRoot(), lease);
+}
+
+async function runSessionTask(session, descriptor, options = {}) {
+    const lease = randomUUID();
+    // Fail closed: never start a writer when the durable protection service fails.
+    await protectedEditBoundary('start', lease);
+    try {
+        return await runProtectedSessionTask(session, descriptor, options);
+    } finally {
+        try {
+            const protection = await protectedEditBoundary('end', lease);
+            if (protection.conflictCount) {
+                const message = `有 ${protection.conflictCount} 处人工修改待处理，请打开文案修改历史。`;
+                emitEvent(session, 'assistant_message', { text: message, message, role: 'assistant', protectedUserEdits: protection });
+                session.runState = { ...session.runState, stageMessage: message };
+            }
+        } catch (error) {
+            emitEvent(session, 'run_failed', { reason: '人工修改保护检查未完成，请打开修改历史检查。', classification: 'user_edit_protection' });
+            console.error('[user-edits] Agent completion check failed');
+        }
+    }
+}
+
+async function runProtectedSessionTask(session, descriptor, { internalInstructions = '' } = {}) {
     if (session.activeRun || session._piOperation || session._modelOperation) {
         throw new Error('当前会话已有任务在执行，请先等待完成或手动中断。');
     }
@@ -5565,6 +5646,8 @@ async function handleListSessions(res, url) {
 }
 
 async function handleHistory(res, session) {
+    const titleDescriptor = sessionTitleDescriptor(session);
+    if (titleDescriptor) scheduleSessionTitleRefresh(session, titleDescriptor);
     const timeline = await Promise.all((session.timeline || []).map(async (event) => {
         if (event.type !== 'run_changes' || event.payload?.rollbackStatus !== 'available' || !event.payload?.runId) {
             return event;
@@ -5740,6 +5823,7 @@ async function handleSdkPrompt(req, res, session) {
     const descriptor = createRunDescriptor('message', session.context, {
         message: prompt, sdkOptions: resolveSdkOptions(body, SDK_QUERY_OPTION_KEYS)
     });
+    scheduleSessionTitleRefresh(session, descriptor);
     await runSessionTask(session, descriptor);
     sendJson(res, 200, { ok: session.runState.status === 'succeeded', result: {
         text: session.runState.lastSummary || '', status: session.runState.status
@@ -6102,13 +6186,7 @@ async function handleStartRun(req, res, session, kind, extraBody = {}) {
 
     res.writeHead(200, createSseHeaders());
     attachSubscriber(session, res, 'run', null);
-    if (shouldUpdateTitle) {
-        queueMicrotask(() => {
-            refreshSessionTitle(session, descriptor).catch((error) => {
-                console.warn('[agent-gateway] Failed to refresh session title:', error);
-            });
-        });
-    }
+    if (shouldUpdateTitle) scheduleSessionTitleRefresh(session, descriptor);
 
     try {
         queueMicrotask(async () => {

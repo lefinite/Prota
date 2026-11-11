@@ -263,5 +263,38 @@ class RuntimePackageTests(unittest.TestCase):
         self.assertFalse((second/'__prota_runtime'/new['canvasRuntimeHash']).exists())
         self.assertEqual((second/old['canvasEntryPath']).read_bytes(),old_entry)
 
+    def test_page_owned_extensions_survive_migration_copy_zip_and_legacy_backup_recovery(self):
+        from server.canvas_runtime_package import page_extensions, copy_version
+        legacy = make_canvas(self.root,'extension',legacy=True)
+        script = 'if(!window.protaCanvas)throw Error("extension loaded before runtime");window.sceneNavigation=true;'
+        (legacy/'scene-nav.js').write_text(script)
+        (legacy/'scene-nav.css').write_text('#scene-nav{position:fixed;bottom:8px}')
+        index = (legacy/'index.html').read_text().replace('</body>', '<script src="./scene-nav.js"></script><link rel="stylesheet" href="./scene-nav.css"></body>')
+        (legacy/'index.html').write_text(index)
+        migrate_entry(self.root,dict(projectId='demo',pageId='extension',version='v1'))
+        extensions=page_extensions(legacy)
+        self.assertEqual(extensions,{'version':1,'scripts':['./scene-nav.js'],'styles':['./scene-nav.css']})
+        self.assertIn('prota-canvas-extensions',(legacy/'index.html').read_text())
+        copy_version(legacy,legacy.parent/'v2')
+        self.assertEqual(page_extensions(legacy.parent/'v2'),extensions)
+        archive=zipfile.ZipFile(io.BytesIO(build_page_zip_bytes(self.root,'demo','extension','v1')))
+        self.assertEqual(archive.read('v1/scene-nav.js').decode(),script)
+        self.assertIn(b'prota-canvas-extensions',archive.read('v1/index.html'))
+        # The old migration discarded references, while retaining the script and backup.
+        (legacy/'index.html').write_bytes(document_entry())
+        self.assertEqual(page_extensions(legacy),extensions)
+        self.assertIn(b'scene-nav.js',document_entry(directory=legacy))
+        payload=self.payload('extension');pin_share_pages(self.root,payload)
+        from server.canvas_runtime_package import snapshot_directory
+        frozen=snapshot_directory(self.root,payload['canvasEntryPath'])
+        self.assertIn('prota-canvas-extensions',(frozen/'index.html').read_text())
+
+    def test_extension_paths_reject_traversal_remote_and_missing_resources(self):
+        from server.canvas_runtime_package import page_extensions
+        for source in ['../outside.js','https://example.com/script.js','/server/bridge.py','./missing.js']:
+            entry=document_entry().decode().replace('</body>', '<script src="'+source+'"></script></body>')
+            (self.version/'index.html').write_text(entry)
+            with self.assertRaises(ValueError):page_extensions(self.version)
+
 
 if __name__ == '__main__': unittest.main()

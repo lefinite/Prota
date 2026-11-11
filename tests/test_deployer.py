@@ -134,6 +134,33 @@ class DirectPublishTests(unittest.TestCase):
             self.assertEqual(command.call_args.args[0][-1], '--prota-check')
         self.assertEqual(snapshot.read_text(), 'previous public bytes')
 
+    def test_cleanup_starts_only_after_successful_snapshot_commit_and_never_blocks_success(self):
+        config = self.configure_publish()
+        self.deployer.settings['staticDomain'] = 'share.example.com'
+        settings = json.loads((config / 'vercel.json').read_text())
+        settings['staticDomain'] = 'share.example.com'
+        (config / 'vercel.json').write_text(json.dumps(settings))
+        committed = []
+
+        def cleanup(*args):
+            committed.append(((self.root / 'data/published-static/shares' / self.share.name).is_file(),
+                              (config / 'vercel-publish/last-deployment.json').is_file()))
+            raise RuntimeError('cleanup unavailable')
+
+        with patch('server.deployer.workspace.CONFIG_DIR', config), \
+                patch('server.deployer.shutil.which', return_value='/fixture/node'), \
+                patch('server.deployer.opt_in_large_functions'), \
+                patch('server.deployment_retention.schedule_cleanup', side_effect=cleanup) as scheduled, \
+                patch('server.deployer.subprocess.run', return_value=SimpleNamespace(returncode=0, stdout='https://new.vercel.app', stderr='')) as command:
+            self.assertEqual(self.deployer.deploy(self.share), 'https://new.vercel.app')
+            self.assertEqual(committed, [(True, True)])
+            scheduled.assert_called_once_with(settings, 'https://new.vercel.app', self.root)
+            scheduled.reset_mock()
+            command.side_effect = [SimpleNamespace(returncode=0), SimpleNamespace(returncode=1, stderr='failed')]
+            with self.assertRaises(RuntimeError):
+                self.deployer.deploy(self.share)
+            scheduled.assert_not_called()
+
     def test_download_archive_omits_hidden_credentials_and_rejects_symlinks(self):
         import io
         import zipfile

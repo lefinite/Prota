@@ -76,3 +76,11 @@
 ## 9. 界面表达原则
 
 - Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.（避免不必要的次要标签和描述，让布局本身来传达信息。）
+
+
+## 10. 人工文案修改保护
+
+- 人工直改通过 `/api/copy-edits/v2` 写入真实业务源码，只有重新加载验证通过才显示“已保存”。不得新增 `READIFY_COPY_PATCHES` 或其他 DOM 文案覆盖补丁冒充源码持久化。
+- `data/user-edits.sqlite3` 与 `data/user-edit-assets/` 是工作区的长期恢复材料。Agent 不得改写、删除、清理或打包公开这些内容；整工作区迁移需通过 SQLite backup API 保留 WAL 中的记录。
+- Agent 运行通过持久租约与后置扫描协调人工编辑；出现冲突须保留原/新文案和源码快照并在修改历史中提示。不得用整文件回滚覆盖之后的合法修改。
+- 无限画布根运行时不是业务文案目标；内部画板直改在精确身份与源码定位验收之前保持关闭。发现旧补丁时，先备份与审查，再决定迁移，不得随升级直接移除。

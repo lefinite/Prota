@@ -54,3 +54,12 @@ test('page groups combine versions, separate projects and order by recent activi
     ]);
     assert.equal(items[0].id, 'old', 'source list is unchanged');
 });
+
+test('page grouping honors creation order when an older chat was updated recently', () => {
+    const items = [
+        { id: 'older', projectId: 'a', pageId: 'reader', createdAt: '2026-11-01', updatedAt: '2026-11-10' },
+        { id: 'newer', projectId: 'a', pageId: 'reader', createdAt: '2026-11-09', updatedAt: '2026-11-09' }
+    ];
+    assert.deepEqual(groupSessionsByPage(items, [], 'created')[0][1].map(s => s.id), ['newer', 'older']);
+    assert.deepEqual(groupSessionsByPage(items, [])[0][1].map(s => s.id), ['older', 'newer']);
+});

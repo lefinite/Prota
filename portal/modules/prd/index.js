@@ -292,6 +292,7 @@ export class PRDModule {
     render() {
         const body = this.host.annotationDrawerBody;
         if (!body) return;
+        this.hideFloatingAiBtn();
 
         // Clean up previous event bindings
         if (this._eventCleanup) {
@@ -814,6 +815,7 @@ export class PRDModule {
 
         // 2. Typing Input event (Updates draft & processes slash command trigger)
         const handleInput = () => {
+            this.hideFloatingAiBtn();
             this.manager.updateDraft(textarea.value);
 
             // Sync live word count stats
@@ -829,7 +831,9 @@ export class PRDModule {
         const handleSelect = () => {
             // Keep stats current on mouse highlights
             this.updateStatsCounters(body);
+            this.handleSelectionChange();
         };
+        const handleBlur = () => this.hideFloatingAiBtn();
 
         // 6. Image paste handler — uploads pasted images to docs/prd-assets/ and
         // inserts the corresponding Markdown at the caret.
@@ -854,6 +858,9 @@ export class PRDModule {
         textarea.addEventListener('keydown', handleKeydown);
         textarea.addEventListener('input', handleInput);
         textarea.addEventListener('select', handleSelect);
+        textarea.addEventListener('keyup', handleSelect);
+        textarea.addEventListener('mouseup', handleSelect);
+        textarea.addEventListener('blur', handleBlur);
         textarea.addEventListener('paste', handlePaste);
 
         // 3. Toolbar format click actions
@@ -1016,6 +1023,9 @@ export class PRDModule {
             textarea.removeEventListener('keydown', handleKeydown);
             textarea.removeEventListener('input', handleInput);
             textarea.removeEventListener('select', handleSelect);
+            textarea.removeEventListener('keyup', handleSelect);
+            textarea.removeEventListener('mouseup', handleSelect);
+            textarea.removeEventListener('blur', handleBlur);
             textarea.removeEventListener('paste', handlePaste);
             textarea.removeEventListener('scroll', handleTextareaScrollRecord);
             preview?.removeEventListener('scroll', handlePreviewScrollRecord);
@@ -1847,6 +1857,16 @@ export class PRDModule {
             return;
         }
 
+        // Textarea selections are separate from DOM ranges in most browsers.
+        const editor = this.host.annotationDrawerBody?.querySelector('[data-prd-editor]');
+        if (editor && document.activeElement === editor) {
+            const text = editor.value.slice(editor.selectionStart, editor.selectionEnd).trim();
+            const rect = text && this.getEditorSelectionRect(editor);
+            if (rect) this.showFloatingAiBtn(rect, text);
+            else this.hideFloatingAiBtn();
+            return;
+        }
+
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
             this.hideFloatingAiBtn();
@@ -1877,6 +1897,46 @@ export class PRDModule {
         this.showFloatingAiBtn(rect, text);
     }
 
+    getEditorSelectionRect(editor) {
+        const bounds = editor.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return null;
+        const style = window.getComputedStyle(editor);
+        const mirror = document.createElement('div');
+        // Match wrapping, padding and typography without mounting another editor.
+        for (const property of ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
+            'lineHeight', 'letterSpacing', 'wordSpacing', 'textIndent', 'textTransform',
+            'tabSize', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+            'overflowWrap', 'wordBreak']) {
+            mirror.style[property] = style[property];
+        }
+        Object.assign(mirror.style, {
+            position: 'fixed', visibility: 'hidden', pointerEvents: 'none',
+            left: `${bounds.left + editor.clientLeft - editor.scrollLeft}px`,
+            top: `${bounds.top + editor.clientTop - editor.scrollTop}px`,
+            width: `${editor.clientWidth}px`, boxSizing: 'border-box',
+            whiteSpace: editor.wrap === 'off' ? 'pre' : 'pre-wrap'
+        });
+        mirror.setAttribute('aria-hidden', 'true');
+        mirror.append(document.createTextNode(editor.value.slice(0, editor.selectionStart)));
+        const selected = document.createElement('span');
+        selected.textContent = editor.value.slice(editor.selectionStart, editor.selectionEnd);
+        mirror.append(selected, document.createTextNode(editor.value.slice(editor.selectionEnd) || '\u200b'));
+        document.body.append(mirror);
+        try {
+            const range = document.createRange();
+            range.selectNodeContents(selected);
+            const rect = Array.from(range.getClientRects()).find(rect =>
+                rect.bottom > bounds.top && rect.top < bounds.bottom &&
+                rect.right > bounds.left && rect.left < bounds.right);
+            if (!rect) return null;
+            const left = Math.max(bounds.left, rect.left);
+            return { left, width: Math.min(bounds.right, rect.right) - left,
+                top: Math.max(bounds.top, rect.top) };
+        } finally {
+            mirror.remove();
+        }
+    }
+
     /**
      * Renders and positions the floating AI context popover
      * @param {DOMRect} rect - The selection bounding rect
@@ -1898,7 +1958,7 @@ export class PRDModule {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
                     </svg>
-                    <span>问 AI</span>
+                    <span>Prota</span>
                 </button>
             `;
             document.body.appendChild(popover);

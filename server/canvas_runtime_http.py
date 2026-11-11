@@ -36,7 +36,7 @@ def serve(handler, workspace):
             if not reserved:
                 return False
         if match[4] == 'index.html':
-            content = document_entry(workspace.APP_ROOT)
+            content = document_entry(workspace.APP_ROOT, directory)
             if not is_shared(directory):
                 content = content.replace(b'<body>', b'<body><script>window.__protaCanvasLegacyEntry=true;</script>')
             kind = 'text/html'

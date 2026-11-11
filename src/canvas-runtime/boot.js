@@ -3,9 +3,9 @@
   if (window.__protaCanvasBooting) return;
   window.__protaCanvasBooting = true;
   const base = new URL('.', document.currentScript.src);
-  const load = name => new Promise((resolve, reject) => {
+  const load = (name, resourceBase = base) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = new URL(name, base).href;
+    script.src = new URL(name, resourceBase).href;
     script.onload = resolve; script.onerror = () => reject(new Error('未能加载 ' + name));
     document.head.append(script);
   });
@@ -29,6 +29,17 @@
     for (const name of manifest.scripts) await load(name);
     await styled;
     Object.assign(window.protaCanvas, {runtimeHash:manifest.runtimeHash, shellFormat:'shared-v1', documentSchema:window.PROTA_CANVAS.schemaVersion});
+    const extensionNode = document.getElementById('prota-canvas-extensions');
+    if (extensionNode) {
+      const extensions = JSON.parse(extensionNode.textContent);
+      if (extensions.version !== 1 || !Array.isArray(extensions.scripts) || !Array.isArray(extensions.styles)) throw new Error('画布业务扩展配置无效');
+      const pageBase = new URL('.', location.href);
+      for (const name of extensions.styles) {
+        const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = new URL(name, pageBase).href;
+        await new Promise((resolve, reject) => { link.onload = resolve; link.onerror = () => reject(new Error('业务样式未能加载：' + name)); document.head.append(link); });
+      }
+      for (const name of extensions.scripts) await load(name, pageBase);
+    }
     window.__protaCanvasStartupComplete();
     window.dispatchEvent(new Event('prota:canvas-ready'));
   })().catch(fail);

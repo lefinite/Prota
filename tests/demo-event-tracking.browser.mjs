@@ -57,13 +57,12 @@ try {
     const target=canvas?page.frameLocator('#demo').frameLocator('iframe').locator('[data-prota-track-id="submit"]'):
       page.frameLocator('#demo').locator('[data-prota-track-id="submit"]');
     await target.click();
-    assert.equal(await target.evaluate(el=>el.ownerDocument.defaultView.activations||0),0,'inspection should not execute a tracked action');
-    await page.locator('#mode').click();
-    await target.click();
-    assert.equal(await target.evaluate(el=>el.ownerDocument.defaultView.activations||0),1,'preview mode should restore business actions');
+    assert.equal(await target.evaluate(el=>el.ownerDocument.defaultView.activations||0),1,'tracked business actions continue');
+    const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();
+    const download=await downloadPromise;assert.match(download.suggestedFilename(),/\.xlsx$/);
     await page.close();
   }
-  console.log('Offline ZIP viewer passed page + nested iframe review, selection, and preview-mode isolation');
+  console.log('Offline ZIP viewer passed page + nested iframe review, selection, normal business navigation and Excel download');
 } finally {
   await browser?.close();
   await fs.rm(temp,{recursive:true,force:true});

@@ -160,7 +160,7 @@ class ShareManagerTests(unittest.TestCase):
                 self.assertEqual(len(grants), 1)
                 self.assertEqual(grants[0]['entries'][0], '/shares/other-v1-static.html')
             return SimpleNamespace(returncode=0, stdout='https://fixture.vercel.app', stderr='')
-        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.subprocess.run', side_effect=run), patch('server.deployer.shutil.which', return_value='/fixture/node'), patch.object(share_manager, 'VercelDeployer', side_effect=lambda root: VercelDeployer(root, app)):
+        with patch('server.deployer.workspace.CONFIG_DIR', config), patch('server.deployer.subprocess.run', side_effect=run), patch('server.deployer.shutil.which', return_value='/fixture/node'), patch('server.deployer.opt_in_large_functions'), patch.object(share_manager, 'VercelDeployer', side_effect=lambda root: VercelDeployer(root, app)):
             result = share_manager.manage(self.root, {'action':'revoke', 'ids':[local.name]})
         records = {item['id']:item for item in result['items']}
         self.assertEqual(records[local.name]['status'], 'revoked')

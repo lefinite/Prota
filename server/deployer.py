@@ -546,6 +546,11 @@ class VercelDeployer:
                         shutil.rmtree(self.root / 'data/share-mcp-drafts' / token_hash, ignore_errors=True)
                 url = result.stdout.strip().splitlines()[-1]
                 workspace.atomic_json(root / 'last-deployment.json', {'url': url, 'staticDomain': domain, 'shares': len(share_files)})
+                try:
+                    from server.deployment_retention import schedule_cleanup
+                    schedule_cleanup(config, url, self.root)
+                except Exception:
+                    logger.warning('分享历史部署自动清理未启动，将在下次成功发布后重试。')
                 return url
 
 

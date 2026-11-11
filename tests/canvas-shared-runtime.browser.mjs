@@ -29,6 +29,9 @@ root=Path(sys.argv[1]);app=Path(sys.argv[2])
 for page in ['a','b']: make_canvas(root,page)
 make_canvas(root,'legacy',legacy=True)
 make_canvas(root,'legacy-preview',legacy=True)
+a=root/'src/pages/demo/a/v1'
+(a/'scene-nav.js').write_text("if(!window.protaCanvas)throw Error('business extension must load after runtime');const nav=document.createElement('button');nav.id='scene-nav';nav.textContent='Scene navigation';nav.style.cssText='position:fixed;bottom:10px;left:200px;z-index:1000';nav.onclick=()=>nav.textContent='Contents scene';document.body.append(nav);")
+(a/'index.html').write_text((a/'index.html').read_text().replace('</body>','<script src="./scene-nav.js"></script></body>'))
 (root/'data').mkdir();(root/'shares').mkdir();(root/'workspace.json').write_text(json.dumps({'id':'shared-test','formatVersion':1}))
 (root/'data/settings.json').write_text('{}')
 (root/'data/projects.json').write_text(json.dumps({'projects':[{'id':'demo','name':'Demo','pages':[{'id':p,'name':p,'versions':['v1'],'targetDevice':'canvas','pageMode':'infinite-canvas'} for p in ['a','b','legacy','legacy-preview']]}],'activeProjectId':'demo','activePageId':'a'}))
@@ -53,6 +56,7 @@ print(json.dumps({'content':str(content),'entry':payload['canvasEntryPath'],'has
  const errors=[];for(const p of [a,b])p.on('pageerror',e=>errors.push(e.message));
  const wait=p=>p.waitForFunction(()=>protaCanvas?.shellFormat==='shared-v1'&&document.documentElement.dataset.protaCanvasReady==='true');
  for(const [page,id] of [[a,'a'],[b,'b']]){await page.goto(base+`/src/pages/demo/${id}/v1/index.html`);await wait(page);}
+ await a.locator('#scene-nav').click();assert.equal(await a.locator('#scene-nav').textContent(),'Contents scene');
  const original=await fs.readFile(path.join(root,'src/pages/demo/a/v1/canvas-data.js'));
  const hash1=await a.evaluate(()=>protaCanvas.runtimeHash);
  const css=path.join(testapp,'src/templates/infinite-canvas/styles.css');await fs.appendFile(css,'\n#selection-tools{--shared-runtime-probe:731;}');
@@ -97,6 +101,7 @@ print(json.dumps({'content':str(content),'entry':payload['canvasEntryPath'],'has
  const shared=await context.newPage();await shared.goto(origin+'/shares/a-v1-static.html');await shared.locator('input[name=password]').fill('test-pass');await shared.locator('button[type=submit]').click();
  await shared.frameLocator('#mainIframe').locator('#stage').waitFor();
  const canvas=shared.frames().find(f=>f.url().includes('__prota_canvas/'));await canvas.waitForFunction(()=>protaCanvas?.shellFormat==='shared-v1');
+ await canvas.locator('#scene-nav').waitFor();
  assert.equal(await canvas.evaluate(()=>protaCanvas.runtimeHash),fixture.hash,'published runtime stays pinned after local update');
  await canvas.frameLocator('.node[data-id=home] iframe').locator('button').waitFor();
  const response=await context.request.get(origin+runtime);assert.equal(response.status(),200);assert.match(response.headers()['cache-control'],/private.*no-store/);
@@ -108,6 +113,7 @@ print(json.dumps({'content':str(content),'entry':payload['canvasEntryPath'],'has
  const offlineContext=await browser.newContext({offline:true,viewport:{width:1440,height:1000}}),offline=await offlineContext.newPage(),requests=[];
  offline.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url());});offline.on('pageerror',e=>errors.push(e.message));
  await offline.goto(pathToFileURL(fixture.offline).href);await wait(offline);
+ await offline.locator('#scene-nav').click();assert.equal(await offline.locator('#scene-nav').textContent(),'Contents scene');
  await offline.frameLocator('.node[data-id=home] iframe').locator('button').waitFor();
  await offline.locator('.node[data-id=home] .node-content').dblclick({position:{x:20,y:20}});await offline.frameLocator('.node[data-id=home] iframe').getByRole('button',{name:'Business action'}).click();assert.equal(await offline.frameLocator('.node[data-id=home] iframe').locator('button').textContent(),'Clicked');
  const diagram=await offline.evaluate(async()=>{const holder=document.createElement('div');holder.append(CanvasMarkdown.render('```mermaid\nflowchart LR\nA-->B\n```'));document.body.append(holder);await CanvasMarkdown.mount(holder);return holder.querySelector('.canvas-mermaid').dataset.state;});assert.equal(diagram,'ready');
