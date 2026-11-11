@@ -1,0 +1,54 @@
+/* Generated from design-system/product.tokens.json. Do not edit by hand. */
+:root {
+  --pui-color-workspace: #f8f9fb;
+  --pui-color-surface: #ffffff;
+  --pui-color-header: rgba(255, 255, 255, 0.85);
+  --pui-color-text: #1a1d24;
+  --pui-color-muted: #6b7280;
+  --pui-color-border: #e5e7eb;
+  --pui-color-brand: #6366f1;
+  --pui-color-brand-soft: rgba(99, 102, 241, 0.1);
+  --pui-color-primary: #4f46e5;
+  --pui-color-primary-hover: #4338ca;
+  --pui-color-focus: rgba(99, 102, 241, 0.24);
+  --pui-color-danger: #dc2626;
+  --pui-color-danger-soft: #fef2f2;
+  --pui-color-success: #16845c;
+  --pui-color-warning: #b45309;
+  --pui-space-1: 4px;
+  --pui-space-2: 8px;
+  --pui-space-3: 12px;
+  --pui-space-4: 16px;
+  --pui-space-6: 24px;
+  --pui-space-8: 32px;
+  --pui-radius-small: 6px;
+  --pui-radius-control: 8px;
+  --pui-radius-card: 10px;
+  --pui-radius-dialog: 14px;
+  --pui-radius-pill: 999px;
+  --pui-size-icon: 16px;
+  --pui-size-icon-large: 18px;
+  --pui-size-control-compact: 32px;
+  --pui-size-control: 36px;
+  --pui-size-field: 40px;
+  --pui-font-meta: 11px;
+  --pui-font-caption: 12px;
+  --pui-font-body: 13px;
+  --pui-font-body-large: 14px;
+  --pui-font-section: 16px;
+  --pui-font-dialog: 20px;
+  --pui-font-page: 24px;
+  --pui-motion-fast: 140ms;
+  --pui-motion-normal: 180ms;
+  --pui-motion-dialog: 200ms;
+
+  /* Compatibility aliases used by existing Portal CSS. */
+  --bg-main: var(--pui-color-workspace);
+  --bg-sidebar: var(--pui-color-surface);
+  --bg-header: var(--pui-color-header);
+  --text-primary: var(--pui-color-text);
+  --text-secondary: var(--pui-color-muted);
+  --border: var(--pui-color-border);
+  --accent: var(--pui-color-brand);
+  --accent-glow: var(--pui-color-brand-soft);
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Prota Product UI",
+  "version": "1.0.0",
+  "description": "Product chrome only; generated business demos and board content are excluded.",
+  "color": {
+    "workspace": "#f8f9fb",
+    "surface": "#ffffff",
+    "header": "rgba(255, 255, 255, 0.85)",
+    "text": "#1a1d24",
+    "muted": "#6b7280",
+    "border": "#e5e7eb",
+    "brand": "#6366f1",
+    "brandSoft": "rgba(99, 102, 241, 0.1)",
+    "primary": "#4f46e5",
+    "primaryHover": "#4338ca",
+    "focus": "rgba(99, 102, 241, 0.24)",
+    "danger": "#dc2626",
+    "dangerSoft": "#fef2f2",
+    "success": "#16845c",
+    "warning": "#b45309"
+  },
+  "space": { "1": "4px", "2": "8px", "3": "12px", "4": "16px", "6": "24px", "8": "32px" },
+  "radius": { "small": "6px", "control": "8px", "card": "10px", "dialog": "14px", "pill": "999px" },
+  "size": { "icon": "16px", "iconLarge": "18px", "controlCompact": "32px", "control": "36px", "field": "40px" },
+  "font": { "meta": "11px", "caption": "12px", "body": "13px", "bodyLarge": "14px", "section": "16px", "dialog": "20px", "page": "24px" },
+  "motion": { "fast": "140ms", "normal": "180ms", "dialog": "200ms" }
+}

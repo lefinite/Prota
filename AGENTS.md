@@ -84,3 +84,12 @@
 - `data/user-edits.sqlite3` 与 `data/user-edit-assets/` 是工作区的长期恢复材料。Agent 不得改写、删除、清理或打包公开这些内容；整工作区迁移需通过 SQLite backup API 保留 WAL 中的记录。
 - Agent 运行通过持久租约与后置扫描协调人工编辑；出现冲突须保留原/新文案和源码快照并在修改历史中提示。不得用整文件回滚覆盖之后的合法修改。
 - 无限画布根运行时不是业务文案目标；内部画板直改在精确身份与源码定位验收之前保持关闭。发现旧补丁时，先备份与审查，再决定迁移，不得随升级直接移除。
+## 11. Prota 产品 UI 规范与自审（必读）
+
+- 对 **Prota 产品自身 UI**（Portal 首页、Agent 工作台、设置、分享、PRD、流程图外壳、无限画布编辑器工具层）做设计、开发、改版或评审前，先读 `docs/prota-ui-guidelines.md`；当前设计债务与迁移边界见 `docs/prota-ui-audit-2026-11-10.md`。
+- 新 UI 默认复用根 Token、现有产品组件和交互范式。新增另一套强调色/按钮/弹窗、重复的常驻侧栏、无意义说明文字或末尾 `!important` 补丁时，必须给出必要性并消除冲突。
+- 开发完成后必须执行规范第 7 节 **Review → 修复 → 复检**：记录 P0/P1/P2 证据，修复 P0/P1，检查实际渲染、重要状态、键盘操作与适用视口。只做静态代码检查不得宣称 UI 已通过。
+- 用户说“UI 不好看”“不统一”“按规范 review / 优化”时，直接按第 7 节对**本次涉及的产品 UI** 自审与修复，输出差异、修改文件和验证结果；不只给口头建议。
+- 本规范**不强制套用于用户生成的业务 Demo、画板 HTML/CSS/JS、品牌模板**。这类内容仍按用户指令和所选设计系统自主设计；产品 UI 调整不得改动历史业务页面、破坏 iframe 样式隔离、版本独立和静态分享。
+- UI 实现以 `design-system/product.tokens.json` 为唯一 Token 源，组件参考 `portal/ui/components.css`，交互预览见 `portal/ui/showcase.html`。修改 Token 后运行 `npm run ui:tokens`，不要直接编辑生成文件。完整架构说明见 `design-system/README.md`。
+- 产品 UI PR 必须运行 `npm run ui:tokens:check`、`npm run ui:test` 与增量 `npm run ui:lint -- --base <base-ref>`；可见 UI 变更还需运行 `npm run ui:browser`，对实际功能页面补充截图和状态/交互回归。自动检查只覆盖规则子集，不代替视觉评审。

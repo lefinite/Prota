@@ -5,14 +5,7 @@ html.is-infinite-canvas body {
 }
 
 :root {
-    --bg-main: #f8f9fb;
-    --bg-sidebar: #ffffff;
-    --bg-header: rgba(255, 255, 255, 0.85);
-    --text-primary: #1a1d24;
-    --text-secondary: #6b7280;
-    --accent: #6366f1;
-    --accent-glow: rgba(99, 102, 241, 0.1);
-    --border: #e5e7eb;
+    /* Product color tokens and legacy aliases are defined in ui/tokens.css. */
     --sidebar-width: 220px;
     --sidebar-list-font-size: 13px;
     --agent-panel-width: 660px;
